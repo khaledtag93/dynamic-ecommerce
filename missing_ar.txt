@@ -1,0 +1,277 @@
+Phase 4
+Monitor channel health, templates, automation rules, logs, and escalation recovery from a cleaner notification workspace.
+Keep the notification workspace organized by task: overview, recovery, templates, automation, and diagnostics.
+Module flow
+Open overview for the current status, move to logs for active recovery, edit templates separately, then use automation and diagnostics only when needed.
+Operator rule
+Each page now serves one job only, so the team reads less, decides faster, and touches fewer heavy sections per task.
+Quick access
+Use the sub-navigation below to jump directly into the exact notification task you want.
+Read the current health snapshot first before changing settings or opening recovery tools.
+Control the master switch, active channels, and event routing from one consistent control area.
+Move directly into recovery work whenever a dispatch, provider, or queue issue needs action.
+Next step: Logs & retry
+Next step: Templates & test send
+Keep customer-facing content edits separate from live recovery work and preview every change safely.
+Next step: Automation & diagnostics
+Use automation for policy design and diagnostics only when queue health or provider behavior needs deeper review.
+Phase 4 · Notification operations
+This overview page is intentionally lighter so the notification workspace opens reliably inside the dashboard layout. Use it as the main control hub, then jump into logs, templates, automation, or diagnostics only when needed.
+Admin inbox
+Unread: :count
+Pending: :count
+Failed dispatches
+Logs that need review or retry.
+WhatsApp log volume
+Failed: :count
+Channel status
+Quick channel snapshot so the team can confirm what is enabled before opening the heavier settings pages.
+Event coverage
+Each event below shows which channels are currently active for it. This keeps the overview fast and avoids the heavy mixed workspace that was opening blank before.
+No channels
+Nothing enabled yet
+Where to go next
+Keep this page as the stable hub. Open the inbox when you want admin notifications, logs when something failed, templates for content work, and automation or diagnostics only for deeper operational changes.
+Open admin inbox
+This section is intentionally lighter so it always opens reliably inside the dashboard layout.
+No extra details available.
+Nothing to show yet
+No records were available for this section right now.
+Next actions
+Use the navigation above to move between notification pages without reopening the heavy mixed workspace.
+Back to overview
+Sent: :sent • Failed: :failed
+Sent: :count
+Driver: :driver
+Last 24h: :count
+Deep diagnostics, resilience tuning, and release checks
+Open when you need worker health, provider tuning, or release-readiness details
+Dispatch retries
+WhatsApp retries
+Dispatch duplicates blocked
+WhatsApp duplicates blocked
+Automation runs
+Safety blocks
+Queue worker resilience
+Operational guidance for worker uptime, retry timing, and duplicate-safe queue execution.
+Score: :score%
+Queue driver
+Job timeout
+Retry after
+Backoff schedule
+Provider timeout & backoff tuning
+Live config snapshot for safer Meta provider retries and queue pacing.
+WhatsApp timeout
+Connect timeout
+HTTP retries
+Retry sleep
+Queue backoff schedule
+Dead-letter style recovery playbook
+Use failed jobs as diagnostic records first, then retry only the items that still make operational sense.
+Failed notification jobs: :count
+Job
+Queue
+Failed at
+Unknown job
+Final release QA checklist
+A quick production-readiness checklist before the next stable release or deploy.
+:done / :total passed
+Passed
+Needs review
+How the engine works
+Reference guidance
+Recommended operator flow
+Save channel changes here first, then validate wording from Templates, and only after that handle live failures from Logs & retry.
+Review the channel toggles, recovery defaults, and operational settings, then save the notification center when you are ready.
+Saving notification center changes...
+Save notification center changes
+Unknown
+Review diagnostics
+Current queue driver used by the notification pipeline.
+Pending jobs
+Jobs waiting in the queue before the worker picks them up.
+Health status
+Recommended next action: :action
+WhatsApp success rate
+Last 24h delivery success for the WhatsApp provider path.
+Queue monitoring dashboard
+Pending jobs: :count
+Reserved jobs: :count
+Oldest pending age: :value
+Total dispatches: :count
+Failed dispatches: :count
+WhatsApp success rate: :rate%
+Duplicate-guard skips: :count
+Channel health table
+Compare sent, failed, pending, and skipped counts per channel from one place.
+Channel health
+Recent jobs and failed jobs
+Open for queue-level troubleshooting and careful retries
+Queue: :queue • Attempts: :attempts
+Available: :time
+No queued jobs right now
+Pending notification jobs will appear here when queue activity is active.
+Queue: :queue • Connection: :connection
+Retry failed queue job
+Retry this failed queue job now?
+Use this only after reviewing the failure details so duplicate worker activity stays controlled.
+Retry queue job
+Keep reviewing
+Retrying queue job...
+No failed queue jobs found
+Failed queue jobs will appear here whenever the worker records an exception.
+Health recommendations
+No recommendations right now
+Operational guidance will appear here when queue health or channel activity needs attention.
+Refreshing logs...
+Retry notification send
+Retry this notification send now?
+A new controlled retry attempt will be created only if safety guards allow it.
+Retrying send...
+Retry this notification send immediately.
+Run escalation now
+Escalate this notification log now?
+The escalation policy will be executed immediately using the current rule configuration.
+Running escalation...
+Run the escalation path for this log right now.
+No dispatch logs yet
+Dispatch history will start appearing here as soon as the engine records delivery activity.
+Review engine-level failures and retry customer-facing notifications from one compact queue.
+New failed notification attempts will appear here when recovery is needed.
+Inspect provider-side failures separately so WhatsApp issues stay easy to isolate.
+Retry WhatsApp send
+Retry this WhatsApp send now?
+A new WhatsApp attempt will be created only if the safety guard does not detect a duplicate active send.
+Retrying WhatsApp send...
+Retry the linked WhatsApp notification immediately.
+No admin activity yet
+Activity will start filling automatically after settings changes, retries, and order actions.
+Saved templates
+All event, channel, and locale combinations currently stored.
+Active templates
+Templates currently enabled for live rendering and sending.
+Supported channels
+Database, email, and WhatsApp stay editable from one workspace.
+Supported locales
+Use the same message flow while keeping localized customer copy consistent.
+Template management workspace
+Edit reusable message copy by event first, then fine-tune it per channel and locale without touching the delivery logic.
+Content
+Localization
+Recommended editing flow
+Choose the event, update the channel-specific message, then render a preview and run one controlled test send before broader production traffic.
+Event: :event
+Saving template changes...
+Render the selected message with a real order so title, subject, and token replacements are all visible before sending.
+Render the selected message with real order data so the final copy and tokens look correct before a live send.
+Rendering preview...
+Send one admin-side test using the selected order, event, and channel so you can verify production behavior safely.
+Sending test message...
+All saved automation policies across retry, fallback, and escalation behavior.
+Currently participating in automated incident handling.
+Recent policy activity recorded by the automation workflow.
+Items recovered by the stale pending scanner during the last 24 hours.
+Define safe reactions when a notification fails, gets skipped, or remains stale long enough to need escalation handling.
+Policy builder
+Keep stale items visible, recover them early, and only escalate when recovery is no longer safe.
+Stale logs right now: :count
+Run escalation scanner now
+Run the scheduled escalation scanner now?
+This checks stale pending items immediately and may trigger recovery or escalation actions.
+Keep scheduled timing
+Running scanner...
+Retry transient failures once before moving to a fallback channel.
+Use fallback only for meaningful customer-facing updates, not every low-signal event.
+Recover stale pending logs before sending additional customer traffic.
+Escalate repeated failures to operators with a clear cooldown and rate window.
+Create automation rule
+Use this form to define retry, fallback, admin alerting, or activity-log behavior.
+Cooldown (minutes)
+Rate window (minutes)
+Max runs in window
+Active immediately
+Ready to save this rule?
+Keep the policy narrow, define cooldowns clearly, and avoid broad escalation rules unless the event is genuinely critical.
+Saving automation rule...
+Existing automation rules
+Review, disable, or clean up the policies already in production
+Automation rule
+Cooldown
+Rate window
+No automation rules exist yet.
+Escalation insight
+A lighter operator view for level distribution, recent scanner runs, and recovered stale logs.
+Recent automation runs that escalated beyond simple retry or recovery.
+Escalations
+Notification workspace
+Diagnostics
+Dispatch log
+No order linked
+WhatsApp log
+Admin activity
+Just now
+Failed dispatch logs
+Failed WhatsApp logs
+Recent admin activity
+Logs total
+Dispatch failed
+WhatsApp failed
+Supported events
+Templates saved
+Events available
+Applies to all events
+Scanner activity
+Recovered log
+Stale pending recovery
+Rules count
+Dispatch pending
+In-app / database
+records
+Dispatch pipeline
+Total: :count
+Health snapshot
+Channel snapshot
+Recommended action
+This is now the main entry point for the notification module: summary first, controls second, and deeper work separated into dedicated pages.
+Save channel changes here, then open logs for retries, templates for message content, automation for rules, and diagnostics for queue-level investigation.
+Logs and retry center
+This page is dedicated to recovery work only: search the logs, retry safely, and review the admin-side timeline.
+Use this page when something failed or needs escalation. For channel setup go back to Overview; for content changes use Templates.
+Templates and test send
+This page focuses only on content quality: edit the templates, preview their final output, and validate them with safe test sends.
+Keep wording changes here so the team does not mix customer-facing copy work with queue recovery or automation tuning.
+Automation and escalation
+This page is now dedicated to policy logic: edit the rules, run the scanner, and review recent automation activity without the rest of the workspace competing for attention.
+Open this page when you are shaping automation behavior. Use Logs for active incidents and Diagnostics for queue-level investigation.
+Diagnostics and monitoring
+This page keeps the advanced operational details together so the main notification workflow stays lighter and easier to scan.
+Use this page only when health drops, a worker issue is suspected, or you need a deeper operational audit before taking action.
+Notification center settings were updated.
+Notification center settings were saved successfully.
+Notification template :name was updated.
+Notification template was saved successfully.
+Notification automation rule :name was saved.
+Notification automation rule was saved successfully.
+Scanner run completed. Scanned: :scanned | Matched: :matched | Recovered: :recovered
+Manual escalation policies were executed for notification log #:id.
+No active automation rules matched this notification log yet.
+Escalation policies were executed successfully.
+A notification test send was triggered for :channel / :event.
+Notification test send was executed successfully.
+A failed queue job retry was blocked by a production safety guard.
+Queue retry was blocked by a safety guard.
+A failed queue job retry was requested from the admin monitoring center.
+Failed queue job retry was requested successfully.
+Queue retry command finished with warnings: :output
+No command output
+A notification dispatch retry was blocked by a production safety guard.
+This notification retry was blocked by a safety guard.
+A notification dispatch retry was requested for :channel on event :event.
+A notification dispatch retry could not be completed safely.
+Notification retry finished.
+A WhatsApp retry was blocked by a production safety guard.
+This WhatsApp retry was blocked by a safety guard.
+A WhatsApp retry was requested for :type.
+A WhatsApp retry could not be completed safely.
+WhatsApp retry was queued safely.
+WhatsApp retry could not be completed safely.

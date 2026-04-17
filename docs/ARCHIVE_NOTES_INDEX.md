@@ -1,0 +1,23 @@
+# Archive Notes Index
+
+The following root-level notes remain in the repository as historical context and implementation references:
+
+- BUSINESS_ENGINE_PHASES_SUMMARY.md
+- CLEAN_PRODUCTION_RESET.md
+- CUSTOMER_FEATURES_OVERVIEW.md
+- PATCH_NOTES_MARCH29_BATCH2.md
+- PAYMENT_GATEWAY_PAYMOB_NOTES.md
+- PAYMOB_ROUND2_NOTES.md
+- PHASE3_FOUNDATION_PAYMENT_NOTES.md
+- PRODUCTION_PASS_NOTES.md
+- PROJECT_REVIEW_AND_NEXT_STEPS.md
+- PROJECT_STATUS_INTERNAL.md
+- STABILIZATION_NOTES_2026-04-03.md
+
+Canonical project state should now be maintained in:
+- PROJECT_MASTER_STATUS.md
+- PROJECT_RULES.md
+- CURRENT_PHASE.md
+- docs/MODULES_OVERVIEW.md
+- docs/KNOWN_ISSUES.md
+- docs/SETUP_GUIDE.md

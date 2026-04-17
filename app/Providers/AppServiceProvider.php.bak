@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Providers;
+
+use App\Contracts\Services\WhatsAppServiceInterface;
+use App\Http\Livewire\Admin\Product\Index as ProductIndex;
+use App\Http\Livewire\Admin\Product\ProductForm;
+use App\Models\Category;
+use App\Services\Auth\AuthorizationService;
+use App\Services\Channels\WhatsApp\WhatsAppManager;
+use App\Services\Commerce\StoreSettingsService;
+use App\Services\Frontend\CartService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
+use App\Support\LocalSafeBoot;
+use Livewire\Livewire;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->singleton(WhatsAppServiceInterface::class, WhatsAppManager::class);
+    }
+
+    public function boot(): void
+    {
+        if ((bool) config('app.force_https', false)) {
+            URL::forceScheme('https');
+        }
+
+        Paginator::useBootstrapFive();
+
+        Livewire::component('admin.product.index', ProductIndex::class);
+        Livewire::component('admin.product.product-form', ProductForm::class);
+
+        if (! LocalSafeBoot::shouldSkipBootDatabaseTouches()) {
+            try {
+                if (Schema::hasTable('roles') && Schema::hasTable('permissions')) {
+                    app(AuthorizationService::class)->syncDefaults();
+                }
+            } catch (\Throwable $e) {
+                // Keep boot safe when the database is not ready yet.
+            }
+        }
+
+        View::composer('*', function ($view) {
+            $settings = [];
+            $layoutCategories = collect();
+            $layoutCartCount = 0;
+            $notificationCount = 0;
+
+            if (! LocalSafeBoot::shouldSkipBootDatabaseTouches()) {
+                try {
+                    if (Schema::hasTable('website_settings')) {
+                        $settings = app(StoreSettingsService::class)->all();
+                    }
+
+                    if (in_array($view->getName(), ['layouts.app']) || str_starts_with($view->getName(), 'frontend.') || str_starts_with($view->getName(), 'auth.')) {
+                        $layoutCategories = Category::query()->where('status', false)->latest('id')->take(8)->get();
+                        $layoutCartCount = app(CartService::class)->count();
+                    }
+
+                    $user = Auth::user();
+                    if ($user && Schema::hasTable('notifications')) {
+                        $notificationCount = $user->unreadNotifications()->count();
+                    }
+                } catch (\Throwable $e) {
+                    // Fall back to empty shared view data until the database connection is available.
+                }
+            }
+
+            if (in_array($view->getName(), ['layouts.app']) || str_starts_with($view->getName(), 'frontend.') || str_starts_with($view->getName(), 'auth.')) {
+                $view->with('layoutCategories', $layoutCategories);
+                $view->with('layoutCartCount', $layoutCartCount);
+            }
+
+            $view->with('authNotificationCount', $notificationCount);
+            $view->with('storeSettings', $settings);
+            $view->with('currentLocale', app()->getLocale());
+            $view->with('isRtl', app()->getLocale() === 'ar');
+        });
+    }
+}
