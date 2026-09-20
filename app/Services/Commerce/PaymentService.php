@@ -220,116 +220,122 @@ class PaymentService
 
     protected function transitionGatewayPayment(Payment $payment, string $status, string $event, string $message, array $context = []): Payment
     {
-        $payment->refresh();
+        return DB::transaction(function () use ($payment, $status, $event, $message, $context) {
+            $lockedPayment = Payment::query()
+                ->whereKey($payment->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // A successful gateway confirmation is terminal here. Late/replayed callbacks
-        // must never downgrade a paid or refunded payment. Repeated paid callbacks
-        // are idempotent and do not create duplicate events/notifications.
-        if ($payment->status === Payment::STATUS_REFUNDED) {
-            return $payment;
-        }
+            // A successful gateway confirmation is terminal here. The row lock
+            // makes this guarantee hold even when competing callbacks arrive
+            // concurrently for the same payment.
+            if (in_array($lockedPayment->status, [Payment::STATUS_PAID, Payment::STATUS_REFUNDED], true)) {
+                return $lockedPayment;
+            }
 
-        if ($payment->status === Payment::STATUS_PAID) {
-            return $payment;
-        }
+            $meta = array_merge($lockedPayment->meta ?? [], Arr::except($context, ['notes', 'provider_status', 'transaction_id']));
+            $meta = $this->pushPaymentEvent($meta, $event, $message);
 
-        $meta = array_merge($payment->meta ?? [], Arr::except($context, ['notes', 'provider_status', 'transaction_id']));
-        $meta = $this->pushPaymentEvent($meta, $event, $message);
+            if (array_key_exists('raw', $context)) {
+                $meta['gateway_callback_payload'] = $context['raw'];
+            }
 
-        if (array_key_exists('raw', $context)) {
-            $meta['gateway_callback_payload'] = $context['raw'];
-        }
+            if (array_key_exists('hmac_valid', $context)) {
+                $meta['paymob_hmac_valid'] = $context['hmac_valid'];
+            }
 
-        if (array_key_exists('hmac_valid', $context)) {
-            $meta['paymob_hmac_valid'] = $context['hmac_valid'];
-        }
+            if (! empty($context['paymob_order_id'])) {
+                $meta['paymob_order_id'] = (string) $context['paymob_order_id'];
+            }
 
-        if (! empty($context['paymob_order_id'])) {
-            $meta['paymob_order_id'] = (string) $context['paymob_order_id'];
-        }
+            if (! empty($context['response_code'])) {
+                $meta['gateway_response_code'] = (string) $context['response_code'];
+            }
 
-        if (! empty($context['response_code'])) {
-            $meta['gateway_response_code'] = (string) $context['response_code'];
-        }
+            if (! empty($context['response_message'])) {
+                $meta['gateway_response_message'] = (string) $context['response_message'];
+            }
 
-        if (! empty($context['response_message'])) {
-            $meta['gateway_response_message'] = (string) $context['response_message'];
-        }
+            $updates = [
+                'status' => $status,
+                'provider_status' => $context['provider_status'] ?? $lockedPayment->provider_status,
+                'notes' => $context['notes'] ?? $lockedPayment->notes,
+                'meta' => $meta,
+            ];
 
-        $updates = [
-            'status' => $status,
-            'provider_status' => $context['provider_status'] ?? $payment->provider_status,
-            'notes' => $context['notes'] ?? $payment->notes,
-            'meta' => $meta,
-        ];
+            if (! empty($context['transaction_id'])) {
+                $updates['transaction_reference'] = (string) $context['transaction_id'];
+            }
 
-        if (! empty($context['transaction_id'])) {
-            $updates['transaction_reference'] = (string) $context['transaction_id'];
-        }
+            if ($status === Payment::STATUS_PAID) {
+                $updates['paid_at'] = $lockedPayment->paid_at ?? now();
+                $updates['failed_at'] = null;
+            }
 
-        if ($status === Payment::STATUS_PAID) {
-            $updates['paid_at'] = $payment->paid_at ?? now();
-            $updates['failed_at'] = null;
-        }
+            if ($status === Payment::STATUS_FAILED) {
+                $updates['failed_at'] = $lockedPayment->failed_at ?? now();
+            }
 
-        if ($status === Payment::STATUS_FAILED) {
-            $updates['failed_at'] = $payment->failed_at ?? now();
-        }
+            if ($status === Payment::STATUS_PENDING) {
+                $updates['failed_at'] = null;
+            }
 
-        if ($status === Payment::STATUS_PENDING) {
-            $updates['failed_at'] = null;
-        }
+            $lockedPayment->update($updates);
+            $lockedPayment->refresh();
 
-        $payment->update($updates);
-        $payment->refresh();
+            $order = $lockedPayment->order()->first();
+            if ($order) {
+                $this->syncOrderPaymentStatus($order);
+                $this->notifyPaymentStatusChanged($order->fresh(), $lockedPayment);
+            }
 
-        $order = $payment->order()->first();
-        if ($order) {
-            $this->syncOrderPaymentStatus($order);
-            $this->notifyPaymentStatusChanged($order, $payment);
-        }
-
-        return $payment;
+            return $lockedPayment;
+        });
     }
 
     public function syncOrderPaymentStatus(Order $order): void
     {
-        $order->refresh();
+        DB::transaction(function () use ($order) {
+            $lockedOrder = Order::query()
+                ->whereKey($order->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // Refund records are the authoritative refund ledger. Never allow a
-        // later payment sync to erase partially-refunded/refunded order state.
-        $refundTotal = round((float) $order->refunds()->sum('amount'), 2);
+            // Refund records are the authoritative refund ledger. Never allow a
+            // later payment sync to erase partially-refunded/refunded order state.
+            $refundTotal = round((float) $lockedOrder->refunds()->sum('amount'), 2);
 
-        if ($refundTotal > 0) {
-            $status = $refundTotal >= (float) $order->grand_total
-                ? Order::PAYMENT_STATUS_REFUNDED
-                : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
+            if ($refundTotal > 0) {
+                $status = $refundTotal >= (float) $lockedOrder->grand_total
+                    ? Order::PAYMENT_STATUS_REFUNDED
+                    : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
 
-            $order->update([
-                'refund_total' => $refundTotal,
+                $lockedOrder->update([
+                    'refund_total' => $refundTotal,
+                    'payment_status' => $status,
+                ]);
+
+                return;
+            }
+
+            $payments = $lockedOrder->payments()->get();
+
+            if ($payments->isEmpty()) {
+                return;
+            }
+
+            $status = match (true) {
+                $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_PAID) => Order::PAYMENT_STATUS_PAID,
+                $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_REFUNDED) => Order::PAYMENT_STATUS_REFUNDED,
+                $payments->contains(fn (Payment $payment) => in_array($payment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) => Order::PAYMENT_STATUS_PENDING,
+                $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_FAILED) => Order::PAYMENT_STATUS_FAILED,
+                default => Order::PAYMENT_STATUS_UNPAID,
+            };
+
+            $lockedOrder->update([
                 'payment_status' => $status,
             ]);
-
-            return;
-        }
-
-        $payments = $order->payments()->get();
-
-        if ($payments->isEmpty()) {
-            return;
-        }
-
-        $status = match (true) {
-            $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_PAID) => Order::PAYMENT_STATUS_PAID,
-            $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_REFUNDED) => Order::PAYMENT_STATUS_REFUNDED,
-            $payments->contains(fn (Payment $payment) => in_array($payment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) => Order::PAYMENT_STATUS_PENDING,
-            $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_FAILED) => Order::PAYMENT_STATUS_FAILED,
-            default => Order::PAYMENT_STATUS_UNPAID,
-        };
-
-        $order->update([
-            'payment_status' => $status,
-        ]);
+        });
     }
 
     public function onlineGatewayUrlForOrder(Order $order, Payment $payment): string
