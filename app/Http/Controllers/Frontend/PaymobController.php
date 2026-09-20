@@ -156,9 +156,8 @@ class PaymobController extends Controller
         try {
             $this->logInfo('Paymob callback route hit', [
                 'method' => $request->method(),
-                'query' => $request->query(),
-                'body' => $payload,
-                'full_url' => $request->fullUrl(),
+                'has_hmac' => $request->filled('hmac'),
+                'has_obj' => is_array($payload['obj'] ?? null),
                 'ip' => $request->ip(),
             ]);
 
@@ -181,7 +180,15 @@ class PaymobController extends Controller
             if ($payment && $order) {
                 $context = [
                     'transaction_id' => $result['transaction_id'] ?? $request->input('id'),
-                    'raw' => $result['data'] ?? $payload,
+                    'raw' => [
+                        'transaction_id' => $result['transaction_id'] ?? null,
+                        'paymob_order_id' => $result['paymob_order_id'] ?? null,
+                        'merchant_order_id' => $result['merchant_order_id'] ?? null,
+                        'provider_status' => $result['provider_status'] ?? null,
+                        'response_code' => $result['response_code'] ?? null,
+                        'response_message' => $result['response_message'] ?? null,
+                        'hmac_valid' => $result['hmac_valid'] ?? null,
+                    ],
                     'provider_status' => $result['provider_status'] ?? 'pending',
                     'hmac_valid' => $result['hmac_valid'] ?? null,
                     'paymob_order_id' => $result['paymob_order_id'] ?? null,
