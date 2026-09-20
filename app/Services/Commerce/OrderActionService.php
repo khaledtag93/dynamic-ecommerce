@@ -2,6 +2,7 @@
 
 namespace App\Services\Commerce;
 
+use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,7 @@ class OrderActionService
 {
     public function __construct(
         protected OrderNotificationService $orderNotificationService,
+        protected InventoryService $inventoryService,
     ) {
     }
 
@@ -35,11 +37,26 @@ class OrderActionService
             }
 
             foreach ($lockedOrder->items()->with(['product', 'variant'])->get() as $item) {
-                if ($item->variant) {
-                    $item->variant->increment('stock', (int) $item->quantity);
-                } elseif ($item->product) {
-                    $item->product->increment('quantity', (int) $item->quantity);
+                if (! $item->product) {
+                    continue;
                 }
+
+                $this->inventoryService->increase(
+                    $item->product,
+                    $item->variant,
+                    (int) $item->quantity,
+                    InventoryMovement::TYPE_REFUND_RESTOCK,
+                    [
+                        'order_id' => $lockedOrder->id,
+                        'reason' => 'Order cancellation restock',
+                        'unit_cost' => (float) ($item->unit_cost ?? 0),
+                        'expiration_date' => $item->expires_at,
+                        'meta' => [
+                            'order_number' => $lockedOrder->order_number,
+                            'cancelled_by' => $actorId,
+                        ],
+                    ]
+                );
             }
 
             $meta = $lockedOrder->meta ?? [];
