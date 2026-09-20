@@ -89,3 +89,18 @@ At `/home/u637857322/domains/tag-marketplace.com/laravel_app`:
 ### Production Composer check — 2026-09-20
 - Hostinger Composer version: `2.9.8`.
 - Composer is running under PHP `8.3.33` from `/opt/alt/php83/usr/bin/php`.
+
+
+### Production Laravel runtime check — 2026-09-20
+Hostinger production runtime currently reports:
+- Application: Tag Marketplace
+- Laravel: 10.48.29
+- PHP: 8.3.33
+- Composer: 2.9.8
+- Environment: production
+- Maintenance mode: OFF
+- APP_DEBUG/runtime debug mode: ENABLED
+
+Security/release note:
+- Debug mode being enabled in production is a release blocker and should be changed to disabled before the next production deployment.
+- Do not change it blindly mid-audit; verify the current server .env values first, then update in a controlled step and clear/rebuild config cache.
