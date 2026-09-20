@@ -79,3 +79,10 @@ The build is green, but the existing PHPUnit suite is intentionally not treated 
 - Added a feature regression test that proves assigned roles cannot be deleted and unassigned custom roles can still be removed.
 - Removed three tracked Livewire temporary uploads and one tracked product runtime upload.
 - Added explicit ignore rules for `storage/app/livewire-tmp/` and `storage/app/public/`.
+
+## 2026-09-20 — Financial race and destructive-action hardening
+- Found a concurrency gap in gateway status processing: competing callbacks could both observe a pending Payment before either write completed.
+- Wrapped gateway transitions in a database transaction and locked the Payment row before terminal-state validation and mutation.
+- Wrapped order payment-status synchronization in an Order row lock so payment/refund state reconciliation is serialized.
+- Disabled permanent Order deletion at the controller and removed the delete action from the admin UI. Cancelled orders remain retained for payment/refund/coupon/inventory/audit traceability.
+- Added feature regression coverage for paid-payment terminal behavior and permanent-order-retention policy.
