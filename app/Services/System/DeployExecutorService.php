@@ -231,8 +231,26 @@ class DeployExecutorService
             return $this->dryRunResult($action, $scriptPath, $options, $git, $readiness, $startedAt, $startedAtIso);
         }
 
+        $lockToken = (string) Str::uuid();
+
+        if (! $this->acquireLock($action, $lockToken)) {
+            $busyResult = $this->concurrentExecutionGuardResult() ?? [
+                'ok' => false,
+                'status' => 'busy',
+                'message' => __('Another deploy or rollback acquired the execution lock first.'),
+                'output' => '',
+                'exit_code' => null,
+                'ran_on' => gethostname() ?: php_uname('n'),
+            ];
+
+            $busyResult['action_mode'] = $actionMode;
+            $busyResult['git'] = $git;
+            $busyResult['readiness'] = $readiness;
+
+            return $busyResult;
+        }
+
         $command = $this->normalizeCommand($command);
-        $this->storeLock($action);
 
         try {
             $process = new Process($command, $this->getWorkspacePath(), null, null, (int) config('deploy.timeout_seconds', 900));
@@ -259,7 +277,7 @@ class DeployExecutorService
                 'started_at' => $startedAtIso,
             ], $startedAt);
         } finally {
-            $this->clearLock();
+            $this->clearLock($lockToken);
         }
     }
 
@@ -674,21 +692,56 @@ class DeployExecutorService
         return $decoded;
     }
 
-    protected function storeLock(string $action): void
+    protected function acquireLock(string $action, string $token): bool
     {
         $path = $this->lockFilePath();
         File::ensureDirectoryExists(dirname($path));
-        File::put($path, json_encode([
+
+        // Clear a genuinely stale lock before the exclusive-create attempt.
+        $this->currentLockData();
+
+        $handle = @fopen($path, 'x');
+
+        if ($handle === false) {
+            return false;
+        }
+
+        $payload = json_encode([
             'action' => $action,
+            'token' => $token,
             'created_at' => now()->toIso8601String(),
             'server_name' => gethostname() ?: php_uname('n'),
             'workspace_path' => $this->getWorkspacePath(),
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        if ($payload === false || @fwrite($handle, $payload) === false) {
+            fclose($handle);
+            @unlink($path);
+
+            return false;
+        }
+
+        fflush($handle);
+        fclose($handle);
+
+        return true;
     }
 
-    protected function clearLock(): void
+    protected function clearLock(string $token): void
     {
-        File::delete($this->lockFilePath());
+        $path = $this->lockFilePath();
+
+        if (! File::exists($path)) {
+            return;
+        }
+
+        $decoded = json_decode((string) File::get($path), true);
+
+        if (! is_array($decoded) || ! hash_equals((string) ($decoded['token'] ?? ''), $token)) {
+            return;
+        }
+
+        File::delete($path);
     }
 
     protected function lockFilePath(): string
