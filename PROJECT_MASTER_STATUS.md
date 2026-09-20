@@ -96,3 +96,8 @@ A production-like GitHub Actions build on PHP 8.2 + MySQL 8 is green for the V42
 - execute a Paymob sandbox end-to-end transaction
 - define and validate database backup/rollback alongside code rollback
 - rehearse deploy/rollback against the target server/staging environment
+
+### Additional V42 hardening — 2026-09-20
+- custom role deletion now refuses assigned roles, preventing foreign-key cascade from leaving admins in implicit legacy Super Admin state
+- permission-role deletion now has targeted automated regression coverage
+- remaining tracked Livewire temporary files and product runtime uploads were removed from Git and their runtime storage paths are ignored
