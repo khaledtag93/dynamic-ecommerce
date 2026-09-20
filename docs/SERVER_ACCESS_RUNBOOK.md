@@ -148,3 +148,9 @@ Security/release note:
 - It boots `../laravel_app/bootstrap/app.php`.
 - Therefore the live webroot is explicitly wired to the sibling `laravel_app` directory.
 - Any rehearsal must use a separate directory and must not repoint `public_html/index.php` until the release gate is approved.
+
+
+### Production health check after hardening — 2026-09-20
+- After setting `APP_DEBUG=false`, rebuilding config cache, and tightening `.env` permissions, the live site returned `HTTP 200` from `https://tag-marketplace.com`.
+- Current production remains healthy after the server-side safety fixes.
+- Next phase: prepare a separate V42 rehearsal directory; do not repoint `public_html` or run V42 migrations yet.
