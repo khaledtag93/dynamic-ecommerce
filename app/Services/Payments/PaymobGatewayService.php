@@ -795,7 +795,11 @@ class PaymobGatewayService
                 'paymob_order_id' => $identifiers['paymob_order_id'],
                 'merchant_order_id' => $identifiers['merchant_order_id'],
                 'hmac_valid' => $hmacValid,
-                'data' => $payload,
+                'data' => [
+                    'keys' => array_slice(array_keys($payload), 0, 30),
+                    'has_obj' => is_array($payload['obj'] ?? null),
+                    'has_hmac' => ! empty($payload['hmac']),
+                ],
             ];
         }
 
@@ -884,7 +888,11 @@ class PaymobGatewayService
             'response_code' => $responseCode,
             'response_message' => $responseMessage,
             'hmac_valid' => $hmacValid,
-            'data' => $payload,
+            'data' => [
+                    'keys' => array_slice(array_keys($payload), 0, 30),
+                    'has_obj' => is_array($payload['obj'] ?? null),
+                    'has_hmac' => ! empty($payload['hmac']),
+                ],
         ];
     }
 }
