@@ -11,10 +11,11 @@ This project uses a safe one-click deploy flow for Hostinger.
 
 ## What `deploy.sh` V2 does
 
-- Creates a backup before every deploy
+- Creates a private file backup before every deploy; the app snapshot explicitly excludes `.env`
 - Fetches the latest code from GitHub
 - Restores the server `.env` after `git reset --hard`
 - Runs `composer install`
+- Creates a private MySQL snapshot with `database:snapshot` immediately before migrations
 - Runs `php artisan migrate --force`
 - Clears Laravel caches and rebuilds config cache
 - Syncs `laravel_app/public` to `public_html`
@@ -22,8 +23,8 @@ This project uses a safe one-click deploy flow for Hostinger.
 - Keeps `public_html/index.php` untouched
 - Keeps `public_html/.htaccess` untouched
 - Runs an HTTP health check after deploy
-- Automatically rolls back code/public files if deploy fails after backup
-- Writes a deploy log file
+- Automatically rolls back code/public files if deploy fails after backup; database restore remains explicit/manual
+- Writes a private deploy log file and uses `umask 077` for deploy/rollback-created sensitive files
 - Cleans old backups automatically and keeps the latest 10 by default
 
 ## Important Rules
@@ -32,7 +33,8 @@ This project uses a safe one-click deploy flow for Hostinger.
 - Do not run `npm install` or `npm run build` on production
 - Always push to GitHub before running deploy on the server
 - Keep `.env` only on the server during active development
-- Rollback restores code and public files only, not the database state. Database backup/rollback must be validated before Production deployment.
+- Rollback restores code and public files only, not the database state. The pre-migration SQL snapshot is retained for an explicit recovery decision.
+- Manual rollback runs in maintenance mode and must pass the HTTPS health check before it is considered successful.
 
 ## Standard Deploy Steps
 
@@ -82,6 +84,9 @@ HEALTHCHECK_URL="https://tag-marketplace.com" ./deploy.sh
 ```
 
 ## Manual Rollback
+
+The rollback script preserves the current server `.env`, enters Laravel maintenance mode during restoration, rebuilds caches, brings the app back up, and runs the same HTTPS health-check standard before reporting success. If the health check fails, the application is returned to maintenance mode for investigation.
+
 
 ### Show backups
 
