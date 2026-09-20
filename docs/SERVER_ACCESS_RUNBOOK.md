@@ -141,3 +141,10 @@ Security/release note:
 - Visible entries include `index.php`, `.htaccess`, `build/`, `assets/`, `admin/`, `storage/`, and `uploads/`.
 - The current deployment uses a split layout: Laravel application code under `laravel_app`, with web-facing public assets under `public_html`.
 - Next check: inspect `public_html/index.php` to confirm exactly which Laravel application path it boots.
+
+
+### Production bootstrap linkage confirmed — 2026-09-20
+- `public_html/index.php` requires `../laravel_app/vendor/autoload.php`.
+- It boots `../laravel_app/bootstrap/app.php`.
+- Therefore the live webroot is explicitly wired to the sibling `laravel_app` directory.
+- Any rehearsal must use a separate directory and must not repoint `public_html/index.php` until the release gate is approved.
