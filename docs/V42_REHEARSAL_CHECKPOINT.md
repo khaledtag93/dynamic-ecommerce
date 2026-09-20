@@ -137,3 +137,12 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - The V42 QAS/Staging URL is now live and ready for browser smoke testing:
   - `https://v42.tag-marketplace.com`
 - Current next step: open QAS in a browser and start functional smoke tests before any production promotion.
+
+
+## Browser smoke gate passed — 2026-09-20
+
+- Opened `https://v42.tag-marketplace.com` successfully in a desktop browser.
+- The V42 storefront rendered normally over HTTPS.
+- Header, search, language controls, login/cart actions, and home hero content were visibly rendered.
+- QAS/Staging is now confirmed usable interactively in a browser.
+- Next functional smoke step: authentication/admin access, then cart/checkout/order flows.
