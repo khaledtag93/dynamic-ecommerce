@@ -86,7 +86,7 @@ if [ ! -f "$APP_DIR/.env" ]; then
     exit 1
 fi
 
-CURRENT_ENV_TEMP="/tmp/tag_marketplace_env_$.backup"
+CURRENT_ENV_TEMP="/tmp/tag_marketplace_env_$$.backup"
 cp "$APP_DIR/.env" "$CURRENT_ENV_TEMP"
 chmod 600 "$CURRENT_ENV_TEMP"
 
