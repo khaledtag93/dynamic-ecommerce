@@ -128,6 +128,39 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
     }
 
+    public function test_cod_completion_marks_payment_ledger_paid(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PENDING);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications);
+
+        $service->updateStatus($order, Order::STATUS_PROCESSING);
+        $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
+
+        $this->assertSame(Order::STATUS_COMPLETED, $order->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+        $this->assertNotNull($payment->fresh()->paid_at);
+    }
+
+    public function test_cancellation_marks_pending_payment_ledger_failed(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PENDING);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications);
+
+        $service->cancel($order, 'cancelled for test');
+
+        $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_FAILED, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_FAILED, $payment->fresh()->status);
+        $this->assertNotNull($payment->fresh()->failed_at);
+    }
+
     public function test_manual_payment_refund_cannot_bypass_order_refund_ledger(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
