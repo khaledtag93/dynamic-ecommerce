@@ -240,3 +240,10 @@ Security/release note:
 - Changed both to mode `600`.
 - Verified owner remains `u637857322`.
 - This removes group/other read access from files containing production secrets.
+
+
+### Production public webroot inspection — 2026-09-20
+- `/home/u637857322/domains/tag-marketplace.com/public_html` exists and contains the deployed public assets.
+- Visible entries include `index.php`, `.htaccess`, `build/`, `assets/`, `admin/`, `storage/`, and `uploads/`.
+- The current deployment uses a split layout: Laravel application code under `laravel_app`, with web-facing public assets under `public_html`.
+- Next check: inspect `public_html/index.php` to confirm exactly which Laravel application path it boots.
