@@ -1,6 +1,5 @@
 <?php
 
-use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +13,15 @@ return new class extends Migration
         }
 
         DB::table('website_settings')
-            ->whereIn('key', StoreSettingsService::sensitiveSettingKeys())
+            ->whereIn('key', [
+                'payment_gateway_secret_key',
+                'payment_gateway_webhook_secret',
+                'paymob_api_key',
+                'paymob_hmac_secret',
+                'whatsapp_meta_access_token',
+                'whatsapp_meta_app_secret',
+                'whatsapp_meta_verify_token',
+            ])
             ->delete();
     }
 
