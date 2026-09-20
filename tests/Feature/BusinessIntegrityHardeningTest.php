@@ -7,6 +7,7 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\Commerce\CouponService;
 use App\Services\Commerce\InventoryService;
 use App\Services\Commerce\OrderActionService;
@@ -107,15 +108,16 @@ class BusinessIntegrityHardeningTest extends TestCase
     public function test_refund_balance_is_rechecked_and_cannot_be_overrun(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $actor = User::factory()->create();
 
         $notifications = Mockery::mock(OrderNotificationService::class);
         $notifications->shouldReceive('notifyRefundRecorded')->once();
 
         $service = new OrderActionService($notifications);
-        $service->refund($order, 70, 'partial refund', null, 1);
+        $service->refund($order, 70, 'partial refund', null, $actor->id);
 
         try {
-            $service->refund($order->fresh(), 40, 'would exceed balance', null, 1);
+            $service->refund($order->fresh(), 40, 'would exceed balance', null, $actor->id);
             $this->fail('Refunding beyond the remaining balance should have been rejected.');
         } catch (ValidationException) {
             // Expected.
