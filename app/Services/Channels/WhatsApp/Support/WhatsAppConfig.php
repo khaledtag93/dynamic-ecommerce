@@ -120,6 +120,10 @@ class WhatsAppConfig
     {
         $configKey = 'whatsapp.meta.'.$key;
 
+        if (in_array($key, ['access_token', 'app_secret', 'verify_token'], true)) {
+            return config($configKey, $default);
+        }
+
         return $this->value('whatsapp_meta_'.$key, config($configKey, $default));
     }
 
