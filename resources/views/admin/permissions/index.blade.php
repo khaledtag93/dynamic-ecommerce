@@ -127,6 +127,7 @@
                 @forelse($admins as $admin)
                     @php
                         $currentRole = $admin->roles->first();
+                        $isLegacyFallback = ! $currentRole && $admin->isLegacyAdmin();
                         $resolvedPermissions = collect($admin->resolved_permissions ?? []);
                     @endphp
                     <div class="p-3 rounded-4 border">
@@ -134,16 +135,20 @@
                             <div>
                                 <div class="fw-bold">{{ $admin->name }}</div>
                                 <div class="text-muted small">{{ $admin->email }}</div>
-                                <div class="text-muted small mt-1">{{ __('Current role') }}: <strong>{{ $admin->primaryRoleName() }}</strong></div>
+                                <div class="text-muted small mt-1">
+                                    {{ __('Current role') }}: <strong>{{ $admin->primaryRoleName() }}</strong>
+                                    @if($isLegacyFallback)
+                                        <span class="badge rounded-pill text-bg-warning ms-1">{{ __('Legacy fallback') }}</span>
+                                    @endif
+                                </div>
                                 <div class="text-muted small">{{ __('Effective access') }}: {{ $resolvedPermissions->count() ?: __('Full legacy fallback') }}</div>
                             </div>
                             <form method="POST" action="{{ route('admin.permissions.users.role', $admin) }}" class="d-flex gap-2 align-items-center flex-wrap">
                                 @csrf
                                 @method('PATCH')
-                                <select name="role_id" class="form-select form-select-sm" style="min-width: 220px;">
-                                    <option value="">{{ __('Super Admin (legacy fallback)') }}</option>
+                                <select name="role_id" class="form-select form-select-sm" style="min-width: 220px;" required>
                                     @foreach($roles as $role)
-                                        <option value="{{ $role->id }}" @selected(optional($admin->roles->first())->id === $role->id)>{{ $role->name }}</option>
+                                        <option value="{{ $role->id }}" @selected(optional($currentRole)->id === $role->id || ($isLegacyFallback && $role->slug === 'super_admin'))>{{ $role->name }}</option>
                                     @endforeach
                                 </select>
                                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Save') }}</button>
