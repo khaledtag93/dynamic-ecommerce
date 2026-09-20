@@ -42,9 +42,18 @@ class CartService
             ->get();
     }
 
-    public function summary(): array
+    public function itemsForCheckout(): \Illuminate\Support\Collection
     {
-        $items = $this->items();
+        return $this->baseQuery()
+            ->lockForUpdate()
+            ->with(['product', 'variant'])
+            ->orderBy('id')
+            ->get();
+    }
+
+    public function summary(?\Illuminate\Support\Collection $items = null): array
+    {
+        $items ??= $this->items();
         $subtotal = (float) $items->sum(fn ($item) => $item->line_total);
         $count = (int) $items->sum('quantity');
         $shipping = 0.00;
