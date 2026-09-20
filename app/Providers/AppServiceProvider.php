@@ -58,12 +58,38 @@ class AppServiceProvider extends ServiceProvider
                     $settings = app(StoreSettingsService::class)->all();
                 }
 
-                if (! LocalSafeBoot::shouldSkipBootDatabaseTouches()) {
-                    if (in_array($view->getName(), ['layouts.app']) || str_starts_with($view->getName(), 'frontend.') || str_starts_with($view->getName(), 'auth.')) {
-                        $layoutCategories = Category::query()->where('status', false)->latest('id')->take(8)->get();
-                        $layoutCartCount = app(CartService::class)->count();
+                if (in_array($view->getName(), ['layouts.app']) || str_starts_with($view->getName(), 'frontend.') || str_starts_with($view->getName(), 'auth.')) {
+                    // Customer navigation must keep working in local development too.
+                    // LOCAL_SAFE_BOOT should not hide real storefront categories from the header/footer.
+                    if (Schema::hasTable('categories')) {
+                        try {
+                            $layoutCategories = Category::query()
+                                ->visibleOnStorefront()
+                                ->with('translations')
+                                ->latest('id')
+                                ->take(14)
+                                ->get();
+
+                            if ($layoutCategories->isEmpty()) {
+                                $layoutCategories = Category::query()
+                                    ->with('translations')
+                                    ->latest('id')
+                                    ->take(14)
+                                    ->get();
+                            }
+                        } catch (\Throwable $categoryException) {
+                            $layoutCategories = collect();
+                        }
                     }
 
+                    try {
+                        $layoutCartCount = app(CartService::class)->count();
+                    } catch (\Throwable $cartException) {
+                        $layoutCartCount = 0;
+                    }
+                }
+
+                if (! LocalSafeBoot::shouldSkipBootDatabaseTouches()) {
                     $user = Auth::user();
                     if ($user && Schema::hasTable('notifications')) {
                         $notificationCount = $user->unreadNotifications()->count();

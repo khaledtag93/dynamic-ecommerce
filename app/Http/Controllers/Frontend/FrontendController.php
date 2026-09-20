@@ -37,7 +37,7 @@ class FrontendController extends Controller
         $onSaleLimit = $this->intSetting($storeSettings, 'home_on_sale_products_limit', 8);
 
         $categories = Category::query()
-            ->where('status', false)
+            ->visibleOnStorefront()
             ->latest('id')
             ->take($categoryLimit)
             ->get();
@@ -122,7 +122,7 @@ class FrontendController extends Controller
     {
         $category = Category::query()
             ->whereKey($id)
-            ->where('status', false)
+            ->visibleOnStorefront()
             ->firstOrFail();
 
         $allowedSorts = ['latest', 'price_low_high', 'price_high_low', 'name_az'];
@@ -236,7 +236,7 @@ class FrontendController extends Controller
 
         if ($source === 'manual' && ! empty($ids)) {
             $categories = Category::query()
-                ->where('status', false)
+                ->visibleOnStorefront()
                 ->whereIn('id', $ids)
                 ->get()
                 ->keyBy('id');
@@ -249,7 +249,7 @@ class FrontendController extends Controller
         }
 
         return Category::query()
-            ->where('status', false)
+            ->visibleOnStorefront()
             ->latest('id')
             ->take($limit)
             ->get();

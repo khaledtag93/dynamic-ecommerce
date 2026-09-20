@@ -6,6 +6,7 @@ use App\Support\MediaPath;
 use App\Support\TranslatableModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
@@ -34,6 +35,21 @@ class Category extends Model
         'image_url',
         'image_relative_path',
     ];
+
+
+    /**
+     * Customer-facing visibility rule.
+     *
+     * The legacy categories table stores visibility as status=0 for visible
+     * and status=1 for hidden. Keeping this scope central prevents future
+     * storefront/admin mismatches.
+     */
+    public function scopeVisibleOnStorefront(Builder $query): Builder
+    {
+        return $query->where(function (Builder $visibilityQuery) {
+            $visibilityQuery->where('status', 0)->orWhereNull('status');
+        });
+    }
 
     public function translations(): HasMany
     {

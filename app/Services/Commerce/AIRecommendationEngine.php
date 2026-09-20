@@ -183,7 +183,7 @@ class AIRecommendationEngine
         $products = collect($result['products'])
             ->map(function (Product $product) {
                 $product->setAttribute('ai_reason_chip', __('Fast add'));
-                $product->setAttribute('ai_reason_detail', __('Chosen for late-stage checkout because it fits the current basket without adding too much decision friction.'));
+                $product->setAttribute('ai_reason_detail', __('Useful add-on that fits the current order.'));
                 $product->setAttribute('ai_confidence', min(99, (int) ($product->ai_confidence ?? 84) + 4));
                 return $product;
             })
@@ -282,9 +282,9 @@ class AIRecommendationEngine
 
                 $product->setAttribute('ai_score', $score);
                 $product->setAttribute('ai_confidence', $confidence);
-                $product->setAttribute('ai_reason_chip', $topReason['chip'] ?? __('Smart pick'));
+                $product->setAttribute('ai_reason_chip', $topReason['chip'] ?? __('Recommended'));
                 $product->setAttribute('ai_reason', $this->headlineForContext($contextName, $topReason['chip'] ?? null));
-                $product->setAttribute('ai_reason_detail', $topReason['text'] ?? __('This product scored well across intent, compatibility, and conversion readiness signals.'));
+                $product->setAttribute('ai_reason_detail', $topReason['text'] ?? __('Recommended because it is relevant, available, and useful for this shopping path.'));
 
                 return $product;
             })
@@ -371,9 +371,9 @@ class AIRecommendationEngine
     {
         return match ($context) {
             'product' => __('AI matched this to your product journey'),
-            'cart' => __('AI picked this for your basket'),
+            'cart' => __('Recommended for your cart'),
             'checkout' => __('AI chose this as a final add'),
-            default => __('AI ranked this for you'),
+            default => __('Recommended for you'),
         };
     }
 }
