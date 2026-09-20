@@ -262,3 +262,10 @@ Security/release note:
   - `2026_09_20_000000_normalize_growth_offer_learning_index.php`
   - `2026_09_20_235900_scrub_plaintext_provider_secrets.php`
 - These must only be applied during the controlled V42 deployment/rehearsal after a database snapshot; do not run them on the current production snapshot now.
+
+
+### Production env permission hardening — 2026-09-20
+- Confirmed production `.env` and the temporary debug-fix backup were mode `644`.
+- Changed both to mode `600`.
+- Verified owner remains `u637857322`.
+- This removes group/other read access from files containing production secrets.
