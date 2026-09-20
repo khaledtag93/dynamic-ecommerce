@@ -125,3 +125,15 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - Never touch production `public_html/index.php`, production DB, or `main` merely to test V42.
 - Prefer read-only checks before mutations.
 - Keep production health intact while V42 is exercised independently.
+
+
+## SSL / HTTPS gate passed — 2026-09-20
+
+- Hostinger Lifetime SSL for `v42.tag-marketplace.com` became Active.
+- Normal HTTPS request now succeeds:
+  - `curl -I -L --max-time 20 https://v42.tag-marketplace.com`
+  - result: `HTTP/2 200`
+- HTTPS response confirms secure Laravel cookies and Hostinger/LiteSpeed serving the V42 staging application.
+- The V42 QAS/Staging URL is now live and ready for browser smoke testing:
+  - `https://v42.tag-marketplace.com`
+- Current next step: open QAS in a browser and start functional smoke tests before any production promotion.
