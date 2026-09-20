@@ -239,3 +239,10 @@ Hostinger production runtime currently reports:
 Security/release note:
 - Debug mode being enabled in production is a release blocker and should be changed to disabled before the next production deployment.
 - Do not change it blindly mid-audit; verify the current server .env values first, then update in a controlled step and clear/rebuild config cache.
+
+
+### Production debug configuration fix — 2026-09-20
+- Confirmed production `.env` had `APP_DEBUG=true`.
+- Created a server-side backup: `.env.backup_before_debug_fix`.
+- Updated production `.env` to `APP_DEBUG=false`.
+- Next step is to rebuild Laravel config cache and verify runtime reports Debug Mode disabled.
