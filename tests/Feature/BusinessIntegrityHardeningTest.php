@@ -80,6 +80,7 @@ class BusinessIntegrityHardeningTest extends TestCase
     public function test_repeated_cancellation_does_not_restore_stock_twice(): void
     {
         $product = $this->makeProduct(0);
+        $product->forceFill(['cost_price' => 35])->save();
         $order = $this->makeOrder(Order::PAYMENT_STATUS_UNPAID, 100);
 
         $order->items()->create([
@@ -103,6 +104,7 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
         $this->assertSame(2, (int) $product->fresh()->quantity);
+        $this->assertSame(35.0, (float) $product->fresh()->cost_price);
         $this->assertDatabaseCount('inventory_movements', 1);
         $this->assertDatabaseHas('inventory_movements', [
             'order_id' => $order->id,
@@ -110,6 +112,7 @@ class BusinessIntegrityHardeningTest extends TestCase
             'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
             'quantity_change' => 2,
             'balance_after' => 2,
+            'unit_cost' => 20,
         ]);
     }
 
