@@ -92,10 +92,10 @@ A production-like GitHub Actions build on PHP 8.2 + MySQL 8 is green for the V42
 
 ### Still required before Production
 - rotate credentials that were historically committed
-- add meaningful automated regression coverage for checkout/stock/coupons/refunds/payments/permissions
-- execute a Paymob sandbox end-to-end transaction
-- define and validate database backup/rollback alongside code rollback
-- rehearse deploy/rollback against the target server/staging environment
+- execute a Paymob sandbox/test end-to-end transaction and negative-path callback checks
+- rehearse deploy/rollback against the target server or staging-like environment
+- validate the explicit database recovery procedure using the pre-migration SQL snapshot
+- run final smoke checks, then promote V42 to `main`
 
 ### Additional V42 hardening — 2026-09-20
 - custom role deletion now refuses assigned roles, preventing foreign-key cascade from leaving admins in implicit legacy Super Admin state
@@ -107,3 +107,19 @@ A production-like GitHub Actions build on PHP 8.2 + MySQL 8 is green for the V42
 - order payment-state synchronization is row-locked
 - permanent order hard-delete is disabled to retain financial and inventory audit history
 - targeted tests now cover terminal paid state, retained cancelled orders, and assigned-role deletion protection
+
+
+### Final V42 code-hardening checkpoint — 2026-09-20
+Additional closures verified by green CI:
+- full-refund Payment ledger synchronization and terminal refunded state
+- consistent Order → Payment lock ordering for payment/refund concurrency
+- checkout transaction rollback regression coverage for late failures
+- cancellation inventory-restock audit movements without changing current product cost valuation
+- correct Profit Margin semantics in Cost Calculator (profit / selling price)
+- deploy backup secret minimization (`.env` excluded from app snapshot; private file creation)
+- manual rollback maintenance mode + HTTPS health verification
+- Paymob callback raw-payload/full-URL log minimization
+
+The latest production-like GitHub Actions run for code head `b9a46a6` passed the complete pipeline on PHP 8.2 + MySQL 8, including the expanded PHPUnit regression suite and frontend production build.
+
+Historical Git inspection confirms that `.env` existed in the older repository history before the hardening removal commit. Credential rotation therefore remains a mandatory P0 release gate even though V42 no longer tracks the file.
