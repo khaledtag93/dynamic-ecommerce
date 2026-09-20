@@ -144,3 +144,11 @@ Old dashboard -> Developers -> Iframes shows two Test-mode IFrames:
 - IFrame `1024107` — `My new card Iframe`
 
 This confirms the account still retains legacy checkout artifacts even though both old and new Payment Integrations pages render no integration rows. The next diagnostic is to open/edit IFrame `1024107` and inspect which payment integration(s) it is linked to. Do not create another MIGS/EGP Test integration while Paymob reports that one already exists.
+
+
+### Paymob iframe edit inspection — 2026-09-20
+- Old dashboard IFrame `1024107` ("My new card Iframe") was opened in edit mode.
+- The edit screen exposes only presentation/customization fields (Name, Description, HTML, JavaScript, CSS).
+- No Payment Integration ID or MIGS linkage is exposed from the IFrame editor.
+- Conclusion: the hidden MIGS/EGP Test integration cannot be recovered from the IFrame UI. Since both Payment Integrations pages are empty while creation is blocked as a duplicate, this is now treated as a Paymob account-side hidden/orphan integration state.
+- Next action: Paymob support/account manager should reveal, restore, or reset the Test MIGS/EGP integration. Do not create/duplicate/delete IFrames as a workaround.
