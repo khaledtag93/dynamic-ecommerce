@@ -12,8 +12,9 @@ class ServerPreflightScriptTest extends TestCase
 
         $this->assertIsString($script);
         $this->assertStringContainsString('umask 077', $script);
-        $this->assertStringContainsString('/home/u637857322/domains/tag-marketplace.com/laravel_app', $script);
-        $this->assertStringContainsString('/home/u637857322/domains/tag-marketplace.com/public_html', $script);
+        $this->assertStringContainsString('BASE_DIR="/home/u637857322/domains/tag-marketplace.com"', $script);
+        $this->assertStringContainsString('APP_DIR="$BASE_DIR/laravel_app"', $script);
+        $this->assertStringContainsString('PUBLIC_DIR="$BASE_DIR/public_html"', $script);
         $this->assertStringContainsString('mysqldump', $script);
         $this->assertStringContainsString('rsync', $script);
         $this->assertStringContainsString('pdo_mysql', $script);
