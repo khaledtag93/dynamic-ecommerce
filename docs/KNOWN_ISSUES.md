@@ -79,3 +79,9 @@
 - permissions UI still exposed an empty legacy fallback role option even though the controller rejected it — **removed**
 - four runtime/user-upload files remained tracked under `storage/app/livewire-tmp` and `storage/app/public` — **removed and paths explicitly ignored**
 - added targeted regression coverage for assigned custom-role deletion
+
+## Financial/destructive-action issues closed (2026-09-20)
+- simultaneous gateway callbacks could both read a pending payment and race paid vs failed writes — **fixed with transactional Payment row locking**
+- order payment-state synchronization could interleave with other financial mutations — **serialized on the Order row**
+- permanent deletion of a cancelled order could cascade-delete payments/refunds and sever inventory history — **hard deletion disabled in backend and removed from the admin UI**
+- automated regression tests added for terminal paid state and retained cancelled orders
