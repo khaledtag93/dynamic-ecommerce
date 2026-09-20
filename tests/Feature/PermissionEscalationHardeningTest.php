@@ -14,11 +14,13 @@ class PermissionEscalationHardeningTest extends TestCase
 
     public function test_permissions_manager_who_is_not_super_admin_cannot_change_staff_roles(): void
     {
-        $permission = Permission::query()->create([
-            'name' => 'Manage permissions',
-            'slug' => 'permissions.manage',
-            'group' => 'permissions',
-        ]);
+        $permission = Permission::query()->firstOrCreate(
+            ['slug' => 'permissions.manage'],
+            [
+                'name' => 'Manage permissions',
+                'group' => 'permissions',
+            ]
+        );
 
         $operatorRole = Role::query()->create([
             'name' => 'Permission Manager',
