@@ -171,3 +171,8 @@ At `/home/u637857322/domains/tag-marketplace.com/laravel_app`:
 - Most application files are dated around 2026-04-17, while `.env` is server-local.
 - Do not convert this live production directory into a Git worktree in place before a controlled rehearsal/backup plan.
 - Preferred next step: inspect server runtime/tooling and free space, then prepare a separate V42 rehearsal directory so production remains untouched.
+
+
+### Production runtime check — 2026-09-20
+- Hostinger CLI PHP version: `PHP 8.3.33` (NTS) with Zend OPcache.
+- This satisfies the application's Composer requirement (`php ^8.1`) at the runtime version level.
