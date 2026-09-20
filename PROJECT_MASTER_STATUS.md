@@ -260,3 +260,10 @@ Security/release note:
 - After setting `APP_DEBUG=false`, rebuilding config cache, and tightening `.env` permissions, the live site returned `HTTP 200` from `https://tag-marketplace.com`.
 - Current production remains healthy after the server-side safety fixes.
 - Next phase: prepare a separate V42 rehearsal directory; do not repoint `public_html` or run V42 migrations yet.
+
+
+### Production Node.js check — 2026-09-20
+- `node` is not installed/available in the Hostinger SSH shell.
+- This is not a production deploy blocker for the current V42 flow because frontend assets are built in CI and `public/build` is committed/deployed with the application.
+- The hardened `deploy.sh` does not require Node/npm on production.
+- Do not install Node on the live server solely for deployment unless the deployment strategy changes.
