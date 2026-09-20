@@ -6,10 +6,11 @@
 - Preserve system stability before adding new functionality.
 - Refactors must be careful, incremental, and validated.
 
-### 2) Full Delivery as ZIP
-- Deliver work as a full project ZIP.
-- Do not rely on copy/paste.
-- Goal: avoid missing files, wrong placement, and merge mistakes.
+### 2) Git Is the Source of Truth
+- Starting with V42, the canonical project state lives in the Git repository.
+- Do not create a new project folder for every version as the normal workflow.
+- Use commits, branches, tags, and releases for history and rollback.
+- ZIP packages are optional backups/handoffs, not the development source of truth.
 
 ### 3) Multi-language (Arabic / English)
 - Every new feature must support Arabic and English.
@@ -32,9 +33,9 @@
 - Think about speed from the start.
 
 ### 7) Growth-first Mindset
-- For each feature, ask whether it improves conversion or revenue.
+- For each feature, ask whether it improves conversion, revenue, operations, reliability, or maintainability.
 - Do not add features for appearance only.
-- Prioritize business impact.
+- Prioritize measurable business impact.
 
 ### 8) Step-by-step Phases
 - Work phase by phase.
@@ -52,7 +53,7 @@
 - Confirm stability before progressing.
 
 ### 11) Admin Control
-- Any system such as growth, messaging, or automation should support ON/OFF control.
+- Any system such as growth, messaging, or automation should support ON/OFF control where operationally appropriate.
 - Admin should be able to enable or disable safely.
 
 ### 12) Modular System
@@ -63,11 +64,19 @@
 - Design features with future API/mobile support in mind.
 - Keep long-term mobile expansion possible.
 
-### 14) No Memory Dependency
-- Do not depend on chat memory.
-- Important ideas and status must be stored inside the project docs.
-- The master plan is the main reference.
+### 14) Documentation Is Part of Done
+- Important status and decisions must be stored inside the project docs.
+- Update `PROJECT_MASTER_STATUS.md` and `CURRENT_PHASE.md` with meaningful project changes.
+- Do not depend on chat history as the only project record.
 
-### 15) Environment Policy
-- During active development ZIP deliveries, keep the existing `.env` file.
-- During public/release packaging, replace `.env` with `.env.example` after a final security pass.
+### 15) Environment & Secrets Policy
+- `.env`, private keys, passwords, API secrets, and production credentials must never be committed to Git.
+- Keep real values only in local/server environments or approved secret stores such as GitHub Actions Secrets.
+- `.env.example` and `.env.production.example` contain names/placeholders only.
+- Any credential that has been exposed in public Git history must be rotated.
+
+### 16) Production Change Control
+- Production deploys must start from a known Git commit on `main`.
+- Create/confirm a recoverable backup before production changes.
+- Verify the application after deploy.
+- Use rollback when verification fails; database migrations/data changes need their own rollback plan.
