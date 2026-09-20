@@ -180,13 +180,6 @@
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                         <a href="{{ route('admin.orders.show', $order) }}" class="btn-table-icon btn-view" title="{{ __('View order') }}"><i class="mdi mdi-eye-outline"></i></a>
-                                        @if($order->status === \App\Models\Order::STATUS_CANCELLED)
-                                            <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" data-submit-loading data-confirm-message="{{ __('Delete this cancelled order permanently?') }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn-table-icon btn-delete" title="{{ __('Delete order') }}" data-loading-text="{{ __('Deleting...') }}"><i class="mdi mdi-trash-can-outline"></i></button>
-                                            </form>
-                                        @endif
                                     </div>
                                 </td>
                             </tr>
