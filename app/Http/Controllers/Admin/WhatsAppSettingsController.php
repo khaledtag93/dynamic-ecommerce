@@ -91,9 +91,6 @@ class WhatsAppSettingsController extends Controller
             'whatsapp_meta_graph_version' => ['required', 'string', 'max:30'],
             'whatsapp_meta_phone_number_id' => ['nullable', 'string', 'max:100'],
             'whatsapp_meta_business_account_id' => ['nullable', 'string', 'max:100'],
-            'whatsapp_meta_access_token' => ['nullable', 'string', 'max:5000'],
-            'whatsapp_meta_verify_token' => ['nullable', 'string', 'max:255'],
-            'whatsapp_meta_app_secret' => ['nullable', 'string', 'max:255'],
             'whatsapp_meta_timeout' => ['nullable', 'integer', 'min:5', 'max:120'],
 
             'whatsapp_template_order_confirmation_name_ar' => ['nullable', 'string', 'max:191'],
