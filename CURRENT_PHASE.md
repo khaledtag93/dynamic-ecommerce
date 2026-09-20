@@ -128,3 +128,11 @@ The remaining blockers are now operational/external rather than known code-harde
 3. Rehearse deploy on the target server/staging-like environment, confirm pre-migration database snapshot creation, and rehearse file rollback plus explicit database recovery procedure.
 4. Run final production smoke checks, then promote V42 to `main`.
 5. Deploy Production only after the above gate is green.
+
+
+### Paymob account discovery — 2026-09-20
+- New dashboard, Test mode: Payment Integrations table is empty.
+- Old dashboard, Test mode: Developers -> Payment Integrations is also empty.
+- Attempting to create a new Non-Shopify / MIGS / EGP Test integration returns: "Cannot create more than 1 test integration with the same gateway type and currency."
+- This means the account backend recognizes an existing MIGS/EGP Test integration even though neither dashboard currently renders it.
+- Next diagnostic: inspect Developers -> Iframes in the old dashboard for the previously used iframe/integration linkage. If no legacy artifact is visible there either, treat this as a Paymob account-side integration visibility/state issue and open a support case rather than creating another integration.
