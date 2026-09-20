@@ -45,3 +45,7 @@ Thumbs.db
 /database/*.sqlite
 *.bak
 /database/*.sqlite-*
+!/storage/framework/cache/data/.gitkeep
+!/storage/framework/sessions/.gitkeep
+!/storage/framework/views/.gitkeep
+!/storage/logs/.gitkeep
