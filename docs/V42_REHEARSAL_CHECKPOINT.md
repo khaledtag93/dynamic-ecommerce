@@ -183,3 +183,23 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - QAS health check returned HTTP 200.
 - Browser verification confirmed the new text was visible on `https://v42.tag-marketplace.com`.
 - Therefore the routine flow is now validated: code change -> GitHub -> CI green -> one-command QAS deploy -> browser verification.
+
+
+## Handoff / next chat starting point — 2026-09-21
+
+- QAS one-command flow is validated and working.
+- Current browser-validated QAS code commit: `9a51f50`.
+- The latest branch head may be newer because checkpoint/documentation commits were added after the tested code commit. Do not confuse documentation-only head changes with the browser-tested application commit.
+- Owner/Super Admin product rule is recorded as a later P0 hardening item: one explicit owner Super Admin only; all other staff admins must have limited assigned roles and must never gain Super Admin through the legacy fallback.
+- Immediate next objective: build the Production deployment workflow with the same ease as QAS, but with stronger gates.
+- Production promotion target design:
+  - promote the exact QAS-approved application commit;
+  - create application/public backups first;
+  - create a production database snapshot before migrations;
+  - run pending migrations only (never `migrate:fresh`);
+  - perform HTTPS health checks;
+  - keep rollback ready;
+  - do not touch Production until the user explicitly says to promote.
+- Important production constraint: current live `laravel_app` is not a Git worktree, so the existing Git-based `deploy.sh` cannot be used directly against the live snapshot. The next session must first design a safe release/checkout layout or equivalent transition rather than converting the live app in place casually.
+- Preferred user workflow remains: assistant changes code and pushes Git/QAS; user validates QAS; only after explicit approval does the exact approved version move to Production.
+- Interaction preference for server work: one small command at a time, explain what it does, wait for output, then continue.
