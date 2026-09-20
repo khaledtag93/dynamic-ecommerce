@@ -205,3 +205,8 @@ At `/home/u637857322/domains/tag-marketplace.com/laravel_app`:
 ### Production runtime check — 2026-09-20
 - Hostinger CLI PHP version: `PHP 8.3.33` (NTS) with Zend OPcache.
 - This satisfies the application's Composer requirement (`php ^8.1`) at the runtime version level.
+
+
+### Production Composer check — 2026-09-20
+- Hostinger Composer version: `2.9.8`.
+- Composer is running under PHP `8.3.33` from `/opt/alt/php83/usr/bin/php`.
