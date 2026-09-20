@@ -28,7 +28,7 @@
     $overviewOpen = $isRoute('admin.dashboard', 'admin.analytics.*', 'admin.growth.*');
     $catalogOpen = $isRoute('admin.categories.*', 'admin.products.*', 'admin.attributes.*', 'admin.brands.*');
     $operationsOpen = $isRoute('admin.orders.*', 'admin.customers.*', 'admin.deliveries.*', 'admin.payments.*');
-    $inventoryOpen = $isRoute('admin.purchases.*', 'admin.inventory.*', 'admin.suppliers.*');
+    $inventoryOpen = $isRoute('admin.purchases.*', 'admin.inventory.*', 'admin.suppliers.*', 'admin.cost-calculator.*');
     $marketingOpen = $isRoute('admin.coupons.*', 'admin.promotions.*');
     $channelsOpen = $isRoute('admin.settings.branding', 'admin.settings.content*', 'admin.settings.whatsapp*', 'admin.settings.notifications*', 'admin.settings.payments*', 'admin.settings.deploy-center*', 'admin.imports.*');
     $teamOpen = $isRoute('admin.notifications.*', 'admin.permissions.*');
@@ -250,6 +250,9 @@
             <ul class="nav flex-column">
                 <li class="nav-item {{ $isRoute('admin.inventory.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.inventory.index') }}"><i class="mdi mdi-warehouse menu-icon"></i><span class="menu-title">{{ __('Inventory') }}</span></a>
+                </li>
+                <li class="nav-item {{ $isRoute('admin.cost-calculator.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.cost-calculator.index') }}"><i class="mdi mdi-calculator-variant-outline menu-icon"></i><span class="menu-title">{{ __('Cost Calculator') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.purchases.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.purchases.index') }}"><i class="mdi mdi-package-variant-plus menu-icon"></i><span class="menu-title">{{ __('Purchases') }}</span></a>
