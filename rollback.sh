@@ -6,6 +6,7 @@ set -Eeuo pipefail
 # Dynamic E-commerce System - Rollback Script
 # Restores code + public assets from backup
 # Keeps current .env and uploads intact
+# Database snapshots are preserved for explicit/manual recovery only
 #
 # Usage:
 #   ./rollback.sh
@@ -107,6 +108,10 @@ $PHP_BIN artisan view:cache || true
 
 log "=================================================="
 log "✅ Rollback completed"
+if [ -s "$BACKUP_DIR/database/database.sql" ]; then
+    log "🗄 Database snapshot available: $BACKUP_DIR/database/database.sql"
+fi
 log "⚠️ Database schema/data are NOT automatically rolled back."
+log "⚠️ Restore a database snapshot only as an explicit recovery action after validating data-loss impact."
 log "📝 Rollback log: $LOG_FILE"
 log "=================================================="
