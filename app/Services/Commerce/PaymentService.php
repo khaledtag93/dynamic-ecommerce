@@ -124,6 +124,11 @@ class PaymentService
         }
 
         return DB::transaction(function () use ($payment, $status, $context) {
+            // Keep financial mutations on one lock order (Order -> Payment).
+            // Refund/cancel flows already lock the order first, so callbacks and
+            // manual payment changes must do the same to avoid lock inversion.
+            $lockedOrder = $this->lockParentOrderForPayment($payment);
+
             $lockedPayment = Payment::query()
                 ->whereKey($payment->getKey())
                 ->lockForUpdate()
@@ -175,7 +180,7 @@ class PaymentService
             $lockedPayment->update($updates);
             $lockedPayment->refresh();
 
-            $order = $lockedPayment->order()->first();
+            $order = $lockedOrder ?? $lockedPayment->order()->first();
             if ($order) {
                 $this->syncOrderPaymentStatus($order);
                 $this->notifyPaymentStatusChanged($order->fresh(), $lockedPayment);
@@ -221,6 +226,10 @@ class PaymentService
     protected function transitionGatewayPayment(Payment $payment, string $status, string $event, string $message, array $context = []): Payment
     {
         return DB::transaction(function () use ($payment, $status, $event, $message, $context) {
+            // Match refund/cancel lock ordering so a gateway callback cannot
+            // deadlock against an order mutation that subsequently touches its payment.
+            $lockedOrder = $this->lockParentOrderForPayment($payment);
+
             $lockedPayment = Payment::query()
                 ->whereKey($payment->getKey())
                 ->lockForUpdate()
@@ -283,7 +292,7 @@ class PaymentService
             $lockedPayment->update($updates);
             $lockedPayment->refresh();
 
-            $order = $lockedPayment->order()->first();
+            $order = $lockedOrder ?? $lockedPayment->order()->first();
             if ($order) {
                 $this->syncOrderPaymentStatus($order);
                 $this->notifyPaymentStatusChanged($order->fresh(), $lockedPayment);
@@ -404,6 +413,22 @@ class PaymentService
                 return (int) data_get($notification->data, 'payment_id') === (int) $payment->id
                     && (string) data_get($notification->data, 'payment_status') === (string) $payment->status;
             });
+    }
+
+    protected function lockParentOrderForPayment(Payment $payment): ?Order
+    {
+        $orderId = Payment::query()
+            ->whereKey($payment->getKey())
+            ->value('order_id');
+
+        if (! $orderId) {
+            return null;
+        }
+
+        return Order::query()
+            ->whereKey($orderId)
+            ->lockForUpdate()
+            ->first();
     }
 
     protected function pushPaymentEvent(array $meta, string $event, string $message): array
