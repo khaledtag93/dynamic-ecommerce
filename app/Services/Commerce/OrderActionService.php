@@ -49,7 +49,7 @@ class OrderActionService
                     [
                         'order_id' => $lockedOrder->id,
                         'reason' => 'Order cancellation restock',
-                        'unit_cost' => (float) ($item->unit_cost ?? 0),
+                        'movement_unit_cost' => (float) ($item->unit_cost ?? 0),
                         'expiration_date' => $item->expires_at,
                         'meta' => [
                             'order_number' => $lockedOrder->order_number,
