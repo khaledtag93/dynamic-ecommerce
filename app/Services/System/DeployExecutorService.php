@@ -82,7 +82,7 @@ class DeployExecutorService
 
     public function isEnabled(): bool
     {
-        return (bool) config('deploy.enabled', true);
+        return (bool) config('deploy.enabled', false);
     }
 
     public function getWorkspacePath(): string
