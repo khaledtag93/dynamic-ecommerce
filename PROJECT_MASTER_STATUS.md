@@ -123,3 +123,20 @@ Additional closures verified by green CI:
 The latest production-like GitHub Actions run for code head `b9a46a6` passed the complete pipeline on PHP 8.2 + MySQL 8, including the expanded PHPUnit regression suite and frontend production build.
 
 Historical Git inspection confirms that `.env` existed in the older repository history before the hardening removal commit. Credential rotation therefore remains a mandatory P0 release gate even though V42 no longer tracks the file.
+
+
+### Recovered legacy deployment/payment notes — 2026-09-20
+Recovered from the user's old local notes (non-secret facts only):
+- Paymob Merchant ID: `1147230`
+- Paymob Test Integration ID previously used: `5596653`
+- Paymob legacy IFrame previously used: `1024107`
+- Production Laravel app path historically used: `/home/u637857322/domains/tag-marketplace.com/laravel_app`
+- Production public webroot historically used: `/home/u637857322/domains/tag-marketplace.com/public_html`
+- Historical SSH port used: `65002`
+- Historical deploy routine used `deploy.sh` / `rollback.sh` from the Laravel app directory.
+
+Security note:
+- The recovered notes also contained plaintext provider, database, SSH, and account credentials.
+- No credential values are copied into this repository documentation.
+- Treat all historical credentials from those notes as exposed and rotate them before Production promotion.
+- The recovered Paymob Integration ID / IFrame ID are identifiers, not secrets, and may be used for compatibility diagnostics.
