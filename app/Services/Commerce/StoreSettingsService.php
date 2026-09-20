@@ -20,6 +20,11 @@ class StoreSettingsService
         'whatsapp_meta_app_secret',
         'whatsapp_meta_verify_token',
     ];
+    public static function sensitiveSettingKeys(): array
+    {
+        return self::SENSITIVE_SETTING_KEYS;
+    }
+
     public function all(): array
     {
         $defaults = [
