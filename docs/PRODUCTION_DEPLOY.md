@@ -24,7 +24,7 @@ This project uses a safe one-click deploy flow for Hostinger.
 - Runs an HTTP health check after deploy
 - Automatically rolls back code/public files if deploy fails after backup
 - Writes a deploy log file
-- Cleans old backups automatically and keeps the latest 5 by default
+- Cleans old backups automatically and keeps the latest 10 by default
 
 ## Important Rules
 
@@ -32,7 +32,7 @@ This project uses a safe one-click deploy flow for Hostinger.
 - Do not run `npm install` or `npm run build` on production
 - Always push to GitHub before running deploy on the server
 - Keep `.env` only on the server during active development
-- Rollback restores code and public files only, not the database state
+- Rollback restores code and public files only, not the database state. Database backup/rollback must be validated before Production deployment.
 
 ## Standard Deploy Steps
 
@@ -106,9 +106,9 @@ cd /home/u637857322/domains/tag-marketplace.com/laravel_app
 ## Notes
 
 - If `deploy.sh` fails after backup creation, it attempts automatic rollback.
-- If `curl` is not available on the server, the HTTP health check is skipped.
+- `curl` is required. The deploy fails if the HTTPS health check cannot be executed or does not return an accepted HTTP status.
 - The backup retention count can be changed with an environment variable:
 
 ```bash
-KEEP_BACKUPS=7 ./deploy.sh
+KEEP_BACKUPS=10 ./deploy.sh
 ```
