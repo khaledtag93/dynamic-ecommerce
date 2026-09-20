@@ -203,3 +203,51 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - Important production constraint: current live `laravel_app` is not a Git worktree, so the existing Git-based `deploy.sh` cannot be used directly against the live snapshot. The next session must first design a safe release/checkout layout or equivalent transition rather than converting the live app in place casually.
 - Preferred user workflow remains: assistant changes code and pushes Git/QAS; user validates QAS; only after explicit approval does the exact approved version move to Production.
 - Interaction preference for server work: one small command at a time, explain what it does, wait for output, then continue.
+
+
+## Production deployment workflow validated — 2026-09-21
+
+- Safe one-command Production deployment is now implemented and proven.
+- Production target tested successfully with exact QAS-approved application commit `9a51f50`.
+- Production deployment completed successfully with final HTTPS health `HTTP 200`.
+- Production remained on the approved application commit `9a51f50`; operational script commits are newer branch-head commits and must not be confused with the deployed application version.
+- Added and validated `deploy-prod.sh`:
+  - builds an isolated release from an exact Git commit;
+  - validates Production environment and database identity before mutation;
+  - creates a file backup before deployment;
+  - enters Laravel maintenance mode and verifies HTTP 503;
+  - creates a pre-migration MariaDB snapshot;
+  - syncs application code while preserving Production `.env` and `storage`;
+  - runs only pending migrations with `php artisan migrate --force`;
+  - syncs public assets while preserving `uploads`, `storage`, `v42`, and the specially transformed Production `index.php`;
+  - validates the new release through the Laravel maintenance secret before leaving maintenance;
+  - performs a final Production HTTPS health check;
+  - automatically restores application files, public files, and the pre-deploy DB snapshot if a post-mutation step fails.
+- Added and validated `rollback-prod.sh`:
+  - supports `--dry-run` and `--execute`;
+  - preserves current Production `.env`, Laravel `storage`, public `uploads`, public `storage`, and QAS `v42`;
+  - optional `--with-db` requires explicit `RESTORE_DB` confirmation;
+  - creates an emergency DB snapshot before any explicit database restore.
+- Root cause of repeated Production maintenance-secret 404/403 failures was identified and fixed:
+  - isolated releases were intentionally created under `umask 077`, producing directories/files with `700/600` modes;
+  - plain `rsync -a` propagated those restrictive modes into the live Laravel app/public webroot;
+  - Apache/LiteSpeed then could not traverse/read the webroot before `index.php` executed;
+  - deploy/automatic-rollback rsync now normalizes destination permissions with `--chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r`, preserving `755` directories and `644` files.
+- Post-deploy sanity checks passed repeatedly:
+  - Production Laravel app directory: `755`;
+  - Production `artisan`: `644`;
+  - Production `bootstrap`: `755`;
+  - Production webroot: `755`;
+  - Production `index.php` and `.htaccess`: `644`;
+  - Laravel maintenance file absent;
+  - `https://tag-marketplace.com` returned `HTTP 200`.
+- Hostinger MariaDB CLI quirk recorded: use `--host=localhost` without forcing TCP/port for server-side `mysql` / `mysqldump`; forced TCP resolved to `::1` and failed authentication.
+- Production schema drift was reconciled for `2026_06_24_000000_create_cost_calculator_tables`: all four expected tables and constraints already existed, so the missing migration-history row was inserted after a dedicated DB backup. Subsequent Production migration runs correctly skipped that migration.
+- Sensitive temporary `.env` copies created during isolated-release testing were removed from `deploy_releases`.
+- Operational scripts were committed as `5c7d949` (`ops: add safe production deploy and rollback scripts`) and pushed to `v42-clean-baseline`.
+- Current routine release model:
+  1. develop and push to `v42-clean-baseline`;
+  2. deploy/test QAS;
+  3. user approves an exact application commit;
+  4. Production deploys that exact approved commit with `./deploy-prod.sh <commit> --execute`;
+  5. keep the generated file/DB backup available for rollback.
