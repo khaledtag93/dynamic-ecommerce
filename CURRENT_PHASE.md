@@ -210,3 +210,17 @@ At `/home/u637857322/domains/tag-marketplace.com/laravel_app`:
 ### Production Composer check — 2026-09-20
 - Hostinger Composer version: `2.9.8`.
 - Composer is running under PHP `8.3.33` from `/opt/alt/php83/usr/bin/php`.
+
+
+### Production PHP extension check — 2026-09-20
+Required runtime extensions were confirmed present on Hostinger CLI PHP 8.3.33:
+- bcmath
+- curl
+- dom
+- intl
+- mbstring
+- pdo_mysql
+- xml / SimpleXML / xmlreader / xmlwriter
+- zip
+
+This clears the PHP-extension portion of the server preflight.
