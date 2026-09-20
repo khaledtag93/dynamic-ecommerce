@@ -134,3 +134,11 @@ The Paymob release gate is green only after:
 - the Paymob dashboard and local Order/Payment ledgers agree
 - rotated credentials are active in the target environment
 - no historical plaintext provider secrets remain in application database settings
+
+
+### Paymob account discovery — 2026-09-20
+- New dashboard, Test mode: Payment Integrations table is empty.
+- Old dashboard, Test mode: Developers -> Payment Integrations is also empty.
+- Attempting to create a new Non-Shopify / MIGS / EGP Test integration returns: "Cannot create more than 1 test integration with the same gateway type and currency."
+- This means the account backend recognizes an existing MIGS/EGP Test integration even though neither dashboard currently renders it.
+- Next diagnostic: inspect Developers -> Iframes in the old dashboard for the previously used iframe/integration linkage. If no legacy artifact is visible there either, treat this as a Paymob account-side integration visibility/state issue and open a support case rather than creating another integration.
