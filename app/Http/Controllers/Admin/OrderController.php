@@ -179,26 +179,10 @@ class OrderController extends Controller
 
     public function destroy(Order $order): RedirectResponse
     {
-        if ($order->status !== Order::STATUS_CANCELLED) {
-            return back()->with('error', 'Only cancelled orders can be deleted permanently.');
-        }
-
-        $orderNumber = $order->order_number;
-
-        $this->adminActivityLogService->log(
-            'order_management',
-            'cancelled_order_deleted',
-            __('Cancelled order :order was deleted permanently.', ['order' => $orderNumber]),
-            optional(auth()->user())->id,
-            $order,
-            [
-                'order_number' => $orderNumber,
-            ]
+        return back()->with(
+            'error',
+            __('Permanent order deletion is disabled to preserve payment, refund, coupon, inventory, and audit history.')
         );
-
-        $order->delete();
-
-        return redirect()->route('admin.orders.index')->with('success', 'Cancelled order '.$orderNumber.' deleted successfully.');
     }
 
     protected function performStatusUpdate(Order $order, string $newStatus): string
