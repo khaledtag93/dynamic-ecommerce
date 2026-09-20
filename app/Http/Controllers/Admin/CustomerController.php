@@ -56,6 +56,8 @@ class CustomerController extends Controller
 
     public function updateRole(Request $request, User $user): RedirectResponse
     {
+        abort_unless($request->user()?->isSuperAdmin(), 403);
+
         $validated = $request->validate([
             'role_as' => ['required', 'in:0,1'],
         ]);
