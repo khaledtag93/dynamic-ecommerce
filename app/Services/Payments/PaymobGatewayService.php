@@ -55,16 +55,18 @@ class PaymobGatewayService
         }
 
         $this->baseUrl = rtrim((string) $this->setting($settings, 'paymob_base_url', config('services.paymob.base_url')), '/');
-        $this->apiKey = (string) $this->setting($settings, 'paymob_api_key', config('services.paymob.api_key'));
-        $this->hmacSecret = (string) $this->setting($settings, 'paymob_hmac_secret', config('services.paymob.hmac_secret'));
+        // Secrets are server-managed only. Never allow plaintext database settings
+        // to override rotated environment credentials.
+        $this->apiKey = (string) config('services.paymob.api_key');
+        $this->hmacSecret = (string) config('services.paymob.hmac_secret');
         $this->integrationId = (string) $this->setting($settings, 'paymob_integration_id', config('services.paymob.integration_id'));
         $this->iframeId = (string) $this->setting($settings, 'paymob_iframe_id', config('services.paymob.iframe_id'));
         $this->currency = (string) $this->setting($settings, 'paymob_currency', config('services.paymob.currency', 'EGP'));
         $this->verifySsl = (bool) config('services.paymob.verify_ssl', true);
         $this->settingsSource = [
             'base_url' => (! array_key_exists('paymob_base_url', $settings) || blank($settings['paymob_base_url'] ?? null)) ? 'config/env' : 'website_settings',
-            'api_key' => (! array_key_exists('paymob_api_key', $settings) || blank($settings['paymob_api_key'] ?? null)) ? 'config/env' : 'website_settings',
-            'hmac_secret' => (! array_key_exists('paymob_hmac_secret', $settings) || blank($settings['paymob_hmac_secret'] ?? null)) ? 'config/env' : 'website_settings',
+            'api_key' => 'config/env',
+            'hmac_secret' => 'config/env',
             'integration_id' => (! array_key_exists('paymob_integration_id', $settings) || blank($settings['paymob_integration_id'] ?? null)) ? 'config/env' : 'website_settings',
             'iframe_id' => (! array_key_exists('paymob_iframe_id', $settings) || blank($settings['paymob_iframe_id'] ?? null)) ? 'config/env' : 'website_settings',
             'currency' => (! array_key_exists('paymob_currency', $settings) || blank($settings['paymob_currency'] ?? null)) ? 'config/env' : 'website_settings',
