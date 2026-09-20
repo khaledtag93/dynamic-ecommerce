@@ -2,12 +2,20 @@
 ## Dynamic E-commerce System (Tag Marketplace)
 
 ## Current state
-- **Official baseline:** V42
+- **Official application baseline:** V42
 - **Baseline description:** Cost Calculator refactor + Arabic/English translation updates
-- **Current phase:** Clean Git baseline & production hardening
-- **Canonical source:** GitHub `main` after V42 promotion
+- **Current working branch:** `v42-clean-baseline`
+- **Current phase:** Production hardening
+- **GitHub `main`:** still the older V40 baseline until V42 passes hardening
+- **Production:** unchanged; no V42 deployment yet
 - **Production domain:** `tag-marketplace.com`
-- **Status summary:** Advanced Laravel e-commerce platform with a broad commerce/admin foundation. Immediate priority is safe source control, deploy/rollback automation, security/business-rule hardening, and release validation before further expansion.
+
+## V42 baseline status
+- Clean V42 Git baseline completed and verified.
+- Expected V42 source files matched the source snapshot by Git blob hash after intentional exclusions.
+- Dependency/runtime/local-data artifacts are no longer tracked in the V42 branch.
+- `.env` is no longer tracked in the V42 branch.
+- Local DB, logs, sessions, uploads, generated Laravel cache files, and backup files are excluded from the baseline.
 
 ## Completed / strongly implemented
 ### Commerce core
@@ -42,16 +50,15 @@
 - branding/content controls
 - deployment and rollback scripts
 
-## Current production-hardening priorities
-1. Establish V42 as the clean canonical Git baseline.
-2. Remove `.env` from tracked source and rotate any publicly exposed credentials.
-3. Complete GitHub → Hostinger deploy/rollback control.
-4. Verify payment callback/HMAC behavior and idempotency.
-5. Verify authorization and privilege-escalation paths.
-6. Verify concurrency behavior for stock, coupons, refunds, and orders.
-7. Verify Cost Calculator formulas and reporting semantics.
-8. Add/repair automated CI coverage for critical flows.
-9. Execute production readiness and rollback checks.
+## Production-hardening priorities
+1. **P0 — Credential rotation:** credentials previously committed to Git history must be treated as exposed and rotated before Production.
+2. Verify payment callback/HMAC behavior and idempotency.
+3. Verify authorization and privilege-escalation paths.
+4. Verify concurrency behavior for stock, coupons, refunds, and orders.
+5. Verify Cost Calculator formulas and reporting semantics.
+6. Add/repair automated CI coverage for critical flows.
+7. Execute deployment, health-check, and rollback validation.
+8. Promote V42 to `main` only after verification.
 
 ## Planned / not yet closed
 - WhatsApp/SMS multi-channel expansion
@@ -64,4 +71,4 @@
 - SaaS multi-tenancy and mobile-app path
 
 ## Release rule
-No commercial handoff/release is considered complete until the production-hardening priorities above are either closed or explicitly accepted with documented risk.
+No commercial handoff or Production deployment is considered complete until the production-hardening priorities are closed or explicitly accepted with documented risk.
