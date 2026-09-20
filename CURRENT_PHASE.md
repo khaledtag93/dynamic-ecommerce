@@ -87,3 +87,10 @@ Important limitation:
 - the permissions UI no longer offers an empty legacy-role assignment option; legacy fallback admins are mapped to the explicit Super Admin role when saved
 - added a regression test covering assigned-role deletion protection
 - removed remaining tracked runtime/user uploads from `storage/app/livewire-tmp` and `storage/app/public` and added explicit Git ignore rules for both paths
+
+### Financial/destructive-action hardening follow-up — 2026-09-20
+- gateway payment callbacks now serialize on the Payment row so competing paid/failed callbacks cannot race from the same stale pending state
+- order payment-status synchronization now serializes on the Order row
+- permanent order deletion is disabled in both backend and admin UI to preserve payment, refund, coupon, inventory, and audit history
+- added regression coverage for paid-payment terminal behavior and order retention
+- CI verification for this follow-up is pending on the latest branch commit
