@@ -84,6 +84,11 @@ jobs:
           find app config database routes tests -type f -name '*.php' -print0 \
             | xargs -0 -n1 php -l
 
+      - name: Bash syntax scan
+        run: |
+          bash -n deploy.sh
+          bash -n rollback.sh
+
       - name: Migrate clean MySQL database
         run: php artisan migrate:fresh --force
 
