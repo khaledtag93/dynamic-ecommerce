@@ -29,15 +29,19 @@ class CheckoutService
 
     public function place(array $data, $user): Order
     {
-        $summary = $this->cartService->summary();
+        return DB::transaction(function () use ($data, $user) {
+            // Lock the cart rows and build the checkout snapshot inside the same
+            // transaction. A repeated/double submission will wait for the first
+            // checkout to finish, then observe an empty cart instead of creating
+            // a duplicate order from a stale pre-transaction snapshot.
+            $summary = $this->cartService->summary($this->cartService->itemsForCheckout());
 
-        if ($summary['items']->isEmpty()) {
-            throw ValidationException::withMessages([
-                'cart' => 'Your cart is empty.',
-            ]);
-        }
+            if ($summary['items']->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'cart' => 'Your cart is empty.',
+                ]);
+            }
 
-        return DB::transaction(function () use ($data, $user, $summary) {
             $coupon = $summary['coupon'] ?? null;
             foreach ($summary['items'] as $item) {
                 if ($item->variant) {
