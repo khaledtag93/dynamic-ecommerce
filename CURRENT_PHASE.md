@@ -246,3 +246,9 @@ Security/release note:
 - Created a server-side backup: `.env.backup_before_debug_fix`.
 - Updated production `.env` to `APP_DEBUG=false`.
 - Next step is to rebuild Laravel config cache and verify runtime reports Debug Mode disabled.
+
+
+### Production debug verification — 2026-09-20
+- Rebuilt Laravel config cache after changing production `APP_DEBUG=false`.
+- Verified with `php artisan about --only=environment` that runtime Debug Mode is now OFF.
+- Production remains out of maintenance mode.
