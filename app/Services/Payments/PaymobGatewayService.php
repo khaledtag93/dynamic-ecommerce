@@ -6,6 +6,7 @@ use App\Exceptions\PaymobCheckoutException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Commerce\StoreSettingsService;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,10 @@ class PaymobGatewayService
 {
     protected string $logChannel = 'payments';
     protected string $baseUrl;
+    protected string $unifiedBaseUrl;
     protected string $apiKey;
+    protected string $secretKey;
+    protected string $publicKey;
     protected string $hmacSecret;
     protected string $integrationId;
     protected string $iframeId;
@@ -55,9 +59,12 @@ class PaymobGatewayService
         }
 
         $this->baseUrl = rtrim((string) $this->setting($settings, 'paymob_base_url', config('services.paymob.base_url')), '/');
+        $this->unifiedBaseUrl = rtrim((string) config('services.paymob.unified_base_url', 'https://accept.paymob.com'), '/');
         // Secrets are server-managed only. Never allow plaintext database settings
         // to override rotated environment credentials.
         $this->apiKey = (string) config('services.paymob.api_key');
+        $this->secretKey = (string) config('services.paymob.secret_key');
+        $this->publicKey = (string) config('services.paymob.public_key');
         $this->hmacSecret = (string) config('services.paymob.hmac_secret');
         $this->integrationId = (string) $this->setting($settings, 'paymob_integration_id', config('services.paymob.integration_id'));
         $this->iframeId = (string) $this->setting($settings, 'paymob_iframe_id', config('services.paymob.iframe_id'));
@@ -66,6 +73,8 @@ class PaymobGatewayService
         $this->settingsSource = [
             'base_url' => (! array_key_exists('paymob_base_url', $settings) || blank($settings['paymob_base_url'] ?? null)) ? 'config/env' : 'website_settings',
             'api_key' => 'config/env',
+            'secret_key' => 'config/env',
+            'public_key' => 'config/env',
             'hmac_secret' => 'config/env',
             'integration_id' => (! array_key_exists('paymob_integration_id', $settings) || blank($settings['paymob_integration_id'] ?? null)) ? 'config/env' : 'website_settings',
             'iframe_id' => (! array_key_exists('paymob_iframe_id', $settings) || blank($settings['paymob_iframe_id'] ?? null)) ? 'config/env' : 'website_settings',
@@ -74,12 +83,16 @@ class PaymobGatewayService
 
         $this->logInfo('Paymob runtime config resolved', [
             'base_url' => $this->baseUrl,
+            'unified_base_url' => $this->unifiedBaseUrl,
             'api_key_present' => $this->apiKey !== '',
+            'secret_key_present' => $this->secretKey !== '',
+            'public_key_present' => $this->publicKey !== '',
             'hmac_secret_present' => $this->hmacSecret !== '',
             'integration_id' => $this->integrationId,
             'iframe_id' => $this->iframeId,
             'currency' => $this->currency,
             'verify_ssl' => $this->verifySsl,
+            'checkout_mode' => $this->checkoutMode(),
             'settings_keys_present' => array_values(array_intersect(array_keys($settings), [
                 'paymob_base_url',
                 'paymob_api_key',
@@ -107,7 +120,16 @@ class PaymobGatewayService
         return $value;
     }
 
-    public function isConfigured(): bool
+    public function isUnifiedConfigured(): bool
+    {
+        return $this->unifiedBaseUrl !== ''
+            && $this->secretKey !== ''
+            && $this->publicKey !== ''
+            && $this->hmacSecret !== ''
+            && $this->integrationId !== '';
+    }
+
+    public function isLegacyConfigured(): bool
     {
         return $this->baseUrl !== ''
             && $this->apiKey !== ''
@@ -116,19 +138,52 @@ class PaymobGatewayService
             && $this->iframeId !== '';
     }
 
+    public function checkoutMode(): string
+    {
+        if ($this->isUnifiedConfigured()) {
+            return 'unified';
+        }
+
+        if ($this->isLegacyConfigured()) {
+            return 'legacy_iframe';
+        }
+
+        return 'unconfigured';
+    }
+
+    public function isConfigured(): bool
+    {
+        return $this->checkoutMode() !== 'unconfigured';
+    }
+
     public function configurationDiagnostics(): array
     {
         return [
             'base_url' => $this->baseUrl,
+            'unified_base_url' => $this->unifiedBaseUrl,
             'integration_id' => $this->integrationId,
             'iframe_id' => $this->iframeId,
             'currency' => $this->currency,
             'verify_ssl' => $this->verifySsl,
             'settings_source' => $this->settingsSource,
             'api_key_present' => $this->apiKey !== '',
+            'secret_key_present' => $this->secretKey !== '',
+            'public_key_present' => $this->publicKey !== '',
             'hmac_secret_present' => $this->hmacSecret !== '',
+            'checkout_mode' => $this->checkoutMode(),
             'is_configured' => $this->isConfigured(),
         ];
+    }
+
+    protected function unifiedCheckoutUrl(string $clientSecret): string
+    {
+        if ($clientSecret === '' || $this->publicKey === '') {
+            throw new RuntimeException('Paymob Unified Checkout is not configured correctly.');
+        }
+
+        return $this->unifiedBaseUrl
+            . '/unifiedcheckout/?publicKey=' . rawurlencode($this->publicKey)
+            . '&clientSecret=' . rawurlencode($clientSecret);
     }
 
     protected function checkoutUrlFromToken(string $paymentToken): string
@@ -378,8 +433,8 @@ class PaymobGatewayService
 
     public function authenticate(): string
     {
-        if (! $this->isConfigured()) {
-            throw new RuntimeException('Paymob is not fully configured yet.');
+        if (! $this->isLegacyConfigured()) {
+            throw new RuntimeException('Paymob legacy iframe checkout is not fully configured.');
         }
 
         $this->logInfo('Paymob authentication started');
@@ -496,6 +551,152 @@ class PaymobGatewayService
         return $paymentToken;
     }
 
+    protected function createUnifiedIntention(Order $order): array
+    {
+        if (! $this->isUnifiedConfigured()) {
+            throw new RuntimeException('Paymob Unified Checkout is not fully configured.');
+        }
+
+        $amountCents = $this->amountCentsFromOrder($order);
+        [$firstName, $lastName] = $this->splitCustomerName($order->customer_name);
+
+        $payload = [
+            'amount' => $amountCents,
+            'currency' => $this->currency,
+            'payment_methods' => [(int) $this->integrationId],
+            'items' => [[
+                'name' => 'Order ' . ($order->order_number ?: $order->id),
+                'amount' => $amountCents,
+                'description' => 'Dynamic e-commerce order ' . ($order->order_number ?: $order->id),
+                'quantity' => 1,
+            ]],
+            'billing_data' => [
+                'apartment' => 'NA',
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'street' => $order->shipping_address_line_1 ?: 'NA',
+                'building' => 'NA',
+                'phone_number' => $order->customer_phone ?: 'NA',
+                'city' => $order->shipping_city ?: 'NA',
+                'country' => $this->normalizeCountry($order->shipping_country),
+                'email' => $order->customer_email ?: 'no-reply@example.com',
+                'floor' => 'NA',
+                'state' => $order->shipping_state ?: 'NA',
+            ],
+            'extras' => [
+                'local_order_id' => (int) $order->id,
+                'order_number' => (string) $order->order_number,
+            ],
+            'special_reference' => (string) $order->id,
+            'expiration' => 3600,
+            'notification_url' => route('payments.paymob.callback'),
+            'redirection_url' => route('payments.paymob.result', $order),
+        ];
+
+        $url = $this->unifiedBaseUrl . '/v1/intention/';
+
+        $this->logInfo('Paymob Unified Checkout intention started', [
+            'local_order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'integration_id' => (int) $this->integrationId,
+            'amount_cents' => $amountCents,
+            'currency' => $this->currency,
+        ]);
+
+        $response = $this->client()
+            ->withHeaders([
+                'Authorization' => 'Token ' . $this->secretKey,
+                'Content-Type' => 'application/json',
+            ])
+            ->post($url, $payload);
+
+        if (! $response->successful()) {
+            $body = $response->json() ?: $response->body();
+
+            $this->logError('Paymob Unified Checkout intention failed', [
+                'endpoint' => 'v1/intention',
+                'status' => $response->status(),
+                'integration_id' => (int) $this->integrationId,
+                'amount_cents' => $amountCents,
+                'currency' => $this->currency,
+                'response' => is_array($body) ? $this->sanitizePayloadForLogs($body) : '[non-json response]',
+            ]);
+
+            throw new PaymobCheckoutException(
+                'Paymob intention creation failed.',
+                [
+                    'endpoint' => 'v1/intention',
+                    'status' => $response->status(),
+                    'integration_id' => $this->integrationId,
+                    'currency' => $this->currency,
+                    'amount_cents' => $amountCents,
+                ],
+                __('We could not open the secure payment page right now. Please try again shortly.')
+            );
+        }
+
+        $data = $response->json();
+        $clientSecret = (string) ($data['client_secret'] ?? '');
+        $intentionId = (string) ($data['id'] ?? '');
+        $paymobOrderId = (string) ($data['intention_order_id'] ?? '');
+
+        if ($clientSecret === '' || $intentionId === '' || $paymobOrderId === '') {
+            throw new PaymobCheckoutException(
+                'Paymob intention response was incomplete.',
+                [
+                    'endpoint' => 'v1/intention',
+                    'has_client_secret' => $clientSecret !== '',
+                    'has_intention_id' => $intentionId !== '',
+                    'has_order_id' => $paymobOrderId !== '',
+                ],
+                __('We could not open the secure payment page right now. Please try again shortly.')
+            );
+        }
+
+        return [
+            'client_secret' => $clientSecret,
+            'intention_id' => $intentionId,
+            'paymob_order_id' => $paymobOrderId,
+        ];
+    }
+
+    protected function checkoutUnified(Order $order, ?Payment $payment = null): string
+    {
+        $intention = $this->createUnifiedIntention($order);
+        $clientSecret = $intention['client_secret'];
+        $paymobOrderId = $intention['paymob_order_id'];
+
+        if ($payment) {
+            $meta = $this->paymentMeta($payment);
+            $meta['paymob_flow'] = 'unified';
+            $meta['paymob_intention_id'] = $intention['intention_id'];
+            $meta['paymob_order_id'] = $paymobOrderId;
+            $meta['encrypted_client_secret'] = Crypt::encryptString($clientSecret);
+            $meta['last_initiated_at'] = now()->toDateTimeString();
+            unset($meta['payment_token'], $meta['checkout_error'], $meta['checkout_error_at'], $meta['checkout_error_context']);
+            $meta = $this->appendEvent($meta, 'paymob_intention_created', 'Paymob Unified Checkout intention created.', [
+                'paymob_order_id' => $paymobOrderId,
+                'paymob_intention_id' => $intention['intention_id'],
+            ]);
+
+            $payment->update([
+                'provider' => 'paymob',
+                'provider_status' => 'initiated',
+                'transaction_reference' => (string) $paymobOrderId,
+                'meta' => $meta,
+            ]);
+        }
+
+        $this->logInfo('Paymob Unified Checkout URL generated', [
+            'local_order_id' => $order->id,
+            'payment_id' => $payment?->id,
+            'paymob_order_id' => $paymobOrderId,
+            'paymob_intention_id' => $intention['intention_id'],
+        ]);
+
+        return $this->unifiedCheckoutUrl($clientSecret);
+    }
+
     public function reuseCheckoutUrlIfAvailable(?Payment $payment): ?string
     {
         if (! $payment) {
@@ -511,10 +712,9 @@ class PaymobGatewayService
         }
 
         $meta = $this->paymentMeta($payment);
-        $paymentToken = data_get($meta, 'payment_token');
         $lastInitiatedAt = data_get($meta, 'last_initiated_at');
 
-        if (! $paymentToken || ! $lastInitiatedAt) {
+        if (! $lastInitiatedAt) {
             return null;
         }
 
@@ -528,7 +728,23 @@ class PaymobGatewayService
             return null;
         }
 
-        return $this->checkoutUrlFromToken($paymentToken);
+        if ($this->checkoutMode() === 'unified') {
+            $encryptedClientSecret = data_get($meta, 'encrypted_client_secret');
+
+            if (! $encryptedClientSecret) {
+                return null;
+            }
+
+            try {
+                return $this->unifiedCheckoutUrl(Crypt::decryptString($encryptedClientSecret));
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        $paymentToken = data_get($meta, 'payment_token');
+
+        return $paymentToken ? $this->checkoutUrlFromToken($paymentToken) : null;
     }
 
     public function checkoutUrl(Order $order, ?Payment $payment = null): string
@@ -541,12 +757,21 @@ class PaymobGatewayService
 
         $reusedUrl = $this->reuseCheckoutUrlIfAvailable($payment);
         if ($reusedUrl) {
-            $this->logInfo('Paymob checkout URL reused from existing payment token', [
+            $this->logInfo('Paymob checkout URL reused from existing checkout session', [
                 'local_order_id' => $order->id,
                 'payment_id' => $payment?->id,
+                'checkout_mode' => $this->checkoutMode(),
             ]);
 
             return $reusedUrl;
+        }
+
+        if ($this->checkoutMode() === 'unified') {
+            return $this->checkoutUnified($order, $payment);
+        }
+
+        if ($this->checkoutMode() !== 'legacy_iframe') {
+            throw new RuntimeException('Paymob is not fully configured yet.');
         }
 
         $authToken = $this->authenticate();
