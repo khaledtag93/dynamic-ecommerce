@@ -23,12 +23,8 @@ class PaymentSettingsController extends Controller
             'payment_gateway_provider' => ['nullable', 'string', 'max:120'],
             'payment_gateway_mode' => ['nullable', 'string', 'max:50'],
             'payment_gateway_public_key' => ['nullable', 'string', 'max:255'],
-            'payment_gateway_secret_key' => ['nullable', 'string', 'max:255'],
-            'payment_gateway_webhook_secret' => ['nullable', 'string', 'max:255'],
-            'paymob_api_key' => ['nullable', 'string', 'max:255'],
             'paymob_integration_id' => ['nullable', 'string', 'max:255'],
             'paymob_iframe_id' => ['nullable', 'string', 'max:255'],
-            'paymob_hmac_secret' => ['nullable', 'string', 'max:255'],
             'bank_transfer_instructions_en' => ['nullable', 'string', 'max:3000'],
             'bank_transfer_instructions_ar' => ['nullable', 'string', 'max:3000'],
         ]);
