@@ -35,6 +35,7 @@ use App\Http\Controllers\Frontend\NotificationController as FrontendNotification
 use App\Http\Controllers\Frontend\PaymobController;
 use App\Http\Controllers\Frontend\ContentPageController;
 use App\Http\Controllers\Admin\ContentSettingsController;
+use App\Http\Controllers\Admin\CostCalculatorController;
 use App\Http\Controllers\HomeController;
 use App\Http\Livewire\Admin\Attribute\Index as AttributeIndex;
 use App\Http\Livewire\Admin\Attribute\Values as AttributeValues;
@@ -270,6 +271,13 @@ Route::prefix('admin')
             });
 
             Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+
+            Route::controller(CostCalculatorController::class)->group(function () {
+                Route::get('/cost-calculator', 'index')->name('cost-calculator.index');
+                Route::post('/cost-calculator/materials', 'storeMaterial')->name('cost-calculator.materials.store');
+                Route::delete('/cost-calculator/materials/{material}', 'destroyMaterial')->name('cost-calculator.materials.destroy');
+                Route::post('/cost-calculator/save', 'saveProductCost')->name('cost-calculator.save');
+            });
         });
 
         Route::middleware('permission:promotions.manage')->group(function () {
