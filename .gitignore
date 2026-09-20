@@ -25,6 +25,8 @@
 # User-generated files
 /public/uploads/
 /public/storage
+/storage/app/livewire-tmp/
+/storage/app/public/
 
 # Local/dev artifacts
 .phpunit.result.cache
