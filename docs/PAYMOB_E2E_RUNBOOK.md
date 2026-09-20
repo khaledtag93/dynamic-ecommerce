@@ -158,3 +158,20 @@ This confirms the account still retains legacy checkout artifacts even though bo
 - No Payment Integration ID or MIGS linkage is exposed from the IFrame editor.
 - Conclusion: the hidden MIGS/EGP Test integration cannot be recovered from the IFrame UI. Since both Payment Integrations pages are empty while creation is blocked as a duplicate, this is now treated as a Paymob account-side hidden/orphan integration state.
 - Next action: Paymob support/account manager should reveal, restore, or reset the Test MIGS/EGP integration. Do not create/duplicate/delete IFrames as a workaround.
+
+
+### Recovered legacy deployment/payment notes — 2026-09-20
+Recovered from the user's old local notes (non-secret facts only):
+- Paymob Merchant ID: `1147230`
+- Paymob Test Integration ID previously used: `5596653`
+- Paymob legacy IFrame previously used: `1024107`
+- Production Laravel app path historically used: `/home/u637857322/domains/tag-marketplace.com/laravel_app`
+- Production public webroot historically used: `/home/u637857322/domains/tag-marketplace.com/public_html`
+- Historical SSH port used: `65002`
+- Historical deploy routine used `deploy.sh` / `rollback.sh` from the Laravel app directory.
+
+Security note:
+- The recovered notes also contained plaintext provider, database, SSH, and account credentials.
+- No credential values are copied into this repository documentation.
+- Treat all historical credentials from those notes as exposed and rotate them before Production promotion.
+- The recovered Paymob Integration ID / IFrame ID are identifiers, not secrets, and may be used for compatibility diagnostics.
