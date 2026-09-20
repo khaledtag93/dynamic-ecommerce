@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -Eeuo pipefail
+umask 077
 
 #############################################
 # Dynamic E-commerce System - Production Deploy
@@ -69,6 +70,7 @@ rollback_from_current_backup() {
 
     local env_tmp="/tmp/tag_marketplace_env_${TIMESTAMP}_$.backup"
     cp "$KEEP_ENV_FILE" "$env_tmp"
+    chmod 600 "$env_tmp"
 
     rsync -a --delete \
         --exclude='.env' \
@@ -178,6 +180,7 @@ mkdir -p "$CURRENT_BACKUP_DIR/app" "$CURRENT_BACKUP_DIR/public" "$CURRENT_BACKUP
 log "📦 Creating backup before deploy..."
 rsync -a \
     --exclude='.git' \
+    --exclude='.env' \
     --exclude='node_modules' \
     --exclude='vendor' \
     --exclude='storage/logs' \
@@ -191,6 +194,7 @@ rsync -a \
     "$PUBLIC_DIR/" "$CURRENT_BACKUP_DIR/public/"
 
 cp "$KEEP_ENV_FILE" "$CURRENT_BACKUP_DIR/meta/.env.backup"
+chmod 600 "$CURRENT_BACKUP_DIR/meta/.env.backup"
 echo "$PREVIOUS_COMMIT" > "$CURRENT_BACKUP_DIR/meta/current_commit.txt"
 touch "$CURRENT_BACKUP_DIR/meta/backup_completed.txt"
 
