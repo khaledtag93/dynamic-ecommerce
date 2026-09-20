@@ -157,11 +157,14 @@ Route::prefix('admin')
             Route::get('/analytics/offers', 'offers')->name('analytics.offers');
             Route::get('/analytics/products/{product}', 'product')->name('analytics.products.show');
         });
-        Route::middleware('permission:dashboard.view')->controller(GrowthController::class)->group(function () {
+        Route::middleware('permission:growth.view')->controller(GrowthController::class)->group(function () {
             Route::get('/growth', 'index')->name('growth.index');
             Route::get('/growth/content', 'content')->name('growth.content');
             Route::get('/growth/operations', 'operations')->name('growth.operations');
             Route::get('/growth/insights', 'insights')->name('growth.insights');
+        });
+
+        Route::middleware('permission:growth.manage')->controller(GrowthController::class)->group(function () {
             Route::put('/growth/settings', 'updateSettings')->name('growth.settings.update');
             Route::post('/growth/run-now', 'runNow')->name('growth.run-now');
             Route::post('/growth/validation-demo/seed', 'seedValidationDemo')->name('growth.validation-demo.seed');
