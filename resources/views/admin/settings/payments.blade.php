@@ -73,17 +73,17 @@
                         <option value="live" @selected(($storeSettings['payment_gateway_mode'] ?? 'sandbox') === 'live')>{{ __('Live') }}</option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ __('Public key') }}</label>
-                    <input type="text" class="form-control" name="payment_gateway_public_key" value="{{ old('payment_gateway_public_key', $storeSettings['payment_gateway_public_key'] ?? '') }}">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ __('Secret key') }}</label>
-                    <input type="text" class="form-control" name="payment_gateway_secret_key" value="{{ old('payment_gateway_secret_key', $storeSettings['payment_gateway_secret_key'] ?? '') }}">
-                </div>
                 <div class="col-12">
-                    <label class="form-label fw-semibold">{{ __('Webhook secret') }}</label>
-                    <input type="text" class="form-control" name="payment_gateway_webhook_secret" value="{{ old('payment_gateway_webhook_secret', $storeSettings['payment_gateway_webhook_secret'] ?? '') }}">
+                    <div class="rounded-4 border p-3 bg-light-subtle">
+                        <div class="fw-semibold mb-2">{{ __('Server-managed credential status') }}</div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span class="badge {{ filled(config('services.paymob.api_key')) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ __('Legacy API key') }}: {{ filled(config('services.paymob.api_key')) ? __('Configured') : __('Missing') }}</span>
+                            <span class="badge {{ filled(config('services.paymob.hmac_secret')) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ __('HMAC secret') }}: {{ filled(config('services.paymob.hmac_secret')) ? __('Configured') : __('Missing') }}</span>
+                            <span class="badge {{ filled(config('services.paymob.secret_key')) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ __('Unified secret key') }}: {{ filled(config('services.paymob.secret_key')) ? __('Configured') : __('Missing') }}</span>
+                            <span class="badge {{ filled(config('services.paymob.public_key')) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ __('Unified public key') }}: {{ filled(config('services.paymob.public_key')) ? __('Configured') : __('Missing') }}</span>
+                        </div>
+                        <div class="text-muted small mt-2">{{ __('Provider secrets are managed only in the server environment and are never displayed or stored from this admin page.') }}</div>
+                    </div>
                 </div>
             </div>
 
@@ -99,9 +99,8 @@
                             <span class="badge text-bg-warning">{{ __('Keep live keys private') }}</span>
                         </div>
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Paymob API key') }}</label>
-                                <input type="text" class="form-control" name="paymob_api_key" value="{{ old('paymob_api_key', $storeSettings['paymob_api_key'] ?? '') }}">
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">{{ __('Paymob API/HMAC/Secret credentials are server-managed. Only non-secret integration identifiers are editable here.') }}</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">{{ __('Paymob integration ID') }}</label>
@@ -111,10 +110,7 @@
                                 <label class="form-label fw-semibold">{{ __('Paymob iframe ID') }}</label>
                                 <input type="text" class="form-control" name="paymob_iframe_id" value="{{ old('paymob_iframe_id', $storeSettings['paymob_iframe_id'] ?? '') }}">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Paymob HMAC secret') }}</label>
-                                <input type="text" class="form-control" name="paymob_hmac_secret" value="{{ old('paymob_hmac_secret', $storeSettings['paymob_hmac_secret'] ?? '') }}">
-                            </div>
+
                         </div>
                     </div>
                 </div>
