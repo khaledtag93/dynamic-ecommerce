@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const totalCost = materialsCost + extraCost;
         const sale = parseFloat(sellingPrice.value || 0);
         const profit = sale - totalCost;
-        const margin = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+        const margin = sale > 0 ? (profit / sale) * 100 : 0;
 
         document.getElementById('materialsCostLabel').textContent = money(materialsCost);
         document.getElementById('extraCostLabel').textContent = money(extraCost);
