@@ -3,6 +3,7 @@
 namespace App\Services\Commerce;
 
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -48,6 +49,13 @@ class OrderActionService
             if ($paymentStatus === Order::PAYMENT_STATUS_PENDING) {
                 $paymentStatus = Order::PAYMENT_STATUS_FAILED;
             }
+
+            $lockedOrder->payments()
+                ->whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED])
+                ->update([
+                    'status' => Payment::STATUS_FAILED,
+                    'failed_at' => now(),
+                ]);
 
             $lockedOrder->update([
                 'status' => Order::STATUS_CANCELLED,
@@ -113,6 +121,16 @@ class OrderActionService
             }
 
             $oldDeliveryStatus = $lockedOrder->delivery_status;
+
+            if ($newStatus === Order::STATUS_COMPLETED && $lockedOrder->payment_method === Order::PAYMENT_METHOD_COD) {
+                $lockedOrder->payments()
+                    ->whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED])
+                    ->update([
+                        'status' => Payment::STATUS_PAID,
+                        'paid_at' => now(),
+                        'failed_at' => null,
+                    ]);
+            }
 
             $lockedOrder->update($updates);
 
