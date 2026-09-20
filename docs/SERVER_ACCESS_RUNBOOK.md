@@ -117,3 +117,13 @@ Security/release note:
 - Rebuilt Laravel config cache after changing production `APP_DEBUG=false`.
 - Verified with `php artisan about --only=environment` that runtime Debug Mode is now OFF.
 - Production remains out of maintenance mode.
+
+
+### Production database connectivity check — 2026-09-20
+- `php artisan migrate:status` completed successfully on production, confirming Laravel can connect to the configured database.
+- Every migration file currently present in the deployed production snapshot is marked Ran.
+- The V42 hardening branch contains three newer migration files not present in this production snapshot yet:
+  - `2026_06_24_000000_create_cost_calculator_tables.php`
+  - `2026_09_20_000000_normalize_growth_offer_learning_index.php`
+  - `2026_09_20_235900_scrub_plaintext_provider_secrets.php`
+- These must only be applied during the controlled V42 deployment/rehearsal after a database snapshot; do not run them on the current production snapshot now.
