@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'enabled' => env('ALLOW_DEPLOY_CENTER', true),
+    'enabled' => env('ALLOW_DEPLOY_CENTER', false),
     'workspace_path' => env('DEPLOY_WORKSPACE_PATH', base_path()),
     'deploy_script' => env('DEPLOY_SCRIPT_PATH', base_path('deploy.sh')),
     'rollback_script' => env('ROLLBACK_SCRIPT_PATH', base_path('rollback.sh')),
