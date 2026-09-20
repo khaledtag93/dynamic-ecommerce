@@ -184,3 +184,10 @@ Operational conclusion:
 - The merchant account was integrated enough for Test IFRAME transactions, but onboarding/verification appears to have remained incomplete.
 - This account state likely contributes to current dashboard limitations and is a separate concern from Laravel integration correctness.
 - Continue V42 release hardening independently; do not block non-payment readiness work on Paymob verification.
+
+
+### Production server discovery — 2026-09-20
+- SSH login to Hostinger succeeded.
+- The historical application path `/home/u637857322/domains/tag-marketplace.com/laravel_app` exists.
+- Running `git status --short --branch` inside that directory returned: `fatal: not a git repository`.
+- Therefore the current production Laravel directory is not a Git worktree. Do not run fetch/pull/reset/checkout there until the actual deployment layout is inspected and a safe migration/rehearsal plan is chosen.
