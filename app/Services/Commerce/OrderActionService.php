@@ -197,6 +197,31 @@ class OrderActionService
                 'payment_status' => $newPaymentStatus,
             ]);
 
+            if ($newPaymentStatus === Order::PAYMENT_STATUS_REFUNDED) {
+                $refundedAt = now();
+
+                $lockedOrder->payments()
+                    ->where('status', Payment::STATUS_PAID)
+                    ->lockForUpdate()
+                    ->get()
+                    ->each(function (Payment $payment) use ($refundedAt) {
+                        $meta = $payment->meta ?? [];
+                        $events = $meta['events'] ?? [];
+                        $events[] = [
+                            'event' => 'order_refund_completed',
+                            'message' => __('Payment was marked refunded after the order refund ledger reached the full paid amount.'),
+                            'at' => $refundedAt->toDateTimeString(),
+                        ];
+                        $meta['events'] = array_slice($events, -20);
+
+                        $payment->update([
+                            'status' => Payment::STATUS_REFUNDED,
+                            'refunded_at' => $refundedAt,
+                            'meta' => $meta,
+                        ]);
+                    });
+            }
+
             $freshOrder = $lockedOrder->fresh(['refunds', 'user']);
 
             $this->orderNotificationService->notifyRefundRecorded($freshOrder);
