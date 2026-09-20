@@ -81,3 +81,9 @@ Latest successful CI evidence:
 
 Important limitation:
 - the current PHPUnit suite is still very small, so targeted regression tests for the hardened business rules remain required.
+
+### Additional hardening — 2026-09-20
+- custom staff roles cannot be deleted while assigned to admin accounts; deletion is serialized with a database row lock to prevent cascade-based privilege escalation
+- the permissions UI no longer offers an empty legacy-role assignment option; legacy fallback admins are mapped to the explicit Super Admin role when saved
+- added a regression test covering assigned-role deletion protection
+- removed remaining tracked runtime/user uploads from `storage/app/livewire-tmp` and `storage/app/public` and added explicit Git ignore rules for both paths
