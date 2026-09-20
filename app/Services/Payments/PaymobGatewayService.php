@@ -209,7 +209,7 @@ class PaymobGatewayService
     protected function sanitizePayloadForLogs(array $payload): array
     {
         $sensitiveKeys = [
-            'api_key', 'auth_token', 'payment_token', 'token', 'hmac',
+            'api_key', 'auth_token', 'payment_token', 'client_secret', 'secret_key', 'token', 'hmac',
             'pan', 'masked_pan', 'card_number', 'cvv', 'card_cvn',
             'email', 'phone_number', 'first_name', 'last_name',
             'street', 'building', 'apartment', 'postal_code',
