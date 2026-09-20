@@ -193,6 +193,19 @@ class PaymentService
 
     protected function transitionGatewayPayment(Payment $payment, string $status, string $event, string $message, array $context = []): Payment
     {
+        $payment->refresh();
+
+        // A successful gateway confirmation is terminal here. Late/replayed callbacks
+        // must never downgrade a paid or refunded payment. Repeated paid callbacks
+        // are idempotent and do not create duplicate events/notifications.
+        if ($payment->status === Payment::STATUS_REFUNDED) {
+            return $payment;
+        }
+
+        if ($payment->status === Payment::STATUS_PAID) {
+            return $payment;
+        }
+
         $meta = array_merge($payment->meta ?? [], Arr::except($context, ['notes', 'provider_status', 'transaction_id']));
         $meta = $this->pushPaymentEvent($meta, $event, $message);
 
