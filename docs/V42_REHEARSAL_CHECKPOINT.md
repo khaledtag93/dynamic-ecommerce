@@ -146,3 +146,13 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - Header, search, language controls, login/cart actions, and home hero content were visibly rendered.
 - QAS/Staging is now confirmed usable interactively in a browser.
 - Next functional smoke step: authentication/admin access, then cart/checkout/order flows.
+
+
+## Owner / Super Admin product rule — 2026-09-20
+
+- Product/security decision: each installation has exactly one store owner account with full Super Admin authority. For the developer's own installation, that owner account is Khaled's account.
+- Customer self-registration must always create a normal customer, never an admin.
+- The store owner may later create/promote staff admins, but those staff accounts must receive explicit limited roles/permissions and must never implicitly become Super Admin.
+- Current code still contains a legacy fallback where a `role_as=1` user with no attached role is treated as Super Admin. This does not match the owner-only rule and is now a P0 authorization hardening item before production promotion.
+- Target model: Super Admin must be explicit (the system `super_admin` role / owner bootstrap), while all other admins require an assigned staff role. Removing a staff role must not elevate privileges.
+- QAS currently has the owner account bootstrapped manually for smoke testing; this is acceptable for staging only. The permanent bootstrap flow must be formalized before final production release / customer delivery.
