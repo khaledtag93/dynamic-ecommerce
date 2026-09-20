@@ -21,6 +21,7 @@ BACKUP_ROOT="$BASE_DIR/deploy_backups"
 LOG_DIR="$BASE_DIR/deploy_logs"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 CURRENT_BACKUP_DIR="$BACKUP_ROOT/backup_$TIMESTAMP"
+DB_SNAPSHOT_PATH="$CURRENT_BACKUP_DIR/database/database.sql"
 LOG_FILE="$LOG_DIR/deploy_$TIMESTAMP.log"
 LATEST_BACKUP_FILE="$BACKUP_ROOT/latest_successful_backup.txt"
 KEEP_BACKUPS="${KEEP_BACKUPS:-10}"
@@ -59,7 +60,14 @@ rollback_from_current_backup() {
     [ -d "$CURRENT_BACKUP_DIR" ] || fail "Automatic rollback failed: backup directory not found: $CURRENT_BACKUP_DIR"
     [ -f "$KEEP_ENV_FILE" ] || fail "Current .env not found: $KEEP_ENV_FILE"
 
-    local env_tmp="/tmp/tag_marketplace_env_${TIMESTAMP}_$$.backup"
+    if [ -f "$APP_DIR/artisan" ]; then
+        (
+            cd "$APP_DIR"
+            $PHP_BIN artisan down --retry=60 || true
+        )
+    fi
+
+    local env_tmp="/tmp/tag_marketplace_env_${TIMESTAMP}_$.backup"
     cp "$KEEP_ENV_FILE" "$env_tmp"
 
     rsync -a --delete \
@@ -84,8 +92,13 @@ rollback_from_current_backup() {
     $COMPOSER_BIN install --no-dev --prefer-dist --optimize-autoloader --no-interaction || true
     $PHP_BIN artisan optimize:clear || true
     $PHP_BIN artisan config:cache || true
+    $PHP_BIN artisan up || true
 
-    log "✅ Automatic rollback completed."
+    log "✅ Automatic code rollback completed."
+    if [ -f "$DB_SNAPSHOT_PATH" ]; then
+        log "🗄 Database snapshot retained for explicit recovery if needed: $DB_SNAPSHOT_PATH"
+        log "⚠️ Database restore is intentionally NOT automatic."
+    fi
 }
 
 on_error() {
@@ -160,7 +173,7 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 || fail "This is not a valid
 
 PREVIOUS_COMMIT="$(git rev-parse --short HEAD || echo 'unknown')"
 
-mkdir -p "$CURRENT_BACKUP_DIR/app" "$CURRENT_BACKUP_DIR/public" "$CURRENT_BACKUP_DIR/meta"
+mkdir -p "$CURRENT_BACKUP_DIR/app" "$CURRENT_BACKUP_DIR/public" "$CURRENT_BACKUP_DIR/meta" "$CURRENT_BACKUP_DIR/database"
 
 log "📦 Creating backup before deploy..."
 rsync -a \
@@ -181,9 +194,12 @@ cp "$KEEP_ENV_FILE" "$CURRENT_BACKUP_DIR/meta/.env.backup"
 echo "$PREVIOUS_COMMIT" > "$CURRENT_BACKUP_DIR/meta/current_commit.txt"
 touch "$CURRENT_BACKUP_DIR/meta/backup_completed.txt"
 
-log "✅ Backup created at: $CURRENT_BACKUP_DIR"
+log "✅ File backup created at: $CURRENT_BACKUP_DIR"
 
 ROLLBACK_NEEDED="true"
+
+log "🚧 Enabling Laravel maintenance mode..."
+$PHP_BIN artisan down --retry=60
 
 log "⬇️ Fetching latest code..."
 git fetch origin
@@ -209,6 +225,11 @@ chmod -R ug+rw "$APP_DIR/storage" "$APP_DIR/bootstrap/cache" || true
 log "🧹 Clearing caches..."
 $PHP_BIN artisan optimize:clear
 
+log "🗄 Creating pre-migration database snapshot..."
+$PHP_BIN artisan database:snapshot "$DB_SNAPSHOT_PATH"
+[ -s "$DB_SNAPSHOT_PATH" ] || fail "Database snapshot was not created or is empty: $DB_SNAPSHOT_PATH"
+log "✅ Database snapshot created: $DB_SNAPSHOT_PATH"
+
 log "🗄 Running migrations..."
 $PHP_BIN artisan migrate --force
 
@@ -226,6 +247,9 @@ rsync -a \
     --exclude='storage' \
     "$APP_DIR/public/" "$PUBLIC_DIR/"
 
+log "🌐 Disabling Laravel maintenance mode..."
+$PHP_BIN artisan up
+
 health_check
 
 echo "$CURRENT_BACKUP_DIR" > "$LATEST_BACKUP_FILE"
@@ -238,5 +262,6 @@ log "✅ Deploy completed successfully"
 log "🔖 Previous commit: $PREVIOUS_COMMIT"
 log "🔖 Current  commit: $NEW_COMMIT"
 log "💾 Backup saved at: $CURRENT_BACKUP_DIR"
+log "🗄 Database snapshot: $DB_SNAPSHOT_PATH"
 log "📝 Deploy log: $LOG_FILE"
 log "=================================================="
