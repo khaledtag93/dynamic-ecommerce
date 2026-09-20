@@ -101,3 +101,9 @@ A production-like GitHub Actions build on PHP 8.2 + MySQL 8 is green for the V42
 - custom role deletion now refuses assigned roles, preventing foreign-key cascade from leaving admins in implicit legacy Super Admin state
 - permission-role deletion now has targeted automated regression coverage
 - remaining tracked Livewire temporary files and product runtime uploads were removed from Git and their runtime storage paths are ignored
+
+### Financial integrity follow-up — 2026-09-20
+- Paymob/gateway status transitions are now row-locked and transactional, closing the simultaneous paid-vs-failed callback race
+- order payment-state synchronization is row-locked
+- permanent order hard-delete is disabled to retain financial and inventory audit history
+- targeted tests now cover terminal paid state, retained cancelled orders, and assigned-role deletion protection
