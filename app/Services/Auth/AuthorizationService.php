@@ -13,6 +13,8 @@ class AuthorizationService
     {
         return [
             ['group' => 'dashboard', 'slug' => 'dashboard.view', 'name' => 'View dashboard', 'description' => 'Access the admin dashboard and overview widgets.'],
+            ['group' => 'growth', 'slug' => 'growth.view', 'name' => 'View growth', 'description' => 'Review growth dashboards, operations, content, and insights.'],
+            ['group' => 'growth', 'slug' => 'growth.manage', 'name' => 'Manage growth', 'description' => 'Create, update, run, toggle, seed, retry, or delete growth automation resources.'],
             ['group' => 'catalog', 'slug' => 'catalog.manage', 'name' => 'Manage catalog', 'description' => 'Create and edit categories, products, brands, and attributes.'],
             ['group' => 'orders', 'slug' => 'orders.view', 'name' => 'View orders', 'description' => 'Review customer orders and order details.'],
             ['group' => 'orders', 'slug' => 'orders.manage', 'name' => 'Manage orders', 'description' => 'Update order statuses and perform order operations.'],
