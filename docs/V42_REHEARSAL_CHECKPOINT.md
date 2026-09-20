@@ -171,3 +171,15 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - The QAS deploy script explicitly refuses to proceed unless `APP_ENV=staging`, `APP_DEBUG=false`, and the configured DB name matches the dedicated V42 rehearsal database.
 - It never targets the production application directory or production webroot.
 - Production promotion remains a separate later workflow and must deploy the exact QAS-approved commit with production backup/DB snapshot/rollback gates.
+
+
+## QAS one-command deployment validated — 2026-09-21
+
+- End-to-end QAS deployment workflow was successfully proven with a visible homepage text change.
+- Test change: `Today offers` -> `V42 Special Offers` in `resources/views/frontend/index.blade.php`.
+- Tested commit: `9a51f50`.
+- CI completed successfully before deployment.
+- Server deployment completed successfully with `bash deploy-qas.sh`.
+- QAS health check returned HTTP 200.
+- Browser verification confirmed the new text was visible on `https://v42.tag-marketplace.com`.
+- Therefore the routine flow is now validated: code change -> GitHub -> CI green -> one-command QAS deploy -> browser verification.
