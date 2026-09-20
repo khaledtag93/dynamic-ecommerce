@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\WebsiteSetting;
+use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -42,6 +43,10 @@ class PaymentSettingsController extends Controller
         foreach (array_diff(array_keys($validated), $booleanKeys) as $key) {
             WebsiteSetting::setValue($key, $validated[$key] ?? null, 'payment');
         }
+
+        WebsiteSetting::query()
+            ->whereIn('key', StoreSettingsService::sensitiveSettingKeys())
+            ->delete();
 
         return back()->with('success', __('Payment settings updated successfully.'));
     }
