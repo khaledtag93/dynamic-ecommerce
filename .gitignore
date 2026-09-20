@@ -44,3 +44,4 @@ Thumbs.db
 *.7z
 /database/*.sqlite
 *.bak
+/database/*.sqlite-*
