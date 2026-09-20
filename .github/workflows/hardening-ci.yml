@@ -1,0 +1,115 @@
+name: Hardening CI
+
+on:
+  push:
+    branches:
+      - v42-clean-baseline
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hardening-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: dynamic_test
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      FORCE_HTTPS: "false"
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: dynamic_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      CACHE_DRIVER: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      FILESYSTEM_DISK: local
+      LOCAL_SAFE_BOOT: "false"
+      ALLOW_DEPLOY_CENTER: "false"
+      PAYMOB_API_KEY: ""
+      PAYMOB_HMAC_SECRET: ""
+      PAYMOB_INTEGRATION_ID: ""
+      PAYMOB_IFRAME_ID: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, dom, xml, xmlwriter, pdo_mysql, bcmath, intl, curl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer
+        run: composer validate --no-check-publish
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Laravel environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: PHP syntax scan
+        run: |
+          find app config database routes tests -type f -name '*.php' -print0 \
+            | xargs -0 -n1 php -l
+
+      - name: Migrate clean MySQL database
+        run: php artisan migrate:fresh --force
+
+      - name: Verify Laravel boot and routes
+        run: |
+          php artisan about
+          php artisan route:list
+
+      - name: Compile config and Blade views
+        run: |
+          php artisan config:cache
+          php artisan view:cache
+          php artisan config:clear
+          php artisan view:clear
+
+      - name: Run PHPUnit
+        run: php artisan test
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
