@@ -94,3 +94,37 @@ Important limitation:
 - permanent order deletion is disabled in both backend and admin UI to preserve payment, refund, coupon, inventory, and audit history
 - added regression coverage for paid-payment terminal behavior and order retention
 - CI verification for this follow-up is pending on the latest branch commit
+
+
+### Final code-hardening pass — 2026-09-20
+Verified and closed on `v42-clean-baseline`:
+- financial mutation lock ordering is standardized as Order → Payment to avoid callback/refund lock inversion
+- a full refund now aligns the Payment ledger to `refunded`; partial refunds keep the original paid transaction while the Order remains `partially_refunded`
+- late gateway failure callbacks cannot downgrade a fully refunded payment
+- checkout rollback coverage proves that a late business-rule failure rolls back the Order, items, Payment, inventory movements, stock decrement, and cart mutation together
+- cancellation restocking now creates exactly one `refund_restock` inventory movement and repeated cancellation cannot duplicate it
+- cancellation restock records historical movement cost without overwriting the product's current cost valuation
+- Cost Calculator `profit_margin` now uses profit / selling price; the old profit / cost formula was markup, not margin
+- deploy backups no longer contain a duplicate app-level `.env`; deploy/rollback files use private `umask 077` handling
+- manual rollback now enters maintenance mode, restores files, rebuilds caches, brings the app up, and requires a verified HTTPS health check
+- rollback/deploy temporary environment copies are process-unique and private
+- Paymob callback failure logging no longer stores the raw callback payload or full callback URL
+- Paymob callback service results expose callback shape only, not the raw payload
+
+Latest verification:
+- GitHub Actions head `b9a46a6`: **green**
+- PHP syntax: passed
+- Bash syntax: passed
+- MySQL 8 clean migration: passed
+- Laravel boot/routes: passed
+- config cache + Blade compile: passed
+- PHPUnit including new hardening regressions: passed
+- frontend production build: passed
+
+### Remaining release gate
+The remaining blockers are now operational/external rather than known code-hardening failures:
+1. Rotate all credentials that may have appeared in historical Git, including production DB, APP_KEY where appropriate, SMTP, Paymob, WhatsApp/Meta, and deploy shared secrets actually in use.
+2. Execute a real Paymob sandbox/test end-to-end payment: initiate, success callback, failed/declined callback, delayed callback, refresh/retry, and duplicate callback behavior.
+3. Rehearse deploy on the target server/staging-like environment, confirm pre-migration database snapshot creation, and rehearse file rollback plus explicit database recovery procedure.
+4. Run final production smoke checks, then promote V42 to `main`.
+5. Deploy Production only after the above gate is green.
