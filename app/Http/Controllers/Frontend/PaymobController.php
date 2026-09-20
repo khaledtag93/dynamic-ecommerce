@@ -236,7 +236,10 @@ class PaymobController extends Controller
 
             $this->logWarning('Paymob callback unresolved', [
                 'message' => $result['message'] ?? null,
-                'payload' => $payload,
+                'method' => $request->method(),
+                'has_hmac' => $request->filled('hmac'),
+                'has_obj' => is_array($payload['obj'] ?? null),
+                'payload_keys' => array_slice(array_keys($payload), 0, 30),
             ]);
 
             if ($isBrowserFlow) {
@@ -252,12 +255,12 @@ class PaymobController extends Controller
         } catch (\Throwable $e) {
             $this->logError('Paymob callback processing failed', [
                 'method' => $request->method(),
-                'full_url' => $request->fullUrl(),
-                'ip' => $request->ip(),
+                'path' => $request->path(),
+                'has_hmac' => $request->filled('hmac'),
+                'has_obj' => is_array($payload['obj'] ?? null),
+                'payload_keys' => array_slice(array_keys($payload), 0, 30),
                 'exception_class' => get_class($e),
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'payload' => $payload,
             ]);
 
             report($e);
