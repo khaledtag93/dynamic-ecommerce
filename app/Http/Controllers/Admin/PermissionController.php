@@ -20,6 +20,8 @@ class PermissionController extends Controller
 
     public function index()
     {
+        $this->ensureSuperAdmin();
+
         $this->authorizationService->syncDefaults();
 
         $roles = Role::query()->with('permissions')->orderByDesc('is_system')->orderBy('id')->get();
@@ -43,6 +45,8 @@ class PermissionController extends Controller
 
     public function storeRole(Request $request): RedirectResponse
     {
+        $this->ensureSuperAdmin();
+
         $this->authorizationService->syncDefaults();
 
         $validated = $request->validate([
@@ -68,6 +72,8 @@ class PermissionController extends Controller
 
     public function updateRole(Request $request, Role $role): RedirectResponse
     {
+        $this->ensureSuperAdmin();
+
         abort_if($role->is_system, 403);
 
         $validated = $request->validate([
@@ -91,6 +97,8 @@ class PermissionController extends Controller
 
     public function destroyRole(Role $role): RedirectResponse
     {
+        $this->ensureSuperAdmin();
+
         abort_if($role->is_system, 403);
 
         $role->users()->detach();
@@ -102,6 +110,8 @@ class PermissionController extends Controller
 
     public function storePermission(Request $request): RedirectResponse
     {
+        $this->ensureSuperAdmin();
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'group' => ['nullable', 'string', 'max:50'],
@@ -125,19 +135,27 @@ class PermissionController extends Controller
 
     public function updateUserRole(Request $request, User $user): RedirectResponse
     {
+        $this->ensureSuperAdmin();
+
         $this->authorizationService->syncDefaults();
 
         $validated = $request->validate([
-            'role_id' => ['nullable', Rule::exists('roles', 'id')],
+            'role_id' => ['required', Rule::exists('roles', 'id')],
         ]);
 
         if ((int) $user->role_as !== 1) {
             return back()->with('error', __('Only admin accounts can receive back-office staff roles.'));
         }
 
-        $roleId = $validated['role_id'] ?? null;
-        $user->roles()->sync($roleId ? [$roleId] : []);
+        $roleId = (int) $validated['role_id'];
+        $user->roles()->sync([$roleId]);
 
         return back()->with('success', __('Staff role updated successfully.'));
     }
+
+    protected function ensureSuperAdmin(): void
+    {
+        abort_unless(request()->user()?->isSuperAdmin(), 403);
+    }
+
 }
