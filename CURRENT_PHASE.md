@@ -28,3 +28,25 @@
 
 ### Release rule
 No Production deployment until the hardening gate is completed or a remaining risk is explicitly documented and accepted.
+
+
+### Hardening progress — 2026-09-20
+Closed in code:
+- clean-clone Laravel runtime directories are preserved with tracked `.gitkeep` files
+- Growth controller no longer performs database writes/queries during route discovery
+- Paymob iframe URL recursion fixed
+- Paymob callback HMAC is mandatory and enforced for state-changing callbacks
+- Paymob callback amount, currency, and integration ID are checked against the expected payment
+- paid/refunded gateway states are protected from late callback downgrades
+- admin role changes require a super admin
+- Paymob logs no longer retain full callback payloads/secrets/PII
+
+Verification completed:
+- V42 baseline hash verification: zero missing and zero mismatched expected source files
+- PHP syntax scan: 298 files, zero syntax errors
+- Laravel route discovery: 187 routes loaded successfully
+- Paymob HMAC smoke test: valid GET/POST signatures accepted; invalid signature rejected
+- Paymob iframe URL smoke test passed
+
+Environment limitation during verification:
+- PHPUnit/config/view cache commands cannot be fully executed in the current test container because required PHP extensions (DOM, mbstring, XML/XMLWriter) are unavailable there. This does not close the testing gate; CI/server verification remains required.
