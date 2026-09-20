@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Notifications\OrderPaymentStatusUpdatedNotification;
 use App\Services\Payments\PaymobGatewayService;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PaymentService
 {
@@ -115,47 +117,72 @@ class PaymentService
         $allowedStatuses = array_keys(Payment::statusOptions());
         abort_unless(in_array($status, $allowedStatuses, true), 422);
 
-        $meta = array_merge($payment->meta ?? [], Arr::except($context, ['notes', 'provider_status']));
-        $meta = $this->pushPaymentEvent($meta, 'manual_status_update', __('Payment status was updated manually from the admin panel.'));
-
-        $updates = [
-            'status' => $status,
-            'notes' => $context['notes'] ?? $payment->notes,
-            'provider_status' => $context['provider_status'] ?? $payment->provider_status,
-            'meta' => $meta,
-        ];
-
-        if ($status === Payment::STATUS_AUTHORIZED) {
-            $updates['authorized_at'] = now();
-        }
-
-        if ($status === Payment::STATUS_PAID) {
-            $updates['paid_at'] = now();
-            $updates['failed_at'] = null;
-        }
-
-        if ($status === Payment::STATUS_FAILED) {
-            $updates['failed_at'] = now();
-        }
-
         if ($status === Payment::STATUS_REFUNDED) {
-            $updates['refunded_at'] = now();
+            throw ValidationException::withMessages([
+                'status' => 'Record refunds from the order refund action so the financial ledger stays consistent.',
+            ]);
         }
 
-        if ($status === Payment::STATUS_PENDING) {
-            $updates['failed_at'] = null;
-        }
+        return DB::transaction(function () use ($payment, $status, $context) {
+            $lockedPayment = Payment::query()
+                ->whereKey($payment->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $payment->update($updates);
-        $payment->refresh();
+            if ($lockedPayment->status === Payment::STATUS_REFUNDED) {
+                throw ValidationException::withMessages([
+                    'status' => 'A refunded payment is terminal and cannot be changed manually.',
+                ]);
+            }
 
-        $order = $payment->order()->first();
-        if ($order) {
-            $this->syncOrderPaymentStatus($order);
-            $this->notifyPaymentStatusChanged($order, $payment);
-        }
+            if ($lockedPayment->status === Payment::STATUS_PAID && $status !== Payment::STATUS_PAID) {
+                throw ValidationException::withMessages([
+                    'status' => 'A paid payment cannot be downgraded manually. Use the order refund action when money is returned.',
+                ]);
+            }
 
-        return $payment;
+            if ($lockedPayment->status === $status) {
+                return $lockedPayment;
+            }
+
+            $meta = array_merge($lockedPayment->meta ?? [], Arr::except($context, ['notes', 'provider_status']));
+            $meta = $this->pushPaymentEvent($meta, 'manual_status_update', __('Payment status was updated manually from the admin panel.'));
+
+            $updates = [
+                'status' => $status,
+                'notes' => $context['notes'] ?? $lockedPayment->notes,
+                'provider_status' => $context['provider_status'] ?? $lockedPayment->provider_status,
+                'meta' => $meta,
+            ];
+
+            if ($status === Payment::STATUS_AUTHORIZED) {
+                $updates['authorized_at'] = now();
+            }
+
+            if ($status === Payment::STATUS_PAID) {
+                $updates['paid_at'] = $lockedPayment->paid_at ?? now();
+                $updates['failed_at'] = null;
+            }
+
+            if ($status === Payment::STATUS_FAILED) {
+                $updates['failed_at'] = now();
+            }
+
+            if ($status === Payment::STATUS_PENDING) {
+                $updates['failed_at'] = null;
+            }
+
+            $lockedPayment->update($updates);
+            $lockedPayment->refresh();
+
+            $order = $lockedPayment->order()->first();
+            if ($order) {
+                $this->syncOrderPaymentStatus($order);
+                $this->notifyPaymentStatusChanged($order->fresh(), $lockedPayment);
+            }
+
+            return $lockedPayment;
+        });
     }
 
     public function markAsPaid(Payment $payment, array $context = []): Payment
@@ -267,6 +294,25 @@ class PaymentService
 
     public function syncOrderPaymentStatus(Order $order): void
     {
+        $order->refresh();
+
+        // Refund records are the authoritative refund ledger. Never allow a
+        // later payment sync to erase partially-refunded/refunded order state.
+        $refundTotal = round((float) $order->refunds()->sum('amount'), 2);
+
+        if ($refundTotal > 0) {
+            $status = $refundTotal >= (float) $order->grand_total
+                ? Order::PAYMENT_STATUS_REFUNDED
+                : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
+
+            $order->update([
+                'refund_total' => $refundTotal,
+                'payment_status' => $status,
+            ]);
+
+            return;
+        }
+
         $payments = $order->payments()->get();
 
         if ($payments->isEmpty()) {
