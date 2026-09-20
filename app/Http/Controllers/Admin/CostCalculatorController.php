@@ -159,7 +159,9 @@ class CostCalculatorController extends Controller
             $sellingPrice = (float) $data['selling_price'];
             $totalCost = round($materialsCost + $extraCost, 2);
             $profit = round($sellingPrice - $totalCost, 2);
-            $profitMargin = $totalCost > 0 ? round(($profit / $totalCost) * 100, 2) : 0;
+            // Profit margin is profit as a percentage of selling price.
+            // (profit / cost) would be markup, which is a different metric.
+            $profitMargin = $sellingPrice > 0 ? round(($profit / $sellingPrice) * 100, 2) : 0;
 
             ProductCostSummary::updateOrCreate(
                 ['product_id' => $productId],
