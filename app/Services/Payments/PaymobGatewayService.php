@@ -130,7 +130,13 @@ class PaymobGatewayService
 
     protected function checkoutUrlFromToken(string $paymentToken): string
     {
-        return $this->checkoutUrlFromToken($paymentToken);
+        if ($paymentToken === '' || $this->iframeId === '') {
+            throw new RuntimeException('Paymob iframe checkout is not configured correctly.');
+        }
+
+        return $this->baseUrl
+            . '/acceptance/iframes/' . rawurlencode($this->iframeId)
+            . '?payment_token=' . rawurlencode($paymentToken);
     }
 
     protected function client()
@@ -620,13 +626,7 @@ class PaymobGatewayService
     {
         $identifiers = $this->extractOrderIdentifiers($payload);
 
-        if ($identifiers['merchant_order_id']) {
-            $order = Order::with('payments')->find($identifiers['merchant_order_id']);
-            if ($order) {
-                return $order;
-            }
-        }
-
+        // Prefer identifiers covered by Paymob's callback signature.
         if ($identifiers['paymob_order_id']) {
             $payment = Payment::query()
                 ->where('provider', 'paymob')
@@ -654,6 +654,14 @@ class PaymobGatewayService
             }
         }
 
+        // Keep merchant_order_id only as a final compatibility fallback.
+        if ($identifiers['merchant_order_id']) {
+            $order = Order::with('payments')->find($identifiers['merchant_order_id']);
+            if ($order) {
+                return $order;
+            }
+        }
+
         return null;
     }
 
@@ -665,38 +673,59 @@ class PaymobGatewayService
 
         $providedHmac = data_get($payload, 'hmac');
         if (! $providedHmac) {
-            return null;
+            return false;
         }
 
         $obj = is_array($payload['obj'] ?? null) ? $payload['obj'] : [];
-        if ($obj === []) {
+        $source = $obj !== [] ? $obj : $payload;
+
+        $value = static function (array $source, string $nested, array $flatKeys = []) {
+            $nestedValue = data_get($source, $nested);
+            if ($nestedValue !== null) {
+                return $nestedValue;
+            }
+
+            foreach ($flatKeys as $key) {
+                if (array_key_exists($key, $source)) {
+                    return $source[$key];
+                }
+            }
+
             return null;
-        }
+        };
 
         $fields = [
-            data_get($obj, 'amount_cents'),
-            data_get($obj, 'created_at'),
-            data_get($obj, 'currency'),
-            data_get($obj, 'error_occured') ? 'true' : 'false',
-            data_get($obj, 'has_parent_transaction') ? 'true' : 'false',
-            data_get($obj, 'id'),
-            data_get($obj, 'integration_id'),
-            data_get($obj, 'is_3d_secure') ? 'true' : 'false',
-            data_get($obj, 'is_auth') ? 'true' : 'false',
-            data_get($obj, 'is_capture') ? 'true' : 'false',
-            data_get($obj, 'is_refunded') ? 'true' : 'false',
-            data_get($obj, 'is_standalone_payment') ? 'true' : 'false',
-            data_get($obj, 'is_voided') ? 'true' : 'false',
-            data_get($obj, 'order.id'),
-            data_get($obj, 'owner'),
-            data_get($obj, 'pending') ? 'true' : 'false',
-            data_get($obj, 'source_data.pan'),
-            data_get($obj, 'source_data.sub_type'),
-            data_get($obj, 'source_data.type'),
-            data_get($obj, 'success') ? 'true' : 'false',
+            $value($source, 'amount_cents', ['amount_cents']),
+            $value($source, 'created_at', ['created_at']),
+            $value($source, 'currency', ['currency']),
+            $this->truthy($value($source, 'error_occured', ['error_occured'])) ? 'true' : 'false',
+            $this->truthy($value($source, 'has_parent_transaction', ['has_parent_transaction'])) ? 'true' : 'false',
+            $value($source, 'id', ['id']),
+            $value($source, 'integration_id', ['integration_id']),
+            $this->truthy($value($source, 'is_3d_secure', ['is_3d_secure'])) ? 'true' : 'false',
+            $this->truthy($value($source, 'is_auth', ['is_auth'])) ? 'true' : 'false',
+            $this->truthy($value($source, 'is_capture', ['is_capture'])) ? 'true' : 'false',
+            $this->truthy($value($source, 'is_refunded', ['is_refunded'])) ? 'true' : 'false',
+            $this->truthy($value($source, 'is_standalone_payment', ['is_standalone_payment'])) ? 'true' : 'false',
+            $this->truthy($value($source, 'is_voided', ['is_voided'])) ? 'true' : 'false',
+            $obj !== []
+                ? data_get($obj, 'order.id')
+                : $value($payload, 'order', ['order', 'order_id']),
+            $value($source, 'owner', ['owner']),
+            $this->truthy($value($source, 'pending', ['pending'])) ? 'true' : 'false',
+            $obj !== []
+                ? data_get($obj, 'source_data.pan')
+                : $value($payload, 'source_data.pan', ['source_data.pan', 'source_data_pan']),
+            $obj !== []
+                ? data_get($obj, 'source_data.sub_type')
+                : $value($payload, 'source_data.sub_type', ['source_data.sub_type', 'source_data_sub_type']),
+            $obj !== []
+                ? data_get($obj, 'source_data.type')
+                : $value($payload, 'source_data.type', ['source_data.type', 'source_data_type']),
+            $this->truthy($value($source, 'success', ['success'])) ? 'true' : 'false',
         ];
 
-        $data = implode('', array_map(static fn ($value) => $value === null ? '' : (string) $value, $fields));
+        $data = implode('', array_map(static fn ($item) => $item === null ? '' : (string) $item, $fields));
         $calculated = hash_hmac('sha512', $data, $this->hmacSecret);
 
         return hash_equals(strtolower((string) $providedHmac), strtolower($calculated));
@@ -710,6 +739,31 @@ class PaymobGatewayService
 
         $identifiers = $this->extractOrderIdentifiers($payload);
         $obj = $identifiers['obj'];
+        $hmacValid = $this->validateHmac($payload);
+
+        if ($hmacValid !== true) {
+            $this->logWarning('Paymob callback rejected because HMAC validation failed.', [
+                'transaction_id' => $identifiers['transaction_id'],
+                'paymob_order_id' => $identifiers['paymob_order_id'],
+                'hmac_present' => ! empty($payload['hmac']),
+            ]);
+
+            return [
+                'valid' => false,
+                'success' => false,
+                'pending' => false,
+                'message' => 'Invalid or missing Paymob callback signature.',
+                'order' => null,
+                'payment' => null,
+                'provider_status' => 'rejected',
+                'transaction_id' => $identifiers['transaction_id'],
+                'paymob_order_id' => $identifiers['paymob_order_id'],
+                'merchant_order_id' => $identifiers['merchant_order_id'],
+                'hmac_valid' => $hmacValid,
+                'data' => [],
+            ];
+        }
+
         $order = $this->resolveOrderFromPayload($payload);
         $payment = $order?->payments()->latest('id')->first();
 
@@ -725,8 +779,47 @@ class PaymobGatewayService
                 'transaction_id' => $identifiers['transaction_id'],
                 'paymob_order_id' => $identifiers['paymob_order_id'],
                 'merchant_order_id' => $identifiers['merchant_order_id'],
-                'hmac_valid' => $this->validateHmac($payload),
+                'hmac_valid' => $hmacValid,
                 'data' => $payload,
+            ];
+        }
+
+        $callbackAmountCents = data_get($obj, 'amount_cents') ?? data_get($payload, 'amount_cents');
+        $expectedAmountCents = (int) round(((float) $payment->amount) * 100);
+        $callbackCurrency = strtoupper((string) (data_get($obj, 'currency') ?? data_get($payload, 'currency') ?? ''));
+        $expectedCurrency = strtoupper((string) ($payment->currency ?: $order->currency ?: $this->currency));
+        $callbackIntegrationId = (string) (data_get($obj, 'integration_id') ?? data_get($payload, 'integration_id') ?? '');
+
+        $integrityValid = is_numeric($callbackAmountCents)
+            && (int) $callbackAmountCents === $expectedAmountCents
+            && $callbackCurrency !== ''
+            && hash_equals($expectedCurrency, $callbackCurrency)
+            && ($this->integrationId === '' || ($callbackIntegrationId !== '' && hash_equals($this->integrationId, $callbackIntegrationId)));
+
+        if (! $integrityValid) {
+            $this->logWarning('Paymob callback rejected because payment integrity checks failed.', [
+                'order_id' => $order->id,
+                'payment_id' => $payment->id,
+                'callback_amount_cents' => $callbackAmountCents,
+                'expected_amount_cents' => $expectedAmountCents,
+                'callback_currency' => $callbackCurrency,
+                'expected_currency' => $expectedCurrency,
+                'callback_integration_id' => $callbackIntegrationId,
+            ]);
+
+            return [
+                'valid' => false,
+                'success' => false,
+                'pending' => false,
+                'message' => 'Paymob callback did not match the expected payment details.',
+                'order' => null,
+                'payment' => null,
+                'provider_status' => 'rejected',
+                'transaction_id' => $identifiers['transaction_id'],
+                'paymob_order_id' => $identifiers['paymob_order_id'],
+                'merchant_order_id' => $identifiers['merchant_order_id'],
+                'hmac_valid' => true,
+                'data' => [],
             ];
         }
 
@@ -775,7 +868,7 @@ class PaymobGatewayService
             'merchant_order_id' => $identifiers['merchant_order_id'],
             'response_code' => $responseCode,
             'response_message' => $responseMessage,
-            'hmac_valid' => $this->validateHmac($payload),
+            'hmac_valid' => $hmacValid,
             'data' => $payload,
         ];
     }
