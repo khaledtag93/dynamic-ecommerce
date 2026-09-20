@@ -72,8 +72,8 @@ class PaymobGatewayService
 
         $this->logInfo('Paymob runtime config resolved', [
             'base_url' => $this->baseUrl,
-            'api_key_prefix' => $this->apiKey !== '' ? substr($this->apiKey, 0, 10) . '***' : null,
-            'hmac_prefix' => $this->hmacSecret !== '' ? substr($this->hmacSecret, 0, 8) . '***' : null,
+            'api_key_present' => $this->apiKey !== '',
+            'hmac_secret_present' => $this->hmacSecret !== '',
             'integration_id' => $this->integrationId,
             'iframe_id' => $this->iframeId,
             'currency' => $this->currency,
@@ -109,6 +109,7 @@ class PaymobGatewayService
     {
         return $this->baseUrl !== ''
             && $this->apiKey !== ''
+            && $this->hmacSecret !== ''
             && $this->integrationId !== ''
             && $this->iframeId !== '';
     }
@@ -150,14 +151,24 @@ class PaymobGatewayService
 
     protected function sanitizePayloadForLogs(array $payload): array
     {
-        $sanitized = $payload;
+        $sensitiveKeys = [
+            'api_key', 'auth_token', 'payment_token', 'token', 'hmac',
+            'pan', 'masked_pan', 'card_number', 'cvv', 'card_cvn',
+            'email', 'phone_number', 'first_name', 'last_name',
+            'street', 'building', 'apartment', 'postal_code',
+        ];
 
-        if (isset($sanitized['auth_token'])) {
-            $sanitized['auth_token'] = substr((string) $sanitized['auth_token'], 0, 10) . '***';
-        }
+        $sanitized = [];
 
-        if (isset($sanitized['api_key'])) {
-            $sanitized['api_key'] = substr((string) $sanitized['api_key'], 0, 10) . '***';
+        foreach ($payload as $key => $value) {
+            if (in_array((string) $key, $sensitiveKeys, true)) {
+                $sanitized[$key] = '[redacted]';
+                continue;
+            }
+
+            $sanitized[$key] = is_array($value)
+                ? $this->sanitizePayloadForLogs($value)
+                : $value;
         }
 
         return $sanitized;
@@ -240,7 +251,9 @@ class PaymobGatewayService
             'endpoint' => $endpoint,
             'url' => $url,
             'status' => $response->status(),
-            'response' => $response->json() ?: $response->body(),
+            'response' => is_array($response->json())
+                ? $this->sanitizePayloadForLogs($response->json())
+                : '[non-json response]',
         ]);
 
         return $response->json();
@@ -733,8 +746,10 @@ class PaymobGatewayService
 
     public function handleCallback(array $payload): array
     {
-        $this->logInfo('Paymob callback payload', [
-            'payload' => $payload,
+        $this->logInfo('Paymob callback payload received', [
+            'has_hmac' => ! empty($payload['hmac']),
+            'has_obj' => is_array($payload['obj'] ?? null),
+            'keys' => array_keys($payload),
         ]);
 
         $identifiers = $this->extractOrderIdentifiers($payload);
