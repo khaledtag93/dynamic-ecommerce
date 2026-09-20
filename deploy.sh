@@ -106,19 +106,17 @@ trap 'on_error ${LINENO} $?' ERR
 health_check() {
     log "🩺 Running health check: $HEALTHCHECK_URL"
 
-    if command -v curl >/dev/null 2>&1; then
-        local http_code
-        http_code="$(curl -L -k -s -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$HEALTHCHECK_URL" || true)"
+    command -v curl >/dev/null 2>&1 || fail "curl is required for the production health check."
 
-        if [ "$http_code" = "200" ] || [ "$http_code" = "301" ] || [ "$http_code" = "302" ]; then
-            log "✅ Health check passed with HTTP $http_code"
-            return 0
-        fi
+    local http_code
+    http_code="$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$HEALTHCHECK_URL" || true)"
 
-        fail "Health check failed. HTTP status: ${http_code:-unknown}"
+    if [ "$http_code" = "200" ] || [ "$http_code" = "301" ] || [ "$http_code" = "302" ]; then
+        log "✅ Health check passed with HTTP $http_code"
+        return 0
     fi
 
-    log "⚠️ curl is not installed. Skipping HTTP health check."
+    fail "Health check failed. HTTP status: ${http_code:-unknown}"
 }
 
 cleanup_old_backups() {
