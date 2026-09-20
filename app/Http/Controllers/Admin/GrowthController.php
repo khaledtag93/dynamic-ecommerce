@@ -20,10 +20,7 @@ use Illuminate\View\View;
 
 class GrowthController extends Controller
 {
-    public function __construct(protected GrowthCampaignService $growthCampaignService)
-    {
-        $this->growthCampaignService->ensureDefaults();
-    }
+    public function __construct(protected GrowthCampaignService $growthCampaignService) {}
 
     public function index(): View
     {
