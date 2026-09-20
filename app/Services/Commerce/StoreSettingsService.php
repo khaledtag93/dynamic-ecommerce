@@ -7,6 +7,19 @@ use App\Support\LocalizedStoreSettings;
 
 class StoreSettingsService
 {
+    /**
+     * Provider credentials must never be exposed through the shared settings bag.
+     * Runtime integrations read these values directly from server environment/config.
+     */
+    private const SENSITIVE_SETTING_KEYS = [
+        'payment_gateway_secret_key',
+        'payment_gateway_webhook_secret',
+        'paymob_api_key',
+        'paymob_hmac_secret',
+        'whatsapp_meta_access_token',
+        'whatsapp_meta_app_secret',
+        'whatsapp_meta_verify_token',
+    ];
     public function all(): array
     {
         $defaults = [
@@ -378,7 +391,15 @@ class StoreSettingsService
 
         $db = WebsiteSetting::query()->pluck('value', 'key')->toArray();
 
-        return LocalizedStoreSettings::apply($this->replaceLegacyStorefrontCopy(array_merge($defaults, $db)));
+        $settings = LocalizedStoreSettings::apply(
+            $this->replaceLegacyStorefrontCopy(array_merge($defaults, $db))
+        );
+
+        foreach (self::SENSITIVE_SETTING_KEYS as $key) {
+            $settings[$key] = '';
+        }
+
+        return $settings;
     }
 
 
