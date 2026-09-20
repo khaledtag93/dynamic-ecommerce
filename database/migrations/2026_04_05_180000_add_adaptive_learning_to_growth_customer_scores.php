@@ -39,11 +39,11 @@ return new class extends Migration
                 $table->id();
                 $table->foreignId('campaign_id')->nullable()->constrained('growth_campaigns')->nullOnDelete();
                 $table->foreignId('experiment_id')->nullable()->constrained('growth_experiments')->nullOnDelete();
-                $table->string('campaign_key')->nullable()->index();
-                $table->string('retention_stage')->nullable()->index();
-                $table->string('offer_bias')->nullable()->index();
-                $table->string('offer_key')->nullable()->index();
-                $table->string('experiment_variant')->nullable()->index();
+                $table->string('campaign_key', 120)->nullable()->index();
+                $table->string('retention_stage', 64)->nullable()->index();
+                $table->string('offer_bias', 64)->nullable()->index();
+                $table->string('offer_key', 120)->nullable()->index();
+                $table->string('experiment_variant', 120)->nullable()->index();
                 $table->unsignedInteger('deliveries')->default(0);
                 $table->unsignedInteger('converted')->default(0);
                 $table->decimal('conversion_rate', 8, 2)->default(0);
