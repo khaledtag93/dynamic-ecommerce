@@ -38,6 +38,7 @@ return [
     'integration_id' => env('PAYMOB_INTEGRATION_ID'),
     'iframe_id'      => env('PAYMOB_IFRAME_ID'),
     'base_url'       => env('PAYMOB_BASE_URL', 'https://accept.paymob.com/api'),
+    'unified_base_url' => env('PAYMOB_UNIFIED_BASE_URL', 'https://accept.paymob.com'),
     'currency'       => env('PAYMOB_CURRENCY', 'EGP'),
     'verify_ssl'     => filter_var(env('PAYMOB_VERIFY_SSL', true), FILTER_VALIDATE_BOOL),
 ],
