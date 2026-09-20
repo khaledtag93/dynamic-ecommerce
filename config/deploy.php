@@ -14,6 +14,10 @@ return [
     'max_log_preview_bytes' => env('DEPLOY_MAX_LOG_PREVIEW_BYTES', 262144),
     'lock_file' => env('DEPLOY_LOCK_FILE', storage_path('app/deploy-center/deploy.lock')),
     'lock_ttl_seconds' => env('DEPLOY_LOCK_TTL_SECONDS', 3600),
+    'database_backup' => [
+        'binary' => env('MYSQLDUMP_BIN', 'mysqldump'),
+        'timeout_seconds' => env('DEPLOY_DB_BACKUP_TIMEOUT_SECONDS', 300),
+    ],
     'remote' => [
         'base_url' => env('DEPLOY_REMOTE_BASE_URL', ''),
         'shared_secret' => env('DEPLOY_REMOTE_SECRET', ''),
