@@ -100,7 +100,30 @@ class CouponService
             return;
         }
 
-        $coupon->increment('used_count');
+        $now = now();
+
+        $affected = Coupon::query()
+            ->whereKey($coupon->getKey())
+            ->where('is_active', true)
+            ->where(function ($query) use ($now) {
+                $query->whereNull('starts_at')->orWhere('starts_at', '<=', $now);
+            })
+            ->where(function ($query) use ($now) {
+                $query->whereNull('ends_at')->orWhere('ends_at', '>=', $now);
+            })
+            ->where(function ($query) {
+                $query->whereNull('usage_limit')
+                    ->orWhereColumn('used_count', '<', 'usage_limit');
+            })
+            ->increment('used_count');
+
+        if ($affected !== 1) {
+            throw ValidationException::withMessages([
+                'coupon' => 'This coupon is no longer available. Please review your cart and try again.',
+            ]);
+        }
+
+        $coupon->refresh();
     }
 
     protected function assertCouponUsable(Coupon $coupon, float $subtotal): void
