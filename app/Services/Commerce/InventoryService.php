@@ -63,7 +63,7 @@ class InventoryService
             'reason' => $context['reason'] ?? null,
             'quantity_change' => -$quantity,
             'balance_after' => $balanceAfter,
-            'unit_cost' => $context['unit_cost'] ?? 0,
+            'unit_cost' => $context['movement_unit_cost'] ?? $context['unit_cost'] ?? 0,
             'expiration_date' => $context['expiration_date'] ?? null,
             'meta' => $context['meta'] ?? null,
         ]);
@@ -100,7 +100,7 @@ class InventoryService
             'reason' => $context['reason'] ?? null,
             'quantity_change' => $quantityChange,
             'balance_after' => $balanceAfter,
-            'unit_cost' => $context['unit_cost'] ?? 0,
+            'unit_cost' => $context['movement_unit_cost'] ?? $context['unit_cost'] ?? 0,
             'expiration_date' => $context['expiration_date'] ?? null,
             'meta' => $context['meta'] ?? null,
         ]);
