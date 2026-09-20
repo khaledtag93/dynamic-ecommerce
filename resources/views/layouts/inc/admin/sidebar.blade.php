@@ -62,7 +62,7 @@
     $overviewCount = 3;
     $catalogCount = 4;
     $operationsCount = ($can('orders.view') ? 1 : 0) + ($can('customers.manage') ? 1 : 0) + ($can('payments.view') ? 1 : 0) + ($can('delivery.view') ? 1 : 0);
-    $inventoryCount = 3;
+    $inventoryCount = 4;
     $marketingCount = 2;
     $channelsCount = ($can('settings.manage') ? 4 : 0) + ($can('deploy.manage') ? 1 : 0) + ($can('payments.settings') ? 1 : 0) + ($can('imports.manage') ? 1 : 0);
     $teamCount = ($can('notifications.view') ? 1 : 0) + ($can('permissions.manage') ? 1 : 0);
