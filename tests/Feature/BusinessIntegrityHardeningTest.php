@@ -108,6 +108,7 @@ class BusinessIntegrityHardeningTest extends TestCase
     public function test_refund_balance_is_rechecked_and_cannot_be_overrun(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PAID);
         $actor = User::factory()->create();
 
         $notifications = Mockery::mock(OrderNotificationService::class);
@@ -126,6 +127,32 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertDatabaseCount('order_refunds', 1);
         $this->assertSame(70.0, (float) $order->fresh()->refund_total);
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+        $this->assertNull($payment->fresh()->refunded_at);
+    }
+
+    public function test_full_refund_marks_payment_ledger_refunded_and_blocks_late_gateway_downgrade(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PAID);
+
+        $notifications = Mockery::mock(OrderNotificationService::class);
+        $notifications->shouldReceive('notifyRefundRecorded')->once();
+
+        $service = new OrderActionService($notifications);
+        $service->refund($order, 100, 'full refund');
+
+        $this->assertSame(100.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_REFUNDED, $payment->fresh()->status);
+        $this->assertNotNull($payment->fresh()->refunded_at);
+
+        app(PaymentService::class)->markAsFailed($payment->fresh(), [
+            'provider_status' => 'late_failed_callback',
+        ]);
+
+        $this->assertSame(Payment::STATUS_REFUNDED, $payment->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
     }
 
     public function test_cod_completion_marks_payment_ledger_paid(): void
