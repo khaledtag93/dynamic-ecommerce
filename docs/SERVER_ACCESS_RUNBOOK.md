@@ -63,3 +63,10 @@ Public webroot:
 - Never delete/reinitialize `.git` on the production server as a normal deploy step.
 - Do not run migrations or deploy scripts until the current task explicitly reaches that stage.
 - Keep `main` / production untouched until the release gate is approved.
+
+
+### Production server discovery — 2026-09-20
+- SSH login to Hostinger succeeded.
+- The historical application path `/home/u637857322/domains/tag-marketplace.com/laravel_app` exists.
+- Running `git status --short --branch` inside that directory returned: `fatal: not a git repository`.
+- Therefore the current production Laravel directory is not a Git worktree. Do not run fetch/pull/reset/checkout there until the actual deployment layout is inspected and a safe migration/rehearsal plan is chosen.
