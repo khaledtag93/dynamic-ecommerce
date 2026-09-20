@@ -72,3 +72,27 @@
 
 ## Release rule
 No commercial handoff or Production deployment is considered complete until the production-hardening priorities are closed or explicitly accepted with documented risk.
+
+
+## V42 hardening checkpoint — 2026-09-20
+### Newly closed
+- duplicate checkout protection using transactional cart locking
+- atomic inventory decrement / oversell protection
+- atomic coupon usage-limit enforcement
+- order cancellation idempotency and row-level serialization
+- refund race / over-refund protection
+- payment/refund-ledger consistency
+- permissions self-escalation path
+- deploy-center safe default and mandatory verified health check
+- clean MySQL migration compatibility for growth learning index
+- GitHub Actions hardening CI established
+
+### CI status
+A production-like GitHub Actions build on PHP 8.2 + MySQL 8 is green for the V42 hardening branch. It validates Composer, PHP syntax, a clean migration, Laravel boot/routes, config/views, the existing PHPUnit suite, and the frontend production build.
+
+### Still required before Production
+- rotate credentials that were historically committed
+- add meaningful automated regression coverage for checkout/stock/coupons/refunds/payments/permissions
+- execute a Paymob sandbox end-to-end transaction
+- define and validate database backup/rollback alongside code rollback
+- rehearse deploy/rollback against the target server/staging environment

@@ -50,3 +50,34 @@ Verification completed:
 
 Environment limitation during verification:
 - PHPUnit/config/view cache commands cannot be fully executed in the current test container because required PHP extensions (DOM, mbstring, XML/XMLWriter) are unavailable there. This does not close the testing gate; CI/server verification remains required.
+
+
+### Hardening checkpoint — Green CI (2026-09-20)
+The V42 hardening branch now has a successful GitHub Actions production-like build on MySQL 8.
+
+Closed in this checkpoint:
+- checkout cart rows are locked during order creation to prevent duplicate orders from double-submit
+- stock decrement is atomic and refuses overselling
+- coupon usage limits are consumed atomically
+- order cancel/status/refund mutations serialize on the order row
+- repeated cancellation cannot restore stock twice
+- concurrent refunds cannot exceed the remaining refundable balance
+- manual payment status changes cannot bypass the order refund ledger
+- refund ledger state takes precedence during order payment-status synchronization
+- staff-role management is restricted to super admins and cannot clear an admin into implicit legacy super-admin state
+- Deploy Center is opt-in instead of enabled by default
+- production deploy health checks require curl and verified TLS
+- MySQL clean migration failure caused by an oversized growth-learning unique index was fixed
+- compatibility migration added for existing databases
+
+Latest successful CI evidence:
+- Composer validation/install: passed
+- PHP syntax scan: passed
+- MySQL 8 `migrate:fresh`: passed
+- Laravel boot + route discovery: passed
+- config cache + Blade view compile: passed
+- current PHPUnit suite: passed
+- npm install + Vite production build: passed
+
+Important limitation:
+- the current PHPUnit suite is still very small, so targeted regression tests for the hardened business rules remain required.

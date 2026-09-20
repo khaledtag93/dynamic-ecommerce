@@ -49,3 +49,27 @@
 - Run end-to-end Paymob test transaction against test credentials and verify both processed and response callbacks.
 - Verify refund/cancel/stock/coupon concurrency and idempotency.
 - Validate deploy + rollback on the target server/staging environment.
+
+
+## Closed in concurrency / release-hardening pass (2026-09-20)
+- stale checkout snapshot / duplicate double-submit risk — **protected with cart row locks inside the order transaction**
+- inventory overselling race — **protected with conditional atomic decrement**
+- coupon last-use race — **protected with conditional atomic increment**
+- duplicate cancellation restoring stock twice — **made idempotent under an order row lock**
+- concurrent refund overrun — **serialized and recalculated under an order row lock**
+- payment sync overriding partial/full refund ledger state — **fixed**
+- manual Payment=refunded bypassing OrderRefund ledger — **blocked**
+- permissions manager clearing a role into implicit legacy super-admin — **blocked; staff-role administration requires super admin**
+- Deploy Center default-on configuration — **changed to opt-in**
+- deploy health check with disabled TLS verification / optional curl — **hardened**
+- MySQL oversized growth-learning composite unique index — **fixed and compatibility migration added**
+
+## CI checkpoint
+- Hardening CI added using PHP 8.2 and MySQL 8.
+- Clean MySQL migration now succeeds.
+- Laravel boot/routes/config/view compilation succeeds.
+- Current PHPUnit suite and frontend production build succeed.
+- Automated business regression coverage is still insufficient and remains an open quality target.
+
+## Production blocker still open
+- Database rollback is not automated. Current rollback restores code/public files but not schema/data. Production deploy must not be approved until database backup/rollback strategy is validated.
