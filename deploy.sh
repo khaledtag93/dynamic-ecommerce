@@ -68,7 +68,7 @@ rollback_from_current_backup() {
         )
     fi
 
-    local env_tmp="/tmp/tag_marketplace_env_${TIMESTAMP}_$.backup"
+    local env_tmp="/tmp/tag_marketplace_env_${TIMESTAMP}_$$.backup"
     cp "$KEEP_ENV_FILE" "$env_tmp"
     chmod 600 "$env_tmp"
 
