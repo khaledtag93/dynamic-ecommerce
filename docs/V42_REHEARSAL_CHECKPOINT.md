@@ -156,3 +156,18 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - Current code still contains a legacy fallback where a `role_as=1` user with no attached role is treated as Super Admin. This does not match the owner-only rule and is now a P0 authorization hardening item before production promotion.
 - Target model: Super Admin must be explicit (the system `super_admin` role / owner bootstrap), while all other admins require an assigned staff role. Removing a staff role must not elevate privileges.
 - QAS currently has the owner account bootstrapped manually for smoke testing; this is acceptable for staging only. The permanent bootstrap flow must be formalized before final production release / customer delivery.
+
+
+## One-command QAS deployment workflow — 2026-09-20
+
+- Added `deploy-qas.sh` for routine staging/QAS promotion.
+- Intended daily workflow:
+  1. make and review a small change,
+  2. commit/push it to `v42-clean-baseline`,
+  3. run `./deploy-qas.sh` on the rehearsal server,
+  4. script updates the rehearsal checkout, installs PHP dependencies, verifies the rehearsal DB identity, runs only pending migrations, refreshes caches/public assets, restores the QAS front controller linkage, and performs an HTTPS health check,
+  5. script prints `QAS READY` and the deployed commit,
+  6. user validates the change on `https://v42.tag-marketplace.com`.
+- The QAS deploy script explicitly refuses to proceed unless `APP_ENV=staging`, `APP_DEBUG=false`, and the configured DB name matches the dedicated V42 rehearsal database.
+- It never targets the production application directory or production webroot.
+- Production promotion remains a separate later workflow and must deploy the exact QAS-approved commit with production backup/DB snapshot/rollback gates.
