@@ -11,9 +11,9 @@
                     <div>
                         <div class="text-uppercase small text-muted fw-bold">{{ __('Cart') }}</div>
                         <h1 class="lc-section-title mb-2">{{ __('Review your cart') }}</h1>
-                        <p class="text-muted mb-0">{{ __('Everything here is ready for a quick move into checkout once quantities and totals look right.') }}</p>
+                        <p class="text-muted mb-0">{{ __('Review your products, quantities, coupon, and total before checkout.') }}</p>
                     </div>
-                    <span class="lc-badge"><i class="bi bi-bag-check"></i>{{ __('Checkout-ready basket') }}</span>
+                    <span class="lc-badge"><i class="bi bi-bag-check"></i>{{ __('Ready for checkout') }}</span>
                 </div>
 
                 <div class="lc-progress-strip">
@@ -47,7 +47,7 @@
                             <span class="lc-badge"><i class="bi bi-truck"></i>{{ __('Goal') }}: EGP {{ number_format($shippingGoal['goal'], 2) }}</span>
                         </div>
                         <div class="text-muted small mb-3">
-                            {{ $shippingGoal['qualified'] ? __('Nice. This order already crossed the shipping target, which helps conversion and perceived value.') : __('Add only :amount more to unlock the shipping goal and raise the basket value naturally.', ['amount' => 'EGP ' . number_format($shippingGoal['remaining'], 2)]) }}
+                            {{ $shippingGoal['qualified'] ? __('Great. This order already qualifies for the shipping goal.') : __('Add :amount more to reach the shipping goal.', ['amount' => 'EGP ' . number_format($shippingGoal['remaining'], 2)]) }}
                         </div>
                         <div class="cart-aov-progress__bar"><span style="width: {{ $shippingGoal['progress'] }}%"></span></div>
                     </div>
@@ -60,7 +60,7 @@
                 <div class="lc-empty-panel">
                     <div class="lc-section-empty__icon"><i class="bi bi-bag-x"></i></div>
                     <h2 class="h4 fw-bold mb-2">{{ __('Your cart is empty') }}</h2>
-                    <p class="text-muted mb-4">{{ __('Start with one strong product page, then use the cart summary to lead into checkout.') }}</p>
+                    <p class="text-muted mb-4">{{ __('Start shopping and add the products you need to your cart.') }}</p>
                     <a href="{{ route('frontend.home') }}" class="btn lc-btn-primary">{{ __('Browse products') }}</a>
                 </div>
             @else
@@ -106,18 +106,18 @@
 
                                             <div class="lc-inline-note">
                                                 <i class="bi bi-info-circle"></i>
-                                                <span>{{ __('You can update quantity before checkout. Totals refresh automatically when you save.') }}</span>
+                                                <span>{{ __('Change quantity and the cart will refresh automatically.') }}</span>
                                             </div>
 
                                             <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                                                <form method="POST" action="{{ route('cart.update', $item) }}" class="d-flex align-items-center gap-2" data-submit-loading>
+                                                <form method="POST" action="{{ route('cart.update', $item) }}" class="d-flex align-items-center gap-2 cart-qty-auto-form" data-submit-loading>
                                                     @csrf
                                                     @method('PATCH')
                                                     <div class="lc-qty-shell">
                                                         <span class="small text-muted fw-bold">{{ __('Qty') }}</span>
                                                         <input type="number" name="quantity" min="1" value="{{ $item->quantity }}" class="form-control lc-form-control text-center">
                                                     </div>
-                                                    <button type="submit" class="btn lc-btn-soft" data-loading-text="{{ __('Updating...') }}">{{ __('Update') }}</button>
+                                                    <button type="submit" class="btn lc-btn-soft cart-qty-update-fallback" data-loading-text="{{ __('Updating...') }}">{{ __('Updating...') }}</button>
                                                 </form>
 
                                                 <div class="lc-cart-item__actions d-flex align-items-center gap-2 ms-auto">
@@ -178,7 +178,7 @@
                                     <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
                                         <div>
                                             <h4 class="fw-bold mb-1">{{ __('Personalized offers') }}</h4>
-                                            <div class="text-muted small">{{ __('Use the current basket and recent interest to surface the strongest next offer.') }}</div>
+                                            <div class="text-muted small">{{ __('Selected products that may complete your order.') }}</div>
                                         </div>
                                         <span class="lc-badge"><i class="bi bi-magic"></i>{{ __('Smart offers') }}</span>
                                     </div>
@@ -201,7 +201,7 @@
                                 <div class="d-flex justify-content-between align-items-start gap-2 mb-4">
                                     <div>
                                         <h4 class="fw-bold mb-1">{{ __('Order summary') }}</h4>
-                                        <div class="text-muted small">{{ __('A final preview before you continue.') }}</div>
+                                        <div class="text-muted small">{{ __('Check subtotal, discounts, shipping, and final total.') }}</div>
                                     </div>
                                     <span class="lc-badge"><i class="bi bi-bag-check"></i>{{ __('Ready') }}</span>
                                 </div>
@@ -217,7 +217,7 @@
                                 <div class="lc-summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong>EGP {{ number_format($cart['shipping'], 2) }}</strong></div>
                             @if(!empty($shippingGoal) && !$shippingGoal['qualified'])
                                 <div class="lc-note-card p-3 mt-3">
-                                    <div class="fw-bold mb-1">{{ __('Small basket boost opportunity') }}</div>
+                                    <div class="fw-bold mb-1">{{ __('Shipping goal') }}</div>
                                     <div class="small text-muted">{{ __('You are only :amount away from the shipping target.', ['amount' => 'EGP ' . number_format($shippingGoal['remaining'], 2)]) }}</div>
                                 </div>
                             @endif
@@ -226,8 +226,8 @@
                                 <div class="lc-summary-row fs-5"><span class="fw-bold">{{ __('Total') }}</span><span class="fw-bold">EGP {{ number_format($cart['total'], 2) }}</span></div>
 
                                 <div class="lc-note-card p-3 mb-3">
-                                    <div class="fw-bold mb-1">{{ __('Checkout feeling') }}</div>
-                                    <div class="text-muted small">{{ __('Everything looks ready. Continue to checkout to confirm address, payment, and final review.') }}</div>
+                                    <div class="fw-bold mb-1">{{ __('Before checkout') }}</div>
+                                    <div class="text-muted small">{{ __('Continue to checkout to confirm your address and payment method.') }}</div>
                                 </div>
 
                                 @auth
@@ -244,10 +244,10 @@
                     <section class="mt-4">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
                             <div>
-                                <span class="lc-section-kicker">{{ __('Boost the order') }}</span>
-                                <h2 class="h4 fw-bold mb-0">{{ __('You may want to add one more item') }}</h2>
+                                <span class="lc-section-kicker">{{ __('Suggested products') }}</span>
+                                <h2 class="h4 fw-bold mb-0">{{ __('You may also like') }}</h2>
                             </div>
-                            <span class="lc-badge"><i class="bi bi-graph-up-arrow"></i>{{ __('AOV-ready suggestions') }}</span>
+                            <span class="lc-badge"><i class="bi bi-graph-up-arrow"></i>{{ __('More products') }}</span>
                         </div>
                         <div class="row g-4">
                             @foreach($upsellProducts as $product)
@@ -262,26 +262,26 @@
 
                 @include('frontend.sections.ai-recommendation-strip', [
                     'products' => $aiRecommendedProducts ?? collect(),
-                    'subtitle' => __('AI recommendations'),
-                    'title' => __('Predicted products to lift this basket'),
-                    'description' => __('The engine favors attach-rate opportunities, relevant companions, and commercially strong products for the current cart.'),
+                    'subtitle' => __('Recommended'),
+                    'title' => __('Products you may also need'),
+                    'description' => __('Useful products that can go well with your current cart.'),
                     'insight' => $aiRecommendationInsight ?? null,
-                    'badge' => __('Cart prediction engine'),
+                    'badge' => __('Recommended'),
                 ])
 
                 @include('frontend.sections.personalized-product-strip', [
                     'products' => $personalizedProducts ?? collect(),
                     'subtitle' => __('Recommended for you'),
-                    'title' => __('Merchandising picks for this basket'),
-                    'description' => __('Use cart intent plus recent browsing to highlight the products most likely to increase order value.'),
-                    'badge' => __('Smart merchandising'),
+                    'title' => __('More products to consider'),
+                    'description' => __('A simple selection of products you may want to add before checkout.'),
+                    'badge' => __('Suggested'),
                 ])
 
                 @include('frontend.sections.personalized-product-strip', [
                     'products' => $recentlyViewedProducts ?? collect(),
                     'subtitle' => __('Recently viewed'),
                     'title' => __('Still thinking about these?'),
-                    'description' => __('Bring viewed products back into the decision flow while the customer is already close to checkout.'),
+                    'description' => __('Products you opened recently are saved here for easy access.'),
                     'badge' => __('Return path'),
                 ])
             @endif
@@ -295,5 +295,24 @@
 <style>
 .cart-offers-card{background:linear-gradient(180deg,#ffffff 0%,color-mix(in srgb,var(--lc-soft) 76%, white) 100%)}.cart-offer-signal{padding:.95rem;border-radius:1rem;background:rgba(255,255,255,.84);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 12px 30px color-mix(in srgb,var(--lc-primary) 7%, transparent)}.cart-offer-signal__chip{display:inline-flex;align-items:center;padding:.35rem .6rem;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:.75rem;font-weight:800}
 .cart-aov-progress__bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--lc-border) 70%, white);overflow:hidden}.cart-aov-progress__bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--lc-primary),var(--lc-secondary))}.cart-aov-progress{background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--lc-soft) 72%, white) 100%)}
+.cart-qty-update-fallback{display:none}.cart-remove-btn{font-weight:900}
 </style>
+@endpush
+
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.cart-qty-auto-form input[name="quantity"]').forEach(function (input) {
+        let timer = null;
+        input.addEventListener('change', function () {
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                if (Number(input.value) < 1) input.value = 1;
+                input.closest('form').requestSubmit();
+            }, 250);
+        });
+    });
+});
+</script>
 @endpush

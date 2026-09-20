@@ -51,7 +51,7 @@
                 <span class="admin-stat-icon"><i class="mdi mdi-image-multiple-outline"></i></span>
                 <div class="admin-stat-label">{{ __('Promo banners') }}</div>
                 <div class="admin-stat-value">3</div>
-                <div class="text-muted small mt-2">{{ __('Phase 2 supports three editable promo banners with images, text, links, and sort order.') }}</div>
+                <div class="text-muted small mt-2">{{ __('Manage three editable promo banners with images, text, links, and sort order.') }}</div>
             </div>
         </div>
         <div class="col-md-4">
@@ -197,7 +197,7 @@
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('On sale limit') }}</label><input type="number" min="1" max="24" name="home_on_sale_products_limit" value="{{ old('home_on_sale_products_limit', $settings['home_on_sale_products_limit'] ?? 8) }}" class="form-control"></div>
 
                         <div class="col-12"><hr class="my-1"></div>
-                        <div class="col-12"><div class="fw-bold">{{ __('Phase 2.3 — Manual featured products') }}</div><div class="form-text mt-0">{{ __('Add product IDs in the exact order you want them to appear.') }}</div></div>
+                        <div class="col-12"><div class="fw-bold">{{ __('Manual featured products') }}</div><div class="form-text mt-0">{{ __('Add product IDs in the exact order you want them to appear.') }}</div></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Manual featured title') }}</label><input type="text" name="home_manual_featured_products_title" value="{{ old('home_manual_featured_products_title', $settings['home_manual_featured_products_title'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Manual featured subtitle') }}</label><input type="text" name="home_manual_featured_products_subtitle" value="{{ old('home_manual_featured_products_subtitle', $settings['home_manual_featured_products_subtitle'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Manual featured limit') }}</label><input type="number" min="1" max="24" name="home_manual_featured_products_limit" value="{{ old('home_manual_featured_products_limit', $settings['home_manual_featured_products_limit'] ?? 8) }}" class="form-control"></div>
@@ -206,7 +206,7 @@
                         <div class="col-md-2"><label class="form-label fw-semibold">{{ __('Action link') }}</label><input type="text" name="home_manual_featured_products_action_link" value="{{ old('home_manual_featured_products_action_link', $settings['home_manual_featured_products_action_link'] ?? '#latest-products') }}" class="form-control"></div>
 
                         <div class="col-12"><hr class="my-1"></div>
-                        <div class="col-12"><div class="fw-bold">{{ __('Phase 2.3 — Trust section heading') }}</div></div>
+                        <div class="col-12"><div class="fw-bold">{{ __('Trust section heading') }}</div></div>
                         <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Trust section title') }}</label><input type="text" name="home_trust_blocks_title" value="{{ old('home_trust_blocks_title', $settings['home_trust_blocks_title'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Trust section subtitle') }}</label><input type="text" name="home_trust_blocks_subtitle" value="{{ old('home_trust_blocks_subtitle', $settings['home_trust_blocks_subtitle'] ?? '') }}" class="form-control"></div>
 
@@ -227,7 +227,7 @@
                             <h4 class="mb-1">{{ __('Promo banners') }}</h4>
                             <div class="text-muted small">{{ __('Each banner supports image, title, subtitle, button text, button link, active state, and sort order.') }}</div>
                         </div>
-                        <span class="admin-chip">{{ __('Phase 2.1') }}</span>
+                        <span class="admin-chip">{{ __('Promo banners') }}</span>
                     </div>
 
                     @for($i = 1; $i <= 3; $i++)
@@ -285,7 +285,7 @@
                             <h4 class="mb-1">{{ __('Trust blocks') }}</h4>
                             <div class="text-muted small">{{ __('Each block supports icon class, title, subtitle, active state, and sort order.') }}</div>
                         </div>
-                        <span class="admin-chip">{{ __('Phase 2.3') }}</span>
+                        <span class="admin-chip">{{ __('Storefront sections') }}</span>
                     </div>
 
                     @for($i = 1; $i <= 4; $i++)

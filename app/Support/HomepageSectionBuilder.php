@@ -31,10 +31,10 @@ class HomepageSectionBuilder
                 'data' => [
                     'heroTitle' => self::heroTitle($settings),
                     'heroSubtitle' => self::heroSubtitle($settings),
-                    'heroBadge' => trim((string) ($settings['hero_badge_text'] ?? __('Fresh customer experience'))),
-                    'primaryButtonText' => trim((string) ($settings['hero_primary_button_text'] ?? __('Shop now'))),
+                    'heroBadge' => self::localizedText($settings, 'hero_badge_text', __('Electronics deals')),
+                    'primaryButtonText' => self::localizedText($settings, 'hero_primary_button_text', __('Shop now')),
                     'primaryButtonLink' => trim((string) ($settings['hero_primary_button_link'] ?? '#featured-products')),
-                    'secondaryButtonText' => trim((string) ($settings['hero_secondary_button_text'] ?? __('Browse categories'))),
+                    'secondaryButtonText' => self::localizedText($settings, 'hero_secondary_button_text', __('Browse categories')),
                     'secondaryButtonLink' => trim((string) ($settings['hero_secondary_button_link'] ?? '#categories')),
                     'heroBannerUrl' => self::heroBannerUrl($settings),
                     'heroStats' => [
@@ -42,6 +42,7 @@ class HomepageSectionBuilder
                         'latest_products_count' => $latestProducts->count(),
                         'categories_count' => $categories->count(),
                     ],
+                    'heroSlides' => self::heroSlides($settings, $promoBanners),
                 ],
             ],
             'promo_banners' => [
@@ -49,8 +50,8 @@ class HomepageSectionBuilder
                 'view' => 'frontend.sections.promo-banners',
                 'enabled' => self::toBool($settings['show_home_promo_banners'] ?? $settings['show_home_promo_banner'] ?? true) && $promoBanners->isNotEmpty(),
                 'data' => [
-                    'title' => trim((string) ($settings['home_promo_banners_title'] ?? __('Store highlights'))),
-                    'subtitle' => trim((string) ($settings['home_promo_banners_subtitle'] ?? __('Multiple editable promo cards managed from the admin panel.'))),
+                    'title' => self::localizedText($settings, 'home_promo_banners_title', __('Featured offers')),
+                    'subtitle' => self::localizedText($settings, 'home_promo_banners_subtitle', __('Explore highlighted deals and departments.')),
                     'banners' => $promoBanners,
                 ],
             ],
@@ -60,8 +61,8 @@ class HomepageSectionBuilder
                 'enabled' => self::toBool($settings['show_home_featured_categories'] ?? true) && $featuredCategories->isNotEmpty(),
                 'data' => [
                     'key' => 'featured-categories',
-                    'title' => trim((string) ($settings['home_featured_categories_title'] ?? __('Featured categories'))),
-                    'subtitle' => trim((string) ($settings['home_featured_categories_subtitle'] ?? __('Quick jumps for your strongest collections'))),
+                    'title' => self::localizedText($settings, 'home_featured_categories_title', __('Featured categories')),
+                    'subtitle' => self::localizedText($settings, 'home_featured_categories_subtitle', __('Quick access to your main departments')),
                     'categories' => $featuredCategories,
                     'empty' => __('No featured categories are configured yet.'),
                     'action_text' => __('Browse all categories'),
@@ -74,11 +75,11 @@ class HomepageSectionBuilder
                 'enabled' => self::toBool($settings['show_home_manual_featured_products'] ?? false),
                 'data' => [
                     'key' => 'manual-featured-products',
-                    'title' => trim((string) ($settings['home_manual_featured_products_title'] ?? __('Picked for you'))),
-                    'subtitle' => trim((string) ($settings['home_manual_featured_products_subtitle'] ?? __('Manually selected products from the admin panel'))),
+                    'title' => self::localizedText($settings, 'home_manual_featured_products_title', __('Picked for you')),
+                    'subtitle' => self::localizedText($settings, 'home_manual_featured_products_subtitle', __('Hand-picked products worth checking today')),
                     'products' => $manualFeaturedProducts,
-                    'empty' => __('Add product IDs from branding settings to show manual featured products here.'),
-                    'action_text' => trim((string) ($settings['home_manual_featured_products_action_text'] ?? __('Shop selected items'))),
+                    'empty' => __('Selected products will appear here when configured.'),
+                    'action_text' => self::localizedText($settings, 'home_manual_featured_products_action_text', __('Browse products')),
                     'action_link' => trim((string) ($settings['home_manual_featured_products_action_link'] ?? '#latest-products')),
                 ],
             ],
@@ -88,10 +89,10 @@ class HomepageSectionBuilder
                 'enabled' => self::toBool($settings['show_home_featured_products'] ?? true),
                 'data' => [
                     'key' => 'featured-products',
-                    'title' => trim((string) ($settings['home_featured_products_title'] ?? __('Featured products'))),
-                    'subtitle' => trim((string) ($settings['home_featured_products_subtitle'] ?? __('Editor picks'))),
+                    'title' => self::localizedText($settings, 'home_featured_products_title', __('Featured products')),
+                    'subtitle' => self::localizedText($settings, 'home_featured_products_subtitle', __('Popular electronics')),
                     'products' => $featuredProducts,
-                    'empty' => __('No featured products are visible yet.'),
+                    'empty' => __('No products are visible yet.'),
                     'action_text' => self::toBool($settings['show_home_categories'] ?? true) ? __('Jump to categories') : null,
                     'action_link' => self::toBool($settings['show_home_categories'] ?? true) ? '#categories' : null,
                 ],
@@ -102,10 +103,10 @@ class HomepageSectionBuilder
                 'enabled' => self::toBool($settings['show_home_best_sellers'] ?? true),
                 'data' => [
                     'key' => 'best-sellers',
-                    'title' => trim((string) ($settings['home_best_sellers_title'] ?? __('Best sellers'))),
-                    'subtitle' => trim((string) ($settings['home_best_sellers_subtitle'] ?? __('Most ordered products'))),
+                    'title' => self::localizedText($settings, 'home_best_sellers_title', __('Best sellers')),
+                    'subtitle' => self::localizedText($settings, 'home_best_sellers_subtitle', __('Customer favorites')),
                     'products' => $bestSellers,
-                    'empty' => __('No best-seller data is available yet.'),
+                    'empty' => __('Best sellers will appear after orders start.'),
                     'action_text' => __('See offers'),
                     'action_link' => '#on-sale-products',
                 ],
@@ -116,10 +117,10 @@ class HomepageSectionBuilder
                 'enabled' => self::toBool($settings['show_home_categories'] ?? true),
                 'data' => [
                     'key' => 'categories',
-                    'title' => trim((string) ($settings['home_categories_title'] ?? __('Browse categories'))),
-                    'subtitle' => trim((string) ($settings['home_categories_subtitle'] ?? __('Store map'))),
+                    'title' => self::localizedText($settings, 'home_categories_title', __('Browse categories')),
+                    'subtitle' => self::localizedText($settings, 'home_categories_subtitle', __('Find the right department faster')),
                     'categories' => $categories,
-                    'empty' => __('No visible categories yet.'),
+                    'empty' => __('No categories are visible yet.'),
                 ],
             ],
             'latest_products' => [
@@ -128,10 +129,10 @@ class HomepageSectionBuilder
                 'enabled' => self::toBool($settings['show_home_latest_products'] ?? true),
                 'data' => [
                     'key' => 'latest-products',
-                    'title' => trim((string) ($settings['home_latest_products_title'] ?? __('Latest arrivals'))),
-                    'subtitle' => trim((string) ($settings['home_latest_products_subtitle'] ?? __('New in store'))),
+                    'title' => self::localizedText($settings, 'home_latest_products_title', __('Latest arrivals')),
+                    'subtitle' => self::localizedText($settings, 'home_latest_products_subtitle', __('Recently added devices and accessories')),
                     'products' => $latestProducts,
-                    'empty' => __('No latest products are available yet.'),
+                    'empty' => __('New products will appear here soon.'),
                     'action_text' => __('Back to top'),
                     'action_link' => '#hero',
                 ],
@@ -142,10 +143,10 @@ class HomepageSectionBuilder
                 'enabled' => self::toBool($settings['show_home_on_sale_products'] ?? true),
                 'data' => [
                     'key' => 'on-sale-products',
-                    'title' => trim((string) ($settings['home_on_sale_products_title'] ?? __('On sale'))),
-                    'subtitle' => trim((string) ($settings['home_on_sale_products_subtitle'] ?? __('Offers customers can spot quickly'))),
+                    'title' => self::localizedText($settings, 'home_on_sale_products_title', __('On sale')),
+                    'subtitle' => self::localizedText($settings, 'home_on_sale_products_subtitle', __('Selected electronics deals')),
                     'products' => $onSaleProducts,
-                    'empty' => __('No sale products are visible yet.'),
+                    'empty' => __('Offers will appear here soon.'),
                     'action_text' => __('Shop now'),
                     'action_link' => '#featured-products',
                 ],
@@ -155,8 +156,8 @@ class HomepageSectionBuilder
                 'view' => 'frontend.sections.trust-blocks',
                 'enabled' => self::toBool($settings['show_home_trust_blocks'] ?? true) && $trustBlocks->isNotEmpty(),
                 'data' => [
-                    'title' => trim((string) ($settings['home_trust_blocks_title'] ?? __('Why customers keep coming back'))),
-                    'subtitle' => trim((string) ($settings['home_trust_blocks_subtitle'] ?? __('Flexible trust highlights you can reuse for any niche'))),
+                    'title' => self::localizedText($settings, 'home_trust_blocks_title', __('Why shop with us?')),
+                    'subtitle' => self::localizedText($settings, 'home_trust_blocks_subtitle', __('Clear prices, trusted products, secure checkout, and support after purchase.')),
                     'blocks' => $trustBlocks,
                 ],
             ],
@@ -165,11 +166,11 @@ class HomepageSectionBuilder
                 'view' => 'frontend.sections.promo-banner',
                 'enabled' => self::toBool($settings['show_home_promo_banner'] ?? false),
                 'data' => [
-                    'title' => trim((string) ($settings['home_promo_title'] ?? __('Build a storefront customers actually enjoy using.'))),
-                    'subtitle' => trim((string) ($settings['home_promo_subtitle'] ?? __('Phase 2 expands the homepage into a more reusable CMS with richer commerce sections and editable promo content.'))),
-                    'button_text' => trim((string) ($settings['home_promo_button_text'] ?? __('Start shopping'))),
+                    'title' => self::localizedText($settings, 'home_promo_title', __('Upgrade your tech setup today.')),
+                    'subtitle' => self::localizedText($settings, 'home_promo_subtitle', __('Discover practical deals on phones, laptops, gaming, audio, TVs, and accessories.')),
+                    'button_text' => self::localizedText($settings, 'home_promo_button_text', __('Start shopping')),
                     'button_link' => trim((string) ($settings['home_promo_button_link'] ?? '#featured-products')),
-                    'secondary_button_text' => trim((string) ($settings['home_promo_secondary_button_text'] ?? __('Browse categories'))),
+                    'secondary_button_text' => self::localizedText($settings, 'home_promo_secondary_button_text', __('Browse categories')),
                     'secondary_button_link' => trim((string) ($settings['home_promo_secondary_button_link'] ?? '#categories')),
                 ],
             ],
@@ -188,15 +189,45 @@ class HomepageSectionBuilder
             ->values();
     }
 
+
+    protected static function heroSlides(array $settings, Collection $promoBanners): Collection
+    {
+        $slides = collect([[ 
+            'eyebrow' => self::localizedText($settings, 'hero_badge_text', __('Electronics deals')),
+            'title' => self::heroTitle($settings),
+            'subtitle' => self::heroSubtitle($settings),
+            'button_text' => self::localizedText($settings, 'hero_primary_button_text', __('Shop now')),
+            'button_link' => trim((string) ($settings['hero_primary_button_link'] ?? '#featured-products')),
+            'image_url' => self::heroBannerUrl($settings),
+            'theme' => 'primary',
+        ]]);
+
+        $promoBanners->take(3)->each(function (array $banner, int $index) use ($slides) {
+            $slides->push([
+                'eyebrow' => __('Featured offer'),
+                'title' => $banner['title'] ?: __('Upgrade your tech setup today.'),
+                'subtitle' => $banner['subtitle'] ?: __('Browse selected electronics deals and departments.'),
+                'button_text' => $banner['button_text'] ?: __('Explore now'),
+                'button_link' => $banner['button_link'] ?: '#featured-products',
+                'image_url' => $banner['image_url'] ?? null,
+                'theme' => 'campaign-' . (($index % 3) + 1),
+            ]);
+        });
+
+        return $slides
+            ->filter(fn (array $slide) => trim((string) ($slide['title'] ?? '')) !== '')
+            ->values();
+    }
+
     protected static function promoBanners(array $settings): Collection
     {
         $banners = collect(range(1, 3))->map(function (int $index) use ($settings) {
             $imagePath = $settings["promo_banner_{$index}_image_path"] ?? null;
 
             return [
-                'title' => trim((string) ($settings["promo_banner_{$index}_title"] ?? '')),
-                'subtitle' => trim((string) ($settings["promo_banner_{$index}_subtitle"] ?? '')),
-                'button_text' => trim((string) ($settings["promo_banner_{$index}_button_text"] ?? '')),
+                'title' => self::localizedText($settings, "promo_banner_{$index}_title", ''),
+                'subtitle' => self::localizedText($settings, "promo_banner_{$index}_subtitle", ''),
+                'button_text' => self::localizedText($settings, "promo_banner_{$index}_button_text", ''),
                 'button_link' => trim((string) ($settings["promo_banner_{$index}_button_link"] ?? '#featured-products')),
                 'image_path' => $imagePath,
                 'image_url' => AdminBranding::mediaUrl($imagePath, 'promo_banner'),
@@ -216,9 +247,9 @@ class HomepageSectionBuilder
         }
 
         return collect([[
-            'title' => trim((string) ($settings['home_promo_title'] ?? __('Build a storefront customers actually enjoy using.'))),
-            'subtitle' => trim((string) ($settings['home_promo_subtitle'] ?? __('Phase 2 expands the homepage into a more reusable CMS with richer commerce sections and editable promo content.'))),
-            'button_text' => trim((string) ($settings['home_promo_button_text'] ?? __('Start shopping'))),
+            'title' => self::localizedText($settings, 'home_promo_title', __('Upgrade your tech setup today.')),
+            'subtitle' => self::localizedText($settings, 'home_promo_subtitle', __('Discover practical deals on phones, laptops, gaming, audio, TVs, and accessories.')),
+            'button_text' => self::localizedText($settings, 'home_promo_button_text', __('Start shopping')),
             'button_link' => trim((string) ($settings['home_promo_button_link'] ?? '#featured-products')),
             'image_path' => null,
             'image_url' => null,
@@ -233,8 +264,8 @@ class HomepageSectionBuilder
             ->map(function (int $index) use ($settings) {
                 return [
                     'icon' => trim((string) ($settings["trust_block_{$index}_icon"] ?? 'bi bi-stars')),
-                    'title' => trim((string) ($settings["trust_block_{$index}_title"] ?? '')),
-                    'subtitle' => trim((string) ($settings["trust_block_{$index}_subtitle"] ?? '')),
+                    'title' => self::localizedText($settings, "trust_block_{$index}_title", ''),
+                    'subtitle' => self::localizedText($settings, "trust_block_{$index}_subtitle", ''),
                     'active' => self::toBool($settings["trust_block_{$index}_active"] ?? false),
                     'sort_order' => self::toInt($settings["trust_block_{$index}_sort_order"] ?? $index, $index),
                 ];
@@ -246,20 +277,20 @@ class HomepageSectionBuilder
 
     protected static function heroTitle(array $settings): string
     {
-        $title = trim((string) ($settings['hero_title'] ?? ''));
+        $title = self::localizedText($settings, 'hero_title', '');
 
         return $title !== ''
             ? $title
-            : __('Quality baking tools, ingredients, and supplies in one clean storefront.');
+            : __('Latest electronics and smart devices in one trusted store.');
     }
 
     protected static function heroSubtitle(array $settings): string
     {
-        $subtitle = trim((string) ($settings['hero_subtitle'] ?? ''));
+        $subtitle = self::localizedText($settings, 'hero_subtitle', '');
 
         return $subtitle !== ''
             ? $subtitle
-            : __('The frontend is now connected to real categories and real products, with a stronger base for cart, checkout, orders, and homepage growth.');
+            : __('Shop phones, laptops, gaming gear, TVs, audio, and accessories with clear offers, secure checkout, and fast delivery.');
     }
 
     protected static function heroBannerUrl(array $settings): ?string
@@ -268,6 +299,41 @@ class HomepageSectionBuilder
             $settings['hero_banner_path'] ?? $settings['hero_banner'] ?? null,
             'hero_banner'
         );
+    }
+
+    /**
+     * Read customer-facing white-label text using the active locale first.
+     * This keeps Arabic pages Arabic even when the base setting was saved in English.
+     */
+    protected static function localizedText(array $settings, string $key, string $fallback = ''): string
+    {
+        $locale = app()->getLocale();
+
+        if ($locale === 'ar') {
+            $arabicKeys = array_values(array_unique([$key . '_ar', $key . '_ar_AR', $key . '_' . $locale]));
+
+            foreach ($arabicKeys as $candidate) {
+                $value = trim((string) ($settings[$candidate] ?? ''));
+
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+
+            return trim((string) $fallback);
+        }
+
+        $candidates = array_values(array_unique([$key . '_' . $locale, $key . '_en', $key]));
+
+        foreach ($candidates as $candidate) {
+            $value = trim((string) ($settings[$candidate] ?? ''));
+
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return trim((string) $fallback);
     }
 
     protected static function parseOrder(null|string|array $value): Collection
@@ -285,7 +351,8 @@ class HomepageSectionBuilder
         return collect(array_values(array_filter(array_map(
             static fn (string $item) => trim($item),
             preg_split('/[\s,
-	]+/', $value) ?: []
+
+	]+/', $value) ?: []
         ))));
     }
 

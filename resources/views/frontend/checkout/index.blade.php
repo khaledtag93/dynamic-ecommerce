@@ -62,7 +62,7 @@
                             <strong>{{ $shippingGoal['qualified'] ? __('Shipping goal reached') : __('One more push before you place the order') }}</strong>
                             <span class="lc-badge"><i class="bi bi-truck"></i>{{ __('Goal') }}: EGP {{ number_format($shippingGoal['goal'], 2) }}</span>
                         </div>
-                        <div class="text-muted small mb-3">{{ $shippingGoal['qualified'] ? __('This basket already passed the target, which adds reassurance before payment.') : __('Add :amount more to cross the shipping target before placing the order.', ['amount' => 'EGP ' . number_format($shippingGoal['remaining'], 2)]) }}</div>
+                        <div class="text-muted small mb-3">{{ $shippingGoal['qualified'] ? __('This order already qualifies for the shipping goal.') : __('Add :amount more to reach the shipping goal.', ['amount' => 'EGP ' . number_format($shippingGoal['remaining'], 2)]) }}</div>
                         <div class="checkout-aov-progress__bar"><span style="width: {{ $shippingGoal['progress'] }}%"></span></div>
                     </div>
                 @endif
@@ -108,7 +108,7 @@
                                 <div>
                                     <div class="checkout-step-index">02</div>
                                     <h4 class="fw-bold mb-1">{{ __('Payment method') }}</h4>
-                                    <div class="text-muted small">{{ __('Choose the payment flow that best matches your customer and business process.') }}</div>
+                                    <div class="text-muted small">{{ __('Choose the payment method that works best for you.') }}</div>
                                 </div>
                                 <span class="lc-badge"><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
                             </div>
@@ -286,7 +286,7 @@
                                                 <img src="{{ $upsellProduct->main_image_url ?: 'https://via.placeholder.com/72x72?text=No+Image' }}" alt="{{ $upsellProduct->name }}">
                                                 <div>
                                                     <div class="fw-bold">{{ $upsellProduct->name }}</div>
-                                                    <div class="small text-muted">{{ __('Quick add-on from the same conversion flow') }}</div>
+                                                    <div class="small text-muted">{{ __('Quick add-on before placing the order') }}</div>
                                                 </div>
                                             </div>
                                             <div class="text-end">
@@ -337,27 +337,27 @@
 
     @include('frontend.sections.ai-recommendation-strip', [
         'products' => $aiRecommendedProducts ?? collect(),
-        'subtitle' => __('AI recommendations'),
-        'title' => __('Predicted final adds before payment'),
-        'description' => __('Narrow, high-fit recommendations designed for checkout where relevance matters more than variety.'),
+        'subtitle' => __('Recommended'),
+        'title' => __('Useful products before payment'),
+        'description' => __('A small selection of useful products before you place the order.'),
         'insight' => $aiRecommendationInsight ?? null,
-        'badge' => __('Checkout prediction engine'),
+        'badge' => __('Recommended'),
     ])
 
     @include('frontend.sections.personalized-product-strip', [
         'products' => $personalizedProducts ?? collect(),
         'subtitle' => __('Recommended for you'),
-        'title' => __('Keep momentum with one final set of smart picks'),
-        'description' => __('Show relevant products next to checkout so the basket can grow without interrupting the purchase flow.'),
-        'badge' => __('Checkout merchandising'),
+        'title' => __('You may also like'),
+        'description' => __('Optional products you can add before placing the order.'),
+        'badge' => __('Suggested'),
     ])
 
     @include('frontend.sections.personalized-product-strip', [
         'products' => $recentlyViewedProducts ?? collect(),
         'subtitle' => __('Recently viewed'),
         'title' => __('Last look before placing the order'),
-        'description' => __('Bring back high-intent products while the shopper is making the final decision.'),
-        'badge' => __('Session memory'),
+        'description' => __('Products you viewed recently for quick access before placing the order.'),
+        'badge' => __('Recently viewed'),
     ])
 </section>
 @endsection
