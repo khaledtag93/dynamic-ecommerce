@@ -1,97 +1,63 @@
 # Dynamic E-commerce System
 
-Production-oriented Laravel e-commerce platform built to be reusable across different store types, with Arabic/English support, dynamic catalog architecture, admin controls, and a phased roadmap toward growth automation, operations, SaaS, and mobile readiness.
+Production-oriented Laravel e-commerce platform built to be reusable across different store types, with Arabic/English support, dynamic catalog architecture, admin controls, commerce/operations foundations, and a roadmap toward growth automation, multi-channel messaging, SaaS, and mobile readiness.
 
 ## Current Status
 
-- **Baseline:** V35 Cleanup Step 3
-- **Current working phase:** Phase 3.3 complete structurally, now in cleanup and production preparation
-- **Current focus:** cleanup step 3, UI consistency, translation hardening, payment stabilization planning, and readiness for Phase 4 (WhatsApp-first multi-channel)
+- **Official baseline:** V42
+- **Baseline focus:** Cost Calculator refactor + Arabic/English translation updates
+- **Current phase:** clean Git baseline & production hardening
+- **Canonical source:** GitHub `main`
 
-## Core Rules
-
-The project follows the official rules in:
-
-- `PROJECT_RULES.md`
+See:
 - `PROJECT_MASTER_STATUS.md`
 - `CURRENT_PHASE.md`
+- `PROJECT_RULES.md`
+- `DEPLOY_FLOW.md`
+- `TEST_PLAN.md`
 
-Important development principles:
+## Development Workflow
 
-- Do not break working features
-- Deliver full ZIP builds during active development
-- Keep Arabic/English support in all features
-- Build generic reusable modules, not niche-only logic
-- Prefer services and modular architecture over blade-heavy logic
-- Keep performance, conversion, and admin control in mind
-- Do not rely on memory; rely on project docs
+Starting with V42, Git is the source of truth. Do not create a new full project folder for every normal version.
+
+Use branches/commits for changes and tags/releases for stable milestones. ZIP packages may still be created for backup or handoff when useful.
+
+## Security Rule
+
+Real environment values are never committed.
+
+- `.env` stays local/server-side only.
+- Commit only safe examples such as `.env.example`.
+- Production/CI credentials belong in approved secret stores such as GitHub Actions Secrets.
+- Any credential previously exposed in public Git history must be rotated.
 
 ## Main Modules
 
 - Catalog: categories, brands, products, variants, attributes, images, translations
 - Commerce: cart, checkout, orders, coupons, refunds, payment flow
-- Operations: suppliers, purchases, inventory, profit/cost foundations
+- Operations: suppliers, purchases, inventory, cost/profit foundations, Cost Calculator
 - Growth: analytics events, campaigns, automation rules, audience segments, templates
-- Platform: permissions, notifications, settings, branding, translations
-
-Full module map:
-
-- `docs/MODULES_OVERVIEW.md`
-
-## Documentation Map
-
-### Project control files
-- `PROJECT_RULES.md`
-- `PROJECT_MASTER_STATUS.md`
-- `CURRENT_PHASE.md`
-
-### Docs folder
-- `docs/MODULES_OVERVIEW.md`
-- `docs/KNOWN_ISSUES.md`
-- `docs/SETUP_GUIDE.md`
-- `docs/QA_CHECKLIST.md`
-- `docs/TRANSLATION_AUDIT.md`
-- `docs/CLEANUP_STEP2_REPORT.md`
-- `docs/RELEASE_CHECKLIST.md`
-- `docs/archive/NOTES_INDEX.md`
-
+- Platform: permissions, notifications, settings, branding, translations, deploy tooling
 
 ## Production Deploy
 
-This project now includes **Deploy V2** automation for Hostinger:
+Production deploy/rollback scripts:
 
-- `deploy.sh` for one-click production deploy
-- `rollback.sh` for quick rollback
-- `docs/PRODUCTION_DEPLOY.md` for the full deploy guide
+- `deploy.sh`
+- `rollback.sh`
+- `DEPLOY_FLOW.md`
 
-Standard production flow:
-
-```bash
-npm run build
-git add .
-git commit -m "your update message"
-git push origin main
-```
-
-Then on the server:
-
-```bash
-cd /home/u637857322/domains/tag-marketplace.com/laravel_app
-chmod +x deploy.sh rollback.sh
-./deploy.sh
-```
+Production deploys are based on a known commit on `main`, preserve server secrets/uploads, create a recoverable application backup, and require post-deploy verification.
 
 ## Setup
 
 ### Windows
-Run:
 
 ```bat
 scripts\dev-setup.bat
 ```
 
 ### Linux / macOS / WSL
-Run:
 
 ```bash
 bash scripts/dev-setup.sh
@@ -99,31 +65,18 @@ bash scripts/dev-setup.sh
 
 ### Quick health check
 
-#### Windows
+Windows:
+
 ```bat
 scripts\health-check.bat
 ```
 
-#### Linux / macOS / WSL
+Linux / macOS / WSL:
+
 ```bash
 bash scripts/health-check.sh
 ```
 
-## Active Development Rule for `.env`
+## Documentation Rule
 
-During active development, project ZIP deliveries **keep the working `.env`** to avoid breaking local setup.
-
-When the project reaches public release / sharing stage, prepare a release-safe package with:
-
-- `.env` removed
-- `.env.example` verified
-- secrets checked
-- production checklist completed
-
-## Notes Archive
-
-Older planning and historical notes were moved out of the project root into:
-
-- `docs/archive/notes/`
-
-This keeps the root cleaner while preserving project history.
+Project documentation is part of the definition of done. Meaningful changes must update the project status/current phase so the repository—not chat memory—remains the durable project record.
