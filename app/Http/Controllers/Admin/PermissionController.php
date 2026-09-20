@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Auth\AuthorizationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -99,11 +100,27 @@ class PermissionController extends Controller
     {
         $this->ensureSuperAdmin();
 
-        abort_if($role->is_system, 403);
+        $deleted = DB::transaction(function () use ($role) {
+            $lockedRole = Role::query()
+                ->whereKey($role->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $role->users()->detach();
-        $role->permissions()->detach();
-        $role->delete();
+            abort_if($lockedRole->is_system, 403);
+
+            if ($lockedRole->users()->exists()) {
+                return false;
+            }
+
+            $lockedRole->permissions()->detach();
+            $lockedRole->delete();
+
+            return true;
+        });
+
+        if (! $deleted) {
+            return back()->with('error', __('Reassign all admin accounts using this role before deleting it.'));
+        }
 
         return back()->with('success', __('Custom staff role deleted successfully.'));
     }
