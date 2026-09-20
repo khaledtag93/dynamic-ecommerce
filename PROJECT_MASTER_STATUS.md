@@ -195,3 +195,18 @@ Required runtime extensions were confirmed present on Hostinger CLI PHP 8.3.33:
 - zip
 
 This clears the PHP-extension portion of the server preflight.
+
+
+### Production Laravel runtime check — 2026-09-20
+Hostinger production runtime currently reports:
+- Application: Tag Marketplace
+- Laravel: 10.48.29
+- PHP: 8.3.33
+- Composer: 2.9.8
+- Environment: production
+- Maintenance mode: OFF
+- APP_DEBUG/runtime debug mode: ENABLED
+
+Security/release note:
+- Debug mode being enabled in production is a release blocker and should be changed to disabled before the next production deployment.
+- Do not change it blindly mid-audit; verify the current server .env values first, then update in a controlled step and clear/rebuild config cache.
