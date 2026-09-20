@@ -42,3 +42,5 @@ Thumbs.db
 *.zip
 *.rar
 *.7z
+/database/*.sqlite
+*.bak

@@ -1,7 +1,7 @@
 @php
     $data = $section['data'] ?? [];
     $blocks = collect($data['blocks'] ?? []);
-    $title = $data['title'] ?? __('Why customers keep coming back');
+    $title = $data['title'] ?? __('Why shop with us?');
     $subtitle = $data['subtitle'] ?? __('Trust signals that reduce hesitation');
 @endphp
 
@@ -13,7 +13,7 @@
                 <div class="lc-section-head__copy">
                     <span class="lc-section-kicker justify-content-center">{{ $subtitle }}</span>
                     <h2 class="lc-section-title">{{ $title }}</h2>
-                    <p class="lc-section-description mx-auto">{{ __('Trust matters in electronics shopping. Clear delivery, warranty, payment, and support details help customers complete checkout with confidence.') }}</p>
+                    <p class="lc-section-description mx-auto">{{ __('Clear delivery, secure payments, original products, and helpful support for every order.') }}</p>
                 </div>
             </div>
 

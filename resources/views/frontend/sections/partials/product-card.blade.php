@@ -1,4 +1,6 @@
 @php
+    use Illuminate\Support\Str;
+
     $productUrl = route('frontend.products.show', $product->slug);
     $imageUrl = $product->main_image_url ?: 'https://via.placeholder.com/900x900?text=Product';
     $basePrice = (float) ($product->base_price ?? 0);
@@ -6,99 +8,67 @@
     $salePrice = (float) ($product->sale_price ?? 0);
     $hasDiscount = $salePrice > 0 && $basePrice > 0 && $salePrice < $basePrice;
     $discountPercent = $hasDiscount ? max(1, (int) round((($basePrice - $salePrice) / $basePrice) * 100)) : 0;
-    $categoryName = $product->category->name ?? __('General');
+    $categoryName = $product->category->name ?? __('Electronics');
+    $categoryNameText = trim((string) $categoryName);
+    $isDemoCategory = $categoryNameText === '' || Str::contains(Str::lower($categoryNameText), ['demo', 'growth', 'validation']);
+    $displayCategoryName = $isDemoCategory ? null : $categoryNameText;
     $stockQty = (int) ($product->quantity_value ?? 0);
-    $stockText = $product->in_stock ? __('In stock') : __('Out of stock');
     $isLowStock = $product->in_stock && $stockQty > 0 && $stockQty <= max(5, (int) ($product->low_stock_threshold ?? 3));
     $showQuickView = $showQuickView ?? false;
-    $productDescription = \Illuminate\Support\Str::limit($product->description ?: __('Clear title, strong price, simple actions, and less friction before checkout.'), 95);
 @endphp
 
-<article class="lc-card lc-product-card p-3 p-lg-4 h-100 d-flex flex-column">
-    <div class="lc-product-card__media mb-3">
-        <a href="{{ $productUrl }}" class="lc-product-thumb-wrap">
-            @if($hasDiscount)
-                <span class="lc-product-badge"><i class="bi bi-stars"></i> {{ __('Save') }} {{ $discountPercent }}%</span>
-            @endif
+<article class="commerce-product-card-v4 h-100">
+    <a href="{{ $productUrl }}" class="commerce-product-card-v4__media" aria-label="{{ $product->name }}">
+        <img src="{{ $imageUrl }}" alt="{{ $product->name }}" loading="lazy">
 
+        @if($displayCategoryName)
+            <span class="commerce-product-card-v4__chip commerce-product-card-v4__chip--category">{{ $displayCategoryName }}</span>
+        @endif
+
+        @if($hasDiscount)
+            <span class="commerce-product-card-v4__chip commerce-product-card-v4__chip--sale">{{ __('Save :percent%', ['percent' => $discountPercent]) }}</span>
+        @elseif($product->in_stock)
+            <span class="commerce-product-card-v4__chip commerce-product-card-v4__chip--ready">{{ __('In stock') }}</span>
+        @endif
+    </a>
+
+    <div class="commerce-product-card-v4__body">
+        <div class="commerce-product-card-v4__meta">
+            <span>{{ $product->in_stock ? __('Ready to ship') : __('Unavailable') }}</span>
             @if($isLowStock)
-                <span class="lc-product-badge lc-product-badge--secondary"><i class="bi bi-lightning-charge"></i> {{ __('Only :count left', ['count' => $stockQty]) }}</span>
+                <em>{{ __('Only :count left', ['count' => $stockQty]) }}</em>
             @endif
-
-            <img src="{{ $imageUrl }}" class="w-100 lc-product-thumb" alt="{{ $product->name }}">
-        </a>
-
-        <div class="lc-product-card__quick-meta">
-            <span class="lc-product-meta__pill"><i class="bi bi-grid-1x2"></i> {{ $categoryName }}</span>
-            <span class="lc-product-meta__pill {{ $product->in_stock ? 'is-success' : 'is-muted' }}">
-                <i class="bi {{ $product->in_stock ? 'bi-check-circle' : 'bi-dash-circle' }}"></i> {{ $stockText }}
-            </span>
         </div>
-    </div>
 
-    <div class="d-flex flex-column flex-grow-1">
-        <div class="small text-muted fw-semibold mb-2">{{ __('Ready to order') }}</div>
-
-        <h3 class="h5 fw-bold mb-2 lc-product-card__title">
-            <a class="text-dark text-decoration-none" href="{{ $productUrl }}">{{ $product->name }}</a>
+        <h3 class="commerce-product-card-v4__title">
+            <a href="{{ $productUrl }}">{{ $product->name }}</a>
         </h3>
 
-        <p class="text-muted small mb-3 lc-product-card__summary">{{ $productDescription }}</p>
-
-        <div class="lc-price-stack mb-2">
-            <span class="fw-bold fs-4">EGP {{ number_format($currentPrice, 2) }}</span>
+        <div class="commerce-product-card-v4__price">
+            <strong>EGP {{ number_format($currentPrice, 2) }}</strong>
             @if($hasDiscount)
-                <span class="lc-price-original">EGP {{ number_format($basePrice, 2) }}</span>
+                <span>EGP {{ number_format($basePrice, 2) }}</span>
             @endif
         </div>
 
-        <div class="lc-product-selling-points mb-3">
-            @if($hasDiscount)
-                <span class="lc-product-discount-note">{{ __('Limited-time offer') }}</span>
-            @endif
-            @if($isLowStock)
-                <span class="lc-product-urgency-note">{{ __('Selling fast') }}</span>
+        <div class="commerce-product-card-v4__actions">
+            <form action="{{ route('cart.store', $product) }}" method="POST" data-submit-loading>
+                @csrf
+                <button class="commerce-product-card-v4__cart" type="submit" data-loading-text="{{ __('Adding...') }}" {{ $product->in_stock ? '' : 'disabled' }}>
+                    <span>{{ $product->in_stock ? __('Add to cart') : __('Unavailable') }}</span>
+                    <i class="bi bi-bag-plus"></i>
+                </button>
+            </form>
+
+            @if($showQuickView)
+                <button type="button" class="commerce-product-card-v4__view lc-quick-view-trigger" data-bs-toggle="modal" data-bs-target="#quickViewModal" data-product-name="{{ e($product->name) }}" data-product-url="{{ $productUrl }}" data-image-url="{{ $imageUrl }}" data-description="{{ e($product->description ?: __('Clear details, price, and availability.')) }}" data-category="{{ e($displayCategoryName) }}" data-price="EGP {{ number_format($currentPrice, 2) }}" data-base-price="{{ $hasDiscount ? 'EGP ' . number_format($basePrice, 2) : '' }}" data-discount="{{ $hasDiscount ? __('Save :percent%', ['percent' => $discountPercent]) : '' }}" data-stock="{{ $product->in_stock ? ($isLowStock ? __('Only :count left', ['count' => $stockQty]) : __('Ready to ship')) : __('Currently unavailable') }}" data-add-to-cart="{{ route('cart.store', $product) }}">
+                    <i class="bi bi-search"></i>
+                </button>
             @else
-                <span class="lc-product-neutral-note">{{ __('Fast delivery available') }}</span>
+                <a href="{{ $productUrl }}" class="commerce-product-card-v4__view" aria-label="{{ __('View details') }}">
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
             @endif
-        </div>
-
-        <div class="lc-product-actions mt-auto">
-            <div class="d-grid gap-2">
-                <form action="{{ route('cart.store', $product) }}" method="POST">
-                    @csrf
-                    <button class="btn lc-btn-primary w-100" type="submit" {{ $product->in_stock ? '' : 'disabled' }}>
-                        <i class="bi bi-bag-plus me-2"></i>{{ $product->in_stock ? __('Add to cart') : __('Currently unavailable') }}
-                    </button>
-                </form>
-
-                <div class="d-grid lc-product-secondary-actions">
-                    @if($showQuickView)
-                        <button
-                            type="button"
-                            class="btn lc-btn-soft lc-quick-view-trigger"
-                            data-bs-toggle="modal"
-                            data-bs-target="#quickViewModal"
-                            data-product-name="{{ e($product->name) }}"
-                            data-product-url="{{ $productUrl }}"
-                            data-image-url="{{ $imageUrl }}"
-                            data-description="{{ e($product->description ?: __('This product page is ready for stronger sales copy, benefits, and proof.')) }}"
-                            data-category="{{ e($categoryName) }}"
-                            data-price="EGP {{ number_format($currentPrice, 2) }}"
-                            data-base-price="{{ $hasDiscount ? 'EGP ' . number_format($basePrice, 2) : '' }}"
-                            data-discount="{{ $hasDiscount ? __('Save :percent%', ['percent' => $discountPercent]) : '' }}"
-                            data-stock="{{ $product->in_stock ? ($isLowStock ? __('Only :count left', ['count' => $stockQty]) : __('Ready to ship')) : __('Currently unavailable') }}"
-                            data-add-to-cart="{{ route('cart.store', $product) }}"
-                        >
-                            <i class="bi bi-search-heart me-2"></i>{{ __('Quick view') }}
-                        </button>
-                    @else
-                        <a href="{{ $productUrl }}" class="btn lc-btn-soft w-100">
-                            <i class="bi bi-eye me-2"></i>{{ __('View details') }}
-                        </a>
-                    @endif
-                </div>
-            </div>
         </div>
     </div>
 </article>
@@ -106,13 +76,11 @@
 @once
     @push('styles')
     <style>
-    .lc-product-mini-benefits,.lc-product-selling-points{display:flex;flex-wrap:wrap;gap:.55rem}
-    .lc-product-mini-benefits span,.lc-product-urgency-note,.lc-product-neutral-note{display:inline-flex;align-items:center;gap:.4rem;padding:.42rem .7rem;border-radius:999px;background:color-mix(in srgb,var(--lc-soft) 78%, white);font-size:.78rem;font-weight:700;color:var(--lc-primary-dark);border:1px solid color-mix(in srgb,var(--lc-border) 78%, white)}
-    .lc-product-badge--secondary{top:auto;bottom:1rem;background:rgba(15,23,42,.86)}
-    .lc-product-discount-note{display:inline-flex;align-items:center;padding:.35rem .6rem;border-radius:999px;font-size:.75rem;font-weight:800;color:#166534;background:#ecfdf3;border:1px solid #bbf7d0}
-    .lc-product-urgency-note{color:#9a3412;background:#fff7ed;border-color:#fed7aa}
-    .lc-product-neutral-note{color:#334155;background:#f8fafc;border-color:#e2e8f0}
-    .lc-product-secondary-actions{grid-template-columns:1fr}
+    .commerce-product-card-v4{position:relative;display:flex;flex-direction:column;overflow:hidden;border-radius:24px;background:#fff;border:1px solid rgba(226,232,240,.94);box-shadow:0 18px 44px rgba(15,23,42,.07);transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease}.commerce-product-card-v4:hover{transform:translateY(-5px);border-color:color-mix(in srgb,var(--lc-primary) 28%,#e2e8f0);box-shadow:0 28px 70px rgba(15,23,42,.13)}
+    .commerce-product-card-v4__media{position:relative;display:block;margin:.65rem;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#f8fafc,#fff);isolation:isolate}.commerce-product-card-v4__media::after{content:"";position:absolute;inset:auto -18% -45% -18%;height:66%;background:radial-gradient(circle,color-mix(in srgb,var(--lc-primary) 18%,transparent),transparent 64%);z-index:-1}.commerce-product-card-v4__media img{width:100%;aspect-ratio:1.18/1;object-fit:contain;padding:1.1rem;display:block;transition:transform .28s ease}.commerce-product-card-v4:hover .commerce-product-card-v4__media img{transform:scale(1.04)}
+    .commerce-product-card-v4__chip{position:absolute;z-index:2;display:inline-flex;align-items:center;max-width:68%;border-radius:999px;padding:.4rem .65rem;font-size:.72rem;font-weight:950;line-height:1;background:rgba(255,255,255,.94);border:1px solid rgba(226,232,240,.9);box-shadow:0 12px 24px rgba(15,23,42,.1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.commerce-product-card-v4__chip--category{inset-block-start:.72rem;inset-inline-start:.72rem;color:#334155}.commerce-product-card-v4__chip--sale{inset-block-start:.72rem;inset-inline-end:.72rem;background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff;border-color:transparent}.commerce-product-card-v4__chip--ready{inset-block-start:.72rem;inset-inline-end:.72rem;background:#ecfdf5;color:#047857;border-color:#bbf7d0}
+    .commerce-product-card-v4__body{display:flex;flex-direction:column;gap:.62rem;padding:.35rem 1rem 1rem;flex:1}.commerce-product-card-v4__meta{display:flex;align-items:center;justify-content:space-between;gap:.5rem;color:#64748b;font-size:.75rem;font-weight:850}.commerce-product-card-v4__meta span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.commerce-product-card-v4__meta em{font-style:normal;flex:0 0 auto;color:#c2410c}.commerce-product-card-v4__title{margin:0;min-height:2.55rem;font-size:.98rem;font-weight:950;line-height:1.42}.commerce-product-card-v4__title a{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#0f172a}.commerce-product-card-v4__title a:hover{color:var(--lc-primary-dark)}.commerce-product-card-v4__price{display:flex;align-items:baseline;gap:.42rem;flex-wrap:wrap}.commerce-product-card-v4__price strong{color:#0f172a;font-size:1.12rem;font-weight:950;letter-spacing:-.02em}.commerce-product-card-v4__price span{color:#94a3b8;text-decoration:line-through;font-size:.82rem;font-weight:850}
+    .commerce-product-card-v4__actions{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:.55rem;margin-top:auto}.commerce-product-card-v4__actions form{min-width:0}.commerce-product-card-v4__cart,.commerce-product-card-v4__view{height:44px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-weight:950;transition:.2s ease}.commerce-product-card-v4__cart{width:100%;gap:.45rem;border:0;background:#0f172a;color:#fff;font-size:.84rem;line-height:1;padding:0 .8rem;white-space:nowrap}.commerce-product-card-v4__cart:hover{background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff}.commerce-product-card-v4__cart:disabled{opacity:.55;cursor:not-allowed}.commerce-product-card-v4__cart span{overflow:hidden;text-overflow:ellipsis}.commerce-product-card-v4__cart i{font-size:.95rem;flex:0 0 auto}.commerce-product-card-v4__view{border:1px solid rgba(148,163,184,.34);background:#f8fafc;color:#0f172a}.commerce-product-card-v4__view:hover{background:#fff7ed;border-color:color-mix(in srgb,var(--lc-primary) 34%,#fed7aa);color:var(--lc-primary-dark)}[dir="rtl"] .commerce-product-card-v4__view i{transform:scaleX(-1)}@media(max-width:575.98px){.commerce-product-card-v4__media img{aspect-ratio:1.35/1}.commerce-product-card-v4__title{min-height:auto}}
     </style>
     @endpush
 @endonce

@@ -21,7 +21,7 @@
                     <div class="p-4 p-lg-5">
                         <span class="lc-section-kicker mb-3">{{ __('Category collection') }}</span>
                         <h1 class="lc-section-title mb-3">{{ $category->name ?? __('Category Products') }}</h1>
-                        <p class="text-muted mb-4">{{ $category->description ?: __('This category page is now focused on conversion: clearer filters, stronger product cards, and faster paths into product details or cart.') }}</p>
+                        <p class="text-muted mb-4">{{ $category->description ?: __('Explore available products, offers, and prices in this category.') }}</p>
 
                         <div class="category-hero-stats mb-4">
                             <div class="category-hero-stat">
@@ -62,7 +62,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <span class="lc-section-kicker mb-2">{{ __('Filter & sort') }}</span>
-                            <h2 class="h4 fw-bold mb-0">{{ __('Help shoppers find the right product fast') }}</h2>
+                            <h2 class="h4 fw-bold mb-0">{{ __('Find the right product') }}</h2>
                         </div>
                     </div>
 
@@ -116,12 +116,12 @@
             <div class="col-xl-9">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                     <div>
-                        <span class="lc-section-kicker">{{ __('Shopping layout') }}</span>
+                        <span class="lc-section-kicker">{{ __('Products') }}</span>
                         <h2 class="lc-section-title mb-0">{{ __('Products in this category') }}</h2>
                     </div>
                     <div class="category-grid-meta">
-                        <span><i class="bi bi-stars"></i> {{ __('Clear pricing') }}</span>
-                        <span><i class="bi bi-lightning-charge"></i> {{ __('Fast CTA') }}</span>
+                        <span><i class="bi bi-stars"></i> {{ __('Clear prices') }}</span>
+                        <span><i class="bi bi-lightning-charge"></i> {{ __('Easy ordering') }}</span>
                         <span><i class="bi bi-search-heart"></i> {{ __('Quick view') }}</span>
                     </div>
                 </div>

@@ -1,10 +1,28 @@
 <!DOCTYPE html>
+@php
+    /* Storefront layout safe defaults: keeps the customer layout stable if a view composer value is missing. */
+    $storeSettings = $storeSettings ?? [];
+    $isRtl = $isRtl ?? app()->getLocale() === 'ar';
+    $layoutCategories = collect($layoutCategories ?? []);
+    $layoutCartCount = (int) ($layoutCartCount ?? 0);
+    $authNotificationCount = (int) ($authNotificationCount ?? 0);
+    $customerLogoPath = \App\Support\AdminBranding::resolveMediaPath($storeSettings['logo_path'] ?? $storeSettings['logo'] ?? null, 'logo');
+    $localizedStoreTagline = ($isRtl ?? false)
+        ? ($storeSettings['store_tagline_ar'] ?? $storeSettings['store_tagline'] ?? __('أجهزة وإلكترونيات أصلية مع دفع آمن وتوصيل سريع.'))
+        : ($storeSettings['store_tagline_en'] ?? $storeSettings['store_tagline'] ?? __('Original electronics with secure checkout and fast delivery.'));
+    $localizedFooterAbout = ($isRtl ?? false)
+        ? ($storeSettings['footer_about_ar'] ?? $storeSettings['footer_about'] ?? __('تسوق الموبايلات واللابتوبات والألعاب والسماعات والشاشات والإكسسوارات والأجهزة الذكية بأسعار واضحة ودعم موثوق.'))
+        : ($storeSettings['footer_about_en'] ?? $storeSettings['footer_about'] ?? __('Shop phones, laptops, gaming, audio, TVs, accessories, and smart devices with clear prices and trusted support.'));
+    $localizedFooterCopyright = ($isRtl ?? false)
+        ? ($storeSettings['footer_copyright_ar'] ?? $storeSettings['footer_copyright'] ?? __('جميع الحقوق محفوظة.'))
+        : ($storeSettings['footer_copyright_en'] ?? $storeSettings['footer_copyright'] ?? __('All rights reserved.'));
+@endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ ($isRtl ?? false) ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Storefront')</title>
-    <meta name="description" content="@yield('meta_description', __('Modern multilingual online store'))">
+    <meta name="description" content="@yield('meta_description', __('Shop electronics, phones, laptops, gaming, audio, TVs, and smart devices online.'))">
     @php($faviconPath = \App\Support\AdminBranding::resolveMediaPath($storeSettings['favicon_path'] ?? null, 'favicon'))
     @if($faviconPath)
         <link rel="icon" type="image/x-icon" href="{{ \App\Support\AdminBranding::mediaUrl($faviconPath, 'favicon') }}">
@@ -430,6 +448,19 @@
             content:""; position:absolute; inset:-6px; border-radius:inherit; border:1px solid color-mix(in srgb, var(--lc-primary) 14%, transparent); animation: lcPulse 1.8s ease-out infinite;
         }
         @keyframes lcPulse { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
+
+        /* Storefront Phase A polish: unified customer design system, cleaner spacing, and retail-focused surfaces. */
+        .lc-navbar{box-shadow:0 10px 30px color-mix(in srgb,var(--lc-dark) 7%, transparent)}
+        .lc-category-dropdown{min-width:260px;max-height:420px;overflow:auto}.lc-category-dropdown .dropdown-item{font-weight:800;color:var(--lc-text)}.lc-category-dropdown .dropdown-item:hover{background:color-mix(in srgb,var(--lc-soft) 80%, white);color:var(--lc-primary-dark)}
+        .lc-btn-primary,.lc-btn-soft,.lc-btn-danger-soft{border-radius:1rem;font-weight:900}.lc-btn-primary{background:linear-gradient(135deg,var(--lc-dark),color-mix(in srgb,var(--lc-primary) 55%, var(--lc-dark)));border:none;color:var(--lc-btn-text);box-shadow:0 16px 32px color-mix(in srgb,var(--lc-dark) 16%, transparent)}.lc-btn-primary:hover{color:var(--lc-btn-text);transform:translateY(-1px);box-shadow:0 20px 42px color-mix(in srgb,var(--lc-dark) 20%, transparent)}.lc-btn-soft{background:#fff;border:1px solid color-mix(in srgb,var(--lc-border) 76%, white);color:var(--lc-primary-dark)}.lc-btn-soft:hover{background:color-mix(in srgb,var(--lc-soft) 80%, white);color:var(--lc-primary-dark);border-color:color-mix(in srgb,var(--lc-primary) 28%, white)}.lc-btn-danger-soft{background:#fff1f2;border:1px solid #fecdd3;color:#be123c}.lc-btn-danger-soft:hover{background:#ffe4e6;color:#9f1239}
+        .storefront-footer{background:linear-gradient(135deg,#0f172a,color-mix(in srgb,var(--lc-dark) 74%, #020617));color:#fff;border-top:1px solid rgba(255,255,255,.08)}.storefront-footer__top{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:2rem}.storefront-footer__brand p{color:rgba(255,255,255,.72);line-height:1.9;max-width:520px}.storefront-footer__trust{display:flex;flex-wrap:wrap;gap:.6rem}.storefront-footer__trust span{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .75rem;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:800;font-size:.84rem}.storefront-footer__trust i{color:var(--lc-primary)}.storefront-footer__column{display:flex;flex-direction:column;gap:.6rem}.storefront-footer__column h6{font-weight:900;margin-bottom:.35rem;color:#fff}.storefront-footer__column a,.storefront-footer__column span{color:rgba(255,255,255,.68);font-size:.94rem}.storefront-footer__column a:hover{color:#fff}.storefront-footer__bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:2rem;padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:rgba(255,255,255,.58);font-size:.9rem}.lc-page-shell{background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--lc-soft) 24%, #fff))}@media(max-width:991.98px){.storefront-footer__top{grid-template-columns:1fr 1fr}.storefront-footer__brand{grid-column:1/-1}}@media(max-width:575.98px){.storefront-footer__top{grid-template-columns:1fr}.lc-section-head{align-items:flex-start;flex-direction:column}.lc-grid-products,.lc-grid-categories,.lc-grid-promos,.lc-grid-trust{grid-template-columns:1fr!important}}
+
+
+        /* Storefront Phase B — Retail UX Foundation */
+        .retail-header{z-index:1030;background:rgba(255,255,255,.92);backdrop-filter:blur(18px);box-shadow:0 12px 34px rgba(15,23,42,.08)}
+        .retail-topbar{background:linear-gradient(135deg,#111827,color-mix(in srgb,var(--lc-primary) 48%,#111827));color:#fff;font-size:.9rem}
+        .retail-topbar__inner{min-height:42px;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}.retail-topbar__message,.retail-topbar__actions,.retail-topbar__actions span{display:flex;align-items:center;gap:.55rem}.retail-topbar__message i,.retail-topbar__actions i{color:#fde68a}.retail-topbar .language-switcher__label{display:none}.retail-topbar .language-switcher__group{padding:.18rem;background:rgba(255,255,255,.1)}.retail-topbar .language-switcher__link{padding:.35rem .65rem;font-size:.8rem}.retail-topbar .language-switcher__code{width:1.55rem;height:1.55rem}.retail-navbar{background:rgba(255,255,255,.92);border-bottom:1px solid color-mix(in srgb,var(--lc-border) 55%, white)}.retail-navbar__grid{display:grid;grid-template-columns:minmax(230px,310px) minmax(280px,1fr) auto;gap:1.1rem;align-items:center;padding:1rem 0}.retail-brand{display:flex;align-items:center;gap:.85rem;color:var(--lc-text)}.retail-brand:hover{color:var(--lc-text)}.retail-brand__logo{width:54px;height:54px;border-radius:18px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff;box-shadow:0 16px 28px color-mix(in srgb,var(--lc-primary) 18%, transparent);flex:0 0 auto}.retail-brand__logo img{width:100%;height:100%;object-fit:cover}.retail-brand__copy{display:grid;gap:.12rem}.retail-brand__copy strong{font-size:1.08rem;font-weight:950;letter-spacing:-.02em}.retail-brand__copy small{font-size:.78rem;color:var(--lc-muted);line-height:1.35;max-width:250px}.retail-search{height:52px;border:1px solid color-mix(in srgb,var(--lc-border) 70%, white);background:#fff;border-radius:18px;align-items:center;gap:.65rem;padding:.35rem .45rem .35rem 1rem;box-shadow:0 16px 38px rgba(15,23,42,.05)}body[dir="rtl"] .retail-search{padding:.35rem 1rem .35rem .45rem}.retail-search i{color:var(--lc-primary-dark);font-size:1.05rem}.retail-search input{border:0;outline:0;box-shadow:none;background:transparent;flex:1;min-width:0;color:var(--lc-text);font-weight:700}.retail-search button{border:0;border-radius:14px;background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff;padding:.72rem 1.15rem;font-weight:900}.retail-actions{display:flex;align-items:center;justify-content:flex-end;gap:.55rem}.retail-action,.retail-menu-toggle{position:relative;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border-radius:16px;border:1px solid color-mix(in srgb,var(--lc-border) 65%, white);background:#fff;color:var(--lc-text);font-weight:900;padding:.65rem .8rem;box-shadow:0 12px 28px rgba(15,23,42,.05)}.retail-action:hover,.retail-menu-toggle:hover{color:var(--lc-primary-dark);background:color-mix(in srgb,var(--lc-soft) 80%, white)}.retail-action i,.retail-menu-toggle i{font-size:1.15rem}.retail-action em{position:absolute;top:-.45rem;inset-inline-end:-.35rem;min-width:1.35rem;height:1.35rem;padding:0 .25rem;border-radius:999px;background:#f97316;color:#fff;font-style:normal;font-size:.72rem;font-weight:950;display:flex;align-items:center;justify-content:center;border:2px solid #fff}.retail-action--cart{background:linear-gradient(135deg,var(--lc-dark),color-mix(in srgb,var(--lc-primary) 52%,var(--lc-dark)));color:#fff;border:0;padding-inline:1rem}.retail-action--cart:hover{color:#fff;filter:brightness(1.04)}.retail-menu-toggle{display:none}.retail-nav-collapse{border-top:1px solid color-mix(in srgb,var(--lc-border) 50%, white)}.retail-nav-row{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:1rem}.retail-category-button{border:0;border-radius:16px;background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff;font-weight:950;padding:.8rem 1rem;display:inline-flex;align-items:center;gap:.65rem;box-shadow:0 14px 30px color-mix(in srgb,var(--lc-primary) 18%, transparent)}.retail-category-button__chevron{font-size:.8rem;opacity:.8}.retail-mega-menu{width:min(720px,calc(100vw - 2rem));border:0;border-radius:24px;padding:1rem;margin-top:.65rem;box-shadow:0 30px 70px rgba(15,23,42,.16);background:rgba(255,255,255,.98);backdrop-filter:blur(20px)}.retail-mega-menu__head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding:.4rem .4rem 1rem;border-bottom:1px solid color-mix(in srgb,var(--lc-border) 55%, white);margin-bottom:1rem}.retail-mega-menu__head strong{display:block;font-weight:950}.retail-mega-menu__head span{color:var(--lc-muted);font-size:.9rem}.retail-mega-menu__head a{color:var(--lc-primary-dark);font-weight:900}.retail-mega-menu__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}.retail-mega-category{display:flex;align-items:center;gap:.75rem;padding:.75rem;border-radius:18px;color:var(--lc-text);border:1px solid transparent}.retail-mega-category:hover{background:color-mix(in srgb,var(--lc-soft) 80%, white);border-color:color-mix(in srgb,var(--lc-border) 60%, white);color:var(--lc-primary-dark)}.retail-mega-category__icon{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--lc-soft) 80%, white),#fff);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--lc-primary-dark);flex:0 0 auto}.retail-mega-category__icon img{width:100%;height:100%;object-fit:cover}.retail-mega-category strong{display:block;font-weight:950}.retail-mega-category small{display:block;color:var(--lc-muted);font-size:.82rem;margin-top:.08rem}.retail-mega-empty{padding:1.25rem;color:var(--lc-muted)}.retail-links{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}.retail-links a,.retail-link-button{border:0;background:transparent;color:var(--lc-text);font-weight:900;padding:.65rem .8rem;border-radius:14px}.retail-links a:hover,.retail-link-button:hover{background:color-mix(in srgb,var(--lc-soft) 80%, white);color:var(--lc-primary-dark)}.retail-search--mobile{margin:0 0 1rem;display:flex}.retail-quick-strip{padding:1rem 0;background:linear-gradient(90deg,#fff,color-mix(in srgb,var(--lc-soft) 62%,#fff),#fff);border-bottom:1px solid color-mix(in srgb,var(--lc-border) 46%, white)}.retail-quick-strip__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem}.retail-quick-tile{display:flex;align-items:center;gap:.75rem;padding:1rem;border-radius:20px;background:#fff;border:1px solid color-mix(in srgb,var(--lc-border) 58%, white);box-shadow:0 14px 30px rgba(15,23,42,.05);color:var(--lc-text)}.retail-quick-tile i{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff;font-size:1.15rem}.retail-quick-tile strong{display:block;font-weight:950}.retail-quick-tile span{display:block;color:var(--lc-muted);font-size:.86rem}.retail-section-band{background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--lc-soft) 28%,#fff))}.lc-home-section:nth-of-type(even){background:linear-gradient(180deg,color-mix(in srgb,var(--lc-soft) 34%,#fff),#fff)}.lc-section-title{letter-spacing:-.03em}.lc-section-kicker{text-transform:none;letter-spacing:0;font-size:.9rem}.lc-grid-products,.row.g-4{row-gap:1.45rem!important}.storefront-footer{margin-top:0!important}.storefront-footer__column a{padding:.12rem 0}.storefront-footer__bottom span:last-child{color:rgba(255,255,255,.76)}@media(max-width:1199.98px){.retail-navbar__grid{grid-template-columns:minmax(220px,1fr) auto}.retail-search.d-lg-flex{display:none!important}.retail-menu-toggle{display:inline-flex}.retail-nav-row{align-items:flex-start;flex-direction:column;padding:1rem 0}.retail-links{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.retail-links a,.retail-link-button{text-align:start;background:#fff;border:1px solid color-mix(in srgb,var(--lc-border) 55%, white)}}@media(max-width:991.98px){.retail-topbar__inner{justify-content:center;text-align:center}.retail-brand__copy small{display:none}.retail-mega-menu{width:100%;box-shadow:none;border:1px solid color-mix(in srgb,var(--lc-border) 55%, white)}.retail-quick-strip__grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:575.98px){.retail-navbar__grid{grid-template-columns:1fr auto;gap:.7rem}.retail-brand__logo{width:46px;height:46px}.retail-brand__copy strong{font-size:.95rem}.retail-action span{display:none!important}.retail-mega-menu__grid,.retail-links,.retail-quick-strip__grid{grid-template-columns:1fr}.retail-topbar__message{font-size:.8rem}.retail-topbar__actions{width:100%;justify-content:center}}
+
         @media (max-width: 991.98px) {
             .lc-progress-strip { grid-template-columns: 1fr; }
             .lc-summary-card-sticky { position: static; }
@@ -439,90 +470,257 @@
             .lc-cart-item__media img { width: 100%; height: 220px; }
             .lc-cart-item__actions { width: 100%; }
         }
+        /* Retail header hotfixes: keep cart readable on hover and restore customer account dropdown. */
+        .retail-action--cart,
+        .retail-action--cart:hover,
+        .retail-action--cart:focus {
+            color: #fff !important;
+            background: linear-gradient(135deg, var(--lc-dark), color-mix(in srgb, var(--lc-primary) 52%, var(--lc-dark))) !important;
+        }
+        .retail-account-dropdown { position: relative; }
+        .retail-action--account { max-width: 190px; }
+        .retail-action--account span { max-width: 115px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .retail-account-menu {
+            min-width: 260px;
+            border: 0;
+            border-radius: 22px;
+            padding: .65rem;
+            box-shadow: 0 28px 65px rgba(15, 23, 42, .18);
+            margin-top: .65rem;
+        }
+        .retail-account-menu__head {
+            padding: .85rem .95rem;
+            border-radius: 16px;
+            background: color-mix(in srgb, var(--lc-soft) 80%, white);
+            margin-bottom: .45rem;
+        }
+        .retail-account-menu__head strong,
+        .retail-account-menu__head small { display: block; }
+        .retail-account-menu__head small { color: var(--lc-muted); font-size: .82rem; margin-top: .1rem; word-break: break-all; }
+        .retail-account-menu .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            border-radius: 14px;
+            padding: .7rem .85rem;
+            font-weight: 800;
+        }
+        .retail-account-menu .dropdown-item:hover { background: color-mix(in srgb, var(--lc-soft) 82%, white); color: var(--lc-primary-dark); }
+        .retail-account-menu__logout { color: #dc2626; width: 100%; text-align: inherit; }
+
+        /* V37.1: hero/quick-entry RTL polish. Keep icons away from text and avoid first-screen clutter. */
+        .retail-quick-tile {
+            min-width: 0;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        .retail-quick-tile i {
+            flex: 0 0 42px;
+            order: 2;
+        }
+        .retail-quick-tile > div {
+            min-width: 0;
+            flex: 1 1 auto;
+            order: 1;
+        }
+        .retail-quick-tile strong,
+        .retail-quick-tile span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        body[dir="ltr"] .retail-quick-tile i { order: 1; }
+        body[dir="ltr"] .retail-quick-tile > div { order: 2; }
+        @media (max-width: 575.98px) {
+            .retail-quick-tile strong,
+            .retail-quick-tile span { white-space: normal; }
+        }
+
+        /* V37.3: quick entry icons must never cover text in RTL/LTR. */
+        .retail-quick-tile {
+            display: grid !important;
+            grid-template-columns: 48px minmax(0, 1fr);
+            align-items: center;
+            gap: .9rem !important;
+            justify-content: initial !important;
+        }
+        .retail-quick-tile i {
+            position: static !important;
+            grid-column: 1;
+            grid-row: 1;
+            width: 44px !important;
+            height: 44px !important;
+            order: initial !important;
+            flex: 0 0 44px !important;
+        }
+        .retail-quick-tile > div {
+            grid-column: 2;
+            grid-row: 1;
+            min-width: 0;
+            order: initial !important;
+        }
+        body[dir="rtl"] .retail-quick-tile {
+            grid-template-columns: minmax(0, 1fr) 48px;
+            text-align: right;
+        }
+        body[dir="rtl"] .retail-quick-tile i { grid-column: 2; }
+        body[dir="rtl"] .retail-quick-tile > div { grid-column: 1; }
+        body[dir="ltr"] .retail-quick-tile { text-align: left; }
+        @media (max-width: 991.98px) {
+            .retail-quick-tile { grid-template-columns: 44px minmax(0, 1fr); }
+            body[dir="rtl"] .retail-quick-tile { grid-template-columns: minmax(0, 1fr) 44px; }
+        }
+
     </style>
     @stack('styles')
 </head>
 <body>
-<div class="lc-topbar py-2">
-    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-3 small">
-            <span class="lc-badge">{{ $storeSettings['project_name'] ?? 'Tag Marketplace' }}</span>
-            <span class="d-none d-md-inline">{{ $storeSettings['store_tagline'] ?? __('A clean, scalable storefront built to look production-ready from day one.') }}</span>
+<header class="retail-header sticky-top">
+    <div class="retail-topbar">
+        <div class="container retail-topbar__inner">
+            <div class="retail-topbar__message">
+                <i class="bi bi-lightning-charge-fill"></i>
+                <span>{{ __('Exclusive electronics deals, fast delivery, and trusted support.') }}</span>
+            </div>
+            <div class="retail-topbar__actions">
+                <span class="d-none d-lg-inline-flex"><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
+                <span class="d-none d-lg-inline-flex"><i class="bi bi-truck"></i>{{ __('Fast delivery') }}</span>
+                @include('layouts.inc.language-switcher')
+            </div>
         </div>
-        @include('layouts.inc.language-switcher')
     </div>
-</div>
 
-<nav class="navbar navbar-expand-lg sticky-top lc-navbar">
-    <div class="container py-2">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('frontend.home') }}">
-            @php($customerLogoPath = \App\Support\AdminBranding::resolveMediaPath($storeSettings['logo_path'] ?? $storeSettings['logo'] ?? null, 'logo'))
-            @if($customerLogoPath)
-                <span class="d-inline-flex justify-content-center align-items-center rounded-circle overflow-hidden bg-white border" style="width:42px;height:42px;">
-                    <img src="{{ \App\Support\AdminBranding::mediaUrl($customerLogoPath, 'logo') }}" alt="{{ $storeSettings['store_name'] ?? 'Storefront' }}" style="width:100%;height:100%;object-fit:cover;">
-                </span>
-            @else
-                <span class="d-inline-flex justify-content-center align-items-center rounded-circle text-white" style="width:42px;height:42px;background:linear-gradient(135deg,var(--lc-primary),var(--lc-primary-dark));">
-                    <i class="bi bi-shop"></i>
-                </span>
-            @endif
-            <span>{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Storefront' }}</span>
+    <nav class="retail-navbar">
+        <div class="container">
+            <div class="retail-navbar__grid">
+                <a class="retail-brand" href="{{ route('frontend.home') }}" aria-label="{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Tag Marketplace' }}">
+                    <span class="retail-brand__logo">
+                        @if(!empty($customerLogoPath ?? null))
+                            <img src="{{ \App\Support\AdminBranding::mediaUrl($customerLogoPath ?? null, 'logo') }}" alt="{{ $storeSettings['store_name'] ?? 'Tag Marketplace' }}">
+                        @else
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        @endif
+                    </span>
+                    <span class="retail-brand__copy">
+                        <strong>{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Tag Marketplace' }}</strong>
+                        <small>{{ $localizedStoreTagline }}</small>
+                    </span>
+                </a>
 
-        </a>
+                <form class="retail-search d-none d-lg-flex" action="{{ route('frontend.home') }}" method="GET" role="search">
+                    <i class="bi bi-search"></i>
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search phones, laptops, TVs, gaming, and accessories') }}">
+                    <button type="submit">{{ __('Search') }}</button>
+                </form>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="mainNavbar">
-            <ul class="navbar-nav {{ ($isRtl ?? false) ? 'me-auto' : 'ms-auto' }} align-items-lg-center gap-lg-2">
-                <li class="nav-item"><a class="nav-link" href="{{ route('frontend.home') }}">{{ __('Home') }}</a></li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">{{ __('Categories') }}</a>
-                    <ul class="dropdown-menu border-0 shadow-lg rounded-4 p-2 {{ ($isRtl ?? false) ? '' : '' }}">
-                        @forelse($layoutCategories as $category)
-                            <li><a class="dropdown-item rounded-3 py-2" href="{{ route('category.products', $category->id) }}">{{ $category->name }}</a></li>
-                        @empty
-                            <li><span class="dropdown-item text-muted">{{ __('No categories yet') }}</span></li>
-                        @endforelse
-                    </ul>
-                </li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a></li>
-                @auth
-                    <li class="nav-item"><a class="nav-link" href="{{ route('orders.index') }}">{{ __('My Orders') }}</a></li>
-                    <li class="nav-item"><a class="nav-link position-relative" href="{{ route('notifications.index') }}"><i class="bi bi-bell fs-5"></i>@if($authNotificationCount > 0)<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger">{{ $authNotificationCount }}</span>@endif</a></li>
-                @endauth
-                <li class="nav-item">
-                    <a class="nav-link position-relative" href="{{ route('cart.index') }}">
-                        <i class="bi bi-bag fs-5"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning">{{ $layoutCartCount }}</span>
-                    </a>
-                </li>
-                @auth
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">{{ auth()->user()->name }}</a>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2">
-                            @if((int) auth()->user()->role_as === 1)
-                                <li><a class="dropdown-item rounded-3" href="{{ route('admin.dashboard') }}">{{ __('Admin Dashboard') }}</a></li>
-                            @endif
-                            <li><a class="dropdown-item rounded-3" href="{{ route('orders.index') }}">{{ __('My Orders') }}</a></li>
-                            <li><a class="dropdown-item rounded-3" href="{{ route('notifications.index') }}">{{ __('Notifications') }}</a></li>
-                            <li>
+                <div class="retail-actions">
+                    @auth
+                        <div class="dropdown retail-account-dropdown d-none d-md-inline-flex">
+                            <button class="retail-action retail-action--account dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                                <span>{{ auth()->user()->name ?? __('My account') }}</span>
+                            </button>
+                            <div class="dropdown-menu retail-account-menu dropdown-menu-end">
+                                <div class="retail-account-menu__head">
+                                    <strong>{{ auth()->user()->name ?? __('My account') }}</strong>
+                                    <small>{{ auth()->user()->email ?? '' }}</small>
+                                </div>
+                                <a class="dropdown-item" href="{{ route('orders.index') }}"><i class="bi bi-receipt"></i>{{ __('My Orders') }}</a>
+                                <a class="dropdown-item" href="{{ route('notifications.index') }}"><i class="bi bi-bell"></i>{{ __('Notifications') }}</a>
+                                @if((int) auth()->user()->role_as === 1)
+                                    <a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i>{{ __('Admin Dashboard') }}</a>
+                                @endif
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button class="dropdown-item rounded-3 text-danger" type="submit">{{ __('Logout') }}</button>
+                                    <button class="dropdown-item retail-account-menu__logout" type="submit"><i class="bi bi-box-arrow-right"></i>{{ __('Logout') }}</button>
                                 </form>
-                            </li>
-                        </ul>
-                    </li>
-                @else
-                    <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a></li>
-                    <li class="nav-item"><a class="btn lc-btn-primary" href="{{ route('register') }}">{{ __('Create account') }}</a></li>
-                @endauth
-            </ul>
+                            </div>
+                        </div>
+                        <a class="retail-action retail-action--icon" href="{{ route('notifications.index') }}" aria-label="{{ __('Notifications') }}">
+                            <i class="bi bi-bell"></i>
+                            @if($authNotificationCount > 0)<em>{{ $authNotificationCount }}</em>@endif
+                        </a>
+                    @else
+                        <a class="retail-action d-none d-md-inline-flex" href="{{ route('login') }}">
+                            <i class="bi bi-person"></i><span>{{ __('Login') }}</span>
+                        </a>
+                    @endauth
+                    <a class="retail-action retail-action--cart" href="{{ route('cart.index') }}">
+                        <i class="bi bi-bag"></i><span class="d-none d-sm-inline">{{ __('Cart') }}</span><em>{{ $layoutCartCount }}</em>
+                    </a>
+                    <button class="retail-menu-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#retailNav" aria-controls="retailNav" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                        <i class="bi bi-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="collapse retail-nav-collapse" id="retailNav">
+                <div class="retail-nav-row">
+                    <div class="dropdown retail-mega-dropdown">
+                        <button class="retail-category-button" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                            <span>{{ __('All categories') }}</span>
+                            <i class="bi bi-chevron-down retail-category-button__chevron"></i>
+                        </button>
+                        <div class="dropdown-menu retail-mega-menu">
+                            <div class="retail-mega-menu__head">
+                                <div>
+                                    <strong>{{ __('Shop by department') }}</strong>
+                                    <span>{{ __('Choose a category and start browsing faster.') }}</span>
+                                </div>
+                                <a href="#categories">{{ __('View all') }} <i class="bi bi-arrow-up-right"></i></a>
+                            </div>
+                            <div class="retail-mega-menu__grid">
+                                @forelse($layoutCategories as $category)
+                                    <a class="retail-mega-category" href="{{ route('category.products', $category->id) }}">
+                                        <span class="retail-mega-category__icon">
+                                            @if($category->image_url)
+                                                <img src="{{ $category->image_url }}" alt="{{ $category->name }}">
+                                            @else
+                                                <i class="bi bi-phone"></i>
+                                            @endif
+                                        </span>
+                                        <span>
+                                            <strong>{{ $category->name }}</strong>
+                                            <small>{{ __('Browse products') }}</small>
+                                        </span>
+                                    </a>
+                                @empty
+                                    <div class="retail-mega-empty">{{ __('No categories yet') }}</div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="retail-links">
+                        <a href="{{ route('frontend.home') }}">{{ __('Home') }}</a>
+                        <a href="#on-sale-products">{{ __('Offers') }}</a>
+                        <a href="#best-sellers">{{ __('Best sellers') }}</a>
+                        <a href="#latest-products">{{ __('New arrivals') }}</a>
+                        <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
+                        @auth
+                            @if((int) auth()->user()->role_as === 1)
+                                <a href="{{ route('admin.dashboard') }}">{{ __('Admin Dashboard') }}</a>
+                            @endif
+                            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                                @csrf
+                                <button class="retail-link-button" type="submit">{{ __('Logout') }}</button>
+                            </form>
+                        @else
+                            <a href="{{ route('register') }}">{{ __('Create account') }}</a>
+                        @endauth
+                    </div>
+                </div>
+
+                <form class="retail-search retail-search--mobile d-lg-none" action="{{ route('frontend.home') }}" method="GET" role="search">
+                    <i class="bi bi-search"></i>
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search electronics') }}">
+                    <button type="submit">{{ __('Search') }}</button>
+                </form>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
+</header>
 
 @if (session('success') || session('message') || session('status') || $errors->any())
     <div class="container mt-4">
@@ -553,60 +751,58 @@
     @yield('content')
 </main>
 
-<footer class="lc-footer mt-5 py-5">
+<footer class="lc-footer storefront-footer mt-5 py-5">
     <div class="container">
-        <div class="row g-4 align-items-start">
-            <div class="col-lg-4">
-                <div class="lc-footer-card">
-                    <h5 class="fw-bold mb-2">{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Storefront' }}</h5>
-                    <div class="small text-uppercase text-muted fw-semibold mb-2">{{ $storeSettings['store_name'] ?? 'Storefront' }}</div>
-                    <p class="text-muted mb-3">{{ $storeSettings['footer_about'] ?? __('A clean, scalable storefront built to look production-ready from day one.') }}</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <span class="lc-badge"><i class="bi bi-shield-check"></i> {{ __('Trusted checkout') }}</span>
-                        <span class="lc-badge"><i class="bi bi-box-seam"></i> {{ __('Live catalog') }}</span>
-                    </div>
+        <div class="storefront-footer__top">
+            <div class="storefront-footer__brand">
+                <h5 class="fw-bold mb-2">{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Tag Marketplace' }}</h5>
+                <p class="mb-3">{{ $localizedFooterAbout }}</p>
+                <div class="storefront-footer__trust">
+                    <span><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
+                    <span><i class="bi bi-truck"></i>{{ __('Fast delivery') }}</span>
+                    <span><i class="bi bi-patch-check"></i>{{ __('Original products') }}</span>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="lc-footer-card">
-                <h6 class="fw-bold mb-3">{{ __('Quick Links') }}</h6>
-                <div class="d-flex flex-column gap-2">
-                    <a href="{{ route('frontend.home') }}">{{ __('Home') }}</a>
-                    <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
-                    <a href="{{ route('frontend.privacy') }}">{{ __('Privacy Policy') }}</a>
-                    <a href="{{ route('frontend.terms') }}">{{ __('Terms & Conditions') }}</a>
-                    <a href="{{ route('frontend.refund') }}">{{ __('Refund Policy') }}</a>
-                    <a href="{{ route('frontend.shipping') }}">{{ __('Shipping Policy') }}</a>
-                    @auth
-                        <a href="{{ route('checkout.index') }}">{{ __('Checkout') }}</a>
-                        <a href="{{ route('orders.index') }}">{{ __('My Orders') }}</a>
-                    @else
-                        <a href="{{ route('login') }}">{{ __('Login') }}</a>
-                    @endauth
-                </div>
-                </div>
+
+            <div class="storefront-footer__column">
+                <h6>{{ __('Shop') }}</h6>
+                <a href="{{ route('frontend.home') }}">{{ __('Home') }}</a>
+                <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
+                @auth
+                    <a href="{{ route('orders.index') }}">{{ __('My Orders') }}</a>
+                    <a href="{{ route('checkout.index') }}">{{ __('Checkout') }}</a>
+                @else
+                    <a href="{{ route('login') }}">{{ __('Login') }}</a>
+                @endauth
             </div>
-            <div class="col-lg-4">
-                <div class="lc-footer-card">
-                <h6 class="fw-bold mb-3">{{ __('Categories') }}</h6>
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    @foreach($layoutCategories as $category)
-                        <a href="{{ route('category.products', $category->id) }}" class="lc-badge">{{ $category->name }}</a>
-                    @endforeach
-                </div>
-                @if(!empty($storeSettings['store_support_email']) || !empty($storeSettings['store_support_phone']) || !empty($storeSettings['store_contact_address']))
-                    <div class="text-muted small d-flex flex-column gap-1">
-                        @if(!empty($storeSettings['store_support_email']))<span>{{ __('Email') }}: {{ $storeSettings['store_support_email'] }}</span>@endif
-                        @if(!empty($storeSettings['store_support_phone']))<span>{{ __('Phone') }}: {{ $storeSettings['store_support_phone'] }}</span>@endif
-                        @if(!empty($storeSettings['store_contact_address']))<span>{{ __('Address') }}: {{ $storeSettings['store_contact_address'] }}</span>@endif
-                    </div>
-                @endif
-                </div>
+
+            <div class="storefront-footer__column">
+                <h6>{{ __('Policies') }}</h6>
+                <a href="{{ route('frontend.privacy') }}">{{ __('Privacy Policy') }}</a>
+                <a href="{{ route('frontend.terms') }}">{{ __('Terms & Conditions') }}</a>
+                <a href="{{ route('frontend.refund') }}">{{ __('Refund Policy') }}</a>
+                <a href="{{ route('frontend.shipping') }}">{{ __('Shipping Policy') }}</a>
+            </div>
+
+            <div class="storefront-footer__column">
+                <h6>{{ __('Categories') }}</h6>
+                @forelse($layoutCategories->take(6) as $category)
+                    <a href="{{ route('category.products', $category->id) }}">{{ $category->name }}</a>
+                @empty
+                    <span class="text-white-50 small">{{ __('No categories yet') }}</span>
+                @endforelse
+            </div>
+
+            <div class="storefront-footer__column storefront-footer__contact">
+                <h6>{{ __('Support') }}</h6>
+                @if(!empty($storeSettings['store_support_email']))<span>{{ $storeSettings['store_support_email'] }}</span>@endif
+                @if(!empty($storeSettings['store_support_phone']))<span>{{ $storeSettings['store_support_phone'] }}</span>@endif
+                @if(!empty($storeSettings['store_contact_address']))<span>{{ $storeSettings['store_contact_address'] }}</span>@endif
             </div>
         </div>
-        <div class="border-top mt-4 pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
-            <span>© {{ now()->year }} {{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Storefront' }}. {{ $storeSettings['footer_copyright'] ?? __('All rights reserved.') }}</span>
-            <span>{{ $storeSettings['store_support_whatsapp'] ?? $storeSettings['store_support_phone'] ?? '' }}</span>
+        <div class="storefront-footer__bottom">
+            <span>© {{ now()->year }} {{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Tag Marketplace' }}. {{ $localizedFooterCopyright }}</span>
+            <span>{{ __('Built for a better electronics shopping experience.') }}</span>
         </div>
     </div>
 </footer>

@@ -7,9 +7,9 @@
         <div class="lc-card p-4 p-lg-5" style="background:linear-gradient(135deg, color-mix(in srgb, var(--lc-soft) 82%, white), color-mix(in srgb, var(--lc-muted-bg, #fff1f2) 80%, white));">
             <div class="row align-items-center g-4">
                 <div class="col-lg-8">
-                    <span class="lc-badge mb-3"><i class="bi bi-lightning-charge"></i> {{ __('Dynamic storefront block') }}</span>
-                    <h2 class="lc-section-title mb-3">{{ $data['title'] ?? __('Build a storefront customers actually enjoy using.') }}</h2>
-                    <p class="lead text-muted mb-0">{{ $data['subtitle'] ?? __('Phase 1 now supports clean homepage sections, stronger content separation, and room for more dynamic blocks later.') }}</p>
+                    <span class="lc-badge mb-3"><i class="bi bi-lightning-charge"></i> {{ __('Special offer') }}</span>
+                    <h2 class="lc-section-title mb-3">{{ $data['title'] ?? __('Upgrade your tech setup today.') }}</h2>
+                    <p class="lead text-muted mb-0">{{ $data['subtitle'] ?? __('Discover practical deals on phones, laptops, gaming, audio, TVs, and accessories.') }}</p>
                 </div>
                 <div class="col-lg-4">
                     <div class="d-grid gap-2">

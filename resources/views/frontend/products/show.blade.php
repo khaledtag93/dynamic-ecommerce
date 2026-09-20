@@ -28,27 +28,27 @@
         [
             'name' => __('Nour'),
             'title' => __('Fast delivery and exactly as shown'),
-            'body' => __('The page felt trustworthy from the first second. I could understand the price, stock, and options without confusion.'),
+            'body' => __('The product details were clear, delivery was fast, and the order process was easy.'),
             'rating' => 5,
         ],
         [
             'name' => __('Karim'),
             'title' => __('Clean checkout and good value'),
-            'body' => __('I liked how the offer, shipping reassurance, and buy now action were all visible in one place. It made the decision easier.'),
+            'body' => __('The price and available options were easy to understand before checkout.'),
             'rating' => 5,
         ],
         [
             'name' => __('Mariam'),
             'title' => __('Looks professional and reliable'),
-            'body' => __('The product gallery, selected variant state, and summary details gave me enough confidence to continue without hesitation.'),
+            'body' => __('The product arrived as expected and support was helpful after purchase.'),
             'rating' => 4,
         ],
     ]);
     $trustBlocks = [
-        ['icon' => 'bi-truck', 'title' => __('Fast shipping'), 'copy' => __('Dispatch messaging is visible early, so the customer understands delivery expectations before checkout.')],
-        ['icon' => 'bi-arrow-repeat', 'title' => __('Easy returns'), 'copy' => __('Friendly return reassurance reduces friction, especially for first-time buyers.')],
-        ['icon' => 'bi-shield-check', 'title' => __('Secure payments'), 'copy' => __('Cash on delivery, online payment, and protected checkout language make the purchase feel safer.')],
-        ['icon' => 'bi-patch-check', 'title' => __('Quality promise'), 'copy' => __('Use this area to reinforce warranty, support, or product-quality confidence.')],
+        ['icon' => 'bi-truck', 'title' => __('Fast shipping'), 'copy' => __('Clear delivery information before checkout.')],
+        ['icon' => 'bi-arrow-repeat', 'title' => __('Easy returns'), 'copy' => __('Clear return support when eligible.')],
+        ['icon' => 'bi-shield-check', 'title' => __('Secure payments'), 'copy' => __('Cash on delivery and online payment options are supported where available.')],
+        ['icon' => 'bi-patch-check', 'title' => __('Quality promise'), 'copy' => __('Original products with clear details and support after purchase.')],
     ];
     $paymentTrust = [__('Visa'), __('Mastercard'), __('Cash'), __('Secure checkout')];
     $bundleProducts = ($bundleProducts ?? collect())->values();
@@ -68,10 +68,10 @@
         </nav>
 
         <div class="product-trust-strip mb-4">
-            <span><i class="bi bi-truck"></i>{{ __('Free shipping cues') }}</span>
+            <span><i class="bi bi-truck"></i>{{ __('Delivery options') }}</span>
             <span><i class="bi bi-shield-lock"></i>{{ __('Secure checkout') }}</span>
             <span><i class="bi bi-arrow-counterclockwise"></i>{{ __('Easy returns') }}</span>
-            <span><i class="bi bi-patch-check"></i>{{ __('Quality reassurance') }}</span>
+            <span><i class="bi bi-patch-check"></i>{{ __('Original products') }}</span>
         </div>
 
         @include('frontend.partials.behavioral-offers', ['cards' => $behavioralOffers['cards'] ?? collect()])
@@ -114,8 +114,8 @@
                     </div>
 
                     <div class="product-gallery-benefits mb-4">
-                        <span><i class="bi bi-images"></i> {{ __('Gallery that helps the customer inspect faster') }}</span>
-                        <span><i class="bi bi-zoom-in"></i> {{ __('Tap thumbnails for a closer look') }}</span>
+                        <span><i class="bi bi-images"></i> {{ __('Product photos') }}</span>
+                        <span><i class="bi bi-zoom-in"></i> {{ __('Tap thumbnails to preview') }}</span>
                         <span><i class="bi bi-heart"></i> {{ __('Saved by :count shoppers', ['count' => $wishlistCount]) }}</span>
                     </div>
 
@@ -168,7 +168,7 @@
                                     {{ __('In stock and ready for checkout') }}
                                 @endif
                             </strong>
-                            <div class="small opacity-75" id="productStockMeta">{{ __('Shoppers react faster when stock and urgency are clear.') }}</div>
+                            <div class="small opacity-75" id="productStockMeta">{{ __('Stock is updated from the product availability settings.') }}</div>
                         </div>
                     </div>
 
@@ -183,9 +183,9 @@
                     @endif
 
                     <div class="product-page-highlights mb-4">
-                        <div><i class="bi bi-cash-coin"></i><span><strong>{{ __('Price clarity first') }}</strong><br><small>{{ __('The main offer is visible immediately without forcing the customer to search for it.') }}</small></span></div>
-                        <div><i class="bi bi-truck"></i><span><strong>{{ __('Trust before checkout') }}</strong><br><small>{{ __('Delivery, payment, and return reassurance reduce purchase friction.') }}</small></span></div>
-                        <div><i class="bi bi-lightning-charge"></i><span><strong>{{ __('Fast decision flow') }}</strong><br><small>{{ __('The customer can add to cart or buy now in a single section.') }}</small></span></div>
+                        <div><i class="bi bi-cash-coin"></i><span><strong>{{ __('Clear price') }}</strong><br><small>{{ __('The product price and any available offer are shown clearly.') }}</small></span></div>
+                        <div><i class="bi bi-truck"></i><span><strong>{{ __('Secure order') }}</strong><br><small>{{ __('Review delivery and payment details before checkout.') }}</small></span></div>
+                        <div><i class="bi bi-lightning-charge"></i><span><strong>{{ __('Easy checkout') }}</strong><br><small>{{ __('Add the product to cart or continue directly to checkout.') }}</small></span></div>
                     </div>
 
                     <form method="POST" action="{{ route('cart.store', $product) }}" class="d-grid gap-3 mb-4" id="productPurchaseForm" data-submit-loading>
@@ -268,7 +268,7 @@
 
                         <div class="product-mini-checkout-note">
                             <i class="bi bi-lock"></i>
-                            <span>{{ __('Buy now takes the customer directly to the next step of checkout for a faster conversion path.') }}</span>
+                            <span>{{ __('Buy now takes you directly to checkout.') }}</span>
                         </div>
 
                         <a href="{{ route('category.products', $product->category_id) }}" class="btn lc-btn-soft">
@@ -280,22 +280,22 @@
                         <div class="product-page-assurance__item">
                             <i class="bi bi-shield-check"></i>
                             <div>
-                                <div class="fw-bold">{{ __('Secure checkout flow') }}</div>
-                                <div class="text-muted small">{{ __('A cleaner purchase path builds more confidence before payment.') }}</div>
+                                <div class="fw-bold">{{ __('Secure checkout') }}</div>
+                                <div class="text-muted small">{{ __('Your payment and order details are handled safely.') }}</div>
                             </div>
                         </div>
                         <div class="product-page-assurance__item">
                             <i class="bi bi-arrow-repeat"></i>
                             <div>
-                                <div class="fw-bold">{{ __('Easy return messaging area') }}</div>
-                                <div class="text-muted small">{{ __('Perfect spot for return, exchange, and support policies.') }}</div>
+                                <div class="fw-bold">{{ __('Return support') }}</div>
+                                <div class="text-muted small">{{ __('Return and exchange requests are handled according to store policy.') }}</div>
                             </div>
                         </div>
                         <div class="product-page-assurance__item">
                             <i class="bi bi-patch-check"></i>
                             <div>
-                                <div class="fw-bold">{{ __('Production-style trust block') }}</div>
-                                <div class="text-muted small">{{ __('This section helps the product feel real, reliable, and ready to buy.') }}</div>
+                                <div class="fw-bold">{{ __('Trusted shopping') }}</div>
+                                <div class="text-muted small">{{ __('Clear product details and support help you order with confidence.') }}</div>
                             </div>
                         </div>
                     </div>
@@ -306,25 +306,25 @@
         <div class="row g-4 mt-1 mt-lg-4">
             <div class="col-lg-8">
                 <div class="lc-card p-4 p-lg-5 h-100">
-                    <span class="lc-section-kicker mb-3">{{ __('Why this product can convert better') }}</span>
-                    <h2 class="h3 fw-bold mb-3">{{ __('Everything the customer needs before making the decision') }}</h2>
-                    <p class="text-muted mb-4">{{ $product->description ?: __('This area is ready for richer product copy, benefit bullets, use cases, and practical details that reduce uncertainty.') }}</p>
+                    <span class="lc-section-kicker mb-3">{{ __('Why this product is worth checking') }}</span>
+                    <h2 class="h3 fw-bold mb-3">{{ __('Product details, specifications, and support') }}</h2>
+                    <p class="text-muted mb-4">{{ $product->description ?: __('Product details, benefits, and specifications will appear here when available.') }}</p>
 
                     <div class="product-conversion-grid">
                         <article>
                             <i class="bi bi-hand-thumbs-up"></i>
                             <h3>{{ __('Clear value') }}</h3>
-                            <p>{{ __('Prominent pricing, visible savings, and stronger copy make the page feel built for selling instead of browsing.') }}</p>
+                            <p>{{ __('The current price, savings, and availability are shown clearly before checkout.') }}</p>
                         </article>
                         <article>
                             <i class="bi bi-box-seam"></i>
                             <h3>{{ __('Visual confidence') }}</h3>
-                            <p>{{ __('The gallery and quick facts help the customer verify the product before adding it to cart.') }}</p>
+                            <p>{{ __('Review photos, price, availability, and product information before adding to cart.') }}</p>
                         </article>
                         <article>
                             <i class="bi bi-chat-heart"></i>
                             <h3>{{ __('Social proof ready') }}</h3>
-                            <p>{{ __('Reviews, trust messaging, and related products keep the shopper engaged longer.') }}</p>
+                            <p>{{ __('Reviews, support notes, and related products help you compare before ordering.') }}</p>
                         </article>
                     </div>
                 </div>
@@ -362,11 +362,11 @@
                 <div class="lc-card p-4 p-lg-5 aov-bundle-shell">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                         <div>
-                            <span class="lc-section-kicker">{{ __('Average order boost') }}</span>
-                            <h2 class="h3 fw-bold mb-2">{{ __('Complete the order in one step') }}</h2>
-                            <p class="text-muted mb-0">{{ __('Use clean product-to-product relations so bundles, add-ons, and future upsells stay reusable across stores.') }}</p>
+                            <span class="lc-section-kicker">{{ __('Complete your setup') }}</span>
+                            <h2 class="h3 fw-bold mb-2">{{ __('Add matching accessories') }}</h2>
+                            <p class="text-muted mb-0">{{ __('Choose useful accessories or related products that fit this item.') }}</p>
                         </div>
-                        <span class="lc-badge"><i class="bi bi-diagram-3"></i>{{ __('System-based product relations') }}</span>
+                        <span class="lc-badge"><i class="bi bi-diagram-3"></i>{{ __('Related products') }}</span>
                     </div>
 
                     <form method="POST" action="{{ route('cart.bundle.store', $product) }}" class="d-grid gap-4" data-submit-loading id="bundleAovForm">
@@ -425,7 +425,7 @@
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                                     <div>
                                         <h3 class="h5 fw-bold mb-1">{{ __('Add with this product') }}</h3>
-                                        <div class="text-muted small">{{ __('Use dedicated add-on relations for lighter extras, accessories, and impulse adds.') }}</div>
+                                        <div class="text-muted small">{{ __('Add compatible accessories or useful extras before checkout.') }}</div>
                                     </div>
                                     <span class="lc-badge"><i class="bi bi-plus-circle"></i>{{ __('Optional extras') }}</span>
                                 </div>
@@ -455,9 +455,9 @@
             <div class="lc-card p-4 p-lg-5 mb-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                     <div>
-                        <span class="lc-section-kicker">{{ __('Social proof') }}</span>
-                        <h2 class="h3 fw-bold mb-2">{{ __('Customers are already trusting this offer') }}</h2>
-                        <p class="text-muted mb-0">{{ __('Even a lightweight review layer helps the product feel more established and ready to buy.') }}</p>
+                        <span class="lc-section-kicker">{{ __('Customer reviews') }}</span>
+                        <h2 class="h3 fw-bold mb-2">{{ __('What customers say') }}</h2>
+                        <p class="text-muted mb-0">{{ __('Reviews and order activity help you compare with more confidence.') }}</p>
                     </div>
                     <div class="review-summary-badge">
                         <strong>{{ number_format($reviewSeed, 1) }}</strong>
@@ -472,7 +472,7 @@
                     </div>
                     <div class="product-review-overview__stat">
                         <strong>{{ $reviewCount }}</strong>
-                        <span>{{ __('verified-style reviews') }}</span>
+                        <span>{{ __('reviews') }}</span>
                     </div>
                     <div class="product-review-overview__stat">
                         <strong>{{ $wishlistCount }}</strong>
@@ -503,10 +503,10 @@
             <section class="mt-5">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                     <div>
-                        <span class="lc-section-kicker">{{ __('Offer psychology') }}</span>
+                        <span class="lc-section-kicker">{{ __('Current offers') }}</span>
                         <h2 class="lc-section-title mb-0">{{ __('Reasons to buy now') }}</h2>
                     </div>
-                    <span class="lc-badge"><i class="bi bi-lightning-charge"></i>{{ __('Personalized offer signals') }}</span>
+                    <span class="lc-badge"><i class="bi bi-lightning-charge"></i>{{ __('Available offers') }}</span>
                 </div>
                 <div class="row g-3">
                     @foreach($offerSignals as $signal)
@@ -547,19 +547,19 @@
 
         @include('frontend.sections.ai-recommendation-strip', [
             'products' => $aiRecommendedProducts ?? collect(),
-            'subtitle' => __('AI recommendations'),
-            'title' => __('Predicted best next products for this PDP'),
-            'description' => __('Ranked using compatibility with this product, session behavior, offer strength, and recent shopper activity.'),
+            'subtitle' => __('Recommended products'),
+            'title' => __('Related products'),
+            'description' => __('Similar products and useful alternatives from the same department.'),
             'insight' => $aiRecommendationInsight ?? null,
-            'badge' => __('PDP prediction engine'),
+            'badge' => __('Recommended'),
         ])
 
         @include('frontend.sections.personalized-product-strip', [
             'products' => $personalizedProducts ?? collect(),
             'subtitle' => __('Recommended for you'),
-            'title' => __('More products aligned with this shopping path'),
-            'description' => __('Use browsing intent, category affinity, and conversion-focused sorting to show the next strongest items.'),
-            'badge' => __('Personalized merchandising'),
+            'title' => __('More products to compare'),
+            'description' => __('Similar products and useful alternatives from the same department.'),
+            'badge' => __('Suggested'),
             'actionText' => __('See category'),
             'actionLink' => route('category.products', $product->category_id),
         ])
@@ -568,8 +568,8 @@
             'products' => $recentlyViewedProducts ?? collect(),
             'subtitle' => __('Recently viewed'),
             'title' => __('Pick up where you left off'),
-            'description' => __('Make it easy for the customer to jump between products they already explored without restarting the journey.'),
-            'badge' => __('Session memory'),
+            'description' => __('Products you opened recently are saved here for quick access.'),
+            'badge' => __('Recently viewed'),
         ])
     </div>
 </section>
