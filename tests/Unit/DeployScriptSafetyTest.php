@@ -14,6 +14,7 @@ class DeployScriptSafetyTest extends TestCase
         $this->assertStringContainsString('umask 077', $script);
         $this->assertStringContainsString("--exclude='.env'", $script);
         $this->assertStringContainsString('chmod 600 "$CURRENT_BACKUP_DIR/meta/.env.backup"', $script);
+        $this->assertStringContainsString('_$.backup', $script);
     }
 
     public function test_manual_rollback_uses_maintenance_mode_and_health_check(): void
@@ -26,5 +27,6 @@ class DeployScriptSafetyTest extends TestCase
         $this->assertStringContainsString('health_check', $script);
         $this->assertStringContainsString('artisan up', $script);
         $this->assertStringContainsString('curl -L -sS', $script);
+        $this->assertStringContainsString('_$.backup', $script);
     }
 }
