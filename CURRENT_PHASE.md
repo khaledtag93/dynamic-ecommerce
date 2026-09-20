@@ -191,3 +191,12 @@ Operational conclusion:
 - The historical application path `/home/u637857322/domains/tag-marketplace.com/laravel_app` exists.
 - Running `git status --short --branch` inside that directory returned: `fatal: not a git repository`.
 - Therefore the current production Laravel directory is not a Git worktree. Do not run fetch/pull/reset/checkout there until the actual deployment layout is inspected and a safe migration/rehearsal plan is chosen.
+
+
+### Production filesystem inspection — 2026-09-20
+At `/home/u637857322/domains/tag-marketplace.com/laravel_app`:
+- Laravel application files are present, including `artisan`, `composer.json`, `vendor/`, `storage/`, `.env`, `deploy.sh`, and `rollback.sh`.
+- No `.git/` directory is present; this is a deployed file snapshot, not a Git checkout.
+- Most application files are dated around 2026-04-17, while `.env` is server-local.
+- Do not convert this live production directory into a Git worktree in place before a controlled rehearsal/backup plan.
+- Preferred next step: inspect server runtime/tooling and free space, then prepare a separate V42 rehearsal directory so production remains untouched.
