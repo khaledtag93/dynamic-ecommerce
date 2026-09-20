@@ -28,7 +28,7 @@ html[dir="rtl"] .whatsapp-page .wa-switch{justify-content:flex-start}
     <x-admin.page-header
         :kicker="__('Phase 4')"
         :title="__('WhatsApp Settings')"
-        :description="__('Manage credentials, templates, queue behavior, test sends, and delivery monitoring from one polished control center.')"
+        :description="__('Manage provider identifiers, templates, queue behavior, test sends, and delivery monitoring. Sensitive credentials stay server-managed.')"
         :breadcrumbs="[
             ['label' => __('Dashboard'), 'url' => route('admin.dashboard')],
             ['label' => __('Phase 4'), 'url' => route('admin.settings.notifications')],
@@ -167,17 +167,16 @@ html[dir="rtl"] .whatsapp-page .wa-switch{justify-content:flex-start}
                                     <label class="form-label fw-semibold">{{ __('Timeout') }}</label>
                                     <input type="number" min="5" max="120" class="form-control" name="whatsapp_meta_timeout" value="{{ old('whatsapp_meta_timeout', $storeSettings['whatsapp_meta_timeout'] ?? '20') }}">
                                 </div>
-                                <div class="col-md-2">
-                                    <label class="form-label fw-semibold">{{ __('Verify token') }}</label>
-                                    <input type="text" class="form-control" name="whatsapp_meta_verify_token" value="{{ old('whatsapp_meta_verify_token', $storeSettings['whatsapp_meta_verify_token'] ?? '') }}">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">{{ __('App secret') }}</label>
-                                    <input type="text" class="form-control" name="whatsapp_meta_app_secret" value="{{ old('whatsapp_meta_app_secret', $storeSettings['whatsapp_meta_app_secret'] ?? '') }}">
-                                </div>
-                                <div class="col-md-8">
-                                    <label class="form-label fw-semibold">{{ __('Access token') }}</label>
-                                    <textarea name="whatsapp_meta_access_token" rows="3" class="form-control" placeholder="EAAG...">{{ old('whatsapp_meta_access_token', $storeSettings['whatsapp_meta_access_token'] ?? '') }}</textarea>
+                                <div class="col-12">
+                                    <div class="rounded-4 border p-3 bg-light-subtle">
+                                        <div class="fw-semibold mb-2">{{ __('Server-managed Meta credentials') }}</div>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span class="badge {{ filled(config('whatsapp.meta.access_token')) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ __('Access token') }}: {{ filled(config('whatsapp.meta.access_token')) ? __('Configured') : __('Missing') }}</span>
+                                            <span class="badge {{ filled(config('whatsapp.meta.app_secret')) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ __('App secret') }}: {{ filled(config('whatsapp.meta.app_secret')) ? __('Configured') : __('Missing') }}</span>
+                                            <span class="badge {{ filled(config('whatsapp.meta.verify_token')) ? 'text-bg-success' : 'text-bg-secondary' }}">{{ __('Verify token') }}: {{ filled(config('whatsapp.meta.verify_token')) ? __('Configured') : __('Missing') }}</span>
+                                        </div>
+                                        <div class="admin-helper-text mt-2">{{ __('Sensitive Meta credentials are configured only through the server environment and are never displayed or stored from this page.') }}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -220,7 +219,7 @@ html[dir="rtl"] .whatsapp-page .wa-switch{justify-content:flex-start}
                         <div class="admin-form-actions mt-4">
                             <div class="admin-form-actions-copy">
                                 <div class="admin-form-actions-title">{{ __('Ready to save?') }}</div>
-                                <div class="admin-form-actions-subtitle">{{ __('Review provider credentials, approved templates, and safety toggles, then save the WhatsApp configuration when you are ready.') }}</div>
+                                <div class="admin-form-actions-subtitle">{{ __('Review provider identifiers, approved templates, and safety toggles. Sensitive credentials are managed on the server.') }}</div>
                             </div>
                             <div class="admin-form-actions-buttons">
                                 <button type="submit" class="btn btn-primary" data-loading-text="{{ __('Saving WhatsApp changes...') }}">{{ __('Save WhatsApp changes') }}</button>
