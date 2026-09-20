@@ -142,3 +142,11 @@ The Paymob release gate is green only after:
 - Attempting to create a new Non-Shopify / MIGS / EGP Test integration returns: "Cannot create more than 1 test integration with the same gateway type and currency."
 - This means the account backend recognizes an existing MIGS/EGP Test integration even though neither dashboard currently renders it.
 - Next diagnostic: inspect Developers -> Iframes in the old dashboard for the previously used iframe/integration linkage. If no legacy artifact is visible there either, treat this as a Paymob account-side integration visibility/state issue and open a support case rather than creating another integration.
+
+
+### Paymob legacy artifact confirmed — 2026-09-20
+Old dashboard -> Developers -> Iframes shows two Test-mode IFrames:
+- IFrame `1024106` — `Installment_Discount`
+- IFrame `1024107` — `My new card Iframe`
+
+This confirms the account still retains legacy checkout artifacts even though both old and new Payment Integrations pages render no integration rows. The next diagnostic is to open/edit IFrame `1024107` and inspect which payment integration(s) it is linked to. Do not create another MIGS/EGP Test integration while Paymob reports that one already exists.
