@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Contracts\Services\WhatsAppServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\WebsiteSetting;
 use App\Models\WhatsAppLog;
 use App\Services\Commerce\NotificationActionSafetyService;
 use App\Services\Commerce\StoreSettingsService;
@@ -127,6 +128,10 @@ class WhatsAppSettingsController extends Controller
         $data['whatsapp_duplicate_window_minutes'] = (string) ($data['whatsapp_duplicate_window_minutes'] ?? 30);
 
         $this->settingsService->save($data);
+
+        WebsiteSetting::query()
+            ->whereIn('key', StoreSettingsService::sensitiveSettingKeys())
+            ->delete();
 
         return back()->with('success', __('WhatsApp settings were saved successfully.'));
     }
