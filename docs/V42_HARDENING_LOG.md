@@ -71,3 +71,11 @@ Successful pipeline checks:
 - npm/Vite production build
 
 The build is green, but the existing PHPUnit suite is intentionally not treated as sufficient business regression coverage.
+
+## 2026-09-20 — Role deletion and repository hygiene follow-up
+- Found a secondary privilege-escalation path: deleting a custom role cascaded `role_user` rows; affected legacy admins would then satisfy the no-role Super Admin fallback.
+- Custom role deletion now runs transactionally, locks the role row, and refuses deletion while any admin account is assigned.
+- Removed the empty legacy fallback role option from the permissions UI; an existing legacy fallback admin is shown as Super Admin for explicit migration on save.
+- Added a feature regression test that proves assigned roles cannot be deleted and unassigned custom roles can still be removed.
+- Removed three tracked Livewire temporary uploads and one tracked product runtime upload.
+- Added explicit ignore rules for `storage/app/livewire-tmp/` and `storage/app/public/`.
