@@ -140,3 +140,18 @@ Security note:
 - No credential values are copied into this repository documentation.
 - Treat all historical credentials from those notes as exposed and rotate them before Production promotion.
 - The recovered Paymob Integration ID / IFrame ID are identifiers, not secrets, and may be used for compatibility diagnostics.
+
+
+### Gmail evidence for Paymob account state — 2026-09-20
+Connected Gmail history confirms:
+- Paymob welcomed the merchant account on 2026-03-31 after dashboard onboarding.
+- Multiple Paymob TEST card transactions were executed on 2026-03-31 for EGP 98.00 through the hosted IFRAME flow; all surfaced transaction-status emails were declined.
+- Starting 2026-04-01, Paymob repeatedly sent "Document Resubmission Required" onboarding emails for Merchant ID `1147230`.
+- The same resubmission notice was still being sent as recently as 2026-09-18.
+- Gmail search found no Paymob email confirming successful verification, activation, or Live-mode approval.
+- Gmail search also found no sent support thread to `support@paymob.com` or `support@weaccept.co`.
+
+Operational conclusion:
+- The merchant account was integrated enough for Test IFRAME transactions, but onboarding/verification appears to have remained incomplete.
+- This account state likely contributes to current dashboard limitations and is a separate concern from Laravel integration correctness.
+- Continue V42 release hardening independently; do not block non-payment readiness work on Paymob verification.
