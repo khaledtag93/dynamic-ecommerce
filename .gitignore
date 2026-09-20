@@ -1,0 +1,44 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Laravel runtime
+/storage/*.key
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+!/storage/logs/.gitignore
+!/storage/framework/cache/.gitignore
+!/storage/framework/sessions/.gitignore
+!/storage/framework/testing/.gitignore
+!/storage/framework/views/.gitignore
+/bootstrap/cache/*.php
+
+# User-generated files
+/public/uploads/
+/public/storage
+
+# Local/dev artifacts
+.phpunit.result.cache
+.phpunit.cache/
+.php-cs-fixer.cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Project delivery archives
+*.zip
+*.rar
+*.7z
