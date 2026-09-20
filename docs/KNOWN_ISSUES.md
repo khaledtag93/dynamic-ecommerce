@@ -31,3 +31,21 @@
 - smoke tests for cart, checkout, orders, coupons, permissions, and payment callbacks
 - deployment + rollback rehearsal before Production
 - final release checklist and environment verification
+
+
+## Closed in V42 hardening pass (2026-09-20)
+- Paymob callback HMAC was calculated but not enforced — **fixed**.
+- Paymob callback payment integrity checks (amount/currency/integration) — **added**.
+- Paymob iframe checkout helper had infinite recursion — **fixed**.
+- Late/replayed gateway callbacks could downgrade a paid payment — **guarded**.
+- Users with `customers.manage` could promote accounts through `role_as` — role changes now require **super admin**.
+- Growth controller constructor performed DB work during route discovery — **fixed**.
+- Clean Git clone could miss required Laravel runtime directories — **fixed with tracked placeholders**.
+- Paymob callback/API logs retained excessive sensitive payload data — **redacted/minimized**.
+
+## Still open before Production
+- Rotate all credentials that ever appeared in Git history.
+- Run full PHPUnit suite in an environment with required PHP extensions.
+- Run end-to-end Paymob test transaction against test credentials and verify both processed and response callbacks.
+- Verify refund/cancel/stock/coupon concurrency and idempotency.
+- Validate deploy + rollback on the target server/staging environment.
