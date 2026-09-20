@@ -73,3 +73,9 @@
 
 ## Production blocker still open
 - Database rollback is not automated. Current rollback restores code/public files but not schema/data. Production deploy must not be approved until database backup/rollback strategy is validated.
+
+## Additional issues closed (2026-09-20)
+- deleting an assigned custom staff role could cascade-detach admins and turn them into implicit legacy Super Admins — **blocked with transactional role locking and assigned-user validation**
+- permissions UI still exposed an empty legacy fallback role option even though the controller rejected it — **removed**
+- four runtime/user-upload files remained tracked under `storage/app/livewire-tmp` and `storage/app/public` — **removed and paths explicitly ignored**
+- added targeted regression coverage for assigned custom-role deletion
