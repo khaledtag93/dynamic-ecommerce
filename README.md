@@ -6,8 +6,8 @@ Production-oriented Laravel e-commerce platform built to be reusable across diff
 
 - **Official baseline:** V42
 - **Baseline focus:** Cost Calculator refactor + Arabic/English translation updates
-- **Current phase:** clean Git baseline & production hardening
-- **Canonical source:** GitHub `main`
+- **Current phase:** V42 production hardening
+- **Current working baseline:** GitHub branch `v42-clean-baseline` (promote to `main` after hardening)
 
 See:
 - `PROJECT_MASTER_STATUS.md`
