@@ -1,43 +1,32 @@
 # CURRENT PHASE
-## Cleanup & Production Preparation
+## V42 Clean Baseline & Production Hardening
 
 ### Official baseline
-- V32
+- **V42** — Cost Calculator refactor + Arabic/English translation updates
 
 ### Phase label
-- End of Phase 3.3 → Cleanup & Production Preparation
+- Production hardening before the next feature wave
 
 ### Goal
-Move the project from "working and advanced" to "clean, documented, stable, and easier to continue safely".
+Turn the latest working local build into the single canonical Git baseline, remove secrets from source control, make deploy/rollback repeatable, and close critical release blockers before continuing feature expansion.
 
-### Scope of this cleanup wave
-- establish canonical project docs
-- keep `.env` during active development ZIP deliveries
-- add setup/bootstrap scripts for easier local startup
-- consolidate known issues and module overview
-- prepare the project for the next implementation phase without breaking current flows
+### Current workstream
+1. Promote V42 to a clean Git baseline.
+2. Stop tracking `.env` and keep secrets in local/server/GitHub Secrets only.
+3. Replace folder-per-version development with one Git repository and traceable commits/tags.
+4. Validate production deploy and rollback through controlled automation.
+5. Re-run the critical security/business audit and close P0 blockers.
+6. Expand automated and manual regression coverage.
 
-### Out of scope for this wave
-- risky refactors
-- removal of anything not confirmed safe
-- deep feature rewrites
-- final public release security packaging
+### Known review items before commercial release
+- payment callback/HMAC validation and payment idempotency
+- authorization/role-escalation paths
+- stock, coupon, refund, and order concurrency/idempotency
+- secrets and environment configuration
+- cost/profit calculations and reporting semantics
+- test/CI coverage and release verification
 
-### Next intended build phase after cleanup
-- Phase 4 — Multi-Channel (WhatsApp first)
+These items are review targets until individually verified and closed.
 
-
-## Cleanup Step 3 Focus
-- Translation consistency in high-visibility screens
-- UI consistency documentation and audit
-- Payment stabilization checklist before Phase 4
-- Critical-flow test planning
-
-
-## Latest cleanup progress
-- Cleanup Step 4 completed: translation + UI consistency pass on key admin/storefront pages, legacy Livewire screens, and error pages.
-
-
-## Latest cleanup checkpoint
-- Cleanup Step 5 completed as the final stabilization pass before Phase 4.
-- Official next target: Phase 4 — Multi-Channel (WhatsApp first).
+### Next feature phase
+- Resume planned product development only after the production-hardening gate is green.
