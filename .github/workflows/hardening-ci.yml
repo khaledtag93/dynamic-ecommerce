@@ -88,6 +88,7 @@ jobs:
         run: |
           bash -n deploy.sh
           bash -n rollback.sh
+          bash -n deploy-qas.sh
 
       - name: Migrate clean MySQL database
         run: php artisan migrate:fresh --force
