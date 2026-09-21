@@ -251,3 +251,29 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
   3. user approves an exact application commit;
   4. Production deploys that exact approved commit with `./deploy-prod.sh <commit> --execute`;
   5. keep the generated file/DB backup available for rollback.
+
+
+## Routine QAS -> Production promotion revalidated — 2026-09-21
+
+- A second visible homepage text change was used to revalidate the complete day-to-day release flow after the Production deployment tooling was established.
+- Test change: `Popular now` -> `V42 Popular Products` in `resources/views/frontend/index.blade.php`.
+- Application commit: `95e9f50` (`test: update popular products text`).
+- GitHub push succeeded to `v42-clean-baseline`.
+- QAS deployment succeeded with:
+  - `bash deploy-qas.sh`
+  - deployed commit `95e9f50`
+  - QAS HTTPS health check `HTTP 200`
+  - browser verification confirmed the new text was visible.
+- Production dry-run for exact commit `95e9f50` completed successfully without modifying Production.
+- Production execution for exact commit `95e9f50` completed successfully, and browser verification confirmed the new text was visible on Production.
+- This revalidates the intended routine workflow:
+  1. make a small change;
+  2. commit it on `v42-clean-baseline`;
+  3. push to GitHub;
+  4. deploy QAS;
+  5. verify QAS in the browser;
+  6. run `./deploy-prod.sh <approved-commit> --dry-run`;
+  7. if clean, run `./deploy-prod.sh <approved-commit> --execute`;
+  8. verify Production in the browser.
+- Important operational detail: `deploy-qas.sh` is currently tracked as mode `100644` and appeared as `600` on the Hostinger checkout, so invoking it as `./deploy-qas.sh` returned Permission denied. Until its Git executable bit is corrected permanently, use `bash deploy-qas.sh`.
+- Do not assume future deployments are risk-free. The workflow is now proven and significantly safer, but every Production promotion must still use the exact QAS-approved commit, dry-run first, backups/DB snapshot, and health/browser verification.
