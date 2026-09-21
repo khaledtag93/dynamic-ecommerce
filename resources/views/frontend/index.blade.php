@@ -34,7 +34,7 @@
                 <a href="#best-sellers" class="retail-promo-pod retail-promo-pod--hot">
                     <span class="retail-promo-pod__icon"><i class="bi bi-fire"></i></span>
                     <span class="retail-promo-pod__copy">
-                        <strong>{{ __('Popular now') }}</strong>
+                        <strong>{{ __('V42 Popular Products') }}</strong>
                         <small>{{ __('Products customers keep choosing') }}</small>
                     </span>
                 </a>
