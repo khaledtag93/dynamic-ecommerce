@@ -786,22 +786,21 @@ class Index extends Component
         $this->resetSelection();
 
         if ($active && $needsContent > 0) {
-            session()->flash(
-                'warning',
-                __(':count selected product(s) activated; :needs still need content review.', [
-                    'count' => $count,
-                    'needs' => $needsContent,
-                ])
-            );
+            $this->bulkFeedbackType = 'warning';
+            $this->bulkFeedbackMessage = __(':count selected product(s) activated; :needs still need content review.', [
+                'count' => $count,
+                'needs' => $needsContent,
+            ]);
+            session()->flash('warning', $this->bulkFeedbackMessage);
             return;
         }
 
-        session()->flash(
-            'message',
-            $active
-                ? __(':count selected product(s) activated.', ['count' => $count])
-                : __(':count selected product(s) hidden.', ['count' => $count])
-        );
+        $this->bulkFeedbackType = 'message';
+        $this->bulkFeedbackMessage = $active
+            ? __(':count selected product(s) activated.', ['count' => $count])
+            : __(':count selected product(s) hidden.', ['count' => $count]);
+
+        session()->flash('message', $this->bulkFeedbackMessage);
     }
 
     public function exportCsv()
