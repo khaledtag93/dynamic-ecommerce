@@ -8,6 +8,15 @@
 </x-admin.page-header>
 
 <div class="admin-page-shell">
+<div class="row g-3 mb-4">
+    @foreach([
+        ['label'=>__('Payment status'),'value'=>$payment->status_label,'icon'=>'mdi-cash-check'],
+        ['label'=>__('Amount'),'value'=>$payment->currency.' '.number_format((float)$payment->amount,2),'icon'=>'mdi-cash-multiple'],
+        ['label'=>__('Payment method'),'value'=>$payment->method_label,'icon'=>'mdi-credit-card-outline'],
+        ['label'=>__('Gateway verification'),'value'=>data_get($payment->meta,'paymob_hmac_valid') === true ? __('Verified') : (data_get($payment->meta,'paymob_hmac_valid') === false ? __('Failed') : __('Not available')),'icon'=>'mdi-shield-check-outline'],
+    ] as $card)<div class="col-md-6 col-xl-3"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span><div class="admin-stat-label">{{ $card['label'] }}</div><div class="admin-stat-value admin-stat-value-sm">{{ $card['value'] }}</div></div></div>@endforeach
+</div>
+
 <div class="row g-4">
     <div class="col-xl-8">
         <div class="admin-card mb-4"><div class="admin-card-body">
@@ -41,7 +50,7 @@
         @endif
 
         <div class="admin-card"><div class="admin-card-body">
-            <h4 class="mb-3">{{ __('Gateway logs') }}</h4>
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><div><h4 class="mb-1">{{ __('Gateway logs') }}</h4><p class="text-muted small mb-0">{{ __('Technical payment evidence for troubleshooting and reconciliation.') }}</p></div><span class="badge {{ data_get($payment->meta,'paymob_hmac_valid') === true ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ data_get($payment->meta,'paymob_hmac_valid') === true ? __('Verified') : __('Verification unavailable') }}</span></div>
             <div class="row g-4 mb-4">
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Paymob order id') }}</div><div>{{ data_get($payment->meta, 'paymob_order_id') ?: '—' }}</div></div>
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Paymob transaction id') }}</div><div>{{ data_get($payment->meta, 'paymob_transaction_id') ?: '—' }}</div></div>
@@ -71,7 +80,7 @@
 
     <div class="col-xl-4">
         <div class="admin-card admin-card-sticky"><div class="admin-card-body">
-            <h4 class="mb-3">{{ __('Update payment status') }}</h4>
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-3"><div><h4 class="mb-1">{{ __('Update payment status') }}</h4><p class="text-muted small mb-0">{{ __('Manual status changes affect the financial record and should match verified payment evidence.') }}</p></div><i class="mdi mdi-shield-alert-outline fs-4 text-muted"></i></div>
             <form method="POST" action="{{ route('admin.payments.update-status', $payment) }}" data-submit-loading>
                 @csrf
                 @method('PATCH')
@@ -91,7 +100,7 @@
                     <label class="form-label fw-semibold">{{ __('Notes') }}</label>
                     <textarea name="notes" rows="4" class="form-control" placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">{{ __('Save payment update') }}</button>
+                <div class="alert alert-warning border-0 small">{{ __('Check the provider or transaction evidence before marking a payment as paid or failed.') }}</div><button type="submit" class="btn btn-primary w-100 btn-text-icon" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save payment update') }}</span></button>
             </form>
         </div></div>
     </div>
