@@ -1,6 +1,25 @@
+<div class="category-editor-shell">
+    <div class="admin-card mb-4">
+        <div class="admin-card-body">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <div class="admin-kicker">{{ __('Category editor') }}</div>
+                    <h4 class="mb-1">{{ $category?->exists ? __('Edit category content') : __('Build a new category') }}</h4>
+                    <p class="text-muted small mb-0">{{ __('Complete the storefront content, translations, search metadata, media, and visibility from one focused workspace.') }}</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="#category-basic" class="btn btn-light border btn-sm">{{ __('Basics') }}</a>
+                    <a href="#category-translations" class="btn btn-light border btn-sm">{{ __('Translations') }}</a>
+                    <a href="#category-seo" class="btn btn-light border btn-sm">{{ __('SEO') }}</a>
+                    <a href="#category-media" class="btn btn-light border btn-sm">{{ __('Media') }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <div class="row g-4">
     <div class="col-lg-8">
-        <div class="card admin-card mb-4">
+        <div class="card admin-card mb-4" id="category-basic">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Basic Information') }}</h5>
             </div>
@@ -34,7 +53,7 @@
         </div>
 
 
-        <div class="card admin-card mb-4">
+        <div class="card admin-card mb-4" id="category-translations">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Translations') }}</h5>
             </div>
@@ -83,7 +102,7 @@
             </div>
         </div>
 
-        <div class="card admin-card mb-4">
+        <div class="card admin-card mb-4" id="category-seo">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Search Engine Setup') }}</h5>
             </div>
@@ -118,18 +137,18 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card admin-card mb-4">
+        <div class="card admin-card mb-4" id="category-media">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Media & Visibility') }}</h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">{{ __('Image') }}</label>
-                    <input type="file" name="image" id="categoryImageInput" class="form-control @error('image') is-invalid @enderror" accept="image/*">
+                    <input type="file" name="image" id="categoryImageInput" class="form-control @error('image') is-invalid @enderror" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
                     @error('image')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small class="text-muted d-block mt-2">{{ __('Choose a new image to replace the current one instantly in the preview below.') }}</small>
+                    <small class="text-muted d-block mt-2">{{ __('JPG, PNG, or WebP up to 2 MB. Choose a new image to preview it before saving.') }}</small>
                 </div>
 
               <div class="mb-4">
@@ -173,9 +192,16 @@
         </div>
     </div>
 </div>
+</div>
 
 @push('styles')
 <style>
+    .category-editor-shell {
+        scroll-behavior:smooth;
+    }
+    .category-editor-shell [id^="category-"] {
+        scroll-margin-top:1.5rem;
+    }
     .admin-toggle-card {
         display:flex;
         align-items:center;
