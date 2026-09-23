@@ -9,6 +9,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantAttribute;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -28,7 +29,7 @@ class AdminAttributeValueIntegrityTest extends TestCase
                 ->call('edit', $medium->id);
 
             $this->fail('A value from another attribute must not be editable.');
-        } catch (\\Illuminate\\Database\\Eloquent\\ModelNotFoundException $exception) {
+        } catch (ModelNotFoundException $exception) {
             $this->assertSame(ProductAttributeValue::class, $exception->getModel());
         }
     }
