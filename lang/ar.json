@@ -3040,5 +3040,11 @@
     "Creating...": "جارٍ الإنشاء...",
     "Including shipping and tax.": "يشمل الشحن والضريبة.",
     "Received date": "تاريخ الاستلام",
-    "Not received yet": "لم يتم الاستلام بعد"
+    "Not received yet": "لم يتم الاستلام بعد",
+    "Unused suppliers": "موردون غير مستخدمين",
+    "Suppliers without purchase history yet.": "موردون ليس لديهم سجل مشتريات حتى الآن.",
+    "Supplier operations": "عمليات الموردين",
+    "Review sourcing relationships, inactive vendors, and suppliers that have not been used yet.": "راجع علاقات التوريد والموردين غير النشطين والموردين الذين لم يتم التعامل معهم بعد.",
+    "Purchase usage": "استخدام المشتريات",
+    "Suppliers with purchase history are protected from deletion.": "الموردون الذين لديهم سجل مشتريات محميون من الحذف."
 }
