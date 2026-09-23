@@ -55,6 +55,7 @@
                         <div>
                             <div class="fw-semibold">{{ $product->name ?: __('Unnamed product') }}</div>
                             <div class="text-muted small">{{ $product->category?->name ?? __('No category') }}</div>
+                            <a href="{{ route('admin.products.edit', $product) }}" class="small text-decoration-none">{{ __('Open product') }} <i class="mdi mdi-arrow-top-right"></i></a>
                         </div>
                         <div class="text-end">
                             <div class="fw-bold">{{ $product->quantity_value ?? $product->quantity ?? 0 }}</div>
@@ -100,6 +101,22 @@
                 @endforelse
             </div>
         </div>
+    </div>
+</div>
+
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
+        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+            <div><h4 class="mb-1">{{ __('Movement explorer') }}</h4><p class="text-muted small mb-0">{{ __('Trace stock changes by product, SKU, order, movement type, or source.') }}</p></div>
+            @if($filters['search'] || $filters['type'] || $filters['reference'])<span class="admin-chip">{{ __('Filtered results') }}</span>@endif
+        </div>
+        <form method="GET" class="row g-3 align-items-end" data-submit-loading>
+            <div class="col-lg-4"><label class="form-label fw-semibold">{{ __('Search movements') }}</label><input type="text" name="search" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Product, SKU, order number, or reason') }}"></div>
+            <div class="col-md-4 col-lg-2"><label class="form-label fw-semibold">{{ __('Movement type') }}</label><select name="type" class="form-select"><option value="">{{ __('All types') }}</option>@foreach($movementTypes as $type)<option value="{{ $type }}" @selected($filters['type'] === $type)>{{ __(str_replace('_', ' ', \Illuminate\Support\Str::headline($type))) }}</option>@endforeach</select></div>
+            <div class="col-md-4 col-lg-2"><label class="form-label fw-semibold">{{ __('Source') }}</label><select name="reference" class="form-select"><option value="">{{ __('All sources') }}</option><option value="order" @selected($filters['reference'] === 'order')>{{ __('Orders') }}</option><option value="purchase" @selected($filters['reference'] === 'purchase')>{{ __('Purchases') }}</option><option value="manual" @selected($filters['reference'] === 'manual')>{{ __('Manual / system') }}</option></select></div>
+            <div class="col-md-4 col-lg-2"><label class="form-label fw-semibold">{{ __('Per page') }}</label><select name="per_page" class="form-select">@foreach([20, 50, 100] as $size)<option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>@endforeach</select></div>
+            <div class="col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-fill" data-loading-text="{{ __('Filtering...') }}">{{ __('Apply') }}</button><a href="{{ route('admin.inventory.index') }}" class="btn btn-light border">{{ __('Reset') }}</a></div>
+        </form>
     </div>
 </div>
 
