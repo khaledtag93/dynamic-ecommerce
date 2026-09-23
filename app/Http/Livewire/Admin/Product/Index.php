@@ -574,7 +574,11 @@ class Index extends Component
             $issues[] = 'SKU or barcode';
         }
 
-        if (! $product->productImages()->exists()) {
+        $hasImage = $product->relationLoaded('productImages')
+            ? $product->productImages->isNotEmpty()
+            : $product->productImages()->exists();
+
+        if (! $hasImage) {
             $issues[] = 'product image';
         }
 
@@ -636,24 +640,52 @@ class Index extends Component
     public function bulkSetStatus(bool $active): void
     {
         if (empty($this->selectedProducts)) {
-            session()->flash('error', 'Please select at least one product.');
+            session()->flash('error', __('Please select at least one product.'));
             return;
         }
 
         $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
 
-        Product::query()
+        $products = Product::query()
             ->whereIn('id', $ids)
+            ->with('productImages')
+            ->get();
+
+        if ($products->isEmpty()) {
+            $this->resetSelection();
+            session()->flash('error', __('No matching products were found.'));
+            return;
+        }
+
+        $needsContent = $active
+            ? $products->filter(fn (Product $product) => ! empty($this->contentReadinessIssues($product)))->count()
+            : 0;
+
+        $actualIds = $products->pluck('id')->all();
+
+        Product::query()
+            ->whereIn('id', $actualIds)
             ->update(['status' => $active]);
 
-        $count = count($ids);
+        $count = $products->count();
         $this->resetSelection();
+
+        if ($active && $needsContent > 0) {
+            session()->flash(
+                'warning',
+                __(':count selected product(s) activated; :needs still need content review.', [
+                    'count' => $count,
+                    'needs' => $needsContent,
+                ])
+            );
+            return;
+        }
 
         session()->flash(
             'message',
             $active
-                ? "{$count} selected product(s) activated."
-                : "{$count} selected product(s) hidden."
+                ? __(':count selected product(s) activated.', ['count' => $count])
+                : __(':count selected product(s) hidden.', ['count' => $count])
         );
     }
 
