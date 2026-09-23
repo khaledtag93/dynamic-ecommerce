@@ -47,7 +47,6 @@ class SettingController extends Controller
         return [
             'professional_commerce' => [
                 'theme_preset' => 'professional_commerce',
-                'theme_label' => 'Professional Commerce',
                 'brand_primary_color' => '#2563eb',
                 'brand_secondary_color' => '#0f172a',
                 'brand_accent_color' => '#0891b2',
