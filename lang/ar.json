@@ -3069,5 +3069,13 @@
     "Promotion operations": "عمليات العروض الترويجية",
     "Review coupon health, redemption activity, expiry, and usage limits from one workspace.": "راجع حالة الكوبونات ونشاط الاستخدام وتواريخ الانتهاء وحدود الاستخدام من مساحة عمل واحدة.",
     "Redemption activity": "نشاط استخدام الكوبون",
-    "All coupons": "كل الكوبونات"
+    "All coupons": "كل الكوبونات",
+    "Percentage coupons cannot exceed 100%.": "لا يمكن أن تتجاوز قيمة كوبون النسبة 100٪.",
+    "Promotion builder": "منشئ العروض",
+    "Build a controlled offer": "أنشئ عرضًا مضبوطًا",
+    "Define the discount, eligibility, schedule, and usage guardrails before making the coupon available.": "حدد الخصم وشروط الأهلية والجدول الزمني وحدود الاستخدام قبل إتاحة الكوبون.",
+    "Limits": "الحدود",
+    "Schedule": "الجدول الزمني",
+    "Please review the coupon details:": "يرجى مراجعة تفاصيل الكوبون:",
+    "Current offer": "العرض الحالي"
 }
