@@ -176,7 +176,8 @@ class AdminProductEditorExperienceTest extends TestCase
         Livewire::test(Index::class)
             ->set('selectedProducts', [$first->id, $second->id])
             ->call('bulkSetStatus', true)
-            ->assertSessionHas('warning', '2 selected product(s) activated; 2 still need content review.');
+            ->assertSet('bulkFeedbackType', 'warning')
+            ->assertSet('bulkFeedbackMessage', '2 selected product(s) activated; 2 still need content review.');
 
         $this->assertTrue((bool) $first->fresh()->status);
         $this->assertTrue((bool) $second->fresh()->status);
@@ -209,7 +210,8 @@ class AdminProductEditorExperienceTest extends TestCase
         Livewire::test(Index::class)
             ->set('selectedProducts', [$selected->id])
             ->call('bulkSetStatus', false)
-            ->assertSessionHas('message', '1 selected product(s) hidden.');
+            ->assertSet('bulkFeedbackType', 'message')
+            ->assertSet('bulkFeedbackMessage', '1 selected product(s) hidden.');
 
         $this->assertFalse((bool) $selected->fresh()->status);
         $this->assertTrue((bool) $untouched->fresh()->status);
