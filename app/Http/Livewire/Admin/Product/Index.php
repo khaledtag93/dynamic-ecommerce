@@ -25,6 +25,7 @@ class Index extends Component
     public $brandFilter = '';
     public $readinessFilter = '';
     public $stockFilter = '';
+    public $featuredFilter = '';
     public $perPage = 10;
 
     // Sorting
@@ -57,6 +58,7 @@ class Index extends Component
         'brandFilter' => ['except' => ''],
         'readinessFilter' => ['except' => ''],
         'stockFilter' => ['except' => ''],
+        'featuredFilter' => ['except' => ''],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10],
@@ -108,6 +110,12 @@ class Index extends Component
         $this->resetSelection();
     }
 
+    public function updatingFeaturedFilter()
+    {
+        $this->resetPage();
+        $this->resetSelection();
+    }
+
     public function updatingPerPage()
     {
         $this->resetPage();
@@ -123,6 +131,7 @@ class Index extends Component
             'brandFilter',
             'readinessFilter',
             'stockFilter',
+            'featuredFilter',
             'perPage',
         ]);
 
@@ -817,7 +826,8 @@ class Index extends Component
             ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
             ->when($this->brandFilter, fn ($q) => $q->where('brand_id', $this->brandFilter))
             ->when($this->readinessFilter !== '', fn ($q) => $this->applyReadinessFilter($q))
-            ->when($this->stockFilter !== '', fn ($q) => $this->applyStockFilter($q));
+            ->when($this->stockFilter !== '', fn ($q) => $this->applyStockFilter($q))
+            ->when($this->featuredFilter !== '', fn ($q) => $q->where('is_featured', $this->featuredFilter));
     }
 
     public function render()
