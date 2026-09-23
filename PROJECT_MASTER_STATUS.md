@@ -276,3 +276,9 @@ Security/release note:
 - Cleanup commit is pushed to `v42-clean-baseline` and is **not yet recorded as QAS/Production deployed**.
 - Next operational step: deploy `41a2f99` to QAS, browser-verify, then Production dry-run + exact-commit execution if approved.
 - After the cleanup is verified in Production, promote the validated V42 history to `main` so source control matches the production release line.
+
+
+## Full project audit — 2026-09-23
+- A repository-wide architecture, commercial-readiness, security, UX, bilingual, performance, testing, and operations audit is recorded in `docs/FULL_PROJECT_AUDIT_2026-09-23.md`.
+- Immediate priority sequence: explicit owner/Super Admin authorization; remove fabricated storefront social proof; close credential-rotation evidence; real storefront search; shipping/tax; unpaid-online-order stock release; Paymob E2E; returns/reviews/addresses; then architecture/framework modernization.
+- Latest audited `v42-clean-baseline` CI is green.
