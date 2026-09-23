@@ -3100,5 +3100,11 @@
     "Promotion schedules that have already ended.": "عروض انتهت فترة تشغيلها بالفعل.",
     "Promotion schedule": "جدولة العروض",
     "Separate live campaigns from upcoming and expired rules before changing pricing behavior.": "افصل الحملات العاملة عن العروض القادمة والمنتهية قبل تعديل سلوك التسعير.",
-    "All schedules": "كل الجداول"
+    "All schedules": "كل الجداول",
+    "Percentage promotions cannot exceed 100%.": "لا يمكن أن تتجاوز نسبة العرض 100٪.",
+    "Automatic promotion builder": "منشئ العروض التلقائية",
+    "Configure pricing behavior safely": "اضبط سلوك التسعير بأمان",
+    "Choose the promotion model first, then complete only the fields that apply to that pricing rule.": "اختر نوع العرض أولًا ثم أكمل فقط الحقول التي تنطبق على قاعدة التسعير المختارة.",
+    "Eligibility": "شروط التطبيق",
+    "Please review the promotion details:": "يرجى مراجعة تفاصيل العرض:"
 }
