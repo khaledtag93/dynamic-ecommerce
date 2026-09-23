@@ -2085,5 +2085,15 @@
     "Operational views": "Operational views",
     "Content queue": "Content queue",
     "Inventory queue": "Inventory queue",
-    "active filters": "active filters"
+    "active filters": "active filters",
+    "Order operations": "Order operations",
+    "Jump directly into orders that need operational attention.": "Jump directly into orders that need operational attention.",
+    "Needs action": "Needs action",
+    "Payment attention": "Payment attention",
+    "Refund activity": "Refund activity",
+    "Per page": "Per page",
+    "Refund recorded successfully.": "Refund recorded successfully.",
+    "Cancelled by admin.": "Cancelled by admin.",
+    "Order cancelled successfully and stock was restored.": "Order cancelled successfully and stock was restored.",
+    "Order status updated successfully.": "Order status updated successfully."
 }
