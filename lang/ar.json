@@ -3057,5 +3057,11 @@
     "Customer operations": "عمليات العملاء",
     "Review account roles and quickly separate active buyers from registered users who have not ordered yet.": "راجع صلاحيات الحسابات وافصل بسرعة بين المشترين الفعليين والمستخدمين المسجلين الذين لم يطلبوا بعد.",
     "Order activity": "نشاط الطلبات",
-    "All accounts": "كل الحسابات"
+    "All accounts": "كل الحسابات",
+    "Net spend": "صافي الإنفاق",
+    "Order value after recorded refunds.": "قيمة الطلبات بعد خصم المبالغ المستردة المسجلة.",
+    "Identity, access, and customer relationship context.": "بيانات الهوية والصلاحيات وسياق علاقة العميل.",
+    "Buyer": "مشتري",
+    "Registered": "مسجل",
+    "Average order": "متوسط الطلب"
 }
