@@ -2138,5 +2138,11 @@
     "Supplier operations": "Supplier operations",
     "Review sourcing relationships, inactive vendors, and suppliers that have not been used yet.": "Review sourcing relationships, inactive vendors, and suppliers that have not been used yet.",
     "Purchase usage": "Purchase usage",
-    "Suppliers with purchase history are protected from deletion.": "Suppliers with purchase history are protected from deletion."
+    "Suppliers with purchase history are protected from deletion.": "Suppliers with purchase history are protected from deletion.",
+    "Supplier workspace": "Supplier workspace",
+    "Maintain supplier profile": "Maintain supplier profile",
+    "Build supplier profile": "Build supplier profile",
+    "Keep contact and sourcing information complete so purchasing teams can work without chasing missing details.": "Keep contact and sourcing information complete so purchasing teams can work without chasing missing details.",
+    "Business": "Business",
+    "Location": "Location"
 }
