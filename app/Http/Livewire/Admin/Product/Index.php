@@ -26,6 +26,7 @@ class Index extends Component
     public $readinessFilter = '';
     public $stockFilter = '';
     public $featuredFilter = '';
+    public $savedView = '';
     public $pendingDeleteId = null;
     public $pendingBulkDeleteCount = 0;
     public $perPage = 10;
@@ -61,6 +62,7 @@ class Index extends Component
         'readinessFilter' => ['except' => ''],
         'stockFilter' => ['except' => ''],
         'featuredFilter' => ['except' => ''],
+        'savedView' => ['except' => ''],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10],
@@ -114,8 +116,49 @@ class Index extends Component
 
     public function updatingFeaturedFilter()
     {
+        $this->savedView = '';
         $this->resetPage();
         $this->resetSelection();
+    }
+
+    public function applySavedView(string $view): void
+    {
+        $allowedViews = ['attention', 'inventory', 'storefront', 'featured'];
+
+        if (! in_array($view, $allowedViews, true)) {
+            return;
+        }
+
+        $this->reset([
+            'search',
+            'statusFilter',
+            'categoryFilter',
+            'brandFilter',
+            'readinessFilter',
+            'stockFilter',
+            'featuredFilter',
+        ]);
+
+        $this->savedView = $view;
+
+        if ($view === 'attention') {
+            $this->readinessFilter = 'needs_attention';
+        } elseif ($view === 'inventory') {
+            $this->stockFilter = 'low';
+        } elseif ($view === 'storefront') {
+            $this->statusFilter = '1';
+        } elseif ($view === 'featured') {
+            $this->featuredFilter = '1';
+        }
+
+        $this->cancelAllInlineEdits();
+        $this->resetPage();
+        $this->resetSelection();
+    }
+
+    public function clearSavedView(): void
+    {
+        $this->savedView = '';
     }
 
     public function updatingPerPage()
@@ -134,6 +177,7 @@ class Index extends Component
             'readinessFilter',
             'stockFilter',
             'featuredFilter',
+            'savedView',
             'perPage',
         ]);
 
@@ -208,6 +252,31 @@ class Index extends Component
     public function getTotalFilteredCountProperty()
     {
         return $this->productsQuery()->count();
+    }
+
+    public function getActiveFilterCountProperty(): int
+    {
+        return collect([
+            trim((string) $this->search),
+            $this->statusFilter,
+            $this->categoryFilter,
+            $this->brandFilter,
+            $this->readinessFilter,
+            $this->stockFilter,
+            $this->featuredFilter,
+        ])->filter(fn ($value) => $value !== '' && $value !== null)->count();
+    }
+
+    public function getCatalogOperationsProperty(): array
+    {
+        $health = $this->catalogHealth;
+
+        return [
+            'attention' => $health['needs_content'],
+            'inventory' => $health['low_stock'] + $health['out_of_stock'],
+            'storefront' => $health['active'],
+            'featured' => Product::query()->where('is_featured', 1)->count(),
+        ];
     }
 
     public function getCatalogHealthProperty(): array
