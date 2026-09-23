@@ -175,18 +175,11 @@ class AdminProductEditorExperienceTest extends TestCase
 
         Livewire::test(Index::class)
             ->set('selectedProducts', [$first->id, $second->id])
-            ->call('bulkSetStatus', true);
+            ->call('bulkSetStatus', true)
+            ->assertSessionHas('warning', '2 selected product(s) activated; 2 still need content review.');
 
         $this->assertTrue((bool) $first->fresh()->status);
         $this->assertTrue((bool) $second->fresh()->status);
-        $this->assertTrue(
-            session()->has('warning') || session()->has('message'),
-            'Bulk activation completed without a user feedback flash message.'
-        );
-
-        if (session()->has('warning')) {
-            $this->assertStringContainsString('2', (string) session('warning'));
-        }
     }
 
     public function test_bulk_hide_only_updates_selected_products(): void
@@ -215,9 +208,9 @@ class AdminProductEditorExperienceTest extends TestCase
 
         Livewire::test(Index::class)
             ->set('selectedProducts', [$selected->id])
-            ->call('bulkSetStatus', false);
+            ->call('bulkSetStatus', false)
+            ->assertSessionHas('message', '1 selected product(s) hidden.');
 
-        $this->assertTrue(session()->has('message'), 'Bulk hide completed without a user feedback flash message.');
         $this->assertFalse((bool) $selected->fresh()->status);
         $this->assertTrue((bool) $untouched->fresh()->status);
     }
