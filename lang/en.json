@@ -2156,5 +2156,11 @@
     "Buyer": "Buyer",
     "Registered": "Registered",
     "Average order": "Average order",
-    "Last order": "Last order"
+    "Last order": "Last order",
+    "Limit reached": "Limit reached",
+    "Coupons that exhausted their usage allowance.": "Coupons that exhausted their usage allowance.",
+    "Promotion operations": "Promotion operations",
+    "Review coupon health, redemption activity, expiry, and usage limits from one workspace.": "Review coupon health, redemption activity, expiry, and usage limits from one workspace.",
+    "Redemption activity": "Redemption activity",
+    "All coupons": "All coupons"
 }
