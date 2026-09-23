@@ -2968,7 +2968,7 @@
     "variant links": "روابط المتغيرات",
     "This attribute is used by product variants and cannot be deleted.": "هذه السمة مستخدمة في متغيرات المنتجات ولا يمكن حذفها.",
     "In use": "قيد الاستخدام",
-    "Unused": "غير مستخدمة",
+    "Unused": "غير مستخدم",
     "Reusable values in this attribute.": "القيم القابلة لإعادة الاستخدام ضمن هذه السمة.",
     "Values currently referenced by product variants.": "القيم المستخدمة حاليًا في متغيرات المنتجات.",
     "Values available for cleanup or future variants.": "قيم غير مستخدمة يمكن تنظيفها أو استخدامها في متغيرات مستقبلية.",
@@ -3063,5 +3063,11 @@
     "Identity, access, and customer relationship context.": "بيانات الهوية والصلاحيات وسياق علاقة العميل.",
     "Buyer": "مشتري",
     "Registered": "مسجل",
-    "Average order": "متوسط الطلب"
+    "Average order": "متوسط الطلب",
+    "Limit reached": "تم بلوغ الحد",
+    "Coupons that exhausted their usage allowance.": "كوبونات استنفدت الحد المسموح لاستخدامها.",
+    "Promotion operations": "عمليات العروض الترويجية",
+    "Review coupon health, redemption activity, expiry, and usage limits from one workspace.": "راجع حالة الكوبونات ونشاط الاستخدام وتواريخ الانتهاء وحدود الاستخدام من مساحة عمل واحدة.",
+    "Redemption activity": "نشاط استخدام الكوبون",
+    "All coupons": "كل الكوبونات"
 }
