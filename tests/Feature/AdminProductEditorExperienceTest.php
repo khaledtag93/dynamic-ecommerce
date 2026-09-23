@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Http\Livewire\Admin\Product\Index;
 use App\Http\Livewire\Admin\Product\ProductForm;
+use App\Models\Product;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -70,6 +72,81 @@ class AdminProductEditorExperienceTest extends TestCase
             'name' => 'Active Product Under Review',
             'status' => 1,
         ]);
+    }
+
+    public function test_catalog_bulk_visibility_and_featured_actions_update_selected_products(): void
+    {
+        $category = $this->createCategory('Catalog Actions', 'catalog-actions');
+
+        $first = Product::create([
+            'name' => 'Catalog First',
+            'slug' => 'catalog-first',
+            'category_id' => $category->id,
+            'base_price' => 20,
+            'quantity' => 4,
+            'stock_status' => 'in_stock',
+            'status' => 0,
+            'is_featured' => 0,
+        ]);
+
+        $second = Product::create([
+            'name' => 'Catalog Second',
+            'slug' => 'catalog-second',
+            'category_id' => $category->id,
+            'base_price' => 30,
+            'quantity' => 5,
+            'stock_status' => 'in_stock',
+            'status' => 0,
+            'is_featured' => 0,
+        ]);
+
+        Livewire::test(Index::class)
+            ->set('selectedProducts', [(string) $first->id, (string) $second->id])
+            ->call('bulkSetStatus', true)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('products', ['id' => $first->id, 'status' => 1]);
+        $this->assertDatabaseHas('products', ['id' => $second->id, 'status' => 1]);
+
+        Livewire::test(Index::class)
+            ->set('selectedProducts', [(string) $first->id, (string) $second->id])
+            ->call('bulkSetFeatured', true)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('products', ['id' => $first->id, 'is_featured' => 1]);
+        $this->assertDatabaseHas('products', ['id' => $second->id, 'is_featured' => 1]);
+    }
+
+    public function test_bulk_delete_requires_explicit_confirmation_state(): void
+    {
+        $category = $this->createCategory('Delete Safety', 'delete-safety');
+
+        $product = Product::create([
+            'name' => 'Delete Me Carefully',
+            'slug' => 'delete-me-carefully',
+            'category_id' => $category->id,
+            'base_price' => 15,
+            'quantity' => 1,
+            'stock_status' => 'in_stock',
+            'status' => 0,
+            'is_featured' => 0,
+        ]);
+
+        $component = Livewire::test(Index::class)
+            ->set('selectedProducts', [(string) $product->id])
+            ->call('confirmBulkDelete');
+
+        $component->assertHasNoErrors();
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+
+        Livewire::test(Index::class)
+            ->set('selectedProducts', [(string) $product->id])
+            ->call('requestBulkDelete')
+            ->assertSet('pendingBulkDeleteCount', 1)
+            ->call('confirmBulkDelete')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
 
     private function createCategory(string $name, string $slug): Category
