@@ -344,8 +344,7 @@
                     <button
                         type="button"
                         class="btn btn-outline-danger btn-modern"
-                        wire:click="bulkDelete"
-                        onclick="return confirm('{{ __('Are you sure you want to permanently delete the selected products?') }}')"
+                        wire:click="requestBulkDelete"
                         wire:loading.attr="disabled"
                         @disabled($this->selectedCount === 0)
                     >
