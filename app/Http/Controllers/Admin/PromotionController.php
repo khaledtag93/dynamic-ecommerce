@@ -15,6 +15,8 @@ class PromotionController extends Controller
             'search' => (string) $request->string('search'),
             'type' => (string) $request->string('type'),
             'status' => (string) $request->string('status'),
+            'schedule' => (string) $request->string('schedule'),
+            'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
             'sort' => (string) ($request->input('sort') ?: 'priority'),
             'direction' => (string) ($request->input('direction') ?: 'desc'),
         ];
@@ -23,11 +25,14 @@ class PromotionController extends Controller
             ->with('category')
             ->when($filters['search'], fn ($query, $search) => $query->where('name', 'like', "%{$search}%"))
             ->when($filters['type'], fn ($query, $type) => $query->where('type', $type))
+            ->when($filters['schedule'] === 'upcoming', fn ($query) => $query->whereNotNull('starts_at')->where('starts_at', '>', now()))
+            ->when($filters['schedule'] === 'expired', fn ($query) => $query->whereNotNull('ends_at')->where('ends_at', '<', now()))
+            ->when($filters['schedule'] === 'running', fn ($query) => $query->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now())))
             ->when($filters['status'] !== '', function ($query) use ($filters) {
                 $query->where('is_active', $filters['status'] === 'active');
             })
             ->orderBy(in_array($filters['sort'], ['priority', 'name', 'type', 'discount_value', 'created_at']) ? $filters['sort'] : 'priority', $filters['direction'] === 'asc' ? 'asc' : 'desc')
-            ->paginate(20)
+            ->paginate($filters['per_page'])
             ->withQueryString();
 
         $stats = [
@@ -35,6 +40,9 @@ class PromotionController extends Controller
             'active' => PromotionRule::where('is_active', true)->count(),
             'inactive' => PromotionRule::where('is_active', false)->count(),
             'buy_x_get_y' => PromotionRule::where('type', 'buy_x_get_y')->count(),
+            'running' => PromotionRule::where('is_active', true)->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))->count(),
+            'upcoming' => PromotionRule::whereNotNull('starts_at')->where('starts_at', '>', now())->count(),
+            'expired' => PromotionRule::whereNotNull('ends_at')->where('ends_at', '<', now())->count(),
         ];
 
         return view('admin.promotions.index', compact('promotions', 'filters', 'stats'));
