@@ -31,6 +31,7 @@ class AdminProductEditorExperienceTest extends TestCase
         $category = Category::create([
             'name' => 'Retail Test',
             'slug' => 'retail-test',
+            'description' => 'Retail test category',
             'status' => false,
         ]);
 
