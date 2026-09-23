@@ -3,6 +3,8 @@ Date: 2026-09-23
 Branch audited: `v42-clean-baseline`
 Scope: architecture, storefront, catalog, checkout, orders, payments, inventory, admin, authorization, analytics/growth, bilingual support, SEO, performance, testing, operations, and commercial readiness.
 
+Screen-by-screen admin/storefront evidence, live Production observations, additional trust and demo-data findings, and measurable UX gates are in [UI/UX and commercial-readiness review](UI_UX_AND_COMMERCIAL_READINESS_REVIEW_2026-09-23.md). This companion narrows the broad UX recommendations here into reviewable work batches.
+
 ## Executive summary
 
 Dynamic already has a broad commerce and operations foundation: catalog/products/variants, cart, checkout, orders, coupons/promotions, payments, refunds, inventory movements, suppliers/purchases, roles/permissions, analytics/growth, notifications, WhatsApp foundations, bilingual support, branding/content controls, cost calculator, CI, QAS, and safe Production deployment/rollback tooling.

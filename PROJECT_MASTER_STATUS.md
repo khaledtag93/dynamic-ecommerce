@@ -282,3 +282,11 @@ Security/release note:
 - A repository-wide architecture, commercial-readiness, security, UX, bilingual, performance, testing, and operations audit is recorded in `docs/FULL_PROJECT_AUDIT_2026-09-23.md`.
 - Immediate priority sequence: explicit owner/Super Admin authorization; remove fabricated storefront social proof; close credential-rotation evidence; real storefront search; shipping/tax; unpaid-online-order stock release; Paymob E2E; returns/reviews/addresses; then architecture/framework modernization.
 - Latest audited `v42-clean-baseline` CI is green.
+
+## UI/UX and commercial-readiness addendum — 2026-09-23
+- Detailed screen and journey review: `docs/UI_UX_AND_COMMERCIAL_READINESS_REVIEW_2026-09-23.md`; baseline inspected at `c1f2146` on `v42-clean-baseline`.
+- Live Production storefront inspection found `Moble`/`Toolsssss`, an unrelated product description, default support email/phone, mixed Arabic/English text, fabricated review and activity counts, repeated single-product merchandising, and the still-deployed V42 marker labels. A no-match header search returned the ordinary homepage.
+- Additional code finding: the EGP 600 free-shipping progress message is disconnected from the current zero-valued shipping calculation; “best sellers” may use non-paid order items and falls back to newest products; authenticated Growth Operations exposes demo-data seed/clear without an environment guard.
+- Admin UX implementation order: section the Livewire product form while preserving its state/save behavior; focus order-detail actions; separate branding workspaces; shorten the dashboard's default operator view. Growth already provides an example of focused subpages. Admin visual/mobile behavior still needs authenticated QAS review.
+- Before real commercial traffic, close public-content/trust and authorization gates; then implement search, honest shipping/tax totals and unpaid-order stock lifecycle. Measure search, checkout, payment, fulfillment, support and Web Vitals against non-demo baselines rather than assuming a design change guarantees sales.
+- This addendum is documentation only. No application code, QAS, Production, database, payment configuration, or public content was changed by the review. The cleanup commit `41a2f99` remains not recorded as deployed; `main` remains on the older baseline until separately reconciled.
