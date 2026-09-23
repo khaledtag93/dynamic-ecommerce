@@ -16,6 +16,8 @@ class CouponController extends Controller
             'search' => trim((string) $request->string('search')),
             'type' => (string) $request->string('type'),
             'status' => (string) $request->string('status'),
+            'usage' => (string) $request->string('usage'),
+            'per_page' => max(12, min(100, (int) $request->integer('per_page', 12))),
             'sort' => (string) $request->string('sort', 'id'),
             'direction' => strtolower((string) $request->string('direction', 'desc')) === 'asc' ? 'asc' : 'desc',
         ];
@@ -40,6 +42,9 @@ class CouponController extends Controller
                 });
             })
             ->when($filters['type'], fn ($query, $type) => $query->where('type', $type))
+            ->when($filters['usage'] === 'used', fn ($query) => $query->where('used_count', '>', 0))
+            ->when($filters['usage'] === 'unused', fn ($query) => $query->where('used_count', 0))
+            ->when($filters['usage'] === 'limit_reached', fn ($query) => $query->whereNotNull('usage_limit')->whereColumn('used_count', '>=', 'usage_limit'))
             ->when($filters['status'] !== '', function ($query) use ($filters) {
                 if ($filters['status'] === 'active') {
                     $query->where('is_active', true);
@@ -54,7 +59,7 @@ class CouponController extends Controller
                 }
             })
             ->orderBy($sortColumn, $filters['direction'])
-            ->paginate(12)
+            ->paginate($filters['per_page'])
             ->withQueryString();
 
         $stats = [
@@ -62,6 +67,8 @@ class CouponController extends Controller
             'active' => Coupon::where('is_active', true)->count(),
             'expired' => Coupon::whereNotNull('ends_at')->where('ends_at', '<', now())->count(),
             'used' => Coupon::where('used_count', '>', 0)->count(),
+            'unused' => Coupon::where('used_count', 0)->count(),
+            'limit_reached' => Coupon::whereNotNull('usage_limit')->whereColumn('used_count', '>=', 'usage_limit')->count(),
         ];
 
         return view('admin.coupons.index', [
