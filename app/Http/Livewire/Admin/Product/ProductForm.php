@@ -11,7 +11,6 @@ use App\Services\Admin\ProductVariantService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -92,18 +91,8 @@ class ProductForm extends Component
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug,' . $productId],
-            'sku' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('products', 'sku')->ignore($this->productId),
-            ],
-            'barcode' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('products', 'barcode')->ignore($this->productId),
-            ],
+            'sku' => ['nullable', 'string', 'max:255'],
+            'barcode' => ['nullable', 'string', 'max:255'],
             'brand_id' => ['nullable', 'exists:brands,id'],
             'category_id' => ['required', 'exists:categories,id'],
             'description' => ['nullable', 'string'],
@@ -1092,49 +1081,6 @@ class ProductForm extends Component
         }
     }
 
-    protected function ensurePublishReadiness(array $validated): void
-    {
-        if ((int) ($validated['status'] ?? 0) !== 1) {
-            return;
-        }
-
-        $errors = [];
-
-        if (blank($validated['description'] ?? null)) {
-            $errors['description'] = 'Add a product description before publishing.';
-        }
-
-        $hasStoredImages = ! empty($this->existingImages);
-        $hasNewImages = collect($this->newImages)->filter()->isNotEmpty();
-
-        if (! $hasStoredImages && ! $hasNewImages) {
-            $errors['newImages'] = 'Add at least one product image before publishing.';
-        }
-
-        if ($this->hasVariants) {
-            $activeVariants = collect($this->variants)
-                ->filter(fn ($variant) => ! empty($variant['status']));
-
-            if ($activeVariants->isEmpty()) {
-                $errors['variants'] = 'Keep at least one active variant before publishing.';
-            }
-
-            $missingVariantSku = $activeVariants->contains(
-                fn ($variant) => blank($variant['sku'] ?? null)
-            );
-
-            if ($missingVariantSku) {
-                $errors['variants'] = 'Every active variant needs an SKU before publishing.';
-            }
-        } elseif (blank($validated['sku'] ?? null) && blank($validated['barcode'] ?? null)) {
-            $errors['sku'] = 'Add an SKU or barcode before publishing.';
-        }
-
-        if (! empty($errors)) {
-            throw ValidationException::withMessages($errors);
-        }
-    }
-
     protected function ensureSimpleProductBusinessRules(array $validated): void
     {
         if ($this->hasVariants) {
@@ -1384,7 +1330,6 @@ class ProductForm extends Component
             ]);
 
             $validated = $this->validate();
-            $this->ensurePublishReadiness($validated);
             $this->markPerformance($trace, 'validated');
 
             $validated['has_variants'] = $isVariantMode;
