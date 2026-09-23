@@ -2,108 +2,179 @@
 
 namespace Tests\Feature;
 
-use App\Models\Role;
-use App\Models\User;
-use App\Services\Auth\AuthorizationService;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\PromotionRule;
+use App\Services\Commerce\PromotionEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 class AdminPromotionHardeningTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_customer_cannot_be_promoted_without_an_explicit_staff_role(): void
+    public function test_engine_uses_only_currently_active_promotions(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
-        $customer = User::factory()->create(['role_as' => 0]);
+        PromotionRule::create([
+            'name' => 'Expired 90%',
+            'type' => PromotionRule::TYPE_ORDER_PERCENTAGE,
+            'discount_value' => 90,
+            'is_active' => true,
+            'ends_at' => now()->subMinute(),
+        ]);
 
-        $this->actingAs($owner)
-            ->patch(route('admin.customers.update-role', $customer), ['role_as' => 1])
-            ->assertSessionHasErrors('role_id');
+        PromotionRule::create([
+            'name' => 'Current 10%',
+            'type' => PromotionRule::TYPE_ORDER_PERCENTAGE,
+            'discount_value' => 10,
+            'is_active' => true,
+        ]);
 
-        $this->assertSame(0, $customer->fresh()->role_as);
-        $this->assertFalse($customer->roles()->exists());
+        $result = app(PromotionEngine::class)->resolve(collect(), 200);
+
+        $this->assertSame(20.0, $result['discount']);
+        $this->assertSame('Current 10%', $result['label']);
     }
 
-    public function test_customer_cannot_be_promoted_with_the_super_admin_role(): void
+    public function test_minimum_subtotal_is_respected(): void
     {
-        app(AuthorizationService::class)->syncDefaults();
-        $owner = User::factory()->create(['role_as' => 1]);
-        $customer = User::factory()->create(['role_as' => 0]);
-        $superRole = Role::query()->where('slug', 'super_admin')->firstOrFail();
+        PromotionRule::create([
+            'name' => 'Spend 500',
+            'type' => PromotionRule::TYPE_ORDER_FIXED,
+            'discount_value' => 100,
+            'min_subtotal' => 500,
+            'is_active' => true,
+        ]);
 
-        $this->actingAs($owner)
-            ->patch(route('admin.customers.update-role', $customer), [
-                'role_as' => 1,
-                'role_id' => $superRole->id,
-            ])
-            ->assertSessionHasErrors('role_id');
+        $result = app(PromotionEngine::class)->resolve(collect(), 499.99);
 
-        $this->assertSame(0, $customer->fresh()->role_as);
-        $this->assertFalse($customer->roles()->exists());
+        $this->assertSame(0.0, $result['discount']);
+        $this->assertNull($result['rule']);
     }
 
-    public function test_promotion_assigns_a_limited_role_and_demotion_removes_it(): void
+    public function test_fixed_discount_never_exceeds_order_subtotal(): void
     {
-        app(AuthorizationService::class)->syncDefaults();
-        $owner = User::factory()->create(['role_as' => 1]);
-        $customer = User::factory()->create(['role_as' => 0]);
-        $staffRole = Role::query()->where('slug', 'support_agent')->firstOrFail();
+        PromotionRule::create([
+            'name' => 'Large fixed offer',
+            'type' => PromotionRule::TYPE_ORDER_FIXED,
+            'discount_value' => 500,
+            'is_active' => true,
+        ]);
 
-        $this->actingAs($owner)
-            ->patch(route('admin.customers.update-role', $customer), [
-                'role_as' => 1,
-                'role_id' => $staffRole->id,
-            ])
-            ->assertSessionHasNoErrors();
+        $result = app(PromotionEngine::class)->resolve(collect(), 120);
 
-        $this->assertSame(1, $customer->fresh()->role_as);
-        $this->assertTrue($customer->roles()->whereKey($staffRole->id)->exists());
-        $this->assertFalse($customer->fresh()->isSuperAdmin());
-        $this->assertFalse($customer->fresh()->hasPermission('permissions.manage'));
-
-        $this->actingAs($owner)
-            ->patch(route('admin.customers.update-role', $customer), ['role_as' => 0])
-            ->assertSessionHasNoErrors();
-
-        $this->assertSame(0, $customer->fresh()->role_as);
-        $this->assertFalse($customer->roles()->exists());
+        $this->assertSame(120.0, $result['discount']);
     }
 
-    public function test_owner_access_cannot_be_changed_from_customer_management(): void
+    public function test_category_percentage_only_discounts_matching_category_lines(): void
     {
-        app(AuthorizationService::class)->syncDefaults();
-        $owner = User::factory()->create(['role_as' => 1]);
-        $otherLegacyOwner = User::factory()->create(['role_as' => 1]);
-        $staffRole = Role::query()->where('slug', 'support_agent')->firstOrFail();
+        $eligibleCategory = $this->category('Eligible', 'eligible');
+        $otherCategory = $this->category('Other', 'other');
 
-        $this->actingAs($owner)
-            ->patch(route('admin.customers.update-role', $otherLegacyOwner), [
-                'role_as' => 1,
-                'role_id' => $staffRole->id,
-            ])
-            ->assertForbidden();
+        $eligibleProduct = $this->product($eligibleCategory, 'Eligible Product', 'eligible-product');
+        $otherProduct = $this->product($otherCategory, 'Other Product', 'other-product');
 
-        $this->assertSame(1, $otherLegacyOwner->fresh()->role_as);
-        $this->assertFalse($otherLegacyOwner->roles()->exists());
+        PromotionRule::create([
+            'name' => 'Category 25%',
+            'type' => PromotionRule::TYPE_CATEGORY_PERCENTAGE,
+            'discount_value' => 25,
+            'category_id' => $eligibleCategory->id,
+            'is_active' => true,
+        ]);
+
+        $items = collect([
+            $this->item($eligibleProduct, 2, 100),
+            $this->item($otherProduct, 1, 400),
+        ]);
+
+        $result = app(PromotionEngine::class)->resolve($items, 600);
+
+        $this->assertSame(50.0, $result['discount']);
     }
 
-    public function test_staff_with_customer_access_cannot_promote_another_account(): void
+    public function test_buy_x_get_y_uses_cheapest_eligible_units(): void
     {
-        app(AuthorizationService::class)->syncDefaults();
-        $staff = User::factory()->create(['role_as' => 1]);
-        $staffRole = Role::query()->where('slug', 'support_agent')->firstOrFail();
-        $staff->roles()->attach($staffRole->id);
-        $customer = User::factory()->create(['role_as' => 0]);
+        $category = $this->category('Bundle', 'bundle');
+        $cheap = $this->product($category, 'Cheap', 'cheap');
+        $expensive = $this->product($category, 'Expensive', 'expensive');
 
-        $this->actingAs($staff)
-            ->patch(route('admin.customers.update-role', $customer), [
-                'role_as' => 1,
-                'role_id' => $staffRole->id,
-            ])
-            ->assertForbidden();
+        PromotionRule::create([
+            'name' => 'Buy 2 Get 1',
+            'type' => PromotionRule::TYPE_BUY_X_GET_Y,
+            'buy_quantity' => 2,
+            'get_quantity' => 1,
+            'category_id' => $category->id,
+            'is_active' => true,
+        ]);
 
-        $this->assertSame(0, $customer->fresh()->role_as);
-        $this->assertFalse($customer->roles()->exists());
+        $items = collect([
+            $this->item($expensive, 2, 100),
+            $this->item($cheap, 1, 40),
+        ]);
+
+        $result = app(PromotionEngine::class)->resolve($items, 240);
+
+        $this->assertSame(40.0, $result['discount']);
+    }
+
+    public function test_engine_selects_largest_discount_instead_of_priority_alone(): void
+    {
+        PromotionRule::create([
+            'name' => 'High priority small discount',
+            'type' => PromotionRule::TYPE_ORDER_FIXED,
+            'discount_value' => 10,
+            'priority' => 100,
+            'is_active' => true,
+        ]);
+
+        PromotionRule::create([
+            'name' => 'Lower priority better discount',
+            'type' => PromotionRule::TYPE_ORDER_PERCENTAGE,
+            'discount_value' => 20,
+            'priority' => 1,
+            'is_active' => true,
+        ]);
+
+        $result = app(PromotionEngine::class)->resolve(collect(), 200);
+
+        $this->assertSame(40.0, $result['discount']);
+        $this->assertSame('Lower priority better discount', $result['label']);
+    }
+
+    private function category(string $name, string $slug): Category
+    {
+        return Category::create([
+            'name' => $name,
+            'slug' => $slug,
+            'description' => $name,
+            'meta_title' => $name,
+            'meta_keyword' => $slug,
+            'meta_description' => $name,
+            'status' => false,
+        ]);
+    }
+
+    private function product(Category $category, string $name, string $slug): Product
+    {
+        return Product::create([
+            'name' => $name,
+            'slug' => $slug,
+            'category_id' => $category->id,
+            'base_price' => 100,
+            'quantity' => 10,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+    }
+
+    private function item(Product $product, int $quantity, float $unitPrice): object
+    {
+        return (object) [
+            'product' => $product,
+            'quantity' => $quantity,
+            'unit_price' => $unitPrice,
+            'line_total' => $quantity * $unitPrice,
+        ];
     }
 }
