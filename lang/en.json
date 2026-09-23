@@ -2095,5 +2095,11 @@
     "Refund recorded successfully.": "Refund recorded successfully.",
     "Cancelled by admin.": "Cancelled by admin.",
     "Order cancelled successfully and stock was restored.": "Order cancelled successfully and stock was restored.",
-    "Order status updated successfully.": "Order status updated successfully."
+    "Order status updated successfully.": "Order status updated successfully.",
+    ":count item included in this order.|:count items included in this order.": ":count item included in this order.|:count items included in this order.",
+    "Processed :date": "Processed :date",
+    "By :name": "By :name",
+    "Recording...": "Recording...",
+    "Net after refunds": "Net after refunds",
+    "Already refunded": "Already refunded"
 }
