@@ -26,6 +26,7 @@ class Index extends Component
     public $readinessFilter = '';
     public $stockFilter = '';
     public $featuredFilter = '';
+    public $pendingDeleteId = null;
     public $perPage = 10;
 
     // Sorting
@@ -260,9 +261,29 @@ class Index extends Component
         ];
     }
 
-    public function deleteSingle($id)
+    public function requestDelete($id): void
     {
-        $product = Product::with('images')->findOrFail($id);
+        $product = Product::findOrFail($id);
+
+        $this->pendingDeleteId = $product->id;
+        $this->dispatchBrowserEvent('open-product-delete-confirmation', [
+            'id' => $product->id,
+            'name' => $product->name,
+        ]);
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->pendingDeleteId = null;
+    }
+
+    public function confirmDelete(): void
+    {
+        if (! $this->pendingDeleteId) {
+            return;
+        }
+
+        $product = Product::with('images')->findOrFail($this->pendingDeleteId);
 
         foreach ($product->images as $image) {
             $path = $image->image_path;
@@ -274,12 +295,14 @@ class Index extends Component
             }
         }
 
+        $productName = $product->name;
         $product->delete();
 
+        $this->pendingDeleteId = null;
         $this->resetSelection();
         $this->cancelAllInlineEdits();
 
-        session()->flash('message', 'Product deleted successfully.');
+        session()->flash('message', "Product {$productName} deleted successfully.");
     }
 
     public function bulkDelete()
