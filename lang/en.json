@@ -2144,5 +2144,10 @@
     "Build supplier profile": "Build supplier profile",
     "Keep contact and sourcing information complete so purchasing teams can work without chasing missing details.": "Keep contact and sourcing information complete so purchasing teams can work without chasing missing details.",
     "Business": "Business",
-    "Location": "Location"
+    "Location": "Location",
+    "Registered accounts that have not placed an order yet.": "Registered accounts that have not placed an order yet.",
+    "Customer operations": "Customer operations",
+    "Review account roles and quickly separate active buyers from registered users who have not ordered yet.": "Review account roles and quickly separate active buyers from registered users who have not ordered yet.",
+    "Order activity": "Order activity",
+    "All accounts": "All accounts"
 }
