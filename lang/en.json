@@ -2027,5 +2027,8 @@
   "Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.": "Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.",
   "Complete the required product information before saving.": "Complete the required product information before saving.",
   "Core information is ready. Complete the recommended details before publishing.": "Core information is ready. Complete the recommended details before publishing.",
-  "Product content is ready for storefront review.": "Product content is ready for storefront review."
+  "Product content is ready for storefront review.": "Product content is ready for storefront review.",
+  "Content readiness": "Content readiness",
+  "Content complete": "Content complete",
+  "Needs content": "Needs content"
 }
