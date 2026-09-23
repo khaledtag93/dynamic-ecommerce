@@ -1,3 +1,5 @@
+<div class="admin-card mb-4"><div class="admin-card-body"><div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3"><div><span class="badge badge-soft-info mb-2">{{ __('Supplier workspace') }}</span><h4 class="mb-1">{{ $supplier->exists ? __('Maintain supplier profile') : __('Build supplier profile') }}</h4><p class="text-muted small mb-0">{{ __('Keep contact and sourcing information complete so purchasing teams can work without chasing missing details.') }}</p></div><div class="d-flex gap-2 flex-wrap"><span class="admin-chip"><i class="mdi mdi-account-outline"></i> {{ __('Contact') }}</span><span class="admin-chip"><i class="mdi mdi-domain"></i> {{ __('Business') }}</span><span class="admin-chip"><i class="mdi mdi-map-marker-outline"></i> {{ __('Location') }}</span></div></div></div></div>
+
 <div class="row g-4">
     <div class="col-xl-8">
         <div class="admin-card">
@@ -44,7 +46,7 @@
         </div>
         <div class="admin-actions-stack justify-content-end">
             <a href="{{ route('admin.suppliers.index') }}" class="btn btn-light admin-btn-soft admin-back-btn"><i class="mdi mdi-arrow-left"></i>{{ __('Cancel') }}</a>
-            <button class="btn btn-primary">{{ $submitLabel }}</button>
+            <button class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-content-save-outline"></i><span>{{ $submitLabel }}</span></button>
         </div>
     </div>
 </div>
