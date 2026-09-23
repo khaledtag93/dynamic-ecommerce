@@ -106,6 +106,132 @@
             font-size: .75rem;
             font-weight: 700;
         }
+
+        .product-readiness-card {
+            margin-bottom: 1rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--admin-border);
+            border-radius: 1.15rem;
+            background: linear-gradient(135deg, color-mix(in srgb, var(--admin-primary-soft) 34%, var(--admin-surface)), var(--admin-surface));
+            box-shadow: 0 12px 28px color-mix(in srgb, var(--admin-text) 5%, transparent);
+        }
+
+        .product-readiness-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .product-readiness-title-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            min-width: min(100%, 26rem);
+        }
+
+        .product-readiness-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: .85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            background: var(--admin-primary-soft);
+            color: var(--admin-primary-dark);
+            font-size: 1.25rem;
+        }
+
+        .product-readiness-meta {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .product-readiness-count,
+        .product-visibility-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 2rem;
+            padding: .35rem .65rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 800;
+            border: 1px solid var(--admin-border);
+            background: var(--admin-surface);
+        }
+
+        .product-visibility-badge[data-state="active"] {
+            color: var(--admin-success-text);
+            background: var(--admin-success-bg);
+        }
+
+        .product-visibility-badge[data-state="inactive"] {
+            color: var(--admin-muted);
+            background: color-mix(in srgb, var(--admin-surface) 82%, var(--admin-bg));
+        }
+
+        .product-readiness-progress {
+            height: .4rem;
+            margin: .9rem 0;
+            overflow: hidden;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--admin-border) 65%, white);
+        }
+
+        .product-readiness-progress > span {
+            display: block;
+            height: 100%;
+            width: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--admin-primary), var(--admin-accent));
+            transition: width .2s ease;
+        }
+
+        .product-readiness-checks {
+            display: flex;
+            gap: .45rem;
+            flex-wrap: wrap;
+        }
+
+        .product-readiness-check {
+            border: 1px solid var(--admin-border);
+            background: var(--admin-surface);
+            color: var(--admin-muted);
+            border-radius: 999px;
+            padding: .42rem .68rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .38rem;
+            font-size: .74rem;
+            font-weight: 750;
+            cursor: pointer;
+        }
+
+        .product-readiness-check:hover {
+            color: var(--admin-primary-dark);
+            border-color: color-mix(in srgb, var(--admin-primary) 30%, var(--admin-border));
+        }
+
+        .product-readiness-check.is-ready {
+            color: var(--admin-success-text);
+            background: var(--admin-success-bg);
+            border-color: color-mix(in srgb, #16a34a 22%, white);
+        }
+
+        .product-readiness-check.is-missing[data-required="1"] {
+            color: var(--admin-danger-text);
+            background: var(--admin-danger-bg);
+        }
+
+        @media (max-width: 575.98px) {
+            .product-readiness-meta { width: 100%; }
+            .product-readiness-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .product-readiness-check { justify-content: flex-start; width: 100%; }
+        }
     </style>
 
     <div class="product-form-top-progress"></div>
@@ -200,6 +326,54 @@
             </div>
         @endif
 
+        <div class="product-readiness-card" id="productPublishReadiness">
+            <div class="product-readiness-head">
+                <div class="product-readiness-title-wrap">
+                    <span class="product-readiness-icon"><i class="mdi mdi-clipboard-check-outline"></i></span>
+                    <div>
+                        <div class="fw-bold">{{ __('Publish readiness') }}</div>
+                        <div class="text-muted small" id="productReadinessSummary">
+                            {{ __('Complete the core product information, then review the recommended storefront details.') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="product-readiness-meta">
+                    <span class="product-readiness-count" id="productReadinessCount">0/7</span>
+                    <span class="product-visibility-badge" id="productVisibilityBadge" data-state="{{ (int) $status === 1 ? 'active' : 'inactive' }}">
+                        {{ (int) $status === 1 ? __('Visible on storefront') : __('Hidden from storefront') }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="product-readiness-progress" aria-hidden="true">
+                <span id="productReadinessProgress"></span>
+            </div>
+
+            <div class="product-readiness-checks" id="productReadinessChecks">
+                <button type="button" class="product-readiness-check" data-readiness-key="name" data-required="1" data-readiness-section="details">
+                    <i class="mdi mdi-circle-outline"></i><span>{{ __('Name') }}</span>
+                </button>
+                <button type="button" class="product-readiness-check" data-readiness-key="category" data-required="1" data-readiness-section="details">
+                    <i class="mdi mdi-circle-outline"></i><span>{{ __('Category') }}</span>
+                </button>
+                <button type="button" class="product-readiness-check" data-readiness-key="pricing" data-required="1" data-readiness-section="pricing">
+                    <i class="mdi mdi-circle-outline"></i><span>{{ __('Pricing') }}</span>
+                </button>
+                <button type="button" class="product-readiness-check" data-readiness-key="description" data-required="0" data-readiness-section="details">
+                    <i class="mdi mdi-circle-outline"></i><span>{{ __('Description') }}</span>
+                </button>
+                <button type="button" class="product-readiness-check" data-readiness-key="image" data-required="0" data-readiness-section="images">
+                    <i class="mdi mdi-circle-outline"></i><span>{{ __('Product image') }}</span>
+                </button>
+                <button type="button" class="product-readiness-check" data-readiness-key="identifier" data-required="0" data-readiness-section="details">
+                    <i class="mdi mdi-circle-outline"></i><span>{{ __('SKU / Barcode') }}</span>
+                </button>
+                <button type="button" class="product-readiness-check" data-readiness-key="seo" data-required="0" data-readiness-section="seo">
+                    <i class="mdi mdi-circle-outline"></i><span>{{ __('SEO') }}</span>
+                </button>
+            </div>
+        </div>
+
         <x-admin.section-tabs id="product" :sections="[
             'details' => __('Basic Information'),
             'pricing' => __('Pricing & Inventory'),
@@ -231,15 +405,23 @@
                                 @error('slug') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label class="form-label">{{ __('SKU') }}</label>
+                                <input type="text" class="form-control @error('sku') is-invalid product-error-field @enderror" wire:model.defer="sku" autocomplete="off">
+                                <div class="form-text">{{ __('Internal stock identifier used by inventory and future POS workflows.') }}</div>
+                                @error('sku') <small class="text-danger">{{ $message }}</small> @enderror
+                            </div>
+
+                            <div class="col-md-4">
                                 <label class="form-label">{{ __('Barcode') }}</label>
-                                <input type="text" class="form-control @error('barcode') is-invalid product-error-field @enderror" wire:model.defer="barcode">
+                                <input type="text" class="form-control @error('barcode') is-invalid product-error-field @enderror" wire:model.defer="barcode" inputmode="numeric" autocomplete="off">
+                                <div class="form-text">{{ __('Optional scannable identifier for retail and stock operations.') }}</div>
                                 @error('barcode') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">{{ __('Video URL') }}</label>
-                                <input type="text" class="form-control @error('video_url') is-invalid product-error-field @enderror" wire:model.defer="video_url">
+                                <input type="url" class="form-control @error('video_url') is-invalid product-error-field @enderror" wire:model.defer="video_url" placeholder="https://">
                                 @error('video_url') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
@@ -345,11 +527,12 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Status') }}</label>
+                                <label class="form-label">{{ __('Storefront status') }}</label>
                                 <select class="form-select @error('status') is-invalid product-error-field @enderror" wire:model.defer="status">
-                                    <option value="1">{{ __('Active') }}</option>
-                                    <option value="0">{{ __('Inactive') }}</option>
+                                    <option value="1">{{ __('Active — visible on storefront') }}</option>
+                                    <option value="0">{{ __('Inactive — hidden from storefront') }}</option>
                                 </select>
+                                <div class="form-text">{{ __('Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.') }}</div>
                                 @error('status') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
@@ -1149,6 +1332,125 @@
                 setProductStatus('error', message, 'mdi-alert-circle-outline');
             }
 
+            function getProductField(model) {
+                const form = document.getElementById('productFormMain');
+                if (!form) return null;
+
+                return Array.from(form.querySelectorAll('input, textarea, select')).find((field) => {
+                    return ['wire:model.defer', 'wire:model', 'wire:model.live', 'wire:model.lazy']
+                        .some((attribute) => field.getAttribute(attribute) === model);
+                }) || null;
+            }
+
+            function productFieldValue(model) {
+                const field = getProductField(model);
+                return field ? String(field.value ?? '').trim() : '';
+            }
+
+            function hasValidNumericValue(value) {
+                if (value === '' || value === null || value === undefined) return false;
+                const number = Number(value);
+                return Number.isFinite(number) && number >= 0;
+            }
+
+            function updateProductReadiness() {
+                const form = document.getElementById('productFormMain');
+                const card = document.getElementById('productPublishReadiness');
+                if (!form || !card) return;
+
+                const hasVariants = document.getElementById('hasVariantsSwitch')?.checked === true;
+                const variantPriceFields = Array.from(form.querySelectorAll('input')).filter((field) => {
+                    const model = field.getAttribute('wire:model.defer') || field.getAttribute('wire:model') || '';
+                    return /^variants\.\d+\.price$/.test(model);
+                });
+
+                const checks = {
+                    name: productFieldValue('name') !== '',
+                    category: productFieldValue('category_id') !== '',
+                    pricing: hasVariants
+                        ? variantPriceFields.some((field) => hasValidNumericValue(field.value))
+                        : hasValidNumericValue(productFieldValue('base_price')),
+                    description: productFieldValue('description') !== '',
+                    image: Boolean(
+                        form.querySelector('.existing-image-item') ||
+                        form.querySelector('.new-image-item') ||
+                        (document.getElementById('productImagesInput')?.files?.length > 0)
+                    ),
+                    identifier: productFieldValue('sku') !== '' || productFieldValue('barcode') !== '',
+                    seo: productFieldValue('meta_title') !== '' || productFieldValue('meta_description') !== ''
+                };
+
+                const checkButtons = Array.from(card.querySelectorAll('[data-readiness-key]'));
+                let readyCount = 0;
+                let missingRequired = 0;
+
+                checkButtons.forEach((button) => {
+                    const ready = Boolean(checks[button.dataset.readinessKey]);
+                    if (ready) readyCount += 1;
+                    if (!ready && button.dataset.required === '1') missingRequired += 1;
+
+                    button.classList.toggle('is-ready', ready);
+                    button.classList.toggle('is-missing', !ready);
+
+                    const icon = button.querySelector('i');
+                    if (icon) icon.className = ready ? 'mdi mdi-check-circle-outline' : 'mdi mdi-circle-outline';
+                });
+
+                const total = checkButtons.length;
+                const count = document.getElementById('productReadinessCount');
+                const progress = document.getElementById('productReadinessProgress');
+                const summary = document.getElementById('productReadinessSummary');
+                const status = productFieldValue('status');
+                const visibility = document.getElementById('productVisibilityBadge');
+
+                if (count) count.textContent = readyCount + '/' + total;
+                if (progress) progress.style.width = (total ? (readyCount / total) * 100 : 0) + '%';
+
+                if (summary) {
+                    if (missingRequired > 0) {
+                        summary.textContent = @json(__('Complete the required product information before saving.'));
+                    } else if (readyCount < total) {
+                        summary.textContent = @json(__('Core information is ready. Complete the recommended details before publishing.'));
+                    } else {
+                        summary.textContent = @json(__('Product content is ready for storefront review.'));
+                    }
+                }
+
+                if (visibility) {
+                    const active = status === '1';
+                    visibility.dataset.state = active ? 'active' : 'inactive';
+                    visibility.textContent = active
+                        ? @json(__('Visible on storefront'))
+                        : @json(__('Hidden from storefront'));
+                }
+            }
+
+            function initProductReadiness() {
+                const form = document.getElementById('productFormMain');
+                if (!form) return;
+
+                if (form.dataset.readinessInitialized !== '1') {
+                    form.dataset.readinessInitialized = '1';
+
+                    form.addEventListener('input', updateProductReadiness);
+                    form.addEventListener('change', updateProductReadiness);
+
+                    form.querySelectorAll('[data-readiness-section]').forEach((button) => {
+                        button.addEventListener('click', function () {
+                            const section = this.dataset.readinessSection;
+                            if (!section) return;
+                            window.AdminSectionTabs?.activate(form, section, true);
+                            document.getElementById('product-tab-' + section)?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'nearest'
+                            });
+                        });
+                    });
+                }
+
+                updateProductReadiness();
+            }
+
             function initDirtyTracking() {
                 const form = document.getElementById('productFormMain');
                 if (!form || form.dataset.dirtyTrackingInitialized === '1') return;
@@ -1378,6 +1680,7 @@
 
                 window.AdminSectionTabs?.init(document.getElementById('productFormMain'));
                 initDirtyTracking();
+                initProductReadiness();
                 initProductDropzone();
                 initSortableGrid('#existingImagesGrid', '.existing-image-item', 'reorderExistingImages');
                 initSortableGrid('#newImagesGrid', '.new-image-item', 'reorderNewImages');
