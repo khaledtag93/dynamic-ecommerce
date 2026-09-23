@@ -25,7 +25,7 @@
     $adminLogoPreviewUrl = AdminBranding::mediaUrl($adminLogoPath, 'admin_logo');
     $bannerPreviewUrl = AdminBranding::mediaUrl($heroBannerPath, 'hero_banner');
     $faviconPreviewUrl = AdminBranding::mediaUrl($faviconPath, 'favicon');
-    $selectedPreset = old('theme_preset', $settings['theme_preset'] ?? 'sunset_bakery');
+    $selectedPreset = old('theme_preset', $settings['theme_preset'] ?? 'professional_commerce');
     $selectedPresetLabel = __($presets[$selectedPreset]['theme_label'] ?? Str::headline(str_replace('_', ' ', $selectedPreset)));
 @endphp
 
@@ -80,27 +80,67 @@
         <div class="col-xl-8">
             <div class="admin-card mb-4" id="branding-panel-theme" role="tabpanel" aria-labelledby="branding-tab-theme" data-admin-section-panel="theme">
                 <div class="admin-card-body">
-                    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
                         <div>
                             <h4 class="mb-1">{{ __('Theme presets') }}</h4>
-                            <div class="text-muted small">{{ __('Start from a ready-made design direction, then customize every important color.') }}</div>
+                            <div class="text-muted small">{{ __('Choose a polished starting point. You can fine-tune the palette later without changing the rest of your store settings.') }}</div>
                         </div>
                         <span class="admin-chip">{{ __('Admin + Customer') }}</span>
                     </div>
 
+                    <div class="theme-preset-grid mb-4" role="list" aria-label="{{ __('Theme presets') }}">
+                        @foreach($presets as $presetKey => $preset)
+                            @php($presetLabel = __($preset['theme_label'] ?? Str::headline(str_replace('_', ' ', $presetKey))))
+                            <button
+                                type="button"
+                                class="theme-preset-card {{ $selectedPreset === $presetKey ? 'is-active' : '' }}"
+                                data-theme-preset-choice="{{ $presetKey }}"
+                                aria-pressed="{{ $selectedPreset === $presetKey ? 'true' : 'false' }}"
+                                role="listitem"
+                            >
+                                <span class="theme-preset-card__visual" style="--preset-primary:{{ $preset['brand_primary_color'] ?? '#2563eb' }};--preset-secondary:{{ $preset['brand_secondary_color'] ?? '#0f172a' }};--preset-bg:{{ $preset['brand_background_color'] ?? '#f8fafc' }};--preset-surface:{{ $preset['brand_surface_color'] ?? '#ffffff' }};">
+                                    <span class="theme-preset-card__sidebar"></span>
+                                    <span class="theme-preset-card__surface">
+                                        <span class="theme-preset-card__bar"></span>
+                                        <span class="theme-preset-card__tile"></span>
+                                    </span>
+                                </span>
+                                <span class="theme-preset-card__body">
+                                    <span class="theme-preset-card__name">{{ $presetLabel }}</span>
+                                    <span class="theme-preset-card__swatches" aria-hidden="true">
+                                        <i style="background:{{ $preset['brand_primary_color'] ?? '#2563eb' }}"></i>
+                                        <i style="background:{{ $preset['brand_secondary_color'] ?? '#0f172a' }}"></i>
+                                        <i style="background:{{ $preset['brand_accent_color'] ?? '#0891b2' }}"></i>
+                                    </span>
+                                    @if($presetKey === 'professional_commerce')
+                                        <span class="theme-preset-card__recommended">{{ __('Recommended') }}</span>
+                                    @elseif(Str::startsWith($presetKey, 'custom_'))
+                                        <span class="theme-preset-card__custom">{{ __('Custom theme') }}</span>
+                                    @endif
+                                </span>
+                            </button>
+                        @endforeach
+                    </div>
+
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">{{ __('Default theme') }}</label>
-                            <select class="form-select" name="theme_preset" id="theme_preset">
-                                @foreach($presets as $presetKey => $preset)
-                                    <option value="{{ $presetKey }}" @selected($selectedPreset === $presetKey)>
-                                        {{ __($preset['theme_label'] ?? Str::headline(str_replace('_', ' ', $presetKey))) }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="col-lg-5">
+                            <label class="form-label fw-semibold">{{ __('Selected theme') }}</label>
+                            <div class="input-group">
+                                <select class="form-select" name="theme_preset" id="theme_preset">
+                                    @foreach($presets as $presetKey => $preset)
+                                        <option value="{{ $presetKey }}" @selected($selectedPreset === $presetKey)>
+                                            {{ __($preset['theme_label'] ?? Str::headline(str_replace('_', ' ', $presetKey))) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button class="btn btn-outline-primary" type="button" id="reapplyThemePreset" title="{{ __('Reapply selected preset') }}">
+                                    <i class="mdi mdi-refresh"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">{{ __('Reapply restores the selected preset colors if you changed individual fields.') }}</div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-lg-3">
                             <label class="form-label fw-semibold">{{ __('Default language') }}</label>
                             <select class="form-select" name="default_locale">
                                 <option value="ar" @selected(old('default_locale', $settings['default_locale'] ?? 'ar') === 'ar')>{{ __('Arabic') }}</option>
@@ -108,12 +148,10 @@
                             </select>
                         </div>
 
-                        <div class="col-md-8">
+                        <div class="col-lg-4">
                             <label class="form-label fw-semibold">{{ __('Save current colors as a new theme') }}</label>
                             <input type="text" name="custom_theme_name" class="form-control" value="{{ old('custom_theme_name') }}" placeholder="{{ __('Example: Green Fashion') }}">
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <div class="form-check form-switch pb-2">
+                            <div class="form-check form-switch mt-2">
                                 <input class="form-check-input" type="checkbox" role="switch" name="save_as_custom_theme" value="1" @checked(old('save_as_custom_theme'))>
                                 <label class="form-check-label ms-2">{{ __('Save as custom theme') }}</label>
                             </div>
@@ -139,22 +177,51 @@
 
             <div class="admin-card mb-4" id="branding-panel-colors" role="tabpanel" aria-labelledby="branding-tab-colors" data-admin-section-panel="colors">
                 <div class="admin-card-body">
-                    <h4 class="mb-3">{{ __('Customer branding') }}</h4>
-                    <div class="row g-3">
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Primary color'),'name'=>'brand_primary_color','value'=>old('brand_primary_color',$settings['brand_primary_color'] ?? '#f97316')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Secondary color'),'name'=>'brand_secondary_color','value'=>old('brand_secondary_color',$settings['brand_secondary_color'] ?? '#ec4899')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Accent color'),'name'=>'brand_accent_color','value'=>old('brand_accent_color',$settings['brand_accent_color'] ?? '#fb923c')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Background color'),'name'=>'brand_background_color','value'=>old('brand_background_color',$settings['brand_background_color'] ?? '#fffaf5')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Surface color'),'name'=>'brand_surface_color','value'=>old('brand_surface_color',$settings['brand_surface_color'] ?? '#ffffff')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Soft background color'),'name'=>'brand_soft_color','value'=>old('brand_soft_color',$settings['brand_soft_color'] ?? '#fff7ed')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Border color'),'name'=>'brand_border_color','value'=>old('brand_border_color',$settings['brand_border_color'] ?? '#fed7aa')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Muted background color'),'name'=>'brand_muted_bg_color','value'=>old('brand_muted_bg_color',$settings['brand_muted_bg_color'] ?? '#fff1f2')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Table header color'),'name'=>'brand_table_head_color','value'=>old('brand_table_head_color',$settings['brand_table_head_color'] ?? '#fff4ec')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Row hover color'),'name'=>'brand_row_hover_color','value'=>old('brand_row_hover_color',$settings['brand_row_hover_color'] ?? '#fffaf6')])</div>
-                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Button text color'),'name'=>'brand_button_text_color','value'=>old('brand_button_text_color',$settings['brand_button_text_color'] ?? '#ffffff')])</div>
-                        <div class="col-md-2"><label class="form-label fw-semibold">{{ __('Radius') }}</label><input type="number" min="8" max="40" name="customer_card_radius" value="{{ old('customer_card_radius', $settings['customer_card_radius'] ?? 20) }}" class="form-control"></div>
-                        <div class="col-md-2"><label class="form-label fw-semibold">{{ __('Badge style') }}</label><input type="text" name="customer_badge_style" value="{{ old('customer_badge_style', $settings['customer_badge_style'] ?? 'pill') }}" class="form-control"></div>
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                        <div>
+                            <h4 class="mb-1">{{ __('Customer branding') }}</h4>
+                            <div class="text-muted small">{{ __('Start with the core brand colors. Open the advanced palette only when you need detailed control.') }}</div>
+                        </div>
+                        <span class="admin-chip">{{ __('Storefront') }}</span>
                     </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Primary color'),'name'=>'brand_primary_color','value'=>old('brand_primary_color',$settings['brand_primary_color'] ?? '#2563eb')])</div>
+                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Secondary color'),'name'=>'brand_secondary_color','value'=>old('brand_secondary_color',$settings['brand_secondary_color'] ?? '#0f172a')])</div>
+                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Accent color'),'name'=>'brand_accent_color','value'=>old('brand_accent_color',$settings['brand_accent_color'] ?? '#0891b2')])</div>
+                        <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Background color'),'name'=>'brand_background_color','value'=>old('brand_background_color',$settings['brand_background_color'] ?? '#f8fafc')])</div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">{{ __('Card radius') }}</label>
+                            <input type="number" min="8" max="40" name="customer_card_radius" value="{{ old('customer_card_radius', $settings['customer_card_radius'] ?? 18) }}" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">{{ __('Badge style') }}</label>
+                            <select name="customer_badge_style" class="form-select">
+                                @foreach(['soft' => __('Soft'), 'pill' => __('Pill'), 'outline' => __('Outline')] as $badgeValue => $badgeLabel)
+                                    <option value="{{ $badgeValue }}" @selected(old('customer_badge_style', $settings['customer_badge_style'] ?? 'soft') === $badgeValue)>{{ $badgeLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <details class="branding-advanced-palette mt-4">
+                        <summary>
+                            <span>
+                                <strong>{{ __('Advanced palette') }}</strong>
+                                <small>{{ __('Fine-tune surfaces, borders, tables, hover states, and button text.') }}</small>
+                            </span>
+                            <i class="mdi mdi-chevron-down"></i>
+                        </summary>
+                        <div class="row g-3 pt-3">
+                            <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Surface color'),'name'=>'brand_surface_color','value'=>old('brand_surface_color',$settings['brand_surface_color'] ?? '#ffffff')])</div>
+                            <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Soft background color'),'name'=>'brand_soft_color','value'=>old('brand_soft_color',$settings['brand_soft_color'] ?? '#eff6ff')])</div>
+                            <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Border color'),'name'=>'brand_border_color','value'=>old('brand_border_color',$settings['brand_border_color'] ?? '#dbe3ef')])</div>
+                            <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Muted background color'),'name'=>'brand_muted_bg_color','value'=>old('brand_muted_bg_color',$settings['brand_muted_bg_color'] ?? '#f1f5f9')])</div>
+                            <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Table header color'),'name'=>'brand_table_head_color','value'=>old('brand_table_head_color',$settings['brand_table_head_color'] ?? '#f8fafc')])</div>
+                            <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Row hover color'),'name'=>'brand_row_hover_color','value'=>old('brand_row_hover_color',$settings['brand_row_hover_color'] ?? '#f8fafc')])</div>
+                            <div class="col-md-4">@include('admin.settings.partials.color-field',['label'=>__('Button text color'),'name'=>'brand_button_text_color','value'=>old('brand_button_text_color',$settings['brand_button_text_color'] ?? '#ffffff')])</div>
+                        </div>
+                    </details>
                 </div>
             </div>
 
@@ -329,12 +396,12 @@
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Admin branding') }}</h4>
                     <div class="row g-3">
-                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Sidebar color'),'name'=>'admin_sidebar_color','value'=>old('admin_sidebar_color',$settings['admin_sidebar_color'] ?? '#0f172a')])</div>
-                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Header color'),'name'=>'admin_header_color','value'=>old('admin_header_color',$settings['admin_header_color'] ?? '#fff2e7')])</div>
+                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Sidebar color'),'name'=>'admin_sidebar_color','value'=>old('admin_sidebar_color',$settings['admin_sidebar_color'] ?? '#0b1220')])</div>
+                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Header color'),'name'=>'admin_header_color','value'=>old('admin_header_color',$settings['admin_header_color'] ?? '#ffffff')])</div>
                         <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Admin surface color'),'name'=>'admin_surface_color','value'=>old('admin_surface_color',$settings['admin_surface_color'] ?? '#ffffff')])</div>
-                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Admin card border color'),'name'=>'admin_card_border_color','value'=>old('admin_card_border_color',$settings['admin_card_border_color'] ?? '#f2dac8')])</div>
-                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Admin accent soft color'),'name'=>'admin_accent_soft_color','value'=>old('admin_accent_soft_color',$settings['admin_accent_soft_color'] ?? '#fff1f2')])</div>
-                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Admin primary soft color'),'name'=>'admin_primary_soft_color','value'=>old('admin_primary_soft_color',$settings['admin_primary_soft_color'] ?? '#ffedd5')])</div>
+                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Admin card border color'),'name'=>'admin_card_border_color','value'=>old('admin_card_border_color',$settings['admin_card_border_color'] ?? '#e2e8f0')])</div>
+                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Admin accent soft color'),'name'=>'admin_accent_soft_color','value'=>old('admin_accent_soft_color',$settings['admin_accent_soft_color'] ?? '#ecfeff')])</div>
+                        <div class="col-md-6">@include('admin.settings.partials.color-field',['label'=>__('Admin primary soft color'),'name'=>'admin_primary_soft_color','value'=>old('admin_primary_soft_color',$settings['admin_primary_soft_color'] ?? '#dbeafe')])</div>
                     </div>
                 </div>
             </div>
@@ -409,9 +476,17 @@
 
             <div class="admin-card" id="branding-panel-preview" role="tabpanel" aria-labelledby="branding-tab-preview" data-admin-section-panel="preview">
                 <div class="admin-card-body">
-                    <h4 class="mb-3">{{ __('Live preview') }}</h4>
+                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-3">
+                        <div>
+                            <h4 class="mb-1">{{ __('Live preview') }}</h4>
+                            <div class="text-muted small">{{ __('Preview the visual direction before saving. Content is illustrative; only colors and shape settings are represented here.') }}</div>
+                        </div>
+                        <span class="admin-chip">{{ __('Preview only') }}</span>
+                    </div>
                     <div class="admin-theme-preview" id="adminThemePreview">
-                        <div class="admin-theme-preview__sidebar"></div>
+                        <div class="admin-theme-preview__sidebar">
+                            <span></span><span></span><span></span>
+                        </div>
                         <div class="admin-theme-preview__content">
                             <div class="admin-theme-preview__header"></div>
                             <div class="admin-theme-preview__cards">
@@ -421,9 +496,24 @@
                         </div>
                     </div>
                     <div class="customer-theme-preview mt-3" id="customerThemePreview">
-                        <div class="customer-theme-preview__hero"></div>
-                        <div class="customer-theme-preview__button">{{ __('Primary action') }}</div>
-                        <div class="customer-theme-preview__badge">{{ __('Badge') }}</div>
+                        <div class="customer-theme-preview__nav">
+                            <span class="customer-theme-preview__logo"></span>
+                            <span class="customer-theme-preview__search"></span>
+                        </div>
+                        <div class="customer-theme-preview__hero">
+                            <span class="customer-theme-preview__hero-copy"></span>
+                            <span class="customer-theme-preview__hero-cta"></span>
+                        </div>
+                        <div class="customer-theme-preview__product">
+                            <span class="customer-theme-preview__product-image"></span>
+                            <span class="customer-theme-preview__product-copy">
+                                <i></i><i></i>
+                            </span>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <div class="customer-theme-preview__button">{{ __('Primary action') }}</div>
+                            <div class="customer-theme-preview__badge">{{ __('Badge') }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -436,6 +526,10 @@
             <div class="admin-form-actions-subtitle">{{ __('Review presets, colors, media assets, and live preview changes, then save your branding workspace when you are ready.') }}</div>
         </div>
         <div class="admin-form-actions-buttons">
+            <span class="branding-save-state" id="brandingSaveState" data-clean-text="{{ __('No unsaved changes') }}" data-dirty-text="{{ __('Unsaved changes') }}">
+                <i class="mdi mdi-check-circle-outline"></i>
+                <span>{{ __('No unsaved changes') }}</span>
+            </span>
             <button class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Saving...') }}">
                 <i class="mdi mdi-content-save-outline"></i>
                 <span>{{ __('Save branding') }}</span>
