@@ -225,7 +225,20 @@ class Index extends Component
         $lowStock = Product::query()
             ->where('has_variants', false)
             ->whereNotNull('low_stock_threshold')
+            ->where('quantity', '>', 0)
             ->whereColumn('quantity', '<=', 'low_stock_threshold')
+            ->count();
+
+        $outOfStock = Product::query()
+            ->where(function ($stockQuery) {
+                $stockQuery->where(function ($simpleQuery) {
+                    $simpleQuery->where('has_variants', false)
+                        ->where('quantity', '<=', 0);
+                })->orWhere(function ($variantQuery) {
+                    $variantQuery->where('has_variants', true)
+                        ->whereDoesntHave('activeVariants', fn ($activeQuery) => $activeQuery->where('stock', '>', 0));
+                });
+            })
             ->count();
 
         return [
@@ -234,6 +247,7 @@ class Index extends Component
             'hidden' => $hidden,
             'needs_content' => $needsContent,
             'low_stock' => $lowStock,
+            'out_of_stock' => $outOfStock,
         ];
     }
 
