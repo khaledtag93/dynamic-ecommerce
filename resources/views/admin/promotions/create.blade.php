@@ -14,6 +14,8 @@
     </div>
 </div>
 
+<div class="admin-card mb-4"><div class="admin-card-body"><div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3"><div><span class="badge badge-soft-info mb-2">{{ __('Automatic promotion builder') }}</span><h4 class="mb-1">{{ __('Configure pricing behavior safely') }}</h4><p class="text-muted small mb-0">{{ __('Choose the promotion model first, then complete only the fields that apply to that pricing rule.') }}</p></div><div class="d-flex flex-wrap gap-2"><span class="admin-chip"><i class="mdi mdi-sale-outline"></i> {{ __('Rule') }}</span><span class="admin-chip"><i class="mdi mdi-target"></i> {{ __('Eligibility') }}</span><span class="admin-chip"><i class="mdi mdi-calendar-clock-outline"></i> {{ __('Schedule') }}</span></div></div></div></div>
+@if($errors->any())<div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4"><div class="fw-bold mb-2">{{ __('Please review the promotion details:') }}</div><ul class="mb-0 ps-3">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <div class="admin-card">
     <div class="admin-card-body">
         <form method="POST" action="{{ $mode === 'edit' ? route('admin.promotions.update', $promotion) : route('admin.promotions.store') }}" class="row g-3" data-submit-loading>
@@ -27,7 +29,7 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">{{ __('Type') }}</label>
-                <select name="type" class="form-select @error('type') is-invalid @enderror">
+                <select name="type" id="promotionType" class="form-select @error('type') is-invalid @enderror">
                     @foreach([
                         'order_percentage' => __('Order percentage'),
                         'order_fixed' => __('Order fixed'),
@@ -57,8 +59,8 @@
                 <input type="number" step="0.01" name="min_subtotal" class="form-control @error('min_subtotal') is-invalid @enderror" value="{{ old('min_subtotal', $promotion->min_subtotal) }}">
                 @error('min_subtotal')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-3"><label class="form-label">{{ __('Buy qty') }}</label><input type="number" name="buy_quantity" class="form-control @error('buy_quantity') is-invalid @enderror" value="{{ old('buy_quantity', $promotion->buy_quantity) }}">@error('buy_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-            <div class="col-md-3"><label class="form-label">{{ __('Get qty') }}</label><input type="number" name="get_quantity" class="form-control @error('get_quantity') is-invalid @enderror" value="{{ old('get_quantity', $promotion->get_quantity) }}">@error('get_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-3 promotion-buy-x-field"><label class="form-label">{{ __('Buy qty') }}</label><input type="number" name="buy_quantity" class="form-control @error('buy_quantity') is-invalid @enderror" value="{{ old('buy_quantity', $promotion->buy_quantity) }}">@error('buy_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-3 promotion-buy-x-field"><label class="form-label">{{ __('Get qty') }}</label><input type="number" name="get_quantity" class="form-control @error('get_quantity') is-invalid @enderror" value="{{ old('get_quantity', $promotion->get_quantity) }}">@error('get_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
             <div class="col-md-3"><label class="form-label">{{ __('Priority') }}</label><input type="number" name="priority" class="form-control @error('priority') is-invalid @enderror" value="{{ old('priority', $promotion->priority ?? 0) }}">@error('priority')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
             <div class="col-md-3"><label class="form-label">{{ __('Active') }}</label><select name="is_active" class="form-select @error('is_active') is-invalid @enderror"><option value="1" @selected((string) old('is_active', (int) ($promotion->is_active ?? true)) === '1')>{{ __('Yes') }}</option><option value="0" @selected((string) old('is_active', (int) ($promotion->is_active ?? true)) === '0')>{{ __('No') }}</option></select>@error('is_active')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
             <div class="col-md-6"><label class="form-label">{{ __('Starts at') }}</label><input type="datetime-local" name="starts_at" class="form-control @error('starts_at') is-invalid @enderror" value="{{ old('starts_at', optional($promotion->starts_at)->format('Y-m-d\TH:i')) }}">@error('starts_at')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
@@ -78,4 +80,21 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const type = document.getElementById('promotionType');
+    const buyXFields = document.querySelectorAll('.promotion-buy-x-field');
+    function syncPromotionFields() {
+        const isBuyX = type?.value === 'buy_x_get_y';
+        buyXFields.forEach(field => {
+            field.style.display = isBuyX ? '' : 'none';
+            field.querySelectorAll('input').forEach(input => input.disabled = !isBuyX);
+        });
+    }
+    type?.addEventListener('change', syncPromotionFields);
+    syncPromotionFields();
+});
+</script>
+@endpush
 @endsection
