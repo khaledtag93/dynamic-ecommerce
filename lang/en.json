@@ -2193,5 +2193,11 @@
     "Promotion schedules that have already ended.": "Promotion schedules that have already ended.",
     "Promotion schedule": "Promotion schedule",
     "Separate live campaigns from upcoming and expired rules before changing pricing behavior.": "Separate live campaigns from upcoming and expired rules before changing pricing behavior.",
-    "All schedules": "All schedules"
+    "All schedules": "All schedules",
+    "Percentage promotions cannot exceed 100%.": "Percentage promotions cannot exceed 100%.",
+    "Automatic promotion builder": "Automatic promotion builder",
+    "Configure pricing behavior safely": "Configure pricing behavior safely",
+    "Choose the promotion model first, then complete only the fields that apply to that pricing rule.": "Choose the promotion model first, then complete only the fields that apply to that pricing rule.",
+    "Eligibility": "Eligibility",
+    "Please review the promotion details:": "Please review the promotion details:"
 }
