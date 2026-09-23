@@ -306,6 +306,30 @@
                         <i class="mdi mdi-eye-off-outline me-1"></i>{{ __('Hide') }}
                     </button>
 
+                    <div class="dropdown">
+                        <button
+                            type="button"
+                            class="btn btn-outline-primary btn-modern dropdown-toggle"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            @disabled($this->selectedCount === 0)
+                        >
+                            <i class="mdi mdi-star-outline me-1"></i>{{ __('Featured') }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li>
+                                <button type="button" class="dropdown-item" wire:click="bulkSetFeatured(true)">
+                                    <i class="mdi mdi-star-outline me-2"></i>{{ __('Mark as featured') }}
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item" wire:click="bulkSetFeatured(false)">
+                                    <i class="mdi mdi-star-off-outline me-2"></i>{{ __('Remove from featured') }}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
                     <button
                         type="button"
                         class="btn btn-outline-danger btn-modern"
@@ -325,7 +349,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
@@ -695,6 +719,13 @@
                                         <span class="badge rounded-pill bg-light text-dark border">
                                             {{ __('Simple Product') }}
                                         </span>
+                                    @endif
+                                    @if ($product->is_featured)
+                                        <div class="mt-2">
+                                            <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border">
+                                                <i class="mdi mdi-star me-1"></i>{{ __('Featured') }}
+                                            </span>
+                                        </div>
                                     @endif
                                 </td>
 
