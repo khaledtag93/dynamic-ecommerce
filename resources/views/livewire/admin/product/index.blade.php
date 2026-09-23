@@ -112,13 +112,13 @@
         </div>
 
         <div class="col-12 col-xl">
-            <div class="card admin-card stat-card h-100">
+            <button type="button" class="card admin-card stat-card h-100 w-100 text-start border-0" wire:click="$set('stockFilter', 'low')">
                 <div class="card-body">
                     <div class="stat-label">{{ __('Low stock') }}</div>
                     <div class="stat-value">{{ $this->catalogHealth['low_stock'] }}</div>
-                    <div class="stat-note">{{ __('Simple products at threshold') }}</div>
+                    <div class="stat-note">{{ __('Click to review products at threshold') }}</div>
                 </div>
-            </div>
+            </button>
         </div>
     </div>
 
@@ -183,6 +183,16 @@
                         <option value="">{{ __('All products') }}</option>
                         <option value="ready">{{ __('Content complete') }}</option>
                         <option value="needs_attention">{{ __('Needs content') }}</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-lg-2">
+                    <label class="form-label filter-label">{{ __('Inventory') }}</label>
+                    <select class="form-select" wire:model="stockFilter">
+                        <option value="">{{ __('All stock levels') }}</option>
+                        <option value="in">{{ __('In stock') }}</option>
+                        <option value="low">{{ __('Low stock') }}</option>
+                        <option value="out">{{ __('Out of stock') }}</option>
                     </select>
                 </div>
 
@@ -278,7 +288,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,perPage,sortBy,resetFilters,toggleStatus,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,perPage,sortBy,resetFilters,toggleStatus,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
@@ -611,6 +621,17 @@
                                     @else
                                         <div class="inline-display">
                                             <div class="fw-bold qty-text">{{ (int) ($product->quantity_value ?? 0) }}</div>
+                                            @php
+                                                $quantityValue = (int) ($product->quantity_value ?? 0);
+                                                $threshold = (int) ($product->low_stock_threshold ?? 0);
+                                            @endphp
+                                            @if($quantityValue <= 0)
+                                                <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis border mt-1">{{ __('Out of stock') }}</span>
+                                            @elseif(!$product->has_variants && $threshold > 0 && $quantityValue <= $threshold)
+                                                <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border mt-1">{{ __('Low stock') }}</span>
+                                            @else
+                                                <span class="badge rounded-pill bg-success-subtle text-success-emphasis border mt-1">{{ __('In stock') }}</span>
+                                            @endif
 
                                             @if ($product->has_variants)
                                                 <div class="small text-muted mt-1">{{ __('Controlled by variants') }}</div>
