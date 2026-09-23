@@ -167,6 +167,15 @@
                     </select>
                 </div>
 
+                <div class="col-6 col-lg-2">
+                    <label class="form-label filter-label">{{ __('Readiness') }}</label>
+                    <select class="form-select" wire:model="readinessFilter">
+                        <option value="">{{ __('All products') }}</option>
+                        <option value="ready">{{ __('Storefront ready') }}</option>
+                        <option value="needs_attention">{{ __('Needs attention') }}</option>
+                    </select>
+                </div>
+
                 <div class="col-6 col-lg-1">
                     <label class="form-label filter-label">{{ __('Per Page') }}</label>
                     <select class="form-select" wire:model="perPage">
@@ -259,7 +268,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,perPage,sortBy,resetFilters,toggleStatus,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,perPage,sortBy,resetFilters,toggleStatus,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
@@ -372,6 +381,25 @@
                                 <td>
                                     <div class="product-main-cell">
                                         <div class="product-name">{{ $product->name }}</div>
+
+                                        @php
+                                            $hasDescription = filled($product->description);
+                                            $hasIdentifier = filled($product->sku) || filled($product->barcode);
+                                            $hasImage = $product->productImages->isNotEmpty();
+                                            $readinessReady = $hasDescription && $hasIdentifier && $hasImage;
+                                        @endphp
+
+                                        <div class="mb-2">
+                                            @if($readinessReady)
+                                                <span class="badge rounded-pill bg-success-subtle text-success-emphasis border">
+                                                    <i class="mdi mdi-check-circle-outline me-1"></i>{{ __('Storefront ready') }}
+                                                </span>
+                                            @else
+                                                <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border">
+                                                    <i class="mdi mdi-alert-outline me-1"></i>{{ __('Needs attention') }}
+                                                </span>
+                                            @endif
+                                        </div>
 
                                         <div class="product-meta">
                                             <span class="meta-chip">{{ __('Slug') }}: {{ $product->slug ?: '—' }}</span>
