@@ -106,7 +106,18 @@ jobs:
           php artisan view:clear
 
       - name: Run PHPUnit
-        run: php artisan test
+        run: |
+          mkdir -p storage/test-results
+          php artisan test --log-junit storage/test-results/phpunit.xml
+
+      - name: Upload PHPUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-report-${{ github.run_id }}
+          path: storage/test-results/phpunit.xml
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Setup Node
         uses: actions/setup-node@v4
