@@ -358,7 +358,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,featuredFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,featuredFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,confirmDelete,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
@@ -794,10 +794,8 @@
                                         <button
                                             type="button"
                                             class="btn btn-light btn-action text-danger"
-                                            wire:click="deleteSingle({{ $product->id }})"
-                                            wire:confirm="{{ __('Are you sure you want to delete this product?') }}"
+                                            wire:click="requestDelete({{ $product->id }})"
                                             wire:loading.attr="disabled"
-                                            wire:target="deleteSingle({{ $product->id }})"
                                             title="{{ __('Delete') }}"
                                         >
                                             <i class="mdi mdi-trash-can-outline"></i>
@@ -833,6 +831,72 @@
             </div>
         @endif
     </div>
+
+    <div
+        class="modal fade"
+        id="productDeleteConfirmationModal"
+        tabindex="-1"
+        aria-labelledby="productDeleteConfirmationTitle"
+        aria-hidden="true"
+        wire:ignore.self
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <div class="text-danger fw-semibold small text-uppercase mb-1">{{ __('Destructive action') }}</div>
+                        <h5 class="modal-title" id="productDeleteConfirmationTitle">{{ __('Delete product?') }}</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <p class="mb-2">{{ __('This permanently removes the product and its managed product images.') }}</p>
+                    <div class="rounded-3 border bg-light p-3">
+                        <div class="small text-muted mb-1">{{ __('Product') }}</div>
+                        <div class="fw-bold" id="productDeleteConfirmationName">—</div>
+                    </div>
+                    <p class="text-muted small mb-0 mt-3">{{ __('This action cannot be undone.') }}</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="cancelDelete">
+                        {{ __('Cancel') }}
+                    </button>
+                    <button type="button" class="btn btn-danger" wire:click="confirmDelete" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="confirmDelete">{{ __('Delete product') }}</span>
+                        <span wire:loading wire:target="confirmDelete">{{ __('Deleting...') }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('open-product-delete-confirmation', (event) => {
+            const detail = event.detail || {};
+            const name = document.getElementById('productDeleteConfirmationName');
+            const modalElement = document.getElementById('productDeleteConfirmationModal');
+
+            if (name) {
+                name.textContent = detail.name || '—';
+            }
+
+            if (modalElement && window.bootstrap) {
+                bootstrap.Modal.getOrCreateInstance(modalElement).show();
+            }
+        });
+
+        document.addEventListener('livewire:load', () => {
+            Livewire.hook('message.processed', () => {
+                if (!@this.pendingDeleteId) {
+                    const modalElement = document.getElementById('productDeleteConfirmationModal');
+
+                    if (modalElement && window.bootstrap) {
+                        bootstrap.Modal.getInstance(modalElement)?.hide();
+                    }
+                }
+            });
+        });
+    </script>
 
     <style>
         .product-admin-page {
