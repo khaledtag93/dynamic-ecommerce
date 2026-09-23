@@ -4,6 +4,8 @@
 > Living status: start with [the documentation guide](docs/README.md) for the current implementation/CI/QAS/Production ledger and the dated audit links. Historical checkpoints below are retained as evidence; their “next step” statements describe the date they were written.
 
 ## Current state
+
+- **Expanded product direction (2026-09-24):** UI/UX/design-system modernization, POS/cashier, barcode scanning, invoice/receipt, employee attendance/shifts/leave/payroll, and expanded delivery operations are now tracked in `docs/PRODUCT_ROADMAP_2026-09-24.md`. These are phased roadmap items; they are not yet deployed features.
 - **Official application baseline:** V42
 - **Baseline description:** Cost Calculator refactor + Arabic/English translation updates
 - **Current working branch:** `v42-clean-baseline`
