@@ -26,6 +26,13 @@
 - The pre-existing roleless-admin Super Admin fallback is still active. This is a **partial authorization fix**; inventory current admins, designate and explicitly assign the owner, then remove the fallback with migration/rollback tests. Other P0 release gates in the audits remain open.
 - The source audit and UI review are dated baselines, and their later implementation states are tracked in the [documentation guide](docs/README.md). Update this section and the ledger for every subsequent batch.
 
+## Product Admin commercial UX checkpoint — 2026-09-24
+- Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
+- Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.
+- Single-product and bulk destructive deletion now use explicit guarded confirmation state and in-app confirmation modals instead of immediate deletion/browser-only prompts. Managed product images remain part of the deletion flow.
+- Regression coverage now exercises product editor retail identifiers, advisory readiness, bulk visibility, featured actions, and guarded bulk deletion. Additional bulk-visibility tests are currently running in CI at working-line head; do not treat this Product Admin checkpoint as QAS-verified until the final branch-head CI and authenticated visual checks pass.
+- Product Admin remains source-complete for this iteration but not Production-promoted. Next gate: green branch-head CI, authenticated QAS desktop/mobile + Arabic/English review, then resolve any findings before moving the module to release-ready status.
+
 ## V42 baseline status
 - Clean V42 Git baseline completed and verified.
 - Expected V42 source files matched the source snapshot by Git blob hash after intentional exclusions.
