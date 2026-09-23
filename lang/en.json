@@ -2178,5 +2178,12 @@
     "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.",
     "Paid amount": "Paid amount",
     "Payment operations": "Payment operations",
-    "Review payment exceptions, pending records, and successful collections from one finance workspace.": "Review payment exceptions, pending records, and successful collections from one finance workspace."
+    "Review payment exceptions, pending records, and successful collections from one finance workspace.": "Review payment exceptions, pending records, and successful collections from one finance workspace.",
+    "Gateway verification": "Gateway verification",
+    "Verified": "Verified",
+    "Not available": "Not available",
+    "Manual status changes affect the financial record and should match verified payment evidence.": "Manual status changes affect the financial record and should match verified payment evidence.",
+    "Check the provider or transaction evidence before marking a payment as paid or failed.": "Check the provider or transaction evidence before marking a payment as paid or failed.",
+    "Technical payment evidence for troubleshooting and reconciliation.": "Technical payment evidence for troubleshooting and reconciliation.",
+    "Verification unavailable": "Verification unavailable"
 }
