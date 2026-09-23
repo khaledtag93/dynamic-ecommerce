@@ -3031,5 +3031,14 @@
     "Search purchases": "البحث في المشتريات",
     "Reference, supplier, or company": "المرجع أو المورد أو الشركة",
     "All suppliers": "كل الموردين",
-    "Receiving...": "جارٍ الاستلام..."
+    "Receiving...": "جارٍ الاستلام...",
+    "Purchase workflow": "مسار عمل الشراء",
+    "Build purchase order": "إنشاء طلب شراء",
+    "Choose a supplier, add stock lines, review the live total, then save the order for later receiving.": "اختر المورد، وأضف أصناف المخزون، وراجع الإجمالي مباشرة، ثم احفظ الطلب لاستلامه لاحقًا.",
+    "Totals": "الإجماليات",
+    "Estimated total": "الإجمالي التقديري",
+    "Creating...": "جارٍ الإنشاء...",
+    "Including shipping and tax.": "يشمل الشحن والضريبة.",
+    "Received date": "تاريخ الاستلام",
+    "Not received yet": "لم يتم الاستلام بعد"
 }
