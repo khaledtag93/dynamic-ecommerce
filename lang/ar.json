@@ -2947,5 +2947,13 @@
   "Simple products at threshold": "منتجات بسيطة وصلت إلى حد المخزون",
   "Click to review products at threshold": "اضغط لمراجعة المنتجات التي وصلت إلى حد المخزون",
   "All stock levels": "كل مستويات المخزون",
-  "Click to review unavailable products": "اضغط لمراجعة المنتجات غير المتاحة"
+  "Click to review unavailable products": "اضغط لمراجعة المنتجات غير المتاحة",
+  "Please select at least one product.": "يرجى تحديد منتج واحد على الأقل.",
+  "No matching products were found.": "لم يتم العثور على منتجات مطابقة.",
+  ":count selected product(s) activated; :needs still need content review.": "تم تفعيل :count من المنتجات المحددة؛ وما زال :needs منها يحتاج إلى مراجعة المحتوى.",
+  ":count selected product(s) activated.": "تم تفعيل :count من المنتجات المحددة.",
+  ":count selected product(s) hidden.": "تم إخفاء :count من المنتجات المحددة.",
+  "Activate selected products on the storefront?": "هل تريد إظهار المنتجات المحددة في واجهة المتجر؟",
+  "Hide selected products from the storefront?": "هل تريد إخفاء المنتجات المحددة من واجهة المتجر؟",
+  "Are you sure you want to permanently delete the selected products?": "هل أنت متأكد من حذف المنتجات المحددة نهائيًا؟"
 }
