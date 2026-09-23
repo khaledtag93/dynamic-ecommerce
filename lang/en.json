@@ -2162,5 +2162,13 @@
     "Promotion operations": "Promotion operations",
     "Review coupon health, redemption activity, expiry, and usage limits from one workspace.": "Review coupon health, redemption activity, expiry, and usage limits from one workspace.",
     "Redemption activity": "Redemption activity",
-    "All coupons": "All coupons"
+    "All coupons": "All coupons",
+    "Percentage coupons cannot exceed 100%.": "Percentage coupons cannot exceed 100%.",
+    "Promotion builder": "Promotion builder",
+    "Build a controlled offer": "Build a controlled offer",
+    "Define the discount, eligibility, schedule, and usage guardrails before making the coupon available.": "Define the discount, eligibility, schedule, and usage guardrails before making the coupon available.",
+    "Limits": "Limits",
+    "Schedule": "Schedule",
+    "Please review the coupon details:": "Please review the coupon details:",
+    "Current offer": "Current offer"
 }
