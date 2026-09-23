@@ -577,6 +577,30 @@ class Index extends Component
         session()->flash('message', "Product #{$product->id} is now active.");
     }
 
+    public function bulkSetFeatured(bool $featured): void
+    {
+        if (empty($this->selectedProducts)) {
+            session()->flash('error', 'Please select at least one product.');
+            return;
+        }
+
+        $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
+
+        Product::query()
+            ->whereIn('id', $ids)
+            ->update(['is_featured' => $featured]);
+
+        $count = count($ids);
+        $this->resetSelection();
+
+        session()->flash(
+            'message',
+            $featured
+                ? "{$count} selected product(s) marked as featured."
+                : "{$count} selected product(s) removed from featured."
+        );
+    }
+
     public function bulkSetStatus(bool $active): void
     {
         if (empty($this->selectedProducts)) {
