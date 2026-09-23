@@ -2170,5 +2170,10 @@
     "Limits": "Limits",
     "Schedule": "Schedule",
     "Please review the coupon details:": "Please review the coupon details:",
-    "Current offer": "Current offer"
+    "Current offer": "Current offer",
+    "Total deliveries": "Total deliveries",
+    "In transit": "In transit",
+    "Exceptions": "Exceptions",
+    "Delivery operations": "Delivery operations",
+    "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions."
 }
