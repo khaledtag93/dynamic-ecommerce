@@ -2185,5 +2185,13 @@
     "Manual status changes affect the financial record and should match verified payment evidence.": "Manual status changes affect the financial record and should match verified payment evidence.",
     "Check the provider or transaction evidence before marking a payment as paid or failed.": "Check the provider or transaction evidence before marking a payment as paid or failed.",
     "Technical payment evidence for troubleshooting and reconciliation.": "Technical payment evidence for troubleshooting and reconciliation.",
-    "Verification unavailable": "Verification unavailable"
+    "Verification unavailable": "Verification unavailable",
+    "Running now": "Running now",
+    "Active promotions currently inside their schedule.": "Active promotions currently inside their schedule.",
+    "Upcoming": "Upcoming",
+    "Scheduled promotions that have not started yet.": "Scheduled promotions that have not started yet.",
+    "Promotion schedules that have already ended.": "Promotion schedules that have already ended.",
+    "Promotion schedule": "Promotion schedule",
+    "Separate live campaigns from upcoming and expired rules before changing pricing behavior.": "Separate live campaigns from upcoming and expired rules before changing pricing behavior.",
+    "All schedules": "All schedules"
 }
