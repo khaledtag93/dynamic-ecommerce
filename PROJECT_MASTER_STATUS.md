@@ -26,6 +26,14 @@
 - The pre-existing roleless-admin Super Admin fallback is still active. This is a **partial authorization fix**; inventory current admins, designate and explicitly assign the owner, then remove the fallback with migration/rollback tests. Other P0 release gates in the audits remain open.
 - The source audit and UI review are dated baselines, and their later implementation states are tracked in the [documentation guide](docs/README.md). Update this section and the ledger for every subsequent batch.
 
+## Catalog Admin V2 checkpoint — 2026-09-24
+- Catalog administration has expanded beyond Products into Categories, Brands, Attributes, and Attribute Values with operational queues, stronger filters, usage/health metrics, safer destructive actions, and editor workflow improvements.
+- Category editing now enforces unique slugs, image type/size limits, translation-field validation, and protects categories linked to products from deletion.
+- Brand management now surfaces empty/linked records and uses guarded deletion with a backend recheck for product dependencies.
+- Attribute and Attribute Value management is variant-aware: attributes or values referenced by product variants are protected from deletion, while usage counts and cleanup queues are visible to admins.
+- Arabic/English catalog-admin localization is now part of the ongoing definition of done. New strings introduced during the V2 work are being registered in English and translated into Arabic as the related screens are upgraded.
+- Automated coverage has started for the upgraded catalog workflows. Final release readiness still requires green branch-head CI plus authenticated QAS review in English and Arabic before Production promotion.
+
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
 - Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.
