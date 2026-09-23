@@ -2997,7 +2997,7 @@
     "active filters": "فلاتر نشطة",
     "Order operations": "عمليات الطلبات",
     "Jump directly into orders that need operational attention.": "انتقل مباشرة إلى الطلبات التي تحتاج إلى متابعة تشغيلية.",
-    "Needs action": "تحتاج إلى إجراء",
+    "Needs action": "تحتاج إجراء",
     "Payment attention": "تحتاج مراجعة الدفع",
     "Refund activity": "نشاط الاسترداد",
     "Per page": "عدد العناصر في الصفحة",
@@ -3077,5 +3077,10 @@
     "Limits": "الحدود",
     "Schedule": "الجدول الزمني",
     "Please review the coupon details:": "يرجى مراجعة تفاصيل الكوبون:",
-    "Current offer": "العرض الحالي"
+    "Current offer": "العرض الحالي",
+    "Total deliveries": "إجمالي الشحنات",
+    "In transit": "قيد الشحن",
+    "Exceptions": "حالات استثنائية",
+    "Delivery operations": "عمليات التوصيل",
+    "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "تنقل بسرعة بين الطلبات التي تنتظر الشحن والشحنات قيد التوصيل وحالات التوصيل الاستثنائية."
 }
