@@ -299,6 +299,7 @@
                         type="button"
                         class="btn btn-outline-success btn-modern"
                         wire:click="bulkSetStatus(true)"
+                        onclick="return confirm('{{ __('Activate selected products on the storefront?') }}')"
                         wire:loading.attr="disabled"
                         @disabled($this->selectedCount === 0)
                     >
@@ -309,6 +310,7 @@
                         type="button"
                         class="btn btn-outline-secondary btn-modern"
                         wire:click="bulkSetStatus(false)"
+                        onclick="return confirm('{{ __('Hide selected products from the storefront?') }}')"
                         wire:loading.attr="disabled"
                         @disabled($this->selectedCount === 0)
                     >
@@ -343,7 +345,7 @@
                         type="button"
                         class="btn btn-outline-danger btn-modern"
                         wire:click="bulkDelete"
-                        wire:confirm="{{ __('Are you sure you want to delete the selected products?') }}"
+                        onclick="return confirm('{{ __('Are you sure you want to permanently delete the selected products?') }}')"
                         wire:loading.attr="disabled"
                         @disabled($this->selectedCount === 0)
                     >
