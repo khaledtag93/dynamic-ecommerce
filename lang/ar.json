@@ -2994,5 +2994,15 @@
     "Operational views": "واجهات العمل السريعة",
     "Content queue": "قائمة مراجعة المحتوى",
     "Inventory queue": "قائمة المخزون",
-    "active filters": "فلاتر نشطة"
+    "active filters": "فلاتر نشطة",
+    "Order operations": "عمليات الطلبات",
+    "Jump directly into orders that need operational attention.": "انتقل مباشرة إلى الطلبات التي تحتاج إلى متابعة تشغيلية.",
+    "Needs action": "تحتاج إلى إجراء",
+    "Payment attention": "تحتاج مراجعة الدفع",
+    "Refund activity": "نشاط الاسترداد",
+    "Per page": "عدد العناصر في الصفحة",
+    "Refund recorded successfully.": "تم تسجيل الاسترداد بنجاح.",
+    "Cancelled by admin.": "تم الإلغاء بواسطة المسؤول.",
+    "Order cancelled successfully and stock was restored.": "تم إلغاء الطلب بنجاح وإعادة المخزون.",
+    "Order status updated successfully.": "تم تحديث حالة الطلب بنجاح."
 }
