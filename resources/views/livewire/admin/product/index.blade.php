@@ -168,11 +168,11 @@
                 </div>
 
                 <div class="col-6 col-lg-2">
-                    <label class="form-label filter-label">{{ __('Readiness') }}</label>
+                    <label class="form-label filter-label">{{ __('Content readiness') }}</label>
                     <select class="form-select" wire:model="readinessFilter">
                         <option value="">{{ __('All products') }}</option>
-                        <option value="ready">{{ __('Storefront ready') }}</option>
-                        <option value="needs_attention">{{ __('Needs attention') }}</option>
+                        <option value="ready">{{ __('Content complete') }}</option>
+                        <option value="needs_attention">{{ __('Needs content') }}</option>
                     </select>
                 </div>
 
@@ -392,11 +392,11 @@
                                         <div class="mb-2">
                                             @if($readinessReady)
                                                 <span class="badge rounded-pill bg-success-subtle text-success-emphasis border">
-                                                    <i class="mdi mdi-check-circle-outline me-1"></i>{{ __('Storefront ready') }}
+                                                    <i class="mdi mdi-check-circle-outline me-1"></i>{{ __('Content complete') }}
                                                 </span>
                                             @else
                                                 <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border">
-                                                    <i class="mdi mdi-alert-outline me-1"></i>{{ __('Needs attention') }}
+                                                    <i class="mdi mdi-alert-outline me-1"></i>{{ __('Needs content') }}
                                                 </span>
                                             @endif
                                         </div>
