@@ -2012,5 +2012,20 @@
   "Preview the visual direction before saving. Content is illustrative; only colors and shape settings are represented here.": "Preview the visual direction before saving. Content is illustrative; only colors and shape settings are represented here.",
   "Preview only": "Preview only",
   "No unsaved changes": "No unsaved changes",
-  "Unsaved changes": "Unsaved changes"
+  "Unsaved changes": "Unsaved changes",
+  "Publish readiness": "Publish readiness",
+  "Complete the core product information, then review the recommended storefront details.": "Complete the core product information, then review the recommended storefront details.",
+  "Visible on storefront": "Visible on storefront",
+  "Hidden from storefront": "Hidden from storefront",
+  "Product image": "Product image",
+  "SKU / Barcode": "SKU / Barcode",
+  "Internal stock identifier used by inventory and future POS workflows.": "Internal stock identifier used by inventory and future POS workflows.",
+  "Optional scannable identifier for retail and stock operations.": "Optional scannable identifier for retail and stock operations.",
+  "Storefront status": "Storefront status",
+  "Active — visible on storefront": "Active — visible on storefront",
+  "Inactive — hidden from storefront": "Inactive — hidden from storefront",
+  "Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.": "Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.",
+  "Complete the required product information before saving.": "Complete the required product information before saving.",
+  "Core information is ready. Complete the recommended details before publishing.": "Core information is ready. Complete the recommended details before publishing.",
+  "Product content is ready for storefront review.": "Product content is ready for storefront review."
 }
