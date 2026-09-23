@@ -183,6 +183,12 @@ class PaymentService
                 $updates['failed_at'] = null;
             }
 
+            if ($status !== Payment::STATUS_AUTHORIZED) {
+                $updates['authorized_at'] = $status === Payment::STATUS_PENDING
+                    ? null
+                    : $lockedPayment->authorized_at;
+            }
+
             $lockedPayment->update($updates);
             $lockedPayment->refresh();
 
@@ -241,10 +247,24 @@ class PaymentService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // A successful gateway confirmation is terminal here. The row lock
-            // makes this guarantee hold even when competing callbacks arrive
-            // concurrently for the same payment.
+            // Paid/refunded are terminal. Replayed callbacks and stale gateway
+            // downgrades must not mutate financial state or duplicate timeline events.
             if (in_array($lockedPayment->status, [Payment::STATUS_PAID, Payment::STATUS_REFUNDED], true)) {
+                return $lockedPayment;
+            }
+
+            $incomingTransactionId = ! empty($context['transaction_id'])
+                ? (string) $context['transaction_id']
+                : null;
+
+            $lastGatewayTransition = data_get($lockedPayment->meta, 'last_gateway_transition');
+
+            if (
+                $lockedPayment->status === $status
+                && $lastGatewayTransition
+                && (string) data_get($lastGatewayTransition, 'status') === $status
+                && (string) data_get($lastGatewayTransition, 'transaction_id') === (string) $incomingTransactionId
+            ) {
                 return $lockedPayment;
             }
 
@@ -270,6 +290,13 @@ class PaymentService
             if (! empty($context['response_message'])) {
                 $meta['gateway_response_message'] = (string) $context['response_message'];
             }
+
+            $meta['last_gateway_transition'] = [
+                'status' => $status,
+                'transaction_id' => $incomingTransactionId,
+                'provider_status' => $context['provider_status'] ?? null,
+                'at' => now()->toDateTimeString(),
+            ];
 
             $updates = [
                 'status' => $status,
