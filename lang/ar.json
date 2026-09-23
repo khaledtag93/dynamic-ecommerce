@@ -3114,5 +3114,13 @@
     "Review acquisition, repeat purchasing, customer value, and account access from one workspace.": "راجع اكتساب العملاء وتكرار الشراء وقيمة العميل وصلاحيات الحساب من مساحة عمل واحدة.",
     "Customer value": "قيمة العميل",
     "All customer values": "كل مستويات قيمة العملاء",
-    "Highest spend first": "الأعلى إنفاقًا أولًا"
+    "Highest spend first": "الأعلى إنفاقًا أولًا",
+    "Catalog / Attributes / Values": "الكتالوج / الخصائص / القيم",
+    "Add and edit the reusable values for this attribute.": "أضف وعدّل القيم القابلة لإعادة الاستخدام لهذه الخاصية.",
+    "Edit value": "تعديل القيمة",
+    "Delete value": "حذف القيمة",
+    "Values used by variants are protected from rename and deletion to keep catalog data consistent.": "القيم المستخدمة في متغيرات المنتجات محمية من إعادة التسمية والحذف للحفاظ على اتساق بيانات الكتالوج.",
+    "Rename and delete are locked while this value is in use.": "إعادة التسمية والحذف غير متاحين أثناء استخدام هذه القيمة.",
+    "Used values cannot be renamed": "لا يمكن إعادة تسمية القيم المستخدمة",
+    "No values match your search.": "لا توجد قيم تطابق بحثك."
 }
