@@ -2030,5 +2030,10 @@
   "Product content is ready for storefront review.": "Product content is ready for storefront review.",
   "Content readiness": "Content readiness",
   "Content complete": "Content complete",
-  "Needs content": "Needs content"
+  "Needs content": "Needs content",
+  "Total products": "Total products",
+  "Visible products": "Visible products",
+  "Draft or hidden products": "Draft or hidden products",
+  "Click to review incomplete content": "Click to review incomplete content",
+  "Simple products at threshold": "Simple products at threshold"
 }
