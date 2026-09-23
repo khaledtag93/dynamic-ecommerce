@@ -350,8 +350,7 @@
                         @disabled($this->selectedCount === 0)
                     >
                         <i class="mdi mdi-trash-can-outline me-1"></i>
-                        <span wire:loading.remove wire:target="bulkDelete">{{ __('Bulk delete') }}</span>
-                        <span wire:loading wire:target="bulkDelete">{{ __('Deleting...') }}</span>
+                        <span>{{ __('Bulk delete') }}</span>
                     </button>
                 </div>
             </div>
@@ -360,7 +359,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,featuredFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,confirmDelete,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,featuredFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,confirmBulkDelete,confirmDelete,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
@@ -836,6 +835,44 @@
 
     <div
         class="modal fade"
+        id="productBulkDeleteConfirmationModal"
+        tabindex="-1"
+        aria-labelledby="productBulkDeleteConfirmationTitle"
+        aria-hidden="true"
+        wire:ignore.self
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <div class="text-danger fw-semibold small text-uppercase mb-1">{{ __('Bulk destructive action') }}</div>
+                        <h5 class="modal-title" id="productBulkDeleteConfirmationTitle">{{ __('Delete selected products?') }}</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <p class="mb-3">{{ __('This permanently removes the selected products and their managed product images.') }}</p>
+                    <div class="rounded-3 border bg-light p-3 d-flex align-items-center justify-content-between">
+                        <span class="text-muted">{{ __('Products selected') }}</span>
+                        <strong id="productBulkDeleteConfirmationCount">{{ $this->selectedCount }}</strong>
+                    </div>
+                    <p class="text-muted small mb-0 mt-3">{{ __('Review the count carefully. This action cannot be undone.') }}</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="cancelBulkDelete">
+                        {{ __('Cancel') }}
+                    </button>
+                    <button type="button" class="btn btn-danger" wire:click="confirmBulkDelete" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="confirmBulkDelete">{{ __('Delete selected products') }}</span>
+                        <span wire:loading wire:target="confirmBulkDelete">{{ __('Deleting...') }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade"
         id="productDeleteConfirmationModal"
         tabindex="-1"
         aria-labelledby="productDeleteConfirmationTitle"
@@ -873,6 +910,20 @@
     </div>
 
     <script>
+        window.addEventListener('open-product-bulk-delete-confirmation', (event) => {
+            const detail = event.detail || {};
+            const count = document.getElementById('productBulkDeleteConfirmationCount');
+            const modalElement = document.getElementById('productBulkDeleteConfirmationModal');
+
+            if (count) {
+                count.textContent = detail.count || '0';
+            }
+
+            if (modalElement && window.bootstrap) {
+                bootstrap.Modal.getOrCreateInstance(modalElement).show();
+            }
+        });
+
         window.addEventListener('open-product-delete-confirmation', (event) => {
             const detail = event.detail || {};
             const name = document.getElementById('productDeleteConfirmationName');
@@ -894,6 +945,14 @@
 
                     if (modalElement && window.bootstrap) {
                         bootstrap.Modal.getInstance(modalElement)?.hide();
+                    }
+                }
+
+                if (!@this.pendingBulkDeleteCount) {
+                    const bulkModalElement = document.getElementById('productBulkDeleteConfirmationModal');
+
+                    if (bulkModalElement && window.bootstrap) {
+                        bootstrap.Modal.getInstance(bulkModalElement)?.hide();
                     }
                 }
             });
