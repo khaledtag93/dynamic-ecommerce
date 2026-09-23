@@ -13,6 +13,7 @@ class BrandingSettingsExperienceTest extends TestCase
 
     public function test_branding_workspace_exposes_visual_professional_theme_controls(): void
     {
+        $this->withoutExceptionHandling();
         $owner = User::factory()->create(['role_as' => 1]);
 
         $this->actingAs($owner)
