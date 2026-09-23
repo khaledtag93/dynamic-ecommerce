@@ -333,12 +333,24 @@ The current `v42-clean-baseline` branch now includes a broad operational-admin p
 - **Coupons / Promotions:** promotion operations queues and builder UX, percentage validation, schedule visibility, real PromotionEngine regression coverage, required category targeting for category-percentage rules, and normalization that clears stale fields when promotion type changes.
 - **Deliveries / Payments:** action/exception queues and reconciliation-oriented detail UI. Delivery transition rules and payment transition/idempotency hardening remain explicit follow-up items.
 - **Localization:** English and Arabic strings were expanded across the touched admin workspaces; touched legacy screens should continue to be checked for untranslated strings during each subsequent batch.
-- **Current CI note:** automatic-promotion tests are passing. The branch CI is not yet green because `AdminProductEditorExperienceTest` still exposes two ProductForm save exceptions plus two Livewire feedback/session assertions. A testing-only diagnostic change now rethrows the underlying ProductForm exception so the next CI run can expose the root cause without changing Production behavior.
+- **Localization / consistency:** English and Arabic coverage was expanded across touched workspaces. Attribute Values now follows the same operational Admin V2 language for headers, metrics, protected actions, search/empty states, loading feedback, and destructive confirmations.
+- **Verified CI:** Product/Promotion regression suite was clean at run `35932953241`. Attribute Value integrity fixes and their final UI/i18n batch are verified green at run `35934209260` on commit `1672bc9a`.
+
+## Attribute Values integrity + UX closure — 2026-09-24
+- Scoped edit/save prevents a value ID from another attribute from being edited or reassigned through the current attribute workspace.
+- Variant usage remains keyed by attribute + textual value; therefore an in-use value cannot be renamed because that would silently desynchronize existing variant records.
+- In-use values cannot be deleted. Unused values remain editable/deletable and same-attribute duplicates remain rejected.
+- Total / in-use / unused KPIs are calculated from the complete attribute value set rather than the current search result.
+- Added `AdminAttributeValueIntegrityTest` coverage for cross-attribute access, protected rename/delete, normal unused rename/delete, and duplicate rejection.
+- UI now communicates the lock directly, disables invalid edit/delete actions, distinguishes search-no-results from a genuinely empty attribute, and shows save progress.
+- Missing English/Arabic copy for the workspace and protection states was completed.
+- Final Attribute Values batch CI: **green**, run `35934209260`, head `1672bc9a`.
 
 ### Next hardening sequence
-1. Resolve the ProductForm CI root cause and normalize the Livewire feedback assertions; require a verified green pipeline before calling this batch complete.
-2. Harden Attribute Value scoped edit/rename behavior.
-3. Harden payment and delivery state transitions/idempotency.
-4. Verify purchase receiving transaction/idempotency behavior.
-5. Continue the planned Settings/branding/colors UX overhaul, then employee/POS/barcode/invoice-printing modules as separate coherent product batches.
+1. Harden payment state transitions and gateway/admin idempotency while preserving reconciliation UX.
+2. Harden delivery transition/status/timestamp/notification rules.
+3. Verify purchase receiving transaction/idempotency and inventory movement behavior.
+4. Continue Settings/branding/colors UX overhaul.
+5. Build employee operations, POS/cashier, barcode workflows, and detailed invoice printing as separate coherent product batches.
 
+> Standing Definition of Done for each batch: business safety + UI/UX + Admin V2 consistency + EN/AR localization + regression tests + documentation + verified CI.
