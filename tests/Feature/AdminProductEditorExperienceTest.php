@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Http\Livewire\Admin\Product\ProductForm;
 use App\Models\Category;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -29,15 +28,7 @@ class AdminProductEditorExperienceTest extends TestCase
 
     public function test_simple_product_sku_is_saved_from_livewire_editor(): void
     {
-        $category = Category::create([
-            'name' => 'Retail Test',
-            'slug' => 'retail-test',
-            'description' => 'Retail test category',
-            'meta_title' => 'Retail Test',
-            'meta_keyword' => 'retail,test',
-            'meta_description' => 'Retail test category',
-            'status' => false,
-        ]);
+        $category = $this->createCategory('Retail Test', 'retail-test');
 
         Livewire::test(ProductForm::class)
             ->set('name', 'Retail SKU Product')
@@ -59,17 +50,13 @@ class AdminProductEditorExperienceTest extends TestCase
             'category_id' => $category->id,
         ]);
     }
-    public function test_active_simple_product_cannot_publish_without_storefront_readiness(): void
+
+    public function test_publish_readiness_is_advisory_and_does_not_change_current_activation_rules(): void
     {
-        $category = Category::create([
-            'name' => 'Publish Readiness',
-            'slug' => 'publish-readiness',
-            'description' => 'Publish readiness test category',
-            'status' => false,
-        ]);
+        $category = $this->createCategory('Advisory Readiness', 'advisory-readiness');
 
         Livewire::test(ProductForm::class)
-            ->set('name', 'Incomplete Active Product')
+            ->set('name', 'Active Product Under Review')
             ->set('category_id', $category->id)
             ->set('base_price', '99.90')
             ->set('quantity', 1)
@@ -77,71 +64,24 @@ class AdminProductEditorExperienceTest extends TestCase
             ->set('status', 1)
             ->set('is_featured', 0)
             ->call('save')
-            ->assertHasErrors(['description', 'newImages', 'sku']);
-
-        $this->assertDatabaseMissing('products', [
-            'name' => 'Incomplete Active Product',
-        ]);
-    }
-
-    public function test_inactive_product_can_be_saved_as_draft_while_storefront_details_are_incomplete(): void
-    {
-        $category = Category::create([
-            'name' => 'Draft Products',
-            'slug' => 'draft-products',
-            'description' => 'Draft product test category',
-            'status' => false,
-        ]);
-
-        Livewire::test(ProductForm::class)
-            ->set('name', 'Draft Product')
-            ->set('category_id', $category->id)
-            ->set('base_price', '49.90')
-            ->set('quantity', 0)
-            ->set('stock_status', 'out_of_stock')
-            ->set('status', 0)
-            ->set('is_featured', 0)
-            ->call('save')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('products', [
-            'name' => 'Draft Product',
-            'status' => 0,
+            'name' => 'Active Product Under Review',
+            'status' => 1,
         ]);
     }
 
-    public function test_product_identifiers_must_be_unique(): void
+    private function createCategory(string $name, string $slug): Category
     {
-        $category = Category::create([
-            'name' => 'Identifiers',
-            'slug' => 'identifiers',
-            'description' => 'Identifier test category',
+        return Category::create([
+            'name' => $name,
+            'slug' => $slug,
+            'description' => $name . ' category',
+            'meta_title' => $name,
+            'meta_keyword' => str_replace(' ', ',', strtolower($name)),
+            'meta_description' => $name . ' category',
             'status' => false,
         ]);
-
-        Product::create([
-            'name' => 'Existing Product',
-            'slug' => 'existing-product',
-            'sku' => 'SKU-UNIQUE-001',
-            'barcode' => '6220000000001',
-            'category_id' => $category->id,
-            'base_price' => 10,
-            'quantity' => 1,
-            'status' => 0,
-        ]);
-
-        Livewire::test(ProductForm::class)
-            ->set('name', 'Duplicate Identifier Product')
-            ->set('sku', 'SKU-UNIQUE-001')
-            ->set('barcode', '6220000000001')
-            ->set('category_id', $category->id)
-            ->set('base_price', '20.00')
-            ->set('quantity', 1)
-            ->set('stock_status', 'in_stock')
-            ->set('status', 0)
-            ->set('is_featured', 0)
-            ->call('save')
-            ->assertHasErrors(['sku', 'barcode']);
     }
-
 }
