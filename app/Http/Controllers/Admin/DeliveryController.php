@@ -24,6 +24,8 @@ class DeliveryController extends Controller
             'search' => trim((string) $request->string('search')),
             'delivery_status' => (string) $request->string('delivery_status'),
             'delivery_method' => (string) $request->string('delivery_method'),
+            'queue' => (string) $request->string('queue'),
+            'per_page' => max(15, min(100, (int) $request->integer('per_page', 15))),
         ];
 
         $orders = Order::query()
@@ -38,15 +40,27 @@ class DeliveryController extends Controller
             })
             ->when($filters['delivery_status'], fn ($query, $status) => $query->where('delivery_status', $status))
             ->when($filters['delivery_method'], fn ($query, $method) => $query->where('delivery_method', $method))
+            ->when($filters['queue'] === 'action', fn ($query) => $query->whereIn('delivery_status', [Order::DELIVERY_STATUS_PENDING, Order::DELIVERY_STATUS_PREPARING]))
+            ->when($filters['queue'] === 'transit', fn ($query) => $query->whereIn('delivery_status', [Order::DELIVERY_STATUS_SHIPPED, Order::DELIVERY_STATUS_OUT_FOR_DELIVERY]))
+            ->when($filters['queue'] === 'exceptions', fn ($query) => $query->whereIn('delivery_status', [Order::DELIVERY_STATUS_RETURNED, Order::DELIVERY_STATUS_CANCELLED]))
             ->latest('id')
-            ->paginate(15)
+            ->paginate($filters['per_page'])
             ->withQueryString();
+
+        $stats = [
+            'total' => Order::count(),
+            'action' => Order::whereIn('delivery_status', [Order::DELIVERY_STATUS_PENDING, Order::DELIVERY_STATUS_PREPARING])->count(),
+            'transit' => Order::whereIn('delivery_status', [Order::DELIVERY_STATUS_SHIPPED, Order::DELIVERY_STATUS_OUT_FOR_DELIVERY])->count(),
+            'delivered' => Order::where('delivery_status', Order::DELIVERY_STATUS_DELIVERED)->count(),
+            'exceptions' => Order::whereIn('delivery_status', [Order::DELIVERY_STATUS_RETURNED, Order::DELIVERY_STATUS_CANCELLED])->count(),
+        ];
 
         return view('admin.deliveries.index', [
             'orders' => $orders,
             'filters' => $filters,
             'deliveryStatusOptions' => Order::deliveryStatusOptions(),
             'deliveryMethodOptions' => Order::deliveryMethodOptions(),
+            'stats' => $stats,
         ]);
     }
 
