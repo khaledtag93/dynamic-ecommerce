@@ -530,11 +530,75 @@ class Index extends Component
         session()->flash('message', "Quantity updated successfully for product #{$id}.");
     }
 
+    protected function contentReadinessIssues(Product $product): array
+    {
+        $issues = [];
+
+        if (blank($product->description)) {
+            $issues[] = 'description';
+        }
+
+        if (blank($product->sku) && blank($product->barcode)) {
+            $issues[] = 'SKU or barcode';
+        }
+
+        if (! $product->productImages()->exists()) {
+            $issues[] = 'product image';
+        }
+
+        return $issues;
+    }
+
     public function toggleStatus($id)
     {
         $product = Product::findOrFail($id);
-        $product->status = ! $product->status;
+
+        if ($product->status) {
+            $product->status = false;
+            $product->save();
+
+            session()->flash('message', "Product #{$product->id} is now hidden from the storefront.");
+            return;
+        }
+
+        $issues = $this->contentReadinessIssues($product);
+
+        $product->status = true;
         $product->save();
+
+        if (! empty($issues)) {
+            session()->flash(
+                'warning',
+                'Product activated, but content still needs: ' . implode(', ', $issues) . '.'
+            );
+            return;
+        }
+
+        session()->flash('message', "Product #{$product->id} is now active.");
+    }
+
+    public function bulkSetStatus(bool $active): void
+    {
+        if (empty($this->selectedProducts)) {
+            session()->flash('error', 'Please select at least one product.');
+            return;
+        }
+
+        $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
+
+        Product::query()
+            ->whereIn('id', $ids)
+            ->update(['status' => $active]);
+
+        $count = count($ids);
+        $this->resetSelection();
+
+        session()->flash(
+            'message',
+            $active
+                ? "{$count} selected product(s) activated."
+                : "{$count} selected product(s) hidden."
+        );
     }
 
     public function exportCsv()
