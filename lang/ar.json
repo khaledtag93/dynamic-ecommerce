@@ -2009,7 +2009,7 @@
     "Refund": "استرداد",
     "Refund History": "سجل المرتجعات",
     "Refund Policy": "سياسة الاسترجاع",
-    "Refund reason": "سبب الاسترجاع",
+    "Refund reason": "سبب الاسترداد",
     "Refundable balance": "المبلغ المتاح لاسترداده",
     "Refundable balance:": "الرصيد القابل للاسترجاع:",
     "Refunded": "مسترد",
@@ -3004,5 +3004,11 @@
     "Refund recorded successfully.": "تم تسجيل الاسترداد بنجاح.",
     "Cancelled by admin.": "تم الإلغاء بواسطة المسؤول.",
     "Order cancelled successfully and stock was restored.": "تم إلغاء الطلب بنجاح وإعادة المخزون.",
-    "Order status updated successfully.": "تم تحديث حالة الطلب بنجاح."
+    "Order status updated successfully.": "تم تحديث حالة الطلب بنجاح.",
+    ":count item included in this order.|:count items included in this order.": ":count منتج ضمن هذا الطلب.|:count منتجات ضمن هذا الطلب.",
+    "Processed :date": "تمت المعالجة في :date",
+    "By :name": "بواسطة :name",
+    "Recording...": "جارٍ التسجيل...",
+    "Net after refunds": "الصافي بعد الاستردادات",
+    "Already refunded": "تم استرداده بالفعل"
 }
