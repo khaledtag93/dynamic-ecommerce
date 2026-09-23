@@ -525,7 +525,7 @@
     "Confirmed order count in the same range.": "عدد الطلبات المؤكدة خلال الفترة نفسها.",
     "Connect timeout": "مهلة الاتصال",
     "Consoles, controllers, headsets, screens, and accessories for a stronger setup.": "أجهزة ألعاب ويد تحكم وسماعات وشاشات وإكسسوارات لتجربة أقوى.",
-    "Contact": "تواصل معنا",
+    "Contact": "بيانات الاتصال",
     "Contact name": "اسم جهة الاتصال",
     "Contact us": "اتصل بنا",
     "Content": "المحتوى",
@@ -3046,5 +3046,11 @@
     "Supplier operations": "عمليات الموردين",
     "Review sourcing relationships, inactive vendors, and suppliers that have not been used yet.": "راجع علاقات التوريد والموردين غير النشطين والموردين الذين لم يتم التعامل معهم بعد.",
     "Purchase usage": "استخدام المشتريات",
-    "Suppliers with purchase history are protected from deletion.": "الموردون الذين لديهم سجل مشتريات محميون من الحذف."
+    "Suppliers with purchase history are protected from deletion.": "الموردون الذين لديهم سجل مشتريات محميون من الحذف.",
+    "Supplier workspace": "مساحة عمل المورد",
+    "Maintain supplier profile": "إدارة ملف المورد",
+    "Build supplier profile": "إنشاء ملف المورد",
+    "Keep contact and sourcing information complete so purchasing teams can work without chasing missing details.": "حافظ على اكتمال بيانات الاتصال والتوريد حتى يعمل فريق المشتريات دون البحث عن معلومات ناقصة.",
+    "Business": "بيانات العمل",
+    "Location": "الموقع"
 }
