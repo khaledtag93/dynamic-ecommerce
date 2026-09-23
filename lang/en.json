@@ -2132,5 +2132,11 @@
     "Creating...": "Creating...",
     "Including shipping and tax.": "Including shipping and tax.",
     "Received date": "Received date",
-    "Not received yet": "Not received yet"
+    "Not received yet": "Not received yet",
+    "Unused suppliers": "Unused suppliers",
+    "Suppliers without purchase history yet.": "Suppliers without purchase history yet.",
+    "Supplier operations": "Supplier operations",
+    "Review sourcing relationships, inactive vendors, and suppliers that have not been used yet.": "Review sourcing relationships, inactive vendors, and suppliers that have not been used yet.",
+    "Purchase usage": "Purchase usage",
+    "Suppliers with purchase history are protected from deletion.": "Suppliers with purchase history are protected from deletion."
 }
