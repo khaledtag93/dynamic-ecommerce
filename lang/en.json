@@ -2200,5 +2200,13 @@
     "Choose the promotion model first, then complete only the fields that apply to that pricing rule.": "Choose the promotion model first, then complete only the fields that apply to that pricing rule.",
     "Eligibility": "Eligibility",
     "Please review the promotion details:": "Please review the promotion details:",
-    "Save failed because of an unexpected problem. Your changes were not saved. Please try again.": "Save failed because of an unexpected problem. Your changes were not saved. Please try again."
+    "Save failed because of an unexpected problem. Your changes were not saved. Please try again.": "Save failed because of an unexpected problem. Your changes were not saved. Please try again.",
+    "Repeat buyers": "Repeat buyers",
+    "Customers with two or more orders.": "Customers with two or more orders.",
+    "Customer revenue": "Customer revenue",
+    "Gross order value linked to registered accounts.": "Gross order value linked to registered accounts.",
+    "Review acquisition, repeat purchasing, customer value, and account access from one workspace.": "Review acquisition, repeat purchasing, customer value, and account access from one workspace.",
+    "Customer value": "Customer value",
+    "All customer values": "All customer values",
+    "Highest spend first": "Highest spend first"
 }
