@@ -2038,5 +2038,13 @@
   "Simple products at threshold": "Simple products at threshold",
   "Click to review products at threshold": "Click to review products at threshold",
   "All stock levels": "All stock levels",
-  "Click to review unavailable products": "Click to review unavailable products"
+  "Click to review unavailable products": "Click to review unavailable products",
+  "Please select at least one product.": "Please select at least one product.",
+  "No matching products were found.": "No matching products were found.",
+  ":count selected product(s) activated; :needs still need content review.": ":count selected product(s) activated; :needs still need content review.",
+  ":count selected product(s) activated.": ":count selected product(s) activated.",
+  ":count selected product(s) hidden.": ":count selected product(s) hidden.",
+  "Activate selected products on the storefront?": "Activate selected products on the storefront?",
+  "Hide selected products from the storefront?": "Hide selected products from the storefront?",
+  "Are you sure you want to permanently delete the selected products?": "Are you sure you want to permanently delete the selected products?"
 }
