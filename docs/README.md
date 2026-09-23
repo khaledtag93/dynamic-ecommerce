@@ -10,6 +10,7 @@ The documentation is a living reference for the V42 application and release proc
 | --- | --- | --- |
 | Current version, environment state, release blockers | [Master project status](../PROJECT_MASTER_STATUS.md) | Update this with every code or deployment batch. It is the primary current-state record. |
 | Scope, severity, source evidence, acceptance criteria | [Full project audit](FULL_PROJECT_AUDIT_2026-09-23.md) | Findings are a dated baseline; read the current-status note at its top before using an older statement. |
+| Expanded product direction and implementation sequence | [Product roadmap](PRODUCT_ROADMAP_2026-09-24.md) | Tracks UI/UX, POS, barcode, invoices, workforce and delivery expansion as phased future work. |
 | Admin screens and customer journeys | [UI/UX and commercial-readiness review](UI_UX_AND_COMMERCIAL_READINESS_REVIEW_2026-09-23.md) | Use its screen-by-screen acceptance checks for focused QAS reviews. |
 | Admin daily-work QAS tasks | [Admin UX QAS checklist](ADMIN_UX_QAS_CHECKLIST.md) | Record authenticated Arabic/English desktop/mobile evidence against the exact application commit. |
 | Exact release and rollback procedure | [Production deploy](PRODUCTION_DEPLOY.md), [release checklist](RELEASE_CHECKLIST.md), [QAS checklist](QA_CHECKLIST.md) | Follow the exact-commit CI → QAS → visual review → Production dry-run/deploy sequence. |
