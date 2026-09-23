@@ -149,6 +149,73 @@ class AdminProductEditorExperienceTest extends TestCase
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
 
+    public function test_bulk_activation_keeps_current_visibility_rules_and_warns_for_incomplete_content(): void
+    {
+        $category = $this->createCategory('Bulk Visibility', 'bulk-visibility');
+
+        $first = Product::create([
+            'name' => 'Incomplete One',
+            'slug' => 'incomplete-one',
+            'category_id' => $category->id,
+            'base_price' => 10,
+            'quantity' => 1,
+            'stock_status' => 'in_stock',
+            'status' => 0,
+        ]);
+
+        $second = Product::create([
+            'name' => 'Incomplete Two',
+            'slug' => 'incomplete-two',
+            'category_id' => $category->id,
+            'base_price' => 20,
+            'quantity' => 1,
+            'stock_status' => 'in_stock',
+            'status' => 0,
+        ]);
+
+        Livewire::test(ProductIndex::class)
+            ->set('selectedProducts', [$first->id, $second->id])
+            ->call('bulkSetStatus', true)
+            ->assertSessionHas('warning');
+
+        $this->assertTrue((bool) $first->fresh()->status);
+        $this->assertTrue((bool) $second->fresh()->status);
+        $this->assertStringContainsString('2', (string) session('warning'));
+    }
+
+    public function test_bulk_hide_only_updates_selected_products(): void
+    {
+        $category = $this->createCategory('Bulk Hide', 'bulk-hide');
+
+        $selected = Product::create([
+            'name' => 'Selected Active',
+            'slug' => 'selected-active',
+            'category_id' => $category->id,
+            'base_price' => 10,
+            'quantity' => 1,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+
+        $untouched = Product::create([
+            'name' => 'Untouched Active',
+            'slug' => 'untouched-active',
+            'category_id' => $category->id,
+            'base_price' => 20,
+            'quantity' => 1,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+
+        Livewire::test(ProductIndex::class)
+            ->set('selectedProducts', [$selected->id])
+            ->call('bulkSetStatus', false)
+            ->assertSessionHas('message');
+
+        $this->assertFalse((bool) $selected->fresh()->status);
+        $this->assertTrue((bool) $untouched->fresh()->status);
+    }
+
     private function createCategory(string $name, string $slug): Category
     {
         return Category::create([
