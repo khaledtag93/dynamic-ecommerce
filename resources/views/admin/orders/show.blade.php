@@ -53,7 +53,7 @@
                 <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
                     <div>
                         <h4 class="mb-1">{{ __('Items') }}</h4>
-                        <div class="text-muted small">{{ $order->items->count() }} item(s) included in this order.</div>
+                        <div class="text-muted small">{{ trans_choice(':count item included in this order.|:count items included in this order.', $order->items->count(), ['count' => $order->items->count()]) }}</div>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         <span class="badge admin-status-badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
@@ -153,7 +153,7 @@
                                     <strong>{{ $refund->reason }}</strong>
                                     <strong>EGP {{ number_format($refund->amount, 2) }}</strong>
                                 </div>
-                                <div class="text-muted small">Processed {{ optional($refund->processed_at)->format('d M Y, h:i A') }}{{ $refund->processedBy ? ' by ' . $refund->processedBy->name : '' }}</div>
+                                <div class="text-muted small">{{ __('Processed :date', ['date' => optional($refund->processed_at)->format('d M Y, h:i A')]) }}@if($refund->processedBy) · {{ __('By :name', ['name' => $refund->processedBy->name]) }}@endif</div>
                                 @if($refund->notes)<div class="text-muted small mt-2">{{ $refund->notes }}</div>@endif
                             </div>
                         @endforeach
@@ -202,6 +202,9 @@
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between fs-5"><span class="fw-bold">{{ __('Grand Total') }}</span><span class="fw-bold">EGP {{ number_format($order->grand_total, 2) }}</span></div>
+                @if((float) $order->refund_total > 0)
+                    <div class="d-flex justify-content-between mt-2"><span class="text-muted">{{ __('Net after refunds') }}</span><strong>EGP {{ number_format(max(0, (float) $order->grand_total - (float) $order->refund_total), 2) }}</strong></div>
+                @endif
                 @if($order->notes)
                     <hr>
                     <div class="admin-inline-label">{{ __('Customer notes') }}</div>
@@ -226,7 +229,7 @@
                         </select>
                         <div class="section-note">{{ __('Allowed flow: Pending → Processing → Completed. Cancel can happen before completion.') }}</div>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 btn-text-icon justify-content-center" data-loading-text="Saving..."><i class="mdi mdi-check-circle-outline"></i><span>{{ __('Save status') }}</span></button>
+                    <button type="submit" class="btn btn-primary w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-check-circle-outline"></i><span>{{ __('Save status') }}</span></button>
                 </form>
             </div>
         </div>
@@ -295,7 +298,10 @@
         <div class="admin-card mb-4" id="order-refund">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Refund') }}</h4>
-                <div class="text-muted small mb-3">{{ __('Refundable balance') }}: <strong>EGP {{ number_format($order->refundable_balance, 2) }}</strong></div>
+                <div class="admin-refund-balance mb-3">
+                    <div><span class="text-muted small">{{ __('Refundable balance') }}</span><div class="fw-bold fs-5">EGP {{ number_format($order->refundable_balance, 2) }}</div></div>
+                    @if((float) $order->refund_total > 0)<span class="badge badge-soft-warning">{{ __('Already refunded') }}: EGP {{ number_format($order->refund_total, 2) }}</span>@endif
+                </div>
                 @if($order->canBeRefunded())
                     @if($can('orders.manage'))
                     <form method="POST" action="{{ route('admin.orders.refund', $order) }}" data-submit-loading>
@@ -306,13 +312,13 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">{{ __('Reason') }}</label>
-                            <input type="text" name="reason" class="form-control" value="{{ old('reason') }}" placeholder="{{ __('Refund') }} reason">
+                            <input type="text" name="reason" class="form-control" value="{{ old('reason') }}" placeholder="{{ __('Refund reason') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">{{ __('Notes') }}</label>
                             <textarea name="notes" rows="3" class="form-control" placeholder="{{ __('Optional refund notes') }}">{{ old('notes') }}</textarea>
                         </div>
-                        <button type="submit" class="btn btn-light border w-100 btn-text-icon justify-content-center" data-loading-text="Recording..."><i class="mdi mdi-cash-refund"></i><span>{{ __('Record refund') }}</span></button>
+                        <button type="submit" class="btn btn-light border w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Recording...') }}"><i class="mdi mdi-cash-refund"></i><span>{{ __('Record refund') }}</span></button>
                     </form>
                     @endif
                 @else
@@ -331,6 +337,7 @@
 
 @push('styles')
 <style>
+.admin-refund-balance { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; padding:1rem; border:1px solid var(--admin-border); border-radius:1rem; background:var(--admin-surface); }
 .admin-order-jump { display: flex; gap: .5rem; overflow-x: auto; margin-bottom: 1.25rem; padding-bottom: .25rem; scrollbar-width: thin; }
 .admin-order-jump a { flex: 0 0 auto; padding: .6rem .9rem; border: 1px solid var(--admin-border); border-radius: 999px; background: var(--admin-surface); color: var(--admin-text); text-decoration: none; font-weight: 700; font-size: .87rem; }
 .admin-order-jump a:hover, .admin-order-jump a:focus-visible { color: var(--admin-primary-dark); border-color: var(--admin-primary); }
