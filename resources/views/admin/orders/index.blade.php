@@ -11,6 +11,8 @@
             'status' => $filters['status'] ?? null,
             'payment_status' => $filters['payment_status'] ?? null,
             'payment_method' => $filters['payment_method'] ?? null,
+            'queue' => $filters['queue'] ?? null,
+            'per_page' => $filters['per_page'] ?? 12,
             'sort' => $column,
             'direction' => $sort === $column && $direction === 'asc' ? 'desc' : 'asc',
         ], fn ($value) => $value !== null && $value !== '');
@@ -63,6 +65,22 @@
 
 <div class="admin-card mb-4">
     <div class="admin-card-body">
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3">
+            <div>
+                <h4 class="mb-1">{{ __('Order operations') }}</h4>
+                <p class="text-muted small mb-0">{{ __('Jump directly into orders that need operational attention.') }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('admin.orders.index', ['queue' => 'action']) }}" class="btn {{ $filters['queue'] === 'action' ? 'btn-primary' : 'btn-light border' }} btn-sm btn-text-icon"><i class="mdi mdi-progress-alert"></i><span>{{ __('Needs action') }} · {{ $stats['needs_action'] }}</span></a>
+                <a href="{{ route('admin.orders.index', ['queue' => 'unpaid']) }}" class="btn {{ $filters['queue'] === 'unpaid' ? 'btn-primary' : 'btn-light border' }} btn-sm btn-text-icon"><i class="mdi mdi-cash-remove"></i><span>{{ __('Payment attention') }} · {{ $stats['unpaid'] }}</span></a>
+                <a href="{{ route('admin.orders.index', ['queue' => 'refunds']) }}" class="btn {{ $filters['queue'] === 'refunds' ? 'btn-primary' : 'btn-light border' }} btn-sm btn-text-icon"><i class="mdi mdi-cash-refund"></i><span>{{ __('Refund activity') }} · {{ $stats['with_refunds'] }}</span></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card mb-4">
+    <div class="admin-card-body">
         <form method="GET" data-submit-loading class="admin-filter-grid">
             <div>
                 <label class="form-label fw-semibold">{{ __('Search') }}</label>
@@ -95,6 +113,15 @@
                     @endforeach
                 </select>
             </div>
+            <input type="hidden" name="queue" value="{{ $filters['queue'] }}">
+            <div>
+                <label class="form-label fw-semibold">{{ __('Per page') }}</label>
+                <select name="per_page" class="form-select">
+                    @foreach([12, 24, 48] as $size)
+                        <option value="{{ $size }}" @selected((int) $filters['per_page'] === $size)>{{ $size }}</option>
+                    @endforeach
+                </select>
+            </div>
             <input type="hidden" name="sort" value="{{ $sort }}">
             <input type="hidden" name="direction" value="{{ $direction }}">
             <div class="admin-filter-actions admin-filter-actions-wide">
@@ -113,7 +140,7 @@
                 <div class="text-muted small">{{ __('Showing :count order(s) on this page.', ['count' => $orders->count()]) }}</div>
             </div>
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                @if($filters['status'] || $filters['payment_status'] || $filters['payment_method'] || $filters['search'])
+                @if($filters['status'] || $filters['payment_status'] || $filters['payment_method'] || $filters['search'] || $filters['queue'])
                     <span class="admin-chip">{{ __('Filtered results') }}</span>
                 @endif
                 <a href="{{ route('admin.coupons.index') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-ticket-percent-outline"></i><span>{{ __('Coupons') }}</span></a>
