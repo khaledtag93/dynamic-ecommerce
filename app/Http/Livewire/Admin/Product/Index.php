@@ -23,6 +23,7 @@ class Index extends Component
     public $statusFilter = '';
     public $categoryFilter = '';
     public $brandFilter = '';
+    public $readinessFilter = '';
     public $perPage = 10;
 
     // Sorting
@@ -53,6 +54,7 @@ class Index extends Component
         'statusFilter' => ['except' => ''],
         'categoryFilter' => ['except' => ''],
         'brandFilter' => ['except' => ''],
+        'readinessFilter' => ['except' => ''],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10],
@@ -92,6 +94,12 @@ class Index extends Component
         $this->resetSelection();
     }
 
+    public function updatingReadinessFilter()
+    {
+        $this->resetPage();
+        $this->resetSelection();
+    }
+
     public function updatingPerPage()
     {
         $this->resetPage();
@@ -105,6 +113,7 @@ class Index extends Component
             'statusFilter',
             'categoryFilter',
             'brandFilter',
+            'readinessFilter',
             'perPage',
         ]);
 
@@ -568,6 +577,38 @@ class Index extends Component
         });
     }
 
+    protected function applyReadinessFilter($query): void
+    {
+        if ($this->readinessFilter === 'needs_attention') {
+            $query->where(function ($innerQuery) {
+                $innerQuery->whereNull('description')
+                    ->orWhere('description', '')
+                    ->orWhere(function ($identifierQuery) {
+                        $identifierQuery->where(function ($skuQuery) {
+                            $skuQuery->whereNull('sku')->orWhere('sku', '');
+                        })->where(function ($barcodeQuery) {
+                            $barcodeQuery->whereNull('barcode')->orWhere('barcode', '');
+                        });
+                    })
+                    ->orWhereDoesntHave('productImages');
+            });
+
+            return;
+        }
+
+        if ($this->readinessFilter === 'ready') {
+            $query->whereNotNull('description')
+                ->where('description', '!=', '')
+                ->where(function ($identifierQuery) {
+                    $identifierQuery->whereNotNull('sku')->where('sku', '!=', '')
+                        ->orWhere(function ($barcodeQuery) {
+                            $barcodeQuery->whereNotNull('barcode')->where('barcode', '!=', '');
+                        });
+                })
+                ->whereHas('productImages');
+        }
+    }
+
     protected function productsQuery()
     {
         return Product::query()
@@ -587,7 +628,8 @@ class Index extends Component
             })
             ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
-            ->when($this->brandFilter, fn ($q) => $q->where('brand_id', $this->brandFilter));
+            ->when($this->brandFilter, fn ($q) => $q->where('brand_id', $this->brandFilter))
+            ->when($this->readinessFilter !== '', fn ($q) => $this->applyReadinessFilter($q));
     }
 
     public function render()
