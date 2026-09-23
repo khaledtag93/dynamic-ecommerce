@@ -333,7 +333,7 @@
                     <div>
                         <div class="fw-bold">{{ __('Publish readiness') }}</div>
                         <div class="text-muted small" id="productReadinessSummary">
-                            {{ __('Complete the core product information, then review the recommended storefront details.') }}
+                            {{ __('Active products must complete every required item below. Inactive products can be saved safely as drafts.') }}
                         </div>
                     </div>
                 </div>
@@ -359,13 +359,13 @@
                 <button type="button" class="product-readiness-check" data-readiness-key="pricing" data-required="1" data-readiness-section="pricing">
                     <i class="mdi mdi-circle-outline"></i><span>{{ __('Pricing') }}</span>
                 </button>
-                <button type="button" class="product-readiness-check" data-readiness-key="description" data-required="0" data-readiness-section="details">
+                <button type="button" class="product-readiness-check" data-readiness-key="description" data-required="1" data-readiness-section="details">
                     <i class="mdi mdi-circle-outline"></i><span>{{ __('Description') }}</span>
                 </button>
-                <button type="button" class="product-readiness-check" data-readiness-key="image" data-required="0" data-readiness-section="images">
+                <button type="button" class="product-readiness-check" data-readiness-key="image" data-required="1" data-readiness-section="images">
                     <i class="mdi mdi-circle-outline"></i><span>{{ __('Product image') }}</span>
                 </button>
-                <button type="button" class="product-readiness-check" data-readiness-key="identifier" data-required="0" data-readiness-section="details">
+                <button type="button" class="product-readiness-check" data-readiness-key="identifier" data-required="1" data-readiness-section="details">
                     <i class="mdi mdi-circle-outline"></i><span>{{ __('SKU / Barcode') }}</span>
                 </button>
                 <button type="button" class="product-readiness-check" data-readiness-key="seo" data-required="0" data-readiness-section="seo">
@@ -532,7 +532,7 @@
                                     <option value="1">{{ __('Active — visible on storefront') }}</option>
                                     <option value="0">{{ __('Inactive — hidden from storefront') }}</option>
                                 </select>
-                                <div class="form-text">{{ __('Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.') }}</div>
+                                <div class="form-text">{{ __('Inactive works as a draft. Active products must pass the required publish-readiness checks before they can be saved to the storefront.') }}</div>
                                 @error('status') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
@@ -1408,7 +1408,9 @@
 
                 if (summary) {
                     if (missingRequired > 0) {
-                        summary.textContent = @json(__('Complete the required product information before saving.'));
+                        summary.textContent = status === '1'
+                            ? @json(__('Complete the required items before publishing this product.'))
+                            : @json(__('Draft can be saved now. Complete the required items before publishing.'));
                     } else if (readyCount < total) {
                         summary.textContent = @json(__('Core information is ready. Complete the recommended details before publishing.'));
                     } else {
