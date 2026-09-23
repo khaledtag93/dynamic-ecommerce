@@ -3085,5 +3085,12 @@
     "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "تنقل بسرعة بين الطلبات التي تنتظر الشحن والشحنات قيد التوصيل وحالات التوصيل الاستثنائية.",
     "Paid amount": "المبلغ المدفوع",
     "Payment operations": "عمليات المدفوعات",
-    "Review payment exceptions, pending records, and successful collections from one finance workspace.": "راجع مشكلات المدفوعات والعمليات المعلقة والتحصيلات الناجحة من مساحة مالية واحدة."
+    "Review payment exceptions, pending records, and successful collections from one finance workspace.": "راجع مشكلات المدفوعات والعمليات المعلقة والتحصيلات الناجحة من مساحة مالية واحدة.",
+    "Gateway verification": "التحقق من بوابة الدفع",
+    "Verified": "تم التحقق",
+    "Not available": "غير متاح",
+    "Manual status changes affect the financial record and should match verified payment evidence.": "التغييرات اليدوية للحالة تؤثر على السجل المالي ويجب أن تتطابق مع دليل دفع تم التحقق منه.",
+    "Check the provider or transaction evidence before marking a payment as paid or failed.": "تحقق من بيانات مزود الدفع أو دليل المعاملة قبل تحديد العملية كمدفوعة أو فاشلة.",
+    "Technical payment evidence for troubleshooting and reconciliation.": "بيانات الدفع التقنية المستخدمة للتحقق من المشكلات والمطابقة المالية.",
+    "Verification unavailable": "التحقق غير متاح"
 }
