@@ -90,7 +90,7 @@ class PromotionController extends Controller
 
     protected function validated(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::in(['order_percentage', 'order_fixed', 'category_percentage', 'buy_x_get_y'])],
             'discount_value' => [
@@ -103,7 +103,11 @@ class PromotionController extends Controller
                     }
                 },
             ],
-            'category_id' => ['nullable', 'exists:categories,id'],
+            'category_id' => [
+                Rule::requiredIf($request->input('type') === 'category_percentage'),
+                'nullable',
+                'exists:categories,id',
+            ],
             'buy_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
             'get_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
             'min_subtotal' => ['nullable', 'numeric', 'min:0'],
@@ -111,6 +115,26 @@ class PromotionController extends Controller
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'is_active' => ['nullable', 'boolean'],
-        ]) + ['is_active' => $request->boolean('is_active')];
+        ]);
+
+        $type = (string) $validated['type'];
+
+        if (! in_array($type, ['category_percentage', 'buy_x_get_y'], true)) {
+            $validated['category_id'] = null;
+        }
+
+        if ($type !== 'buy_x_get_y') {
+            $validated['buy_quantity'] = null;
+            $validated['get_quantity'] = null;
+        }
+
+        if ($type === 'buy_x_get_y') {
+            $validated['discount_value'] = 0;
+        }
+
+        $validated['priority'] = (int) ($validated['priority'] ?? 0);
+        $validated['is_active'] = $request->boolean('is_active');
+
+        return $validated;
     }
 }
