@@ -3092,5 +3092,13 @@
     "Manual status changes affect the financial record and should match verified payment evidence.": "التغييرات اليدوية للحالة تؤثر على السجل المالي ويجب أن تتطابق مع دليل دفع تم التحقق منه.",
     "Check the provider or transaction evidence before marking a payment as paid or failed.": "تحقق من بيانات مزود الدفع أو دليل المعاملة قبل تحديد العملية كمدفوعة أو فاشلة.",
     "Technical payment evidence for troubleshooting and reconciliation.": "بيانات الدفع التقنية المستخدمة للتحقق من المشكلات والمطابقة المالية.",
-    "Verification unavailable": "التحقق غير متاح"
+    "Verification unavailable": "التحقق غير متاح",
+    "Running now": "يعمل الآن",
+    "Active promotions currently inside their schedule.": "عروض نشطة وتقع حاليًا داخل فترة تشغيلها.",
+    "Upcoming": "قادمة",
+    "Scheduled promotions that have not started yet.": "عروض مجدولة لم يبدأ وقت تشغيلها بعد.",
+    "Promotion schedules that have already ended.": "عروض انتهت فترة تشغيلها بالفعل.",
+    "Promotion schedule": "جدولة العروض",
+    "Separate live campaigns from upcoming and expired rules before changing pricing behavior.": "افصل الحملات العاملة عن العروض القادمة والمنتهية قبل تعديل سلوك التسعير.",
+    "All schedules": "كل الجداول"
 }
