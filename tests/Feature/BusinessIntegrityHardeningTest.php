@@ -225,6 +225,73 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
     }
 
+    public function test_manual_payment_transition_matrix_blocks_invalid_regressions(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_AUTHORIZED);
+
+        try {
+            app(PaymentService::class)->updateStatus($payment, Payment::STATUS_PENDING);
+            $this->fail('Authorized payment should not regress to pending manually.');
+        } catch (ValidationException) {
+            // Expected.
+        }
+
+        $this->assertSame(Payment::STATUS_AUTHORIZED, $payment->fresh()->status);
+
+        app(PaymentService::class)->updateStatus($payment->fresh(), Payment::STATUS_PAID);
+
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+    }
+
+    public function test_replayed_gateway_callback_is_idempotent(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PENDING);
+        $service = app(PaymentService::class);
+
+        $context = [
+            'transaction_id' => 'PAYMOB-TXN-1001',
+            'provider_status' => 'pending',
+            'hmac_valid' => true,
+        ];
+
+        $service->markAsPending($payment, $context);
+        $first = $payment->fresh();
+        $firstEvents = count(data_get($first->meta, 'events', []));
+
+        $service->markAsPending($first, $context);
+        $second = $payment->fresh();
+
+        $this->assertSame($firstEvents, count(data_get($second->meta, 'events', [])));
+        $this->assertSame('PAYMOB-TXN-1001', data_get($second->meta, 'last_gateway_transition.transaction_id'));
+        $this->assertSame(Payment::STATUS_PENDING, $second->status);
+    }
+
+    public function test_paid_gateway_confirmation_is_terminal_against_late_failure(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PENDING);
+        $service = app(PaymentService::class);
+
+        $service->markAsPaid($payment, [
+            'transaction_id' => 'PAYMOB-TXN-PAID',
+            'provider_status' => 'paid',
+            'hmac_valid' => true,
+        ]);
+
+        $service->markAsFailed($payment->fresh(), [
+            'transaction_id' => 'PAYMOB-TXN-LATE-FAIL',
+            'provider_status' => 'declined',
+            'hmac_valid' => true,
+        ]);
+
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame('PAYMOB-TXN-PAID', $payment->fresh()->transaction_reference);
+    }
+
     public function test_refund_ledger_remains_authoritative_during_payment_sync(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
