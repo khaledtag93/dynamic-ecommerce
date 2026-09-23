@@ -321,3 +321,24 @@ Security/release note:
 - Admin UX implementation order: section the Livewire product form while preserving its state/save behavior; focus order-detail actions; separate branding workspaces; shorten the dashboard's default operator view. Growth already provides an example of focused subpages. Admin visual/mobile behavior still needs authenticated QAS review.
 - Before real commercial traffic, close public-content/trust and authorization gates; then implement search, honest shipping/tax totals and unpaid-order stock lifecycle. Measure search, checkout, payment, fulfillment, support and Web Vitals against non-demo baselines rather than assuming a design change guarantees sales.
 - This addendum is documentation only. No application code, QAS, Production, database, payment configuration, or public content was changed by the review. The cleanup commit `41a2f99` remains not recorded as deployed; `main` remains on the older baseline until separately reconciled.
+
+
+## Admin Commerce Operations V2 — 2026-09-24
+The current `v42-clean-baseline` branch now includes a broad operational-admin pass across the commercial back office. This work is branch-level only unless a later deployment checkpoint explicitly says otherwise.
+
+- **Catalog / Products:** operational filters, readiness and inventory queues, catalog health KPIs, guarded delete flows, inline simple-product editing, featured controls, saved views, and advisory content readiness. Product activation intentionally remains non-blocking while retail/barcode/variant policy is finalized.
+- **Categories / Brands / Attributes:** usage and content-coverage filters, guarded destructive actions, improved editor workspaces, and attribute-value operational visibility. Attribute-value scoped editing and in-use rename integrity remain follow-up items.
+- **Orders / Inventory / Purchases / Suppliers:** action queues, financial and inventory context, improved procurement/supplier workspaces, bilingual UI coverage, and safer operational presentation. Purchase receive idempotency/transaction semantics and deeper order transition/refund tests remain release-hardening work.
+- **Customers:** retention workspace with buyer/no-order/repeat/high-value views, customer revenue context, net spend and average-order detail metrics, and improved account/access presentation.
+- **Coupons / Promotions:** promotion operations queues and builder UX, percentage validation, schedule visibility, real PromotionEngine regression coverage, required category targeting for category-percentage rules, and normalization that clears stale fields when promotion type changes.
+- **Deliveries / Payments:** action/exception queues and reconciliation-oriented detail UI. Delivery transition rules and payment transition/idempotency hardening remain explicit follow-up items.
+- **Localization:** English and Arabic strings were expanded across the touched admin workspaces; touched legacy screens should continue to be checked for untranslated strings during each subsequent batch.
+- **Current CI note:** automatic-promotion tests are passing. The branch CI is not yet green because `AdminProductEditorExperienceTest` still exposes two ProductForm save exceptions plus two Livewire feedback/session assertions. A testing-only diagnostic change now rethrows the underlying ProductForm exception so the next CI run can expose the root cause without changing Production behavior.
+
+### Next hardening sequence
+1. Resolve the ProductForm CI root cause and normalize the Livewire feedback assertions; require a verified green pipeline before calling this batch complete.
+2. Harden Attribute Value scoped edit/rename behavior.
+3. Harden payment and delivery state transitions/idempotency.
+4. Verify purchase receiving transaction/idempotency behavior.
+5. Continue the planned Settings/branding/colors UX overhaul, then employee/POS/barcode/invoice-printing modules as separate coherent product batches.
+
