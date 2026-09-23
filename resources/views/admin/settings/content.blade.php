@@ -8,11 +8,21 @@
 <div class="admin-page-shell settings-page">
 <div class="admin-card">
     <div class="admin-card-body">
-        <form class="admin-form-shell" method="POST" action="{{ route('admin.settings.content.update') }}">
+        <form class="admin-form-shell" method="POST" action="{{ route('admin.settings.content.update') }}" data-admin-section-tabs="store-content" data-admin-error-fields="{{ json_encode($errors->keys()) }}">
             @csrf
             @method('PUT')
 
-            <div class="row g-4 mb-4 admin-settings-section">
+            <x-admin.section-tabs id="content" :sections="[
+                'contact' => __('Contact page'),
+                'checkout' => __('Checkout trust content'),
+                'cancellation' => __('Customer cancellation'),
+                'privacy' => __('Privacy Policy'),
+                'terms' => __('Terms & Conditions'),
+                'refund' => __('Refund Policy'),
+                'shipping' => __('Shipping Policy'),
+            ]" />
+
+            <div class="row g-4 mb-4 admin-settings-section" id="content-panel-contact" role="tabpanel" aria-labelledby="content-tab-contact" data-admin-section-panel="contact">
                 <div class="col-12"><h4 class="mb-0">{{ __('Contact page') }}</h4></div>
                 <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Page title') }}</label><input class="form-control" name="contact_page_title" value="{{ old('contact_page_title', $settings['contact_page_title'] ?? '') }}"></div>
                 <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Page subtitle') }}</label><input class="form-control" name="contact_page_subtitle" value="{{ old('contact_page_subtitle', $settings['contact_page_subtitle'] ?? '') }}"></div>
@@ -30,7 +40,7 @@
                 @endforeach
             </div>
 
-            <div class="row g-4 mb-4 admin-settings-section">
+            <div class="row g-4 mb-4 admin-settings-section" id="content-panel-checkout" role="tabpanel" aria-labelledby="content-tab-checkout" data-admin-section-panel="checkout">
                 <div class="col-12"><h4 class="mb-0">{{ __('Checkout trust content') }}</h4></div>
                 <div class="col-12"><label class="form-label fw-semibold">{{ __('Support note') }}</label><textarea class="form-control" rows="3" name="checkout_support_note">{{ old('checkout_support_note', $settings['checkout_support_note'] ?? '') }}</textarea></div>
                 <div class="col-12"><label class="form-label fw-semibold">{{ __('Secure checkout notice') }}</label><textarea class="form-control" rows="3" name="checkout_secure_notice">{{ old('checkout_secure_notice', $settings['checkout_secure_notice'] ?? '') }}</textarea></div>
@@ -39,14 +49,14 @@
                 <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Online payment note') }}</label><textarea class="form-control" rows="4" name="checkout_online_note">{{ old('checkout_online_note', $settings['checkout_online_note'] ?? '') }}</textarea></div>
             </div>
 
-            <div class="row g-4 mb-4 admin-settings-section">
+            <div class="row g-4 mb-4 admin-settings-section" id="content-panel-cancellation" role="tabpanel" aria-labelledby="content-tab-cancellation" data-admin-section-panel="cancellation">
                 <div class="col-12"><h4 class="mb-0">{{ __('Customer cancellation') }}</h4></div>
                 <div class="col-md-4"><label class="form-check admin-switch-card h-100 d-block p-3 rounded-4 border"><input type="checkbox" class="form-check-input me-2" name="orders_allow_customer_cancellation" value="1" @checked(($settings['orders_allow_customer_cancellation'] ?? '1') === '1')><span class="fw-bold">{{ __('Allow customer cancellation') }}</span></label></div>
                 <div class="col-md-8"><label class="form-label fw-semibold">{{ __('Cancellation note') }}</label><textarea class="form-control" rows="3" name="orders_customer_cancellation_note">{{ old('orders_customer_cancellation_note', $settings['orders_customer_cancellation_note'] ?? '') }}</textarea></div>
             </div>
 
             @foreach(['privacy' => __('Privacy Policy'),'terms' => __('Terms & Conditions'),'refund' => __('Refund Policy'),'shipping' => __('Shipping Policy')] as $key => $label)
-                <div class="row g-4 mb-4 admin-settings-section">
+                <div class="row g-4 mb-4 admin-settings-section" id="content-panel-{{ $key }}" role="tabpanel" aria-labelledby="content-tab-{{ $key }}" data-admin-section-panel="{{ $key }}">
                     <div class="col-12"><h4 class="mb-0">{{ $label }}</h4></div>
                     <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Title') }}</label><input class="form-control" name="legal_{{ $key }}_title" value="{{ old('legal_'.$key.'_title', $settings['legal_'.$key.'_title'] ?? '') }}"></div>
                     <div class="col-12"><label class="form-label fw-semibold">{{ __('Intro') }}</label><textarea class="form-control" rows="3" name="legal_{{ $key }}_intro">{{ old('legal_'.$key.'_intro', $settings['legal_'.$key.'_intro'] ?? '') }}</textarea></div>

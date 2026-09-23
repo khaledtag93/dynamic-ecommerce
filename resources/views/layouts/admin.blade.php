@@ -2703,6 +2703,19 @@ select option {
                 padding-inline: .9rem !important;
             }
         }
+
+        .admin-section-nav { display: none; margin: 0 0 1.5rem; }
+        .admin-sections-ready .admin-section-nav { display: block; }
+        .admin-section-tabs { display: flex; gap: .5rem; overflow-x: auto; padding: .35rem; border: 1px solid var(--admin-border); border-radius: 1rem; background: var(--admin-surface); scrollbar-width: thin; }
+        .admin-section-tab { flex: 0 0 auto; border: 0; border-radius: .75rem; padding: .75rem 1rem; background: transparent; color: var(--admin-muted); font-weight: 700; white-space: nowrap; }
+        .admin-section-tab:hover { color: var(--admin-text); background: var(--admin-primary-soft); }
+        .admin-section-tab[aria-selected="true"] { color: var(--admin-primary-dark); background: var(--admin-primary-soft); box-shadow: inset 0 0 0 1px var(--admin-border); }
+        .admin-section-tab:focus-visible { outline: 3px solid var(--admin-primary); outline-offset: -3px; }
+        .admin-sections-ready [data-admin-section-panel][hidden] { display: none !important; }
+        .admin-sections-ready .admin-section-columns > [hidden] { display: none !important; }
+        .admin-sections-ready .admin-section-columns > [class*="col-"] { width: 100%; }
+        .admin-sections-ready .admin-section-columns [data-admin-section-panel] { margin-bottom: 0 !important; }
+        @media (max-width: 767.98px) { .admin-section-tabs { margin-inline: -.25rem; } .admin-section-tab { padding: .7rem .85rem; } }
 </style>
 
     @livewireStyles
@@ -2788,6 +2801,7 @@ select option {
     <script src="{{ asset('admin/js/todolist.js') }}"></script>
     <script src="{{ asset('admin/js/dashboard.js') }}"></script>
     <script src="{{ asset('admin/js/proBanner.js') }}"></script>
+    <script src="{{ asset('admin/js/admin-section-tabs.js') }}"></script>
 
     @livewireScripts
     @stack('scripts')

@@ -4,6 +4,7 @@
 
 @section('content')
 @php
+    $can = fn (string $permission): bool => auth()->user()?->hasPermission($permission) ?? false;
     $steps = [
         ['title' => __('Pending'), 'copy' => __('Order created and waiting for review.')],
         ['title' => __('Processing'), 'copy' => __('Items are being prepared and checked.')],
@@ -21,24 +22,33 @@
     <a href="{{ route('admin.orders.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to orders') }}</span></a>
 </x-admin.page-header>
 
+<nav class="admin-order-jump" aria-label="{{ __('Page sections') }}">
+    <a href="#order-items">{{ __('Items') }}</a>
+    <a href="#order-customer">{{ __('Customer & Shipping') }}</a>
+    <a href="#order-summary">{{ __('Order Summary') }}</a>
+    @if($can('payments.view'))<a href="#order-payment">{{ __('Payment record') }}</a>@endif
+    @if($can('delivery.view'))<a href="#delivery-card">{{ __('Delivery') }}</a>@endif
+    <a href="#order-refund">{{ __('Refund') }}</a>
+</nav>
+
 <div class="row g-4 mb-4">
-    <div class="col-md-4">
+    <div class="col-sm-6 col-xl-3">
         <div class="admin-card"><div class="admin-card-body"><div class="admin-inline-label">{{ __('Order status') }}</div><span class="badge admin-status-badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span></div></div>
     </div>
-    <div class="col-md-4">
+    <div class="col-sm-6 col-xl-3">
         <div class="admin-card"><div class="admin-card-body"><div class="admin-inline-label">{{ __('Payment status') }}</div><span class="badge admin-status-badge {{ $order->payment_status_badge_class }}">{{ $order->payment_status_label }}</span></div></div>
     </div>
-    <div class="col-md-3">
+    <div class="col-sm-6 col-xl-3">
         <div class="admin-card"><div class="admin-card-body"><div class="admin-inline-label">{{ __('Payment method') }}</div><div class="fw-bold fs-4">{{ $order->payment_method_label }}</div></div></div>
     </div>
-    <div class="col-md-3">
+    <div class="col-sm-6 col-xl-3">
         <div class="admin-card"><div class="admin-card-body"><div class="admin-inline-label">{{ __('Delivery status') }}</div><span class="badge admin-status-badge {{ $order->delivery_status_badge_class }}">{{ $order->delivery_status_label }}</span></div></div>
     </div>
 </div>
 
 <div class="row g-4">
     <div class="col-xl-8">
-        <div class="admin-card mb-4">
+        <div class="admin-card mb-4" id="order-items">
             <div class="admin-card-body">
                 <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
                     <div>
@@ -95,7 +105,7 @@
             </div>
         </div>
 
-        <div class="admin-card mb-4">
+        <div class="admin-card mb-4" id="order-customer">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Customer & Shipping') }}</h4>
                 <div class="row g-4">
@@ -154,7 +164,7 @@
     </div>
 
     <div class="col-xl-4">
-        <div class="admin-card admin-card-sticky mb-4">
+        <div class="admin-card mb-4" id="order-summary">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Order flow') }}</h4>
                 @if($order->status === \App\Models\Order::STATUS_CANCELLED)
@@ -200,6 +210,7 @@
             </div>
         </div>
 
+        @if($can('orders.manage'))
         <div class="admin-card mb-4">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Update Status') }}</h4>
@@ -219,8 +230,10 @@
                 </form>
             </div>
         </div>
+        @endif
 
-        <div class="admin-card mb-4">
+        @if($can('payments.view'))
+        <div class="admin-card mb-4" id="order-payment">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Payment record') }}</h4>
                 @php($latestPayment = $order->payments->first())
@@ -236,10 +249,13 @@
                 @endif
             </div>
         </div>
+        @endif
 
+        @if($can('delivery.view'))
         <div class="admin-card mb-4" id="delivery-card">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Delivery') }}</h4>
+                @if($can('delivery.manage'))
                 <form method="POST" action="{{ route('admin.deliveries.update', $order) }}" data-submit-loading>
                     @csrf
                     @method('PATCH')
@@ -269,14 +285,19 @@
                     </div>
                     <button type="submit" class="btn btn-light border w-100">{{ __('Save delivery details') }}</button>
                 </form>
+                @else
+                    <div class="text-muted small">{{ $order->shipping_provider ?: __('No courier assigned') }} · {{ $order->tracking_number ?: __('No tracking number') }}</div>
+                @endif
             </div>
         </div>
+        @endif
 
-        <div class="admin-card mb-4">
+        <div class="admin-card mb-4" id="order-refund">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Refund') }}</h4>
                 <div class="text-muted small mb-3">{{ __('Refundable balance') }}: <strong>EGP {{ number_format($order->refundable_balance, 2) }}</strong></div>
                 @if($order->canBeRefunded())
+                    @if($can('orders.manage'))
                     <form method="POST" action="{{ route('admin.orders.refund', $order) }}" data-submit-loading>
                         @csrf
                         <div class="mb-3">
@@ -293,6 +314,7 @@
                         </div>
                         <button type="submit" class="btn btn-light border w-100 btn-text-icon justify-content-center" data-loading-text="Recording..."><i class="mdi mdi-cash-refund"></i><span>{{ __('Record refund') }}</span></button>
                     </form>
+                    @endif
                 @else
                     <div class="admin-refund-item">{{ __('This order is not currently eligible for a refund. Mark it paid/completed first, or it may already be fully refunded.') }}</div>
                 @endif
@@ -306,3 +328,12 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+.admin-order-jump { display: flex; gap: .5rem; overflow-x: auto; margin-bottom: 1.25rem; padding-bottom: .25rem; scrollbar-width: thin; }
+.admin-order-jump a { flex: 0 0 auto; padding: .6rem .9rem; border: 1px solid var(--admin-border); border-radius: 999px; background: var(--admin-surface); color: var(--admin-text); text-decoration: none; font-weight: 700; font-size: .87rem; }
+.admin-order-jump a:hover, .admin-order-jump a:focus-visible { color: var(--admin-primary-dark); border-color: var(--admin-primary); }
+[id^="order-"], #delivery-card { scroll-margin-top: 6rem; }
+</style>
+@endpush

@@ -1,10 +1,11 @@
 @php($adminBrandPath = \App\Support\AdminBranding::resolveMediaPath($storeSettings['admin_logo_path'] ?? $storeSettings['admin_logo'] ?? $storeSettings['logo_path'] ?? $storeSettings['logo'] ?? null, 'admin_logo'))
 @php($adminUser = auth()->user())
-@php($canDeployManage = $adminUser && method_exists($adminUser, 'hasPermission') && $adminUser->hasPermission('deploy.manage'))
+@php($canAdmin = fn (string $permission): bool => $adminUser && $adminUser->hasPermission($permission))
+@php($adminHomeRoute = $canAdmin('dashboard.view') ? route('admin.dashboard') : ($canAdmin('orders.view') ? route('admin.orders.index') : ($canAdmin('catalog.manage') ? route('admin.products.index') : (Route::has('frontend.home') ? route('frontend.home') : url('/')))))
 <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row admin-topbar">
     <div class="navbar-brand-wrapper d-flex justify-content-center">
         <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100 px-3">
-            <a class="navbar-brand brand-logo admin-brand" href="{{ route('admin.dashboard') }}">
+            <a class="navbar-brand brand-logo admin-brand" href="{{ $adminHomeRoute }}">
                 @if($adminBrandPath)
                     <span class="admin-brand-mark admin-brand-mark-image">
                         <img src="{{ \App\Support\AdminBranding::mediaUrl($adminBrandPath, 'admin_logo') }}" alt="{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Storefront' }}">
@@ -21,7 +22,7 @@
                 </span>
             </a>
 
-            <a class="navbar-brand brand-logo-mini admin-brand-mini" href="{{ route('admin.dashboard') }}">
+            <a class="navbar-brand brand-logo-mini admin-brand-mini" href="{{ $adminHomeRoute }}">
                 @if($adminBrandPath)
                     <span class="admin-brand-mark admin-brand-mark-image">
                         <img src="{{ \App\Support\AdminBranding::mediaUrl($adminBrandPath, 'admin_logo') }}" alt="{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Storefront' }}">
@@ -45,10 +46,12 @@
                 <span class="mdi mdi-menu"></span>
             </button>
 
+            @if($canAdmin('dashboard.view'))
             <form action="{{ route('admin.dashboard') }}" method="GET" class="admin-topbar-search d-none d-lg-flex align-items-center">
                 <i class="mdi mdi-magnify"></i>
                 <input type="text" name="q" class="form-control border-0 bg-transparent shadow-none" placeholder="{{ __('Search products, orders, customers, and coupons') }}" value="{{ request('q') }}">
             </form>
+            @endif
         </div>
 
         <ul class="navbar-nav navbar-nav-right align-items-center gap-2 gap-lg-3">
@@ -56,6 +59,7 @@
                 @include('layouts.inc.language-switcher', ['class' => 'language-switcher-admin', 'variant' => 'admin-compact'])
             </li>
 
+            @if($canAdmin('notifications.view'))
             <li class="nav-item d-none d-xl-flex align-items-center">
                 <a class="admin-topbar-action admin-topbar-action--icon admin-topbar-action--notifications" href="{{ route('admin.notifications.index') }}" aria-label="{{ __('Notifications') }}" title="{{ __('Notifications') }}">
                     <i class="mdi mdi-bell-outline"></i>
@@ -65,7 +69,9 @@
                     @endif
                 </a>
             </li>
+            @endif
 
+            @if($canAdmin('catalog.manage') || $canAdmin('promotions.manage') || $canAdmin('orders.view'))
             <li class="nav-item d-none d-xl-flex align-items-center position-relative admin-menu-wrap">
                 <button type="button" class="admin-topbar-action admin-custom-menu-toggle" data-admin-menu-target="quick-create-menu" aria-expanded="false">
                     <i class="mdi mdi-plus-circle-outline"></i>
@@ -74,12 +80,15 @@
                 </button>
 
                 <div class="admin-custom-menu" id="quick-create-menu" hidden>
-                    <a class="admin-custom-menu__item" href="{{ route('admin.products.create') }}"><i class="mdi mdi-package-variant-closed"></i><span>{{ __('New product') }}</span></a>
-                    <a class="admin-custom-menu__item" href="{{ route('admin.categories.create') }}"><i class="mdi mdi-shape-outline"></i><span>{{ __('New category') }}</span></a>
-                    <a class="admin-custom-menu__item" href="{{ route('admin.coupons.create') }}"><i class="mdi mdi-ticket-percent-outline"></i><span>{{ __('New coupon') }}</span></a>
-                    <a class="admin-custom-menu__item" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline"></i><span>{{ __('Review orders') }}</span></a>
+                    @if($canAdmin('catalog.manage'))
+                        <a class="admin-custom-menu__item" href="{{ route('admin.products.create') }}"><i class="mdi mdi-package-variant-closed"></i><span>{{ __('New product') }}</span></a>
+                        <a class="admin-custom-menu__item" href="{{ route('admin.categories.create') }}"><i class="mdi mdi-shape-outline"></i><span>{{ __('New category') }}</span></a>
+                    @endif
+                    @if($canAdmin('promotions.manage'))<a class="admin-custom-menu__item" href="{{ route('admin.coupons.create') }}"><i class="mdi mdi-ticket-percent-outline"></i><span>{{ __('New coupon') }}</span></a>@endif
+                    @if($canAdmin('orders.view'))<a class="admin-custom-menu__item" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline"></i><span>{{ __('Review orders') }}</span></a>@endif
                 </div>
             </li>
+            @endif
 
             <li class="nav-item nav-profile position-relative admin-menu-wrap">
                 <button type="button" class="nav-link admin-profile-trigger admin-custom-menu-toggle" data-admin-menu-target="profile-menu" aria-expanded="false">
@@ -98,11 +107,14 @@
 
                     <div class="admin-custom-menu__divider"></div>
 
+                    @if($canAdmin('dashboard.view'))
                     <a class="admin-custom-menu__item" href="{{ route('admin.dashboard') }}">
                         <i class="mdi mdi-view-dashboard-outline"></i>
                         <span>{{ __('Admin dashboard') }}</span>
                     </a>
+                    @endif
 
+                    @if($canAdmin('notifications.view'))
                     <a class="admin-custom-menu__item" href="{{ route('admin.notifications.index') }}">
                         <i class="mdi mdi-bell-outline"></i>
                         <span>{{ __('Notifications') }}</span>
@@ -110,13 +122,16 @@
                             <span class="admin-custom-menu__count">{{ $authNotificationCount }}</span>
                         @endif
                     </a>
+                    @endif
 
+                    @if($canAdmin('settings.manage'))
                     <a class="admin-custom-menu__item" href="{{ route('admin.settings.notifications') }}">
                         <i class="mdi mdi-bell-cog-outline"></i>
                         <span>{{ __('Notification Center') }}</span>
                     </a>
+                    @endif
 
-                    @if($canDeployManage)
+                    @if($canAdmin('deploy.manage'))
                     <a class="admin-custom-menu__item" href="{{ route('admin.settings.deploy-center') }}">
                         <i class="mdi mdi-rocket-launch-outline"></i>
                         <span>{{ __('Deploy Center') }}</span>
@@ -129,12 +144,16 @@
                         </a>
 
 
-                    @if(Route::has('admin.orders.index'))
+                    @if($canAdmin('orders.view'))
                         <a class="admin-custom-menu__item" href="{{ route('admin.orders.index') }}">
                             <i class="mdi mdi-cart-outline"></i>
                             <span>{{ __('Orders') }}</span>
                         </a>
                     @endif
+
+                    <div class="d-lg-none px-3 py-2">
+                        @include('layouts.inc.language-switcher', ['class' => 'language-switcher-admin', 'variant' => 'admin-compact'])
+                    </div>
 
                     <div class="admin-custom-menu__divider"></div>
 

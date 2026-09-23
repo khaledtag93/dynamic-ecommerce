@@ -136,7 +136,7 @@
     </div>
     @endif
 
-    <form id="productFormMain" wire:submit.prevent="save">
+    <form id="productFormMain" wire:submit.prevent="save" data-admin-section-tabs="product-editor">
         <div class="product-form-header-card d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="product-form-header-copy">
                 <h2 class="mb-1">{{ $productId ? __('Edit Product') : __('Create Product') }}</h2>
@@ -200,9 +200,18 @@
             </div>
         @endif
 
-        <div class="row g-4">
+        <x-admin.section-tabs id="product" :sections="[
+            'details' => __('Basic Information'),
+            'pricing' => __('Pricing & Inventory'),
+            'variants' => __('Variants'),
+            'related' => __('Upsells & Bundles'),
+            'seo' => __('SEO / Meta'),
+            'images' => __('Images Manager'),
+        ]" />
+
+        <div class="row g-4 admin-section-columns">
             <div class="col-lg-8">
-                <div class="card shadow-sm border-0 mb-4">
+                <div class="card shadow-sm border-0 mb-4" id="product-panel-details" role="tabpanel" aria-labelledby="product-tab-details" data-admin-section-panel="details">
                     <div class="card-header bg-white border-0 pb-0">
                         <h5 class="mb-1">{{ __('Basic Information') }}</h5>
                         <small class="text-muted">{{ __('Main product data and description.') }}</small>
@@ -265,7 +274,7 @@
                     </div>
                 </div>
 
-                <div class="card shadow-sm border-0 mb-4">
+                <div class="card shadow-sm border-0 mb-4" id="product-panel-pricing" role="tabpanel" aria-labelledby="product-tab-pricing" data-admin-section-panel="pricing">
                     <div class="card-header bg-white border-0 pb-0">
                         <h5 class="mb-1">{{ __('Pricing & Inventory') }}</h5>
                         <small class="text-muted">
@@ -356,7 +365,7 @@
                     </div>
                 </div>
 
-                <div class="card shadow-sm border-0 mb-4">
+                <div class="card shadow-sm border-0 mb-4" id="product-panel-variants" role="tabpanel" aria-labelledby="product-tab-variants" data-admin-section-panel="variants">
                     <div class="card-header bg-white border-0 pb-0">
                         <h5 class="mb-1">{{ __('Variants') }}</h5>
                         <small class="text-muted">
@@ -703,7 +712,7 @@
                 </div>
 
 
-                <div class="card shadow-sm border-0 mb-4">
+                <div class="card shadow-sm border-0 mb-4" id="product-panel-related" role="tabpanel" aria-labelledby="product-tab-related" data-admin-section-panel="related">
                     <div class="card-header bg-white border-0 pb-0">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
@@ -868,7 +877,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card shadow-sm border-0">
+                <div class="card shadow-sm border-0" id="product-panel-seo" role="tabpanel" aria-labelledby="product-tab-seo" data-admin-section-panel="seo">
                     <div class="card-header bg-white border-0 pb-0">
                         <h5 class="mb-1">{{ __('SEO / Meta') }}</h5>
                         <small class="text-muted">{{ __('Optional SEO information.') }}</small>
@@ -893,7 +902,7 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="card shadow-sm border-0 mb-4">
+                <div class="card shadow-sm border-0 mb-4" id="product-panel-images" role="tabpanel" aria-labelledby="product-tab-images" data-admin-section-panel="images">
                     <div class="card-header bg-white border-0 pb-0">
                         <h5 class="mb-1">{{ __('Images Manager') }}</h5>
                         <small class="text-muted">{{ __('Upload, preview, reorder, set main, and delete.') }}</small>
@@ -1343,6 +1352,9 @@
 
                     if (!firstError) return;
 
+                    const panel = firstError.closest('[data-admin-section-panel]');
+                    if (panel) window.AdminSectionTabs?.activate(document.getElementById('productFormMain'), panel.dataset.adminSectionPanel);
+
                     const card = firstError.closest('.card');
                     const target = card || firstError;
 
@@ -1364,6 +1376,7 @@
             function initProductFormHelpers() {
                 if (!getProductFormRoot()) return;
 
+                window.AdminSectionTabs?.init(document.getElementById('productFormMain'));
                 initDirtyTracking();
                 initProductDropzone();
                 initSortableGrid('#existingImagesGrid', '.existing-image-item', 'reorderExistingImages');

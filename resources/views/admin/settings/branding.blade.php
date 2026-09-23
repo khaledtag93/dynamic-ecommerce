@@ -33,7 +33,7 @@
 <x-admin.page-header :kicker="__('Settings')" :title="__('Branding & Appearance')" :description="__('Control brand identity, colors, and storefront visuals with a cleaner bilingual settings experience.')" />
 
 <div class="admin-page-shell settings-page">
-<form class="admin-form-shell" method="POST" action="{{ route('admin.settings.branding.update') }}" enctype="multipart/form-data" data-submit-loading>
+<form class="admin-form-shell" method="POST" action="{{ route('admin.settings.branding.update') }}" enctype="multipart/form-data" data-submit-loading data-admin-section-tabs="branding" data-admin-error-fields="{{ json_encode($errors->keys()) }}">
     @csrf
     @method('PUT')
 
@@ -64,9 +64,21 @@
         </div>
     </div>
 
-    <div class="row g-4">
+    <x-admin.section-tabs id="branding" :sections="[
+        'theme' => __('Theme presets'),
+        'identity' => __('Global identity'),
+        'colors' => __('Customer branding'),
+        'homepage' => __('Homepage CMS'),
+        'promos' => __('Promo banners'),
+        'trust' => __('Trust blocks'),
+        'admin' => __('Admin branding'),
+        'media' => __('Images'),
+        'preview' => __('Live preview'),
+    ]" />
+
+    <div class="row g-4 admin-section-columns">
         <div class="col-xl-8">
-            <div class="admin-card mb-4">
+            <div class="admin-card mb-4" id="branding-panel-theme" role="tabpanel" aria-labelledby="branding-tab-theme" data-admin-section-panel="theme">
                 <div class="admin-card-body">
                     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
                         <div>
@@ -110,7 +122,7 @@
                 </div>
             </div>
 
-            <div class="admin-card mb-4">
+            <div class="admin-card mb-4" id="branding-panel-identity" role="tabpanel" aria-labelledby="branding-tab-identity" data-admin-section-panel="identity">
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Global identity') }}</h4>
                     <div class="row g-3">
@@ -125,7 +137,7 @@
                 </div>
             </div>
 
-            <div class="admin-card mb-4">
+            <div class="admin-card mb-4" id="branding-panel-colors" role="tabpanel" aria-labelledby="branding-tab-colors" data-admin-section-panel="colors">
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Customer branding') }}</h4>
                     <div class="row g-3">
@@ -146,7 +158,7 @@
                 </div>
             </div>
 
-            <div class="admin-card mb-4">
+            <div class="admin-card mb-4" id="branding-panel-homepage" role="tabpanel" aria-labelledby="branding-tab-homepage" data-admin-section-panel="homepage">
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Homepage CMS') }}</h4>
                     <div class="row g-3">
@@ -220,7 +232,7 @@
                 </div>
             </div>
 
-            <div class="admin-card mb-4">
+            <div class="admin-card mb-4" id="branding-panel-promos" role="tabpanel" aria-labelledby="branding-tab-promos" data-admin-section-panel="promos">
                 <div class="admin-card-body">
                     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
                         <div>
@@ -278,7 +290,7 @@
                 </div>
             </div>
 
-            <div class="admin-card mb-4">
+            <div class="admin-card mb-4" id="branding-panel-trust" role="tabpanel" aria-labelledby="branding-tab-trust" data-admin-section-panel="trust">
                 <div class="admin-card-body">
                     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
                         <div>
@@ -313,7 +325,7 @@
                 </div>
             </div>
 
-            <div class="admin-card">
+            <div class="admin-card" id="branding-panel-admin" role="tabpanel" aria-labelledby="branding-tab-admin" data-admin-section-panel="admin">
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Admin branding') }}</h4>
                     <div class="row g-3">
@@ -329,7 +341,7 @@
         </div>
 
         <div class="col-xl-4">
-            <div class="admin-card mb-4">
+            <div class="admin-card mb-4" id="branding-panel-media" role="tabpanel" aria-labelledby="branding-tab-media" data-admin-section-panel="media">
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Images') }}</h4>
 
@@ -395,7 +407,7 @@
                 </div>
             </div>
 
-            <div class="admin-card">
+            <div class="admin-card" id="branding-panel-preview" role="tabpanel" aria-labelledby="branding-tab-preview" data-admin-section-panel="preview">
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Live preview') }}</h4>
                     <div class="admin-theme-preview" id="adminThemePreview">
