@@ -14,31 +14,31 @@
 
     <style>
         :root {
-            --admin-bg: {{ $storeSettings['brand_background_color'] ?? '#fff8f1' }};
+            --admin-bg: {{ $storeSettings['brand_background_color'] ?? '#f8fafc' }};
             --admin-surface: {{ $storeSettings['admin_surface_color'] ?? '#ffffff' }};
-            --admin-surface-alt: {{ $storeSettings['admin_header_color'] ?? '#fff2e7' }};
-            --admin-border: {{ $storeSettings['admin_card_border_color'] ?? '#f2dac8' }};
-            --admin-text: color-mix(in srgb, var(--admin-sidebar) 18%, #2a1b14);
-            --admin-muted: color-mix(in srgb, var(--admin-sidebar) 12%, #7b6354);
-            --admin-primary: {{ $storeSettings['brand_primary_color'] ?? '#f97316' }};
-            --admin-primary-dark: {{ $storeSettings['brand_accent_color'] ?? '#d35400' }};
-            --admin-accent: {{ $storeSettings['brand_secondary_color'] ?? '#ec4899' }};
-            --admin-accent-soft: {{ $storeSettings['admin_accent_soft_color'] ?? '#fff1f2' }};
-            --admin-primary-soft: {{ $storeSettings['admin_primary_soft_color'] ?? '#ffedd5' }};
-            --admin-sidebar: {{ $storeSettings['admin_sidebar_color'] ?? '#0f172a' }};
+            --admin-surface-alt: {{ $storeSettings['admin_header_color'] ?? '#ffffff' }};
+            --admin-border: {{ $storeSettings['admin_card_border_color'] ?? '#e2e8f0' }};
+            --admin-text: color-mix(in srgb, var(--admin-sidebar) 18%, #0f172a);
+            --admin-muted: color-mix(in srgb, var(--admin-sidebar) 12%, #64748b);
+            --admin-primary: {{ $storeSettings['brand_primary_color'] ?? '#2563eb' }};
+            --admin-primary-dark: {{ $storeSettings['brand_accent_color'] ?? '#0891b2' }};
+            --admin-accent: {{ $storeSettings['brand_secondary_color'] ?? '#0f172a' }};
+            --admin-accent-soft: {{ $storeSettings['admin_accent_soft_color'] ?? '#ecfeff' }};
+            --admin-primary-soft: {{ $storeSettings['admin_primary_soft_color'] ?? '#dbeafe' }};
+            --admin-sidebar: {{ $storeSettings['admin_sidebar_color'] ?? '#0b1220' }};
             --admin-sidebar-2: {{ $storeSettings['admin_sidebar_color'] ?? '#111827' }};
-            --admin-success-bg: color-mix(in srgb, var(--admin-primary) 12%, white);
-            --admin-success-text: color-mix(in srgb, var(--admin-sidebar) 32%, var(--admin-primary));
-            --admin-warning-bg: color-mix(in srgb, var(--admin-primary-soft) 72%, white);
-            --admin-warning-text: color-mix(in srgb, var(--admin-primary-dark) 82%, #4b2e14);
-            --admin-danger-bg: color-mix(in srgb, var(--admin-accent) 14%, white);
-            --admin-danger-text: color-mix(in srgb, var(--admin-accent) 64%, #7f1d1d);
+            --admin-success-bg: #f0fdf4;
+            --admin-success-text: #166534;
+            --admin-warning-bg: #fffbeb;
+            --admin-warning-text: #92400e;
+            --admin-danger-bg: #fef2f2;
+            --admin-danger-text: #b91c1c;
             --admin-shadow-color: color-mix(in srgb, var(--admin-primary) 16%, transparent);
             --admin-shadow-color-strong: color-mix(in srgb, var(--admin-primary) 22%, transparent);
             --admin-shadow-soft: 0 18px 40px var(--admin-shadow-color);
             --admin-input-bg: color-mix(in srgb, var(--admin-surface) 92%, white);
-            --admin-table-head-bg: {{ $storeSettings['brand_table_head_color'] ?? $storeSettings['admin_header_color'] ?? '#fff2e7' }};
-            --admin-row-hover-bg: {{ $storeSettings['brand_row_hover_color'] ?? '#fffaf6' }};
+            --admin-table-head-bg: {{ $storeSettings['brand_table_head_color'] ?? $storeSettings['admin_header_color'] ?? '#f8fafc' }};
+            --admin-row-hover-bg: {{ $storeSettings['brand_row_hover_color'] ?? '#f8fafc' }};
             --admin-shadow: var(--admin-shadow-soft);
         }
 
