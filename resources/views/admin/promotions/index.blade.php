@@ -24,9 +24,11 @@
         ['label' => __('Total promotions'), 'value' => $stats['total'], 'copy' => __('All promotion rules in the system.'), 'icon' => 'mdi-sale'],
         ['label' => __('Active'), 'value' => $stats['active'], 'copy' => __('Promotion rules currently applied.'), 'icon' => 'mdi-check-circle-outline'],
         ['label' => __('Inactive'), 'value' => $stats['inactive'], 'copy' => __('Rules saved but not active right now.'), 'icon' => 'mdi-pause-circle-outline'],
-        ['label' => __('Buy X Get Y'), 'value' => $stats['buy_x_get_y'], 'copy' => __('Gift and bundle style promotions.'), 'icon' => 'mdi-gift-outline'],
+        ['label' => __('Running now'), 'value' => $stats['running'], 'copy' => __('Active promotions currently inside their schedule.'), 'icon' => 'mdi-play-circle-outline'],
+        ['label' => __('Upcoming'), 'value' => $stats['upcoming'], 'copy' => __('Scheduled promotions that have not started yet.'), 'icon' => 'mdi-calendar-clock-outline'],
+        ['label' => __('Expired'), 'value' => $stats['expired'], 'copy' => __('Promotion schedules that have already ended.'), 'icon' => 'mdi-calendar-remove-outline'],
     ] as $card)
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="admin-card admin-stat-card h-100">
                 <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
                 <div class="admin-stat-label">{{ $card['label'] }}</div>
@@ -39,6 +41,7 @@
 
 <div class="admin-card mb-4">
     <div class="admin-card-body">
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-3"><div><h4 class="mb-1">{{ __('Promotion schedule') }}</h4><p class="text-muted small mb-0">{{ __('Separate live campaigns from upcoming and expired rules before changing pricing behavior.') }}</p></div><div class="d-flex flex-wrap gap-2"><a href="{{ route('admin.promotions.index',['schedule'=>'running']) }}" class="btn {{ $filters['schedule']==='running' ? 'btn-primary':'btn-light border' }} btn-sm">{{ __('Running now') }} · {{ $stats['running'] }}</a><a href="{{ route('admin.promotions.index',['schedule'=>'upcoming']) }}" class="btn {{ $filters['schedule']==='upcoming' ? 'btn-primary':'btn-light border' }} btn-sm">{{ __('Upcoming') }} · {{ $stats['upcoming'] }}</a><a href="{{ route('admin.promotions.index',['schedule'=>'expired']) }}" class="btn {{ $filters['schedule']==='expired' ? 'btn-primary':'btn-light border' }} btn-sm">{{ __('Expired') }} · {{ $stats['expired'] }}</a></div></div>
         <form method="GET" class="admin-filter-grid" data-submit-loading>
             <div>
                 <label class="form-label fw-semibold">{{ __('Search') }}</label>
@@ -66,7 +69,7 @@
                     <option value="inactive" @selected($filters['status'] === 'inactive')>{{ __('Inactive') }}</option>
                 </select>
             </div>
-            <div class="admin-filter-actions admin-filter-actions-wide">
+            <div><label class="form-label fw-semibold">{{ __('Schedule') }}</label><select name="schedule" class="form-select"><option value="">{{ __('All schedules') }}</option><option value="running" @selected($filters['schedule']==='running')>{{ __('Running now') }}</option><option value="upcoming" @selected($filters['schedule']==='upcoming')>{{ __('Upcoming') }}</option><option value="expired" @selected($filters['schedule']==='expired')>{{ __('Expired') }}</option></select></div><div><label class="form-label fw-semibold">{{ __('Per page') }}</label><select name="per_page" class="form-select">@foreach([20,40,80] as $size)<option value="{{ $size }}" @selected((int)$filters['per_page']===$size)>{{ $size }}</option>@endforeach</select></div><div class="admin-filter-actions admin-filter-actions-wide">
                 <button type="submit" class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Filtering...') }}"><i class="mdi mdi-filter-outline"></i><span>{{ __('Apply') }}</span></button>
                 <a href="{{ route('admin.promotions.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-refresh"></i><span>{{ __('Reset') }}</span></a>
             </div>
