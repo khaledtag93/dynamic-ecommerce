@@ -11,6 +11,8 @@
             'search' => $filters['search'] ?? null,
             'type' => $filters['type'] ?? null,
             'status' => $filters['status'] ?? null,
+            'usage' => $filters['usage'] ?? null,
+            'per_page' => $filters['per_page'] ?? 12,
             'sort' => $column,
             'direction' => $sort === $column && $direction === 'asc' ? 'desc' : 'asc',
         ], fn ($value) => $value !== null && $value !== '');
@@ -33,8 +35,9 @@
         ['label' => __('Active'), 'value' => $stats['active'], 'copy' => __('Coupons currently enabled for checkout.'), 'icon' => 'mdi-check-decagram-outline'],
         ['label' => __('Expired'), 'value' => $stats['expired'], 'copy' => __('Offers whose end date has already passed.'), 'icon' => 'mdi-calendar-remove-outline'],
         ['label' => __('Used'), 'value' => $stats['used'], 'copy' => __('Coupons that have at least one redemption.'), 'icon' => 'mdi-chart-timeline-variant'],
+        ['label' => __('Limit reached'), 'value' => $stats['limit_reached'], 'copy' => __('Coupons that exhausted their usage allowance.'), 'icon' => 'mdi-ticket-confirmation-outline'],
     ] as $card)
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="admin-card admin-stat-card h-100">
                 <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
                 <div class="admin-stat-label">{{ $card['label'] }}</div>
@@ -47,6 +50,10 @@
 
 <div class="admin-card mb-4">
     <div class="admin-card-body">
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-3">
+            <div><h4 class="mb-1">{{ __('Promotion operations') }}</h4><p class="text-muted small mb-0">{{ __('Review coupon health, redemption activity, expiry, and usage limits from one workspace.') }}</p></div>
+            <div class="d-flex flex-wrap gap-2"><a href="{{ route('admin.coupons.index', ['status' => 'expired']) }}" class="btn {{ $filters['status'] === 'expired' ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Expired') }} · {{ $stats['expired'] }}</a><a href="{{ route('admin.coupons.index', ['usage' => 'limit_reached']) }}" class="btn {{ $filters['usage'] === 'limit_reached' ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Limit reached') }} · {{ $stats['limit_reached'] }}</a></div>
+        </div>
         <form method="GET" class="admin-filter-grid admin-filter-grid-coupons" data-submit-loading>
             <div>
                 <label class="form-label fw-semibold">{{ __('Search') }}</label>
@@ -70,6 +77,8 @@
                     <option value="expired" @selected($filters['status'] === 'expired')>{{ __('Expired') }}</option>
                 </select>
             </div>
+            <div><label class="form-label fw-semibold">{{ __('Redemption activity') }}</label><select name="usage" class="form-select"><option value="">{{ __('All coupons') }}</option><option value="used" @selected($filters['usage'] === 'used')>{{ __('Used') }}</option><option value="unused" @selected($filters['usage'] === 'unused')>{{ __('Unused') }}</option><option value="limit_reached" @selected($filters['usage'] === 'limit_reached')>{{ __('Limit reached') }}</option></select></div>
+            <div><label class="form-label fw-semibold">{{ __('Per page') }}</label><select name="per_page" class="form-select">@foreach([12,24,48] as $size)<option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>@endforeach</select></div>
             <input type="hidden" name="sort" value="{{ $filters['sort'] }}">
             <input type="hidden" name="direction" value="{{ $filters['direction'] }}">
             <div class="admin-filter-actions admin-filter-actions-wide">
