@@ -42,7 +42,7 @@
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                 <div>
                     <h5 class="mb-1">{{ __('Add or Edit Value') }}</h5>
-                    <small class="text-muted">{{ __('Values already used by variants are protected from accidental deletion.') }}</small>
+                    <small class="text-muted">{{ __('Values used by variants are protected from rename and deletion to keep catalog data consistent.') }}</small>
                 </div>
                 <input type="text" wire:model.debounce.300ms="search" class="form-control" style="max-width:280px" placeholder="{{ __('Search values') }}">
             </div>
@@ -51,11 +51,14 @@
             <form wire:submit.prevent="save" class="row g-3 align-items-end">
                 <div class="col-md-10">
                     <label class="form-label">{{ __('Value') }}</label>
-                    <input type="text" wire:model="value" class="form-control" placeholder="{{ __('Enter value (e.g. Red)') }}">
+                    <input type="text" wire:model="value" class="form-control" placeholder="{{ __('Enter value (e.g. Red)') }}" wire:loading.attr="disabled" wire:target="save">
                     @error('value') <span class="text-danger small">{{ $message }}</span>@enderror
                 </div>
                 <div class="col-md-2 d-grid gap-2">
-                    <button class="btn btn-primary">{{ $valueId ? __('Update') : __('Add value') }}</button>
+                    <button class="btn btn-primary" wire:loading.attr="disabled" wire:target="save">
+                        <span wire:loading.remove wire:target="save">{{ $valueId ? __('Update') : __('Add value') }}</span>
+                        <span wire:loading wire:target="save"><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Saving...') }}</span>
+                    </button>
                     @if($valueId)<button type="button" class="btn btn-light border" wire:click="resetForm">{{ __('Cancel') }}</button>@endif
                 </div>
             </form>
@@ -76,7 +79,12 @@
                     <tbody>
                         @forelse($values as $val)
                             <tr>
-                                <td><div class="fw-semibold">{{ $val->value }}</div></td>
+                                <td>
+                                    <div class="fw-semibold">{{ $val->value }}</div>
+                                    @if($val->variant_usage_count > 0)
+                                        <div class="text-muted small mt-1"><i class="mdi mdi-lock-outline me-1"></i>{{ __('Rename and delete are locked while this value is in use.') }}</div>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($val->variant_usage_count > 0)
                                         <span class="badge badge-soft-success">{{ $val->variant_usage_count }} {{ __('variant(s)') }}</span>
@@ -86,7 +94,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                        <button wire:click="edit({{ $val->id }})" class="btn btn-sm btn-outline-primary btn-action" title="{{ __('Edit value') }}">
+                                        <button wire:click="edit({{ $val->id }})" class="btn btn-sm btn-outline-primary btn-action" title="{{ $val->variant_usage_count > 0 ? __('Used values cannot be renamed') : __('Edit value') }}" @disabled($val->variant_usage_count > 0)>
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </button>
                                         <button type="button" wire:click="requestDelete({{ $val->id }})" class="btn btn-sm btn-outline-danger btn-action" title="{{ __('Delete value') }}" @disabled($val->variant_usage_count > 0)>
@@ -97,7 +105,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="text-center py-4 text-muted">{{ __('No values found yet') }}.</td>
+                                <td colspan="3" class="text-center py-4 text-muted">{{ $search !== '' ? __('No values match your search.') : __('No values found yet') }}.</td>
                             </tr>
                         @endforelse
                     </tbody>
