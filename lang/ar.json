@@ -3010,5 +3010,13 @@
     "By :name": "بواسطة :name",
     "Recording...": "جارٍ التسجيل...",
     "Net after refunds": "الصافي بعد الاستردادات",
-    "Already refunded": "تم استرداده بالفعل"
+    "Already refunded": "تم استرداده بالفعل",
+    "Movement explorer": "مستكشف حركة المخزون",
+    "Trace stock changes by product, SKU, order, movement type, or source.": "تتبّع تغييرات المخزون حسب المنتج أو SKU أو الطلب أو نوع الحركة أو المصدر.",
+    "Search movements": "البحث في حركات المخزون",
+    "Product, SKU, order number, or reason": "المنتج أو SKU أو رقم الطلب أو السبب",
+    "Movement type": "نوع الحركة",
+    "All types": "كل الأنواع",
+    "All sources": "كل المصادر",
+    "Open product": "فتح المنتج"
 }
