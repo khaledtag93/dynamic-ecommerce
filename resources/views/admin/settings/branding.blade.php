@@ -90,7 +90,9 @@
 
                     <div class="theme-preset-grid mb-4" role="list" aria-label="{{ __('Theme presets') }}">
                         @foreach($presets as $presetKey => $preset)
-                            @php($presetLabel = __($preset['theme_label'] ?? Str::headline(str_replace('_', ' ', $presetKey))))
+                            @php
+                                $presetLabel = __($preset['theme_label'] ?? Str::headline(str_replace('_', ' ', $presetKey)));
+                            @endphp
                             <button
                                 type="button"
                                 class="theme-preset-card {{ $selectedPreset === $presetKey ? 'is-active' : '' }}"
@@ -197,9 +199,9 @@
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">{{ __('Badge style') }}</label>
                             <select name="customer_badge_style" class="form-select">
-                                @foreach(['soft' => __('Soft'), 'pill' => __('Pill'), 'outline' => __('Outline')] as $badgeValue => $badgeLabel)
-                                    <option value="{{ $badgeValue }}" @selected(old('customer_badge_style', $settings['customer_badge_style'] ?? 'soft') === $badgeValue)>{{ $badgeLabel }}</option>
-                                @endforeach
+                                <option value="soft" @selected(old('customer_badge_style', $settings['customer_badge_style'] ?? 'soft') === 'soft')>{{ __('Soft') }}</option>
+                                <option value="pill" @selected(old('customer_badge_style', $settings['customer_badge_style'] ?? 'soft') === 'pill')>{{ __('Pill') }}</option>
+                                <option value="outline" @selected(old('customer_badge_style', $settings['customer_badge_style'] ?? 'soft') === 'outline')>{{ __('Outline') }}</option>
                             </select>
                         </div>
                     </div>
