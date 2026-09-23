@@ -213,6 +213,15 @@
                     </select>
                 </div>
 
+                <div class="col-6 col-lg-2">
+                    <label class="form-label filter-label">{{ __('Featured') }}</label>
+                    <select class="form-select" wire:model="featuredFilter">
+                        <option value="">{{ __('All products') }}</option>
+                        <option value="1">{{ __('Featured only') }}</option>
+                        <option value="0">{{ __('Not featured') }}</option>
+                    </select>
+                </div>
+
                 <div class="col-6 col-lg-1">
                     <label class="form-label filter-label">{{ __('Per Page') }}</label>
                     <select class="form-select" wire:model="perPage">
@@ -349,7 +358,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,featuredFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
