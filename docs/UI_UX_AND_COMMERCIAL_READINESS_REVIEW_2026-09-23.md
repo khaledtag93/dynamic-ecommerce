@@ -5,7 +5,7 @@ Date: 2026-09-23
 Repository baseline: `v42-clean-baseline` at `c1f2146` (documentation head; application deployment is tracked separately).
 Companion: [Full project audit](FULL_PROJECT_AUDIT_2026-09-23.md).
 
-**Implementation note (2026-09-23):** A subsequent working-line batch removed the synthetic product-page social proof and redundant reassurance sections, moved customer-role editing from each table row into the customer profile, and guarded demo seed/clear in source against Production execution. Existing demo records and live storefront content have not been cleaned. These source changes still require CI and QAS checks before any Production claim. See the [current documentation ledger](README.md).
+**Implementation note (2026-09-23):** A subsequent working-line batch removed the synthetic product-page social proof and redundant reassurance sections, moved customer-role editing from each table row into the customer profile, and guarded demo seed/clear in source against Production execution. CI passed for code revision `f7ff4e8`; QAS visual review and Production deployment are pending. Existing demo records and live storefront content have not been cleaned. See the [current documentation ledger](README.md).
 
 ## Scope and evidence
 
