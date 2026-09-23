@@ -3052,5 +3052,10 @@
     "Build supplier profile": "إنشاء ملف المورد",
     "Keep contact and sourcing information complete so purchasing teams can work without chasing missing details.": "حافظ على اكتمال بيانات الاتصال والتوريد حتى يعمل فريق المشتريات دون البحث عن معلومات ناقصة.",
     "Business": "بيانات العمل",
-    "Location": "الموقع"
+    "Location": "الموقع",
+    "Registered accounts that have not placed an order yet.": "حسابات مسجلة لم تنشئ أي طلب حتى الآن.",
+    "Customer operations": "عمليات العملاء",
+    "Review account roles and quickly separate active buyers from registered users who have not ordered yet.": "راجع صلاحيات الحسابات وافصل بسرعة بين المشترين الفعليين والمستخدمين المسجلين الذين لم يطلبوا بعد.",
+    "Order activity": "نشاط الطلبات",
+    "All accounts": "كل الحسابات"
 }
