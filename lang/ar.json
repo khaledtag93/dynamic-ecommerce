@@ -3106,5 +3106,6 @@
     "Configure pricing behavior safely": "اضبط سلوك التسعير بأمان",
     "Choose the promotion model first, then complete only the fields that apply to that pricing rule.": "اختر نوع العرض أولًا ثم أكمل فقط الحقول التي تنطبق على قاعدة التسعير المختارة.",
     "Eligibility": "شروط التطبيق",
-    "Please review the promotion details:": "يرجى مراجعة تفاصيل العرض:"
+    "Please review the promotion details:": "يرجى مراجعة تفاصيل العرض:",
+    "Save failed because of an unexpected problem. Your changes were not saved. Please try again.": "فشل الحفظ بسبب مشكلة غير متوقعة. لم يتم حفظ التعديلات. يرجى المحاولة مرة أخرى."
 }
