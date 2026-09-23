@@ -24,6 +24,7 @@ class Index extends Component
     public $categoryFilter = '';
     public $brandFilter = '';
     public $readinessFilter = '';
+    public $stockFilter = '';
     public $perPage = 10;
 
     // Sorting
@@ -55,6 +56,7 @@ class Index extends Component
         'categoryFilter' => ['except' => ''],
         'brandFilter' => ['except' => ''],
         'readinessFilter' => ['except' => ''],
+        'stockFilter' => ['except' => ''],
         'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10],
@@ -100,6 +102,12 @@ class Index extends Component
         $this->resetSelection();
     }
 
+    public function updatingStockFilter()
+    {
+        $this->resetPage();
+        $this->resetSelection();
+    }
+
     public function updatingPerPage()
     {
         $this->resetPage();
@@ -114,6 +122,7 @@ class Index extends Component
             'categoryFilter',
             'brandFilter',
             'readinessFilter',
+            'stockFilter',
             'perPage',
         ]);
 
@@ -647,6 +656,44 @@ class Index extends Component
         }
     }
 
+    protected function applyStockFilter($query): void
+    {
+        if ($this->stockFilter === 'low') {
+            $query->where('has_variants', false)
+                ->whereNotNull('low_stock_threshold')
+                ->where('quantity', '>', 0)
+                ->whereColumn('quantity', '<=', 'low_stock_threshold');
+
+            return;
+        }
+
+        if ($this->stockFilter === 'out') {
+            $query->where(function ($stockQuery) {
+                $stockQuery->where(function ($simpleQuery) {
+                    $simpleQuery->where('has_variants', false)
+                        ->where('quantity', '<=', 0);
+                })->orWhere(function ($variantQuery) {
+                    $variantQuery->where('has_variants', true)
+                        ->whereDoesntHave('activeVariants', fn ($activeQuery) => $activeQuery->where('stock', '>', 0));
+                });
+            });
+
+            return;
+        }
+
+        if ($this->stockFilter === 'in') {
+            $query->where(function ($stockQuery) {
+                $stockQuery->where(function ($simpleQuery) {
+                    $simpleQuery->where('has_variants', false)
+                        ->where('quantity', '>', 0);
+                })->orWhere(function ($variantQuery) {
+                    $variantQuery->where('has_variants', true)
+                        ->whereHas('activeVariants', fn ($activeQuery) => $activeQuery->where('stock', '>', 0));
+                });
+            });
+        }
+    }
+
     protected function productsQuery()
     {
         return Product::query()
@@ -667,7 +714,8 @@ class Index extends Component
             ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->categoryFilter, fn ($q) => $q->where('category_id', $this->categoryFilter))
             ->when($this->brandFilter, fn ($q) => $q->where('brand_id', $this->brandFilter))
-            ->when($this->readinessFilter !== '', fn ($q) => $this->applyReadinessFilter($q));
+            ->when($this->readinessFilter !== '', fn ($q) => $this->applyReadinessFilter($q))
+            ->when($this->stockFilter !== '', fn ($q) => $this->applyStockFilter($q));
     }
 
     public function render()
