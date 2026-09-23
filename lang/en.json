@@ -2110,5 +2110,18 @@
     "All types": "All types",
     "Source": "Source",
     "All sources": "All sources",
-    "Open product": "Open product"
+    "Open product": "Open product",
+    "Purchase orders": "Purchase orders",
+    "All procurement records.": "All procurement records.",
+    "Awaiting receipt": "Awaiting receipt",
+    "Orders that still need stock receiving.": "Orders that still need stock receiving.",
+    "Purchases already added to inventory.": "Purchases already added to inventory.",
+    "Procurement value": "Procurement value",
+    "Total recorded purchase value.": "Total recorded purchase value.",
+    "Procurement workspace": "Procurement workspace",
+    "Find purchase orders quickly and focus on stock that still needs to be received.": "Find purchase orders quickly and focus on stock that still needs to be received.",
+    "Search purchases": "Search purchases",
+    "Reference, supplier, or company": "Reference, supplier, or company",
+    "All suppliers": "All suppliers",
+    "Receiving...": "Receiving..."
 }
