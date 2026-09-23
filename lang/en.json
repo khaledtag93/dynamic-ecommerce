@@ -2101,5 +2101,14 @@
     "By :name": "By :name",
     "Recording...": "Recording...",
     "Net after refunds": "Net after refunds",
-    "Already refunded": "Already refunded"
+    "Already refunded": "Already refunded",
+    "Movement explorer": "Movement explorer",
+    "Trace stock changes by product, SKU, order, movement type, or source.": "Trace stock changes by product, SKU, order, movement type, or source.",
+    "Search movements": "Search movements",
+    "Product, SKU, order number, or reason": "Product, SKU, order number, or reason",
+    "Movement type": "Movement type",
+    "All types": "All types",
+    "Source": "Source",
+    "All sources": "All sources",
+    "Open product": "Open product"
 }
