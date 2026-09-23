@@ -21,8 +21,14 @@
     @endif
 
     <div class="admin-card">
+        <div class="admin-card-body border-bottom">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div><span class="badge badge-soft-info mb-2">{{ __('Purchase workflow') }}</span><h4 class="mb-1">{{ __('Build purchase order') }}</h4><p class="text-muted small mb-0">{{ __('Choose a supplier, add stock lines, review the live total, then save the order for later receiving.') }}</p></div>
+                <div class="d-flex gap-2 flex-wrap"><span class="admin-chip"><i class="mdi mdi-truck-outline"></i> {{ __('Supplier') }}</span><span class="admin-chip"><i class="mdi mdi-package-variant"></i> {{ __('Items') }}</span><span class="admin-chip"><i class="mdi mdi-calculator-variant-outline"></i> {{ __('Totals') }}</span></div>
+            </div>
+        </div>
         <div class="admin-card-body">
-            <form method="POST" action="{{ route('admin.purchases.store') }}" id="purchaseForm">
+            <form method="POST" action="{{ route('admin.purchases.store') }}" id="purchaseForm" data-submit-loading>
                 @csrf
 
                 <div class="row g-3 mb-4">
@@ -101,14 +107,14 @@
                 </div>
 
                 <div class="admin-section-card">
-                    <h4 class="admin-section-title mb-3">{{ __('Notes & totals') }}</h4>
+                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3"><h4 class="admin-section-title mb-0">{{ __('Notes & totals') }}</h4><div class="text-end"><div class="text-muted small">{{ __('Estimated total') }}</div><div class="fw-bold fs-4" id="purchaseGrandTotal">EGP 0.00</div></div></div>
                     <div class="mt-0">
                     <label class="form-label">{{ __('Notes') }}</label>
                     <textarea name="notes" class="form-control" rows="3">{{ old('notes') }}</textarea>
                 </div>
 
                     <div class="admin-actions-stack mt-3">
-                        <button class="btn btn-primary btn-text-icon">
+                        <button class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Creating...') }}">
                             <i class="mdi mdi-content-save-outline"></i>
                             <span>{{ __('Create purchase order') }}</span>
                         </button>
@@ -182,6 +188,20 @@
                 return html;
             }
 
+            function recalculateTotal() {
+                let subtotal = 0;
+                tableBody.querySelectorAll('tr').forEach(row => {
+                    const quantity = parseFloat(row.querySelector('[name*="[quantity]"]')?.value || 0);
+                    const unitCost = parseFloat(row.querySelector('[name*="[unit_cost]"]')?.value || 0);
+                    subtotal += quantity * unitCost;
+                });
+                const shipping = parseFloat(document.querySelector('[name="shipping_total"]')?.value || 0);
+                const tax = parseFloat(document.querySelector('[name="tax_total"]')?.value || 0);
+                const total = subtotal + shipping + tax;
+                const output = document.getElementById('purchaseGrandTotal');
+                if (output) output.textContent = 'EGP ' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+
             function addRow(item = {}) {
                 const i = index++;
                 const row = document.createElement('tr');
@@ -238,7 +258,11 @@
                 `;
 
                 tableBody.appendChild(row);
+                recalculateTotal();
             }
+
+            tableBody.addEventListener('input', recalculateTotal);
+            document.querySelectorAll('[name="shipping_total"], [name="tax_total"]').forEach(input => input.addEventListener('input', recalculateTotal));
 
             tableBody.addEventListener('change', function (e) {
                 if (e.target.classList.contains('js-product')) {
@@ -257,6 +281,7 @@
                 }
 
                 btn.closest('tr').remove();
+                recalculateTotal();
             });
 
             addBtn?.addEventListener('click', function () {
