@@ -14,6 +14,8 @@ class SupplierController extends Controller
         $filters = [
             'search' => trim((string) $request->string('search')),
             'status' => (string) $request->string('status'),
+            'usage' => (string) $request->string('usage'),
+            'per_page' => max(12, min(100, (int) $request->integer('per_page', 12))),
             'sort' => (string) $request->string('sort', 'updated_at'),
             'direction' => strtolower((string) $request->string('direction', 'desc')) === 'asc' ? 'asc' : 'desc',
         ];
@@ -46,9 +48,11 @@ class SupplierController extends Controller
             ->when($filters['status'] !== '', function ($query) use ($filters) {
                 $query->where('is_active', $filters['status'] === 'active');
             })
+            ->when($filters['usage'] === 'with_purchases', fn ($query) => $query->has('purchases'))
+            ->when($filters['usage'] === 'unused', fn ($query) => $query->doesntHave('purchases'))
             ->orderBy($sortColumn, $filters['direction'])
             ->when($sortColumn !== 'updated_at', fn ($query) => $query->orderByDesc('updated_at'))
-            ->paginate(12)
+            ->paginate($filters['per_page'])
             ->withQueryString();
 
         $stats = [
@@ -56,6 +60,7 @@ class SupplierController extends Controller
             'active' => Supplier::where('is_active', true)->count(),
             'inactive' => Supplier::where('is_active', false)->count(),
             'with_purchases' => Supplier::has('purchases')->count(),
+            'unused' => Supplier::doesntHave('purchases')->count(),
         ];
 
         return view('admin.suppliers.index', compact('suppliers', 'filters', 'stats'));
