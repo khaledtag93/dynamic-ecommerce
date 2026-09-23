@@ -10,7 +10,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Schema;
 
 class AdminProductEditorExperienceTest extends TestCase
 {
@@ -44,7 +43,7 @@ class AdminProductEditorExperienceTest extends TestCase
             ->set('status', 0)
             ->set('is_featured', 0)
             ->call('save')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors('save');
 
         $this->assertDatabaseHas('products', [
             'name' => 'Retail SKU Product',
@@ -67,7 +66,7 @@ class AdminProductEditorExperienceTest extends TestCase
             ->set('status', 1)
             ->set('is_featured', 0)
             ->call('save')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors('save');
 
         $this->assertDatabaseHas('products', [
             'name' => 'Active Product Under Review',
@@ -270,23 +269,6 @@ class AdminProductEditorExperienceTest extends TestCase
             ->assertSet('savedView', '')
             ->assertSet('featuredFilter', '')
             ->assertSet('perPage', 10);
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        if (! Schema::hasTable('product_related')) {
-            Schema::create('product_related', function ($table) {
-                $table->id();
-                $table->foreignId('product_id');
-                $table->foreignId('related_product_id');
-                $table->string('relation_type')->default('related');
-                $table->unsignedInteger('sort_order')->default(0);
-                $table->boolean('is_active')->default(true);
-                $table->timestamps();
-            });
-        }
     }
 
     private function createCategory(string $name, string $slug): Category
