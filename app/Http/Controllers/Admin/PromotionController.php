@@ -104,8 +104,6 @@ class PromotionController extends Controller
                 },
             ],
             'category_id' => ['nullable', 'exists:categories,id'],
-            'buy_quantity' => ['nullable', 'integer', 'min:1'],
-            'get_quantity' => ['nullable', 'integer', 'min:1'],
             'buy_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
             'get_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
             'min_subtotal' => ['nullable', 'numeric', 'min:0'],
