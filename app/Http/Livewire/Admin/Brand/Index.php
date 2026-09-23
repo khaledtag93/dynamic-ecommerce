@@ -18,10 +18,15 @@ class Index extends Component
     public $brandIdToEdit = null;
     public $search = '';
     public $visibility = '';
+    public $usage = '';
+    public $perPage = 10;
+    public $pendingDeleteId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'visibility' => ['except' => ''],
+        'usage' => ['except' => ''],
+        'perPage' => ['except' => 10],
     ];
 
     protected function rules()
@@ -40,6 +45,23 @@ class Index extends Component
 
     public function updatingVisibility()
     {
+        $this->resetPage();
+    }
+
+    public function updatingUsage()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'visibility', 'usage', 'perPage']);
+        $this->perPage = 10;
         $this->resetPage();
     }
 
@@ -77,19 +99,53 @@ class Index extends Component
 
     }
 
-    public function delete($id)
+    public function requestDelete($id): void
     {
-        $brand = Brand::find($id);
+        $brand = Brand::withCount('products')->findOrFail($id);
 
-        if ($brand) {
-            if ($brand->products()->exists()) {
-                session()->flash('error', __('This brand is linked to products and cannot be deleted.'));
-                return;
-            }
-            $brand->delete();
-            session()->flash('message', __('Brand deleted successfully.'));
-            $this->resetPage();
+        if ($brand->products_count > 0) {
+            session()->flash('error', __('This brand is linked to products and cannot be deleted.'));
+            return;
         }
+
+        $this->pendingDeleteId = $brand->id;
+        $this->dispatchBrowserEvent('open-brand-delete-confirmation', [
+            'id' => $brand->id,
+            'name' => $brand->name,
+        ]);
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->pendingDeleteId = null;
+    }
+
+    public function confirmDelete(): void
+    {
+        if (! $this->pendingDeleteId) {
+            return;
+        }
+
+        $brand = Brand::withCount('products')->find($this->pendingDeleteId);
+
+        if (! $brand) {
+            $this->pendingDeleteId = null;
+            session()->flash('error', __('Brand no longer exists.'));
+            return;
+        }
+
+        if ($brand->products_count > 0) {
+            $this->pendingDeleteId = null;
+            session()->flash('error', __('This brand is linked to products and cannot be deleted.'));
+            return;
+        }
+
+        $brandName = $brand->name;
+        $brand->delete();
+        $this->pendingDeleteId = null;
+        $this->resetPage();
+
+        session()->flash('message', __('Brand :name deleted successfully.', ['name' => $brandName]));
     }
 
     public function render()
@@ -104,15 +160,18 @@ class Index extends Component
             })
             ->when($this->visibility !== '', function ($query) {
                 $query->where('status', $this->visibility === 'hidden' ? 1 : 0);
-            });
+            })
+            ->when($this->usage === 'linked', fn ($query) => $query->has('products'))
+            ->when($this->usage === 'empty', fn ($query) => $query->doesntHave('products'));
 
         return view('livewire.admin.brand.index', [
-            'brands' => $query->latest('id')->paginate(10),
+            'brands' => $query->latest('id')->paginate($this->perPage),
             'stats' => [
                 'total' => Brand::count(),
                 'visible' => Brand::where('status', 0)->count(),
                 'hidden' => Brand::where('status', 1)->count(),
                 'linked' => Brand::has('products')->count(),
+                'empty' => Brand::doesntHave('products')->count(),
             ],
         ])->layout('layouts.admin');
     }
