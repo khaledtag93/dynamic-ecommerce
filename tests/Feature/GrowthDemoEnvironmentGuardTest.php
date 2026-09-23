@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\User;
 use App\Services\Growth\GrowthValidationDemoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,6 +17,7 @@ class GrowthDemoEnvironmentGuardTest extends TestCase
     {
         $owner = User::factory()->create(['role_as' => 1]);
         $this->app->detectEnvironment(fn () => 'production');
+        $this->withoutMiddleware(VerifyCsrfToken::class);
 
         $this->actingAs($owner)
             ->post(route('admin.growth.validation-demo.seed'))
