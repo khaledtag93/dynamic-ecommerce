@@ -69,6 +69,8 @@ class CustomerController extends Controller
             'total_spend' => (float) $user->orders()->sum('grand_total'),
             'refund_total' => (float) $user->orders()->sum('refund_total'),
             'latest_order_at' => optional($user->orders()->latest('id')->first())->created_at,
+            'net_spend' => max(0, (float) $user->orders()->sum('grand_total') - (float) $user->orders()->sum('refund_total')),
+            'average_order_value' => $user->orders()->count() > 0 ? (float) $user->orders()->avg('grand_total') : 0,
         ];
 
         return view('admin.customers.show', compact('user', 'summary', 'staffRoles'));
