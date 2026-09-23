@@ -128,7 +128,16 @@ class CouponController extends Controller
             'name' => ['nullable', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', Rule::unique('coupons', 'code')->ignore($coupon?->id)],
             'type' => ['required', Rule::in(array_keys(Coupon::typeOptions()))],
-            'value' => ['required', 'numeric', 'min:0.01'],
+            'value' => [
+                'required',
+                'numeric',
+                'min:0.01',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request) {
+                    if ($request->input('type') === Coupon::TYPE_PERCENT && (float) $value > 100) {
+                        $fail(__('Percentage coupons cannot exceed 100%.'));
+                    }
+                },
+            ],
             'min_order_amount' => ['nullable', 'numeric', 'min:0'],
             'max_discount_amount' => ['nullable', 'numeric', 'min:0'],
             'usage_limit' => ['nullable', 'integer', 'min:1'],
