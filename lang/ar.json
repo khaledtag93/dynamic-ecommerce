@@ -2944,5 +2944,8 @@
   "Visible products": "منتجات ظاهرة",
   "Draft or hidden products": "منتجات مسودة أو مخفية",
   "Click to review incomplete content": "اضغط لمراجعة المحتوى غير المكتمل",
-  "Simple products at threshold": "منتجات بسيطة وصلت إلى حد المخزون"
+  "Simple products at threshold": "منتجات بسيطة وصلت إلى حد المخزون",
+  "Click to review products at threshold": "اضغط لمراجعة المنتجات التي وصلت إلى حد المخزون",
+  "All stock levels": "كل مستويات المخزون",
+  "Click to review unavailable products": "اضغط لمراجعة المنتجات غير المتاحة"
 }
