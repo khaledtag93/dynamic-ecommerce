@@ -18,6 +18,8 @@ class CategoryController extends Controller
         $filters = [
             'search' => trim((string) $request->string('search')),
             'visibility' => (string) $request->string('visibility'),
+            'usage' => (string) $request->string('usage'),
+            'readiness' => (string) $request->string('readiness'),
             'sort' => (string) $request->string('sort', 'updated_at'),
             'direction' => strtolower((string) $request->string('direction', 'desc')) === 'asc' ? 'asc' : 'desc',
         ];
@@ -50,6 +52,16 @@ class CategoryController extends Controller
             ->when($filters['visibility'] !== '', function ($query) use ($filters) {
                 $query->where('status', $filters['visibility'] === 'visible' ? 0 : 1);
             })
+            ->when($filters['usage'] === 'used', fn ($query) => $query->has('products'))
+            ->when($filters['usage'] === 'empty', fn ($query) => $query->doesntHave('products'))
+            ->when($filters['readiness'] === 'needs_content', function ($query) {
+                $query->where(function ($contentQuery) {
+                    $contentQuery->whereNull('description')
+                        ->orWhere('description', '')
+                        ->orWhereNull('image')
+                        ->orWhere('image', '');
+                });
+            })
             ->orderBy($sortColumn, $filters['direction'])
             ->paginate(12)
             ->withQueryString();
@@ -59,6 +71,15 @@ class CategoryController extends Controller
             'visible' => Category::where('status', 0)->count(),
             'hidden' => Category::where('status', 1)->count(),
             'with_products' => Category::has('products')->count(),
+            'empty' => Category::doesntHave('products')->count(),
+            'needs_content' => Category::query()
+                ->where(function ($query) {
+                    $query->whereNull('description')
+                        ->orWhere('description', '')
+                        ->orWhereNull('image')
+                        ->orWhere('image', '');
+                })
+                ->count(),
         ];
 
         return view('admin.category.index', compact('categories', 'filters', 'stats'));
