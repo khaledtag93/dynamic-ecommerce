@@ -81,12 +81,22 @@
     <div class="col-xl-4">
         <div class="admin-card admin-card-sticky"><div class="admin-card-body">
             <div class="d-flex justify-content-between align-items-start gap-2 mb-3"><div><h4 class="mb-1">{{ __('Update payment status') }}</h4><p class="text-muted small mb-0">{{ __('Manual status changes affect the financial record and should match verified payment evidence.') }}</p></div><i class="mdi mdi-shield-alert-outline fs-4 text-muted"></i></div>
+            @if($paymentLocked)
+                <div class="alert alert-success border-0 mb-3">
+                    <div class="d-flex gap-2 align-items-start">
+                        <i class="mdi mdi-lock-check-outline fs-5"></i>
+                        <div><strong>{{ __('Financial state locked') }}</strong><div class="small mt-1">{{ __('Paid and refunded payments cannot be changed manually. Use the order refund workflow when money is returned.') }}</div></div>
+                    </div>
+                </div>
+            @else
+                <div class="alert alert-info border-0 small">{{ __('Only safe next statuses are available. Manual changes should be backed by provider or transaction evidence.') }}</div>
+            @endif
             <form method="POST" action="{{ route('admin.payments.update-status', $payment) }}" data-submit-loading>
                 @csrf
                 @method('PATCH')
                 <div class="mb-3">
                     <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select class="form-select" name="status">
+                    <select class="form-select" name="status" @disabled($paymentLocked)>
                         @foreach($statusOptions as $value => $label)
                             <option value="{{ $value }}" @selected($payment->status === $value)>{{ $label }}</option>
                         @endforeach
@@ -94,13 +104,13 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">{{ __('Provider status') }}</label>
-                    <input type="text" name="provider_status" class="form-control" value="{{ old('provider_status', $payment->provider_status) }}" placeholder="{{ __('Optional gateway status') }}">
+                    <input type="text" name="provider_status" class="form-control" @disabled($paymentLocked) value="{{ old('provider_status', $payment->provider_status) }}" placeholder="{{ __('Optional gateway status') }}">
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-                    <textarea name="notes" rows="4" class="form-control" placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
+                    <textarea name="notes" rows="4" class="form-control" @disabled($paymentLocked) placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
                 </div>
-                <div class="alert alert-warning border-0 small">{{ __('Check the provider or transaction evidence before marking a payment as paid or failed.') }}</div><button type="submit" class="btn btn-primary w-100 btn-text-icon" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save payment update') }}</span></button>
+                @unless($paymentLocked)<div class="alert alert-warning border-0 small">{{ __('Check the provider or transaction evidence before marking a payment as paid or failed.') }}</div>@endunless<button type="submit" class="btn btn-primary w-100 btn-text-icon" data-loading-text="{{ __('Saving...') }}" @disabled($paymentLocked)><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save payment update') }}</span></button>
             </form>
         </div></div>
     </div>
