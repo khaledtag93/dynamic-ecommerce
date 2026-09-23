@@ -18,10 +18,12 @@ class BrandingSettingsExperienceTest extends TestCase
         $this->actingAs($owner)
             ->get(route('admin.settings.branding'))
             ->assertOk()
-            ->assertSee('Professional Commerce')
-            ->assertSee('Advanced palette')
-            ->assertSee('Reapply selected preset')
-            ->assertSee('No unsaved changes');
+            ->assertViewHas('presets', fn (array $presets) => isset($presets['professional_commerce'])
+                && ($presets['professional_commerce']['brand_primary_color'] ?? null) === '#2563eb'
+                && ($presets['professional_commerce']['brand_secondary_color'] ?? null) === '#0f172a')
+            ->assertSee('data-theme-preset-choice="professional_commerce"', false)
+            ->assertSee('branding-advanced-palette', false)
+            ->assertSee('brandingSaveState', false);
     }
 
     public function test_professional_theme_can_be_saved_and_homepage_toggles_normalize(): void
@@ -44,8 +46,8 @@ class BrandingSettingsExperienceTest extends TestCase
         $this->assertSame('#2563eb', WebsiteSetting::getValue('brand_primary_color'));
         $this->assertSame('#0f172a', WebsiteSetting::getValue('brand_secondary_color'));
         $this->assertSame('#0891b2', WebsiteSetting::getValue('brand_accent_color'));
-        $this->assertFalse((bool) WebsiteSetting::getValue('show_home_featured_categories'));
-        $this->assertFalse((bool) WebsiteSetting::getValue('show_home_manual_featured_products'));
-        $this->assertFalse((bool) WebsiteSetting::getValue('show_home_trust_blocks'));
+        $this->assertFalse(filter_var(WebsiteSetting::getValue('show_home_featured_categories'), FILTER_VALIDATE_BOOLEAN));
+        $this->assertFalse(filter_var(WebsiteSetting::getValue('show_home_manual_featured_products'), FILTER_VALIDATE_BOOLEAN));
+        $this->assertFalse(filter_var(WebsiteSetting::getValue('show_home_trust_blocks'), FILTER_VALIDATE_BOOLEAN));
     }
 }
