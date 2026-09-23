@@ -9,6 +9,8 @@
         $query = array_filter([
             'search' => $filters['search'] ?? null,
             'status' => $filters['status'] ?? null,
+            'usage' => $filters['usage'] ?? null,
+            'per_page' => $filters['per_page'] ?? 12,
             'sort' => $column,
             'direction' => $sort === $column && $direction === 'asc' ? 'desc' : 'asc',
         ], fn ($value) => $value !== null && $value !== '');
@@ -32,8 +34,9 @@
         ['label' => __('Active'), 'value' => $stats['active'], 'copy' => __('Suppliers currently available for purchasing.'), 'icon' => 'mdi-check-decagram-outline'],
         ['label' => __('Inactive'), 'value' => $stats['inactive'], 'copy' => __('Suppliers paused or archived.'), 'icon' => 'mdi-pause-circle-outline'],
         ['label' => __('With purchases'), 'value' => $stats['with_purchases'], 'copy' => __('Suppliers that already have purchase history.'), 'icon' => 'mdi-receipt-text-outline'],
+        ['label' => __('Unused suppliers'), 'value' => $stats['unused'], 'copy' => __('Suppliers without purchase history yet.'), 'icon' => 'mdi-link-variant-off'],
     ] as $card)
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="admin-card admin-stat-card h-100">
                 <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
                 <div class="admin-stat-label">{{ $card['label'] }}</div>
@@ -45,6 +48,10 @@
 </div>
 
 <div class="admin-card mb-4"><div class="admin-card-body">
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-3">
+        <div><h4 class="mb-1">{{ __('Supplier operations') }}</h4><p class="text-muted small mb-0">{{ __('Review sourcing relationships, inactive vendors, and suppliers that have not been used yet.') }}</p></div>
+        <div class="d-flex flex-wrap gap-2"><a href="{{ route('admin.suppliers.index', ['usage' => 'unused']) }}" class="btn {{ $filters['usage'] === 'unused' ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Unused') }} · {{ $stats['unused'] }}</a><a href="{{ route('admin.suppliers.index', ['status' => 'inactive']) }}" class="btn {{ $filters['status'] === 'inactive' ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Inactive') }} · {{ $stats['inactive'] }}</a></div>
+    </div>
     <form method="GET" class="admin-filter-grid" data-submit-loading>
         <div>
             <label class="form-label fw-semibold">{{ __('Search') }}</label>
@@ -58,6 +65,8 @@
                 <option value="inactive" @selected(($filters['status'] ?? '') === 'inactive')>{{ __('Inactive') }}</option>
             </select>
         </div>
+        <div><label class="form-label fw-semibold">{{ __('Purchase usage') }}</label><select name="usage" class="form-select"><option value="">{{ __('All suppliers') }}</option><option value="with_purchases" @selected(($filters['usage'] ?? '') === 'with_purchases')>{{ __('With purchases') }}</option><option value="unused" @selected(($filters['usage'] ?? '') === 'unused')>{{ __('Unused') }}</option></select></div>
+        <div><label class="form-label fw-semibold">{{ __('Per page') }}</label><select name="per_page" class="form-select">@foreach([12,24,48] as $size)<option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>@endforeach</select></div>
         <input type="hidden" name="sort" value="{{ $sort }}">
         <input type="hidden" name="direction" value="{{ $direction }}">
         <div class="admin-filter-actions">
@@ -118,7 +127,7 @@
                         <td class="text-end">
                             <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                 <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="btn-table-icon btn-edit" title="{{ __('Edit Supplier') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                                <form method="POST" action="{{ route('admin.suppliers.destroy', $supplier) }}" data-confirm-message="{{ __('Delete this supplier?') }}">@csrf @method('DELETE')<button class="btn-table-icon btn-delete" title="{{ __('Delete this supplier?') }}"><i class="mdi mdi-trash-can-outline"></i></button></form>
+                                @if($supplier->purchases_count === 0)<form method="POST" action="{{ route('admin.suppliers.destroy', $supplier) }}" data-confirm-message="{{ __('Delete this supplier?') }}">@csrf @method('DELETE')<button class="btn-table-icon btn-delete" title="{{ __('Delete this supplier?') }}"><i class="mdi mdi-trash-can-outline"></i></button></form>@else<span class="btn-table-icon text-muted" title="{{ __('Suppliers with purchase history are protected from deletion.') }}"><i class="mdi mdi-lock-outline"></i></span>@endif
                             </div>
                         </td>
                     </tr>
