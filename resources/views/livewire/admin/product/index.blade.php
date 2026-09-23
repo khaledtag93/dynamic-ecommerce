@@ -69,44 +69,54 @@
         </div>
     </div>
 
-    {{-- Quick Stats --}}
+    {{-- Catalog Health --}}
     <div class="row g-3 mb-4">
-        <div class="col-12 col-md-6 col-xl-3">
+        <div class="col-6 col-xl">
             <div class="card admin-card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">{{ __('Filtered results') }}</div>
-                    <div class="stat-value">{{ $products->total() }}</div>
-                    <div class="stat-note">{{ __('Products matching current filters') }}</div>
+                    <div class="stat-label">{{ __('Catalog') }}</div>
+                    <div class="stat-value">{{ $this->catalogHealth['total'] }}</div>
+                    <div class="stat-note">{{ __('Total products') }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
+        <div class="col-6 col-xl">
             <div class="card admin-card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">{{ __('Selected') }}</div>
-                    <div class="stat-value">{{ $this->selectedCount }}</div>
-                    <div class="stat-note">{{ __('Bulk action ready') }}</div>
+                    <div class="stat-label">{{ __('Active') }}</div>
+                    <div class="stat-value">{{ $this->catalogHealth['active'] }}</div>
+                    <div class="stat-note">{{ __('Visible products') }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
+        <div class="col-6 col-xl">
             <div class="card admin-card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">{{ __('On this page') }}</div>
-                    <div class="stat-value">{{ $products->count() }}</div>
-                    <div class="stat-note">{{ __('Currently visible rows') }}</div>
+                    <div class="stat-label">{{ __('Hidden') }}</div>
+                    <div class="stat-value">{{ $this->catalogHealth['hidden'] }}</div>
+                    <div class="stat-note">{{ __('Draft or hidden products') }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-6 col-xl-3">
+        <div class="col-6 col-xl">
+            <button type="button" class="card admin-card stat-card h-100 w-100 text-start border-0" wire:click="$set('readinessFilter', 'needs_attention')">
+                <div class="card-body">
+                    <div class="stat-label">{{ __('Needs content') }}</div>
+                    <div class="stat-value">{{ $this->catalogHealth['needs_content'] }}</div>
+                    <div class="stat-note">{{ __('Click to review incomplete content') }}</div>
+                </div>
+            </button>
+        </div>
+
+        <div class="col-12 col-xl">
             <div class="card admin-card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">{{ __('Per Page') }}</div>
-                    <div class="stat-value">{{ $perPage }}</div>
-                    <div class="stat-note">{{ __('Rows per page') }}</div>
+                    <div class="stat-label">{{ __('Low stock') }}</div>
+                    <div class="stat-value">{{ $this->catalogHealth['low_stock'] }}</div>
+                    <div class="stat-note">{{ __('Simple products at threshold') }}</div>
                 </div>
             </div>
         </div>
