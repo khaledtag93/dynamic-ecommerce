@@ -42,6 +42,13 @@
         </div>
     @endif
 
+    @if (session('warning'))
+        <div class="alert alert-warning alert-modern mb-3">
+            <i class="mdi mdi-alert-outline me-2"></i>
+            {{ session('warning') }}
+        </div>
+    @endif
+
     @if (session('error'))
         <div class="alert alert-danger alert-modern mb-3">
             <i class="mdi mdi-alert-circle-outline me-2"></i>
@@ -281,6 +288,26 @@
 
                     <button
                         type="button"
+                        class="btn btn-outline-success btn-modern"
+                        wire:click="bulkSetStatus(true)"
+                        wire:loading.attr="disabled"
+                        @disabled($this->selectedCount === 0)
+                    >
+                        <i class="mdi mdi-eye-outline me-1"></i>{{ __('Activate') }}
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-modern"
+                        wire:click="bulkSetStatus(false)"
+                        wire:loading.attr="disabled"
+                        @disabled($this->selectedCount === 0)
+                    >
+                        <i class="mdi mdi-eye-off-outline me-1"></i>{{ __('Hide') }}
+                    </button>
+
+                    <button
+                        type="button"
                         class="btn btn-outline-danger btn-modern"
                         wire:click="bulkDelete"
                         wire:confirm="{{ __('Are you sure you want to delete the selected products?') }}"
@@ -298,7 +325,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,perPage,sortBy,resetFilters,toggleStatus,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,bulkDelete,deleteSingle,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
