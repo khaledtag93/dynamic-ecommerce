@@ -142,7 +142,13 @@ class PaymentService
 
             if ($lockedPayment->status === Payment::STATUS_PAID && $status !== Payment::STATUS_PAID) {
                 throw ValidationException::withMessages([
-                    'status' => 'A paid payment cannot be downgraded manually. Use the order refund action when money is returned.',
+                    'status' => __('A paid payment cannot be downgraded manually. Use the order refund action when money is returned.'),
+                ]);
+            }
+
+            if (! $this->manualTransitionAllowed($lockedPayment->status, $status)) {
+                throw ValidationException::withMessages([
+                    'status' => __('This manual payment status transition is not allowed. Verify the payment evidence and use the appropriate order or gateway flow.'),
                 ]);
             }
 
@@ -429,6 +435,30 @@ class PaymentService
             ->whereKey($orderId)
             ->lockForUpdate()
             ->first();
+    }
+
+    public function allowedManualStatuses(Payment $payment): array
+    {
+        return array_values(array_filter(
+            array_keys(Payment::statusOptions()),
+            fn (string $status) => $status !== Payment::STATUS_REFUNDED
+                && $this->manualTransitionAllowed($payment->status, $status)
+        ));
+    }
+
+    protected function manualTransitionAllowed(string $from, string $to): bool
+    {
+        if ($from === $to) {
+            return true;
+        }
+
+        return match ($from) {
+            Payment::STATUS_PENDING => in_array($to, [Payment::STATUS_AUTHORIZED, Payment::STATUS_PAID, Payment::STATUS_FAILED], true),
+            Payment::STATUS_AUTHORIZED => in_array($to, [Payment::STATUS_PAID, Payment::STATUS_FAILED], true),
+            Payment::STATUS_FAILED => in_array($to, [Payment::STATUS_PENDING, Payment::STATUS_PAID], true),
+            Payment::STATUS_PAID, Payment::STATUS_REFUNDED => false,
+            default => false,
+        };
     }
 
     protected function pushPaymentEvent(array $meta, string $event, string $message): array
