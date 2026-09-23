@@ -2199,5 +2199,6 @@
     "Configure pricing behavior safely": "Configure pricing behavior safely",
     "Choose the promotion model first, then complete only the fields that apply to that pricing rule.": "Choose the promotion model first, then complete only the fields that apply to that pricing rule.",
     "Eligibility": "Eligibility",
-    "Please review the promotion details:": "Please review the promotion details:"
+    "Please review the promotion details:": "Please review the promotion details:",
+    "Save failed because of an unexpected problem. Your changes were not saved. Please try again.": "Save failed because of an unexpected problem. Your changes were not saved. Please try again."
 }
