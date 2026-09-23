@@ -12,6 +12,8 @@ class Values extends Component
     public $attributeId;
     public $value = '';
     public $valueId = null;
+    public $search = '';
+    public $pendingDeleteId = null;
 
     public function rules()
     {
@@ -29,7 +31,19 @@ class Values extends Component
 
     public function mount($id)
     {
+        ProductAttribute::findOrFail($id);
         $this->attributeId = $id;
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->search = trim($this->search);
+    }
+
+    public function resetForm(): void
+    {
+        $this->reset(['value', 'valueId']);
+        $this->resetValidation();
     }
 
     public function save()
@@ -44,8 +58,8 @@ class Values extends Component
             ]
         );
 
-        $this->reset(['value', 'valueId']);
-        session()->flash('message', 'Value saved successfully.');
+        $this->resetForm();
+        session()->flash('message', __('Value saved successfully.'));
     }
 
     public function edit($id)
@@ -56,17 +70,90 @@ class Values extends Component
         $this->value = $item->value;
     }
 
-    public function delete($id)
+    protected function variantUsageCount(ProductAttributeValue $value): int
     {
-        ProductAttributeValue::findOrFail($id)->delete();
-        session()->flash('message', 'Value deleted successfully.');
+        return \App\Models\ProductVariantAttribute::query()
+            ->where('attribute_id', $this->attributeId)
+            ->where('attribute_value', $value->value)
+            ->count();
+    }
+
+    public function requestDelete($id): void
+    {
+        $value = ProductAttributeValue::query()
+            ->where('attribute_id', $this->attributeId)
+            ->findOrFail($id);
+
+        $usageCount = $this->variantUsageCount($value);
+
+        if ($usageCount > 0) {
+            session()->flash('error', __('This value is used by :count product variant(s) and cannot be deleted.', ['count' => $usageCount]));
+            return;
+        }
+
+        $this->pendingDeleteId = $value->id;
+        $this->dispatchBrowserEvent('open-attribute-value-delete-confirmation', [
+            'value' => $value->value,
+        ]);
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->pendingDeleteId = null;
+    }
+
+    public function confirmDelete(): void
+    {
+        if (! $this->pendingDeleteId) {
+            return;
+        }
+
+        $value = ProductAttributeValue::query()
+            ->where('attribute_id', $this->attributeId)
+            ->find($this->pendingDeleteId);
+
+        if (! $value) {
+            $this->pendingDeleteId = null;
+            session()->flash('error', __('Attribute value no longer exists.'));
+            return;
+        }
+
+        $usageCount = $this->variantUsageCount($value);
+
+        if ($usageCount > 0) {
+            $this->pendingDeleteId = null;
+            session()->flash('error', __('This value is used by :count product variant(s) and cannot be deleted.', ['count' => $usageCount]));
+            return;
+        }
+
+        $label = $value->value;
+        $value->delete();
+        $this->pendingDeleteId = null;
+
+        session()->flash('message', __('Value :value deleted successfully.', ['value' => $label]));
     }
 
     public function render()
     {
-        $attribute = ProductAttribute::with('values')->findOrFail($this->attributeId);
+        $attribute = ProductAttribute::findOrFail($this->attributeId);
 
-        return view('livewire.admin.attribute.values', compact('attribute'))
+        $values = ProductAttributeValue::query()
+            ->where('attribute_id', $this->attributeId)
+            ->when($this->search !== '', fn ($query) => $query->where('value', 'like', '%' . trim($this->search) . '%'))
+            ->orderBy('value')
+            ->get()
+            ->map(function (ProductAttributeValue $value) {
+                $value->variant_usage_count = $this->variantUsageCount($value);
+                return $value;
+            });
+
+        $stats = [
+            'total' => ProductAttributeValue::where('attribute_id', $this->attributeId)->count(),
+            'in_use' => $values->where('variant_usage_count', '>', 0)->count(),
+            'unused' => $values->where('variant_usage_count', 0)->count(),
+        ];
+
+        return view('livewire.admin.attribute.values', compact('attribute', 'values', 'stats'))
             ->layout('layouts.admin');
     }
 }
