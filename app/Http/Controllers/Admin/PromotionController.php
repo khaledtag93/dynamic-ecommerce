@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\PromotionRule;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PromotionController extends Controller
 {
@@ -91,11 +92,22 @@ class PromotionController extends Controller
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', 'max:255'],
-            'discount_value' => ['nullable', 'numeric', 'min:0'],
+            'type' => ['required', Rule::in(['order_percentage', 'order_fixed', 'category_percentage', 'buy_x_get_y'])],
+            'discount_value' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request) {
+                    if (in_array($request->input('type'), ['order_percentage', 'category_percentage'], true) && (float) $value > 100) {
+                        $fail(__('Percentage promotions cannot exceed 100%.'));
+                    }
+                },
+            ],
             'category_id' => ['nullable', 'exists:categories,id'],
             'buy_quantity' => ['nullable', 'integer', 'min:1'],
             'get_quantity' => ['nullable', 'integer', 'min:1'],
+            'buy_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
+            'get_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
             'min_subtotal' => ['nullable', 'numeric', 'min:0'],
             'priority' => ['nullable', 'integer', 'min:0'],
             'starts_at' => ['nullable', 'date'],
