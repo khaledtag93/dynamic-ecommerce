@@ -173,7 +173,7 @@ class AdminProductEditorExperienceTest extends TestCase
             'status' => 0,
         ]);
 
-        Livewire::test(ProductIndex::class)
+        Livewire::test(Index::class)
             ->set('selectedProducts', [$first->id, $second->id])
             ->call('bulkSetStatus', true)
             ->assertSessionHas('warning');
@@ -207,7 +207,7 @@ class AdminProductEditorExperienceTest extends TestCase
             'status' => 1,
         ]);
 
-        Livewire::test(ProductIndex::class)
+        Livewire::test(Index::class)
             ->set('selectedProducts', [$selected->id])
             ->call('bulkSetStatus', false)
             ->assertSessionHas('message');
