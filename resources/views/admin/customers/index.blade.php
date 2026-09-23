@@ -12,8 +12,9 @@
         ['label' => __('Customers'), 'value' => $stats['customers'], 'copy' => __('Standard customer accounts.'), 'icon' => 'mdi-account-outline'],
         ['label' => __('Admins'), 'value' => $stats['admins'], 'copy' => __('Users with admin dashboard access.'), 'icon' => 'mdi-shield-account-outline'],
         ['label' => __('Buyers'), 'value' => $stats['buyers'], 'copy' => __('Accounts that have at least one order.'), 'icon' => 'mdi-cart-check'],
+        ['label' => __('No orders yet'), 'value' => $stats['no_orders'], 'copy' => __('Registered accounts that have not placed an order yet.'), 'icon' => 'mdi-cart-outline'],
     ] as $card)
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="admin-card admin-stat-card h-100">
                 <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
                 <div class="admin-stat-label">{{ $card['label'] }}</div>
@@ -26,6 +27,10 @@
 
 <div class="admin-card mb-4">
     <div class="admin-card-body">
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-3">
+            <div><h4 class="mb-1">{{ __('Customer operations') }}</h4><p class="text-muted small mb-0">{{ __('Review account roles and quickly separate active buyers from registered users who have not ordered yet.') }}</p></div>
+            <div class="d-flex flex-wrap gap-2"><a href="{{ route('admin.customers.index', ['activity' => 'buyers']) }}" class="btn {{ $activity === 'buyers' ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Buyers') }} · {{ $stats['buyers'] }}</a><a href="{{ route('admin.customers.index', ['activity' => 'no_orders']) }}" class="btn {{ $activity === 'no_orders' ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('No orders yet') }} · {{ $stats['no_orders'] }}</a></div>
+        </div>
         <form method="GET" class="admin-filter-grid admin-filter-grid-customers" data-submit-loading>
             <div>
                 <label class="form-label fw-semibold">{{ __('Search') }}</label>
@@ -39,6 +44,8 @@
                     <option value="1" @selected($role === '1')>{{ __('Admins') }}</option>
                 </select>
             </div>
+            <div><label class="form-label fw-semibold">{{ __('Order activity') }}</label><select name="activity" class="form-select"><option value="">{{ __('All accounts') }}</option><option value="buyers" @selected($activity === 'buyers')>{{ __('Buyers') }}</option><option value="no_orders" @selected($activity === 'no_orders')>{{ __('No orders yet') }}</option></select></div>
+            <div><label class="form-label fw-semibold">{{ __('Per page') }}</label><select name="per_page" class="form-select">@foreach([12,24,48] as $size)<option value="{{ $size }}" @selected($perPage === $size)>{{ $size }}</option>@endforeach</select></div>
             <div class="admin-filter-actions">
                 <button type="submit" class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Filtering...') }}"><i class="mdi mdi-filter-outline"></i><span>{{ __('Apply') }}</span></button>
                 <a href="{{ route('admin.customers.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-refresh"></i><span>{{ __('Reset') }}</span></a>
@@ -88,7 +95,7 @@
                                     <div class="text-muted small">{{ $user->created_at?->format('h:i A') }}</div>
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ route('admin.customers.show', $user) }}" class="btn btn-light border btn-sm">{{ __('View account') }}</a>
+                                    <a href="{{ route('admin.customers.show', $user) }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-account-eye-outline"></i><span>{{ __('View account') }}</span></a>
                                 </td>
                             </tr>
                         @endforeach
