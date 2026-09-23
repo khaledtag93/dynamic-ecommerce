@@ -2149,5 +2149,12 @@
     "Customer operations": "Customer operations",
     "Review account roles and quickly separate active buyers from registered users who have not ordered yet.": "Review account roles and quickly separate active buyers from registered users who have not ordered yet.",
     "Order activity": "Order activity",
-    "All accounts": "All accounts"
+    "All accounts": "All accounts",
+    "Net spend": "Net spend",
+    "Order value after recorded refunds.": "Order value after recorded refunds.",
+    "Identity, access, and customer relationship context.": "Identity, access, and customer relationship context.",
+    "Buyer": "Buyer",
+    "Registered": "Registered",
+    "Average order": "Average order",
+    "Last order": "Last order"
 }
