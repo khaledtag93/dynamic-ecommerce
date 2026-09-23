@@ -12,8 +12,10 @@
             ['label' => __('Attributes'), 'value' => $stats['total'], 'copy' => __('Reusable attribute groups.'), 'icon' => 'mdi-tune-variant'],
             ['label' => __('With values'), 'value' => $stats['with_values'], 'copy' => __('Attributes already filled with values.'), 'icon' => 'mdi-format-list-bulleted-square'],
             ['label' => __('Values total'), 'value' => $stats['values_total'], 'copy' => __('All attribute values stored in the catalog.'), 'icon' => 'mdi-alpha-v-box'],
+            ['label' => __('Empty'), 'value' => $stats['empty'], 'copy' => __('Attributes that still need reusable values.'), 'icon' => 'mdi-format-list-bulleted'],
+            ['label' => __('In use'), 'value' => $stats['in_use'], 'copy' => __('Attributes already referenced by product variants.'), 'icon' => 'mdi-link-variant'],
         ] as $card)
-            <div class="col-md-6 col-xl-4">
+            <div class="col-md-6 col-xl">
                 <div class="admin-card admin-stat-card h-100">
                     <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
                     <div class="admin-stat-label">{{ $card['label'] }}</div>
@@ -25,20 +27,50 @@
     </div>
 
     <div class="card admin-card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3">
+                <div>
+                    <h4 class="mb-1">{{ __('Attribute operations') }}</h4>
+                    <div class="text-muted small">{{ __('Review incomplete attributes and protect variant structures already in use.') }}</div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn {{ $coverage === 'empty' ? 'btn-primary' : 'btn-light border' }} btn-sm" wire:click="$set('coverage', 'empty')">{{ __('Needs values') }} · {{ $stats['empty'] }}</button>
+                    <button type="button" class="btn {{ $coverage === 'in_use' ? 'btn-primary' : 'btn-light border' }} btn-sm" wire:click="$set('coverage', 'in_use')">{{ __('In use') }} · {{ $stats['in_use'] }}</button>
+                    <button type="button" class="btn btn-light border btn-sm" wire:click="resetFilters">{{ __('Reset filters') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card admin-card mb-4">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                     <h5 class="mb-1">{{ __('Add or Edit Attribute') }}</h5>
                     <small class="text-muted">{{ __('Keep labels reusable for product variants or specification sections.') }}</small>
                 </div>
-                <div class="admin-search-inline">
-                    <input type="text" wire:model.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="admin-search-inline">
+                        <input type="text" wire:model.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
+                    </div>
+                    <select wire:model="coverage" class="form-select" style="width:auto">
+                        <option value="">{{ __('All attributes') }}</option>
+                        <option value="with_values">{{ __('With values') }}</option>
+                        <option value="empty">{{ __('Needs values') }}</option>
+                        <option value="in_use">{{ __('In use by variants') }}</option>
+                    </select>
+                    <select wire:model="perPage" class="form-select" style="width:auto">
+                        <option value="10">10</option><option value="25">25</option><option value="50">50</option>
+                    </select>
                 </div>
             </div>
         </div>
         <div class="card-body">
             @if (session()->has('message'))
                 <div class="alert alert-success">{{ session('message') }}</div>
+            @endif
+            @if (session()->has('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
             <form wire:submit.prevent="save" class="row g-3 align-items-end">
@@ -74,13 +106,13 @@
                             <tr>
                                 <td>{{ $attr->id }}</td>
                                 <td>{{ $attr->name }}</td>
-                                <td>{{ $attr->values_count }}</td>
+                                <td><div class="fw-semibold">{{ $attr->values_count }}</div><small class="text-muted">{{ $attr->variant_attributes_count }} {{ __('variant links') }}</small></td>
                                 <td>
                                     <div class="d-flex gap-2 flex-wrap">
                                         <button wire:click="edit({{ $attr->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit attribute') }}">
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </button>
-                                        <button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete attribute') }}" onclick="adminConfirmAction(() => @this.call('delete', {{ $attr->id }}), __('Are you sure you want to delete this attribute?'))">
+                                        <button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete attribute') }}" wire:click="requestDelete({{ $attr->id }})" @disabled($attr->variant_attributes_count > 0)>
                                             <i class="mdi mdi-trash-can-outline"></i>
                                         </button>
                                         <a href="{{ route('admin.attributes.values', $attr->id) }}" class="btn-table-icon btn-values" title="{{ __('Manage values') }}">
@@ -100,4 +132,41 @@
         </div>
         <div class="card-footer">{{ $attributes->links() }}</div>
     </div>
+
+    <div class="modal fade" id="attributeDeleteConfirmationModal" tabindex="-1" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <div><span class="badge badge-soft-danger mb-2">{{ __('Destructive action') }}</span><h5 class="modal-title">{{ __('Delete this attribute?') }}</h5></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">{{ __('Deleting an unused attribute also removes its reusable values. Attributes referenced by product variants are protected.') }}</p>
+                    <p class="text-muted small mb-0">{{ __('This action cannot be undone.') }}</p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal" wire:click="cancelDelete">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn btn-danger" wire:click="confirmDelete" wire:loading.attr="disabled" wire:target="confirmDelete">{{ __('Delete attribute') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        window.addEventListener('open-attribute-delete-confirmation', () => {
+            const element = document.getElementById('attributeDeleteConfirmationModal');
+            if (element && window.bootstrap) bootstrap.Modal.getOrCreateInstance(element).show();
+        });
+        document.addEventListener('livewire:load', () => {
+            Livewire.hook('message.processed', () => {
+                if (@this.get('pendingDeleteId')) return;
+                const element = document.getElementById('attributeDeleteConfirmationModal');
+                if (!element || !window.bootstrap) return;
+                const modal = bootstrap.Modal.getInstance(element);
+                if (modal) modal.hide();
+            });
+        });
+    </script>
+    @endpush
 </div>
