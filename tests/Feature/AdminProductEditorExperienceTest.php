@@ -32,6 +32,9 @@ class AdminProductEditorExperienceTest extends TestCase
             'name' => 'Retail Test',
             'slug' => 'retail-test',
             'description' => 'Retail test category',
+            'meta_title' => 'Retail Test',
+            'meta_keyword' => 'retail,test',
+            'meta_description' => 'Retail test category',
             'status' => false,
         ]);
 
