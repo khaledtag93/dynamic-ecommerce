@@ -27,6 +27,7 @@ class Index extends Component
     public $stockFilter = '';
     public $featuredFilter = '';
     public $pendingDeleteId = null;
+    public $pendingBulkDeleteCount = 0;
     public $perPage = 10;
 
     // Sorting
@@ -305,15 +306,35 @@ class Index extends Component
         session()->flash('message', "Product {$productName} deleted successfully.");
     }
 
-    public function bulkDelete()
+    public function requestBulkDelete(): void
     {
         if (empty($this->selectedProducts)) {
             session()->flash('error', 'Please select at least one product.');
             return;
         }
 
+        $this->pendingBulkDeleteCount = count(array_unique($this->selectedProducts));
+
+        $this->dispatchBrowserEvent('open-product-bulk-delete-confirmation', [
+            'count' => $this->pendingBulkDeleteCount,
+        ]);
+    }
+
+    public function cancelBulkDelete(): void
+    {
+        $this->pendingBulkDeleteCount = 0;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if (empty($this->selectedProducts) || $this->pendingBulkDeleteCount < 1) {
+            return;
+        }
+
+        $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
+
         $products = Product::with('images')
-            ->whereIn('id', $this->selectedProducts)
+            ->whereIn('id', $ids)
             ->get();
 
         foreach ($products as $product) {
@@ -329,10 +350,13 @@ class Index extends Component
             $product->delete();
         }
 
+        $deletedCount = $products->count();
+
+        $this->pendingBulkDeleteCount = 0;
         $this->resetSelection();
         $this->cancelAllInlineEdits();
 
-        session()->flash('message', 'Selected products deleted successfully.');
+        session()->flash('message', "{$deletedCount} selected product(s) deleted successfully.");
     }
 
     protected function productUsesVariants(Product $product): bool
