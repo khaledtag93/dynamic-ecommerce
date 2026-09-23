@@ -2123,5 +2123,14 @@
     "Search purchases": "Search purchases",
     "Reference, supplier, or company": "Reference, supplier, or company",
     "All suppliers": "All suppliers",
-    "Receiving...": "Receiving..."
+    "Receiving...": "Receiving...",
+    "Purchase workflow": "Purchase workflow",
+    "Build purchase order": "Build purchase order",
+    "Choose a supplier, add stock lines, review the live total, then save the order for later receiving.": "Choose a supplier, add stock lines, review the live total, then save the order for later receiving.",
+    "Totals": "Totals",
+    "Estimated total": "Estimated total",
+    "Creating...": "Creating...",
+    "Including shipping and tax.": "Including shipping and tax.",
+    "Received date": "Received date",
+    "Not received yet": "Not received yet"
 }
