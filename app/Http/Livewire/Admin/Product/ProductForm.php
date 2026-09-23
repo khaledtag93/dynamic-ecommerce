@@ -1416,6 +1416,10 @@ class ProductForm extends Component
         'errors' => $errors->toArray(),
     ]);
 }catch (Throwable $e) {
+            if (app()->environment('testing')) {
+                throw $e;
+            }
+
             report($e);
 
             $this->logError('ProductForm save failed with throwable', [
