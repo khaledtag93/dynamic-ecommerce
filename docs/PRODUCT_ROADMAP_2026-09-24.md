@@ -28,6 +28,8 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 
 ## Phase 1 — UI/UX foundation and design system
 
+**Implementation update — 2026-09-24:** Branding & Appearance V2 is implemented in source on `v42-clean-baseline` and documented in `BRANDING_APPEARANCE_V2_2026-09-24.md`. It introduces the Professional Commerce direction, visual theme selection, advanced palette disclosure, improved previews, unsaved-change handling, semantic admin states and homepage-toggle fixes. QAS visual/task acceptance remains required before this slice is considered verified or deployable.
+
 ### Admin shell
 - Finalize sidebar/topbar/navigation hierarchy and role-aware actions.
 - Standardize page headers, filters, tables, empty states, form actions, confirmations, toasts, validation and mobile behavior.
