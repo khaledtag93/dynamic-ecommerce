@@ -10,7 +10,7 @@
 @if(session('success'))<div class="alert alert-success border-0 shadow-sm rounded-4 mb-0">{{ session('success') }}</div>@endif
 @if(session('error'))<div class="alert alert-danger border-0 shadow-sm rounded-4 mb-0">{{ session('error') }}</div>@endif
 @if($errors->any())<div class="alert alert-danger border-0 shadow-sm rounded-4 mb-0">{{ __('Please review the form and fix the highlighted fields.') }}</div>@endif
-<form method="POST" action="{{ route('admin.suppliers.store') }}">@csrf
+<form data-submit-loading method="POST" action="{{ route('admin.suppliers.store') }}">@csrf
 @php($submitLabel = __('Save Supplier'))
 @include('admin.suppliers._form', ['supplier' => $supplier, 'submitLabel' => $submitLabel])
 </form>
