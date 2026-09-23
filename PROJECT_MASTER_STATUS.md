@@ -5,9 +5,9 @@
 - **Official application baseline:** V42
 - **Baseline description:** Cost Calculator refactor + Arabic/English translation updates
 - **Current working branch:** `v42-clean-baseline`
-- **Current phase:** Production hardening
-- **GitHub `main`:** still the older V40 baseline until V42 passes hardening
-- **Production:** unchanged; no V42 deployment yet
+- **Current phase:** Post-deployment stabilization and source-control promotion
+- **GitHub `main`:** still on the older baseline and has not yet been promoted to the validated V42 branch
+- **Production:** V42 routine deployment flow is validated; exact application commit `95e9f50` was deployed successfully with HTTP 200
 - **Production domain:** `tag-marketplace.com`
 
 ## V42 baseline status
@@ -267,3 +267,12 @@ Security/release note:
 - This is not a production deploy blocker for the current V42 flow because frontend assets are built in CI and `public/build` is committed/deployed with the application.
 - The hardened `deploy.sh` does not require Node/npm on production.
 - Do not install Node on the live server solely for deployment unless the deployment strategy changes.
+
+
+## Post-deployment cleanup — 2026-09-23
+- Routine QAS -> Production promotion was already validated end-to-end with application commit `95e9f50`.
+- Two homepage labels used only as visible deployment markers were still present after validation: `V42 Special Offers` and `V42 Popular Products`.
+- Cleanup commit `41a2f99` restores the intended customer-facing labels: `Today offers` and `Popular now`.
+- Cleanup commit is pushed to `v42-clean-baseline` and is **not yet recorded as QAS/Production deployed**.
+- Next operational step: deploy `41a2f99` to QAS, browser-verify, then Production dry-run + exact-commit execution if approved.
+- After the cleanup is verified in Production, promote the validated V42 history to `main` so source control matches the production release line.
