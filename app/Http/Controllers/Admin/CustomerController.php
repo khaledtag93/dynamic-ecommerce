@@ -21,6 +21,8 @@ class CustomerController extends Controller
     {
         $search = trim((string) $request->string('search'));
         $role = (string) $request->string('role');
+        $activity = (string) $request->string('activity');
+        $perPage = max(12, min(100, (int) $request->integer('per_page', 12)));
 
         $users = User::query()
             ->with('roles:id,name')
@@ -33,8 +35,10 @@ class CustomerController extends Controller
                 });
             })
             ->when($role !== '', fn ($query) => $query->where('role_as', (int) $role))
+            ->when($activity === 'buyers', fn ($query) => $query->has('orders'))
+            ->when($activity === 'no_orders', fn ($query) => $query->doesntHave('orders'))
             ->latest('id')
-            ->paginate(12)
+            ->paginate($perPage)
             ->withQueryString();
 
         $stats = [
@@ -42,9 +46,10 @@ class CustomerController extends Controller
             'admins' => User::where('role_as', 1)->count(),
             'customers' => User::where('role_as', 0)->count(),
             'buyers' => User::has('orders')->count(),
+            'no_orders' => User::doesntHave('orders')->count(),
         ];
 
-        return view('admin.customers.index', compact('users', 'search', 'role', 'stats'));
+        return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'perPage', 'stats'));
     }
 
     public function show(User $user)
