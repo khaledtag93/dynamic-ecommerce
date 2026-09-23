@@ -120,6 +120,16 @@
                 </div>
             </button>
         </div>
+
+        <div class="col-12 col-xl">
+            <button type="button" class="card admin-card stat-card h-100 w-100 text-start border-0" wire:click="$set('stockFilter', 'out')">
+                <div class="card-body">
+                    <div class="stat-label">{{ __('Out of stock') }}</div>
+                    <div class="stat-value">{{ $this->catalogHealth['out_of_stock'] }}</div>
+                    <div class="stat-note">{{ __('Click to review unavailable products') }}</div>
+                </div>
+            </button>
+        </div>
     </div>
 
     {{-- Filters --}}
