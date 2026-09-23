@@ -277,3 +277,22 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
   8. verify Production in the browser.
 - Important operational detail: `deploy-qas.sh` is currently tracked as mode `100644` and appeared as `600` on the Hostinger checkout, so invoking it as `./deploy-qas.sh` returned Permission denied. Until its Git executable bit is corrected permanently, use `bash deploy-qas.sh`.
 - Do not assume future deployments are risk-free. The workflow is now proven and significantly safer, but every Production promotion must still use the exact QAS-approved commit, dry-run first, backups/DB snapshot, and health/browser verification.
+
+
+## Temporary release-label cleanup — 2026-09-23
+
+- GitHub review confirmed the routine Production flow had already been revalidated successfully with application commit `95e9f50`.
+- Two visible homepage strings were intentionally changed only to prove QAS/Production promotion and should not remain as final storefront copy:
+  - `V42 Special Offers` -> `Today offers`
+  - `V42 Popular Products` -> `Popular now`
+- Cleanup application commit: `41a2f99` (`chore: remove temporary V42 release test labels`).
+- The cleanup is committed on `v42-clean-baseline`.
+- Current verification state: source change confirmed in GitHub; QAS and Production deployment of this cleanup are still pending.
+- Required continuation:
+  1. deploy QAS with `bash deploy-qas.sh`;
+  2. confirm QAS reports commit `41a2f99` and HTTP 200;
+  3. browser-check the two restored labels;
+  4. run Production dry-run for exact commit `41a2f99`;
+  5. only after approval, execute Production for exact commit `41a2f99`;
+  6. verify Production HTTP/browser result;
+  7. then reconcile/promote the validated V42 branch to `main`.
