@@ -4,14 +4,25 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Purchase Details')" :description="__('Reference') . ': ' . $purchase->reference">
-    <a href="{{ route('admin.purchases.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to purchases') }}</span></a>
+    <div class="d-flex gap-2 flex-wrap"><a href="{{ route('admin.purchases.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to purchases') }}</span></a>@if($purchase->status !== \App\Models\Purchase::STATUS_RECEIVED)<form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading>@csrf<button class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button></form>@endif</div>
 </x-admin.page-header>
 
 <div class="admin-page-shell">
     <div class="row g-4">
         <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Supplier') }}</div><div class="admin-stat-value">{{ $purchase->supplier?->name ?: '—' }}</div></div></div>
         <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Status') }}</div><div class="admin-stat-value">{{ \App\Models\Purchase::statusOptions()[$purchase->status] ?? ucfirst($purchase->status) }}</div></div></div>
-        <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Grand total') }}</div><div class="admin-stat-value">{{ number_format($purchase->grand_total, 2) }}</div></div></div>
+        <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Grand total') }}</div><div class="admin-stat-value">EGP {{ number_format($purchase->grand_total, 2) }}</div><div class="text-muted small mt-2">{{ __('Including shipping and tax.') }}</div></div></div>
+    </div>
+
+    <div class="admin-card mb-4">
+        <div class="admin-card-body">
+            <div class="row g-3">
+                <div class="col-md-4"><div class="admin-inline-label">{{ __('Purchase date') }}</div><div class="fw-semibold">{{ optional($purchase->purchase_date)->format('d M Y') ?: '—' }}</div></div>
+                <div class="col-md-4"><div class="admin-inline-label">{{ __('Received date') }}</div><div class="fw-semibold">{{ optional($purchase->received_date)->format('d M Y') ?: __('Not received yet') }}</div></div>
+                <div class="col-md-4"><div class="admin-inline-label">{{ __('Items') }}</div><div class="fw-semibold">{{ $purchase->items->count() }}</div></div>
+                @if($purchase->notes)<div class="col-12"><div class="admin-inline-label">{{ __('Notes') }}</div><div>{{ $purchase->notes }}</div></div>@endif
+            </div>
+        </div>
     </div>
 
     <div class="admin-card">
@@ -42,8 +53,8 @@
                                 <td>{{ $item->variant_name ?: '—' }}</td>
                                 <td>{{ $item->sku ?: '—' }}</td>
                                 <td>{{ $item->quantity }}</td>
-                                <td>{{ number_format($item->unit_cost, 2) }}</td>
-                                <td>{{ number_format($item->line_total, 2) }}</td>
+                                <td>EGP {{ number_format($item->unit_cost, 2) }}</td>
+                                <td class="fw-semibold">EGP {{ number_format($item->line_total, 2) }}</td>
                                 <td>{{ $item->expiration_date ? \Illuminate\Support\Carbon::parse($item->expiration_date)->format('d M Y') : '—' }}</td>
                             </tr>
                         @endforeach
