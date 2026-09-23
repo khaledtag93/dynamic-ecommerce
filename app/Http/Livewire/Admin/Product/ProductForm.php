@@ -25,6 +25,7 @@ class ProductForm extends Component
 
     public $name = '';
     public $slug = '';
+    public $sku = '';
     public $barcode = '';
     public $brand_id = '';
     public $category_id = '';
@@ -90,6 +91,7 @@ class ProductForm extends Component
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug,' . $productId],
+            'sku' => ['nullable', 'string', 'max:255'],
             'barcode' => ['nullable', 'string', 'max:255'],
             'brand_id' => ['nullable', 'exists:brands,id'],
             'category_id' => ['required', 'exists:categories,id'],
@@ -288,6 +290,7 @@ class ProductForm extends Component
         $this->productId = $product->id;
         $this->name = $product->name;
         $this->slug = $product->slug;
+        $this->sku = $product->sku;
         $this->barcode = $product->barcode;
         $this->brand_id = $product->brand_id;
         $this->category_id = $product->category_id;
