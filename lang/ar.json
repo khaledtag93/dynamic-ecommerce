@@ -1329,7 +1329,7 @@
     "Need confidence before placing the order?": "تحتاج للتأكد قبل تأكيد الطلب؟",
     "Need help finishing checkout?": "هل تحتاج مساعدة لإكمال الطلب؟",
     "Need help?": "تحتاج مساعدة؟",
-    "Needs attention": "ما يحتاج متابعة",
+    "Needs attention": "تحتاج مراجعة",
     "Needs review": "يحتاج إلى مراجعة",
     "Net collected after refunds.": "الصافي المُحصّل بعد المرتجعات.",
     "Net paid": "صافي المدفوع",
@@ -3082,5 +3082,8 @@
     "In transit": "قيد الشحن",
     "Exceptions": "حالات استثنائية",
     "Delivery operations": "عمليات التوصيل",
-    "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "تنقل بسرعة بين الطلبات التي تنتظر الشحن والشحنات قيد التوصيل وحالات التوصيل الاستثنائية."
+    "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "تنقل بسرعة بين الطلبات التي تنتظر الشحن والشحنات قيد التوصيل وحالات التوصيل الاستثنائية.",
+    "Paid amount": "المبلغ المدفوع",
+    "Payment operations": "عمليات المدفوعات",
+    "Review payment exceptions, pending records, and successful collections from one finance workspace.": "راجع مشكلات المدفوعات والعمليات المعلقة والتحصيلات الناجحة من مساحة مالية واحدة."
 }
