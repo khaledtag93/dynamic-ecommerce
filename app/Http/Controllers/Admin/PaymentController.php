@@ -21,6 +21,8 @@ class PaymentController extends Controller
             'search' => trim((string) $request->string('search')),
             'status' => (string) $request->string('status'),
             'method' => (string) $request->string('method'),
+            'queue' => (string) $request->string('queue'),
+            'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
         ];
 
         $payments = Payment::query()
@@ -34,8 +36,10 @@ class PaymentController extends Controller
             })
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
             ->when($filters['method'], fn ($query, $method) => $query->where('method', $method))
+            ->when($filters['queue'] === 'attention', fn ($query) => $query->whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_FAILED]))
+            ->when($filters['queue'] === 'failed', fn ($query) => $query->where('status', Payment::STATUS_FAILED))
             ->latest('id')
-            ->paginate(20)
+            ->paginate($filters['per_page'])
             ->withQueryString();
 
         $stats = [
@@ -44,6 +48,8 @@ class PaymentController extends Controller
             'paid' => Payment::where('status', Payment::STATUS_PAID)->count(),
             'failed' => Payment::where('status', Payment::STATUS_FAILED)->count(),
             'amount_total' => (float) Payment::sum('amount'),
+            'attention' => Payment::whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_FAILED])->count(),
+            'paid_amount' => (float) Payment::where('status', Payment::STATUS_PAID)->sum('amount'),
         ];
 
         return view('admin.payments.index', [
