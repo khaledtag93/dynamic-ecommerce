@@ -22,6 +22,7 @@ class CustomerController extends Controller
         $search = trim((string) $request->string('search'));
         $role = (string) $request->string('role');
         $activity = (string) $request->string('activity');
+        $value = (string) $request->string('value');
         $perPage = max(12, min(100, (int) $request->integer('per_page', 12)));
 
         $users = User::query()
@@ -37,6 +38,8 @@ class CustomerController extends Controller
             ->when($role !== '', fn ($query) => $query->where('role_as', (int) $role))
             ->when($activity === 'buyers', fn ($query) => $query->has('orders'))
             ->when($activity === 'no_orders', fn ($query) => $query->doesntHave('orders'))
+            ->when($value === 'repeat', fn ($query) => $query->has('orders', '>=', 2))
+            ->when($value === 'high_value', fn ($query) => $query->whereHas('orders')->withSum('orders as value_spend', 'grand_total')->orderByDesc('value_spend'))
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();
@@ -47,9 +50,11 @@ class CustomerController extends Controller
             'customers' => User::where('role_as', 0)->count(),
             'buyers' => User::has('orders')->count(),
             'no_orders' => User::doesntHave('orders')->count(),
+            'repeat_buyers' => User::has('orders', '>=', 2)->count(),
+            'revenue' => (float) User::query()->withSum('orders', 'grand_total')->get()->sum('orders_sum_grand_total'),
         ];
 
-        return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'perPage', 'stats'));
+        return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'value', 'perPage', 'stats'));
     }
 
     public function show(User $user)
