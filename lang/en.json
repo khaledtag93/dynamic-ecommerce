@@ -2208,5 +2208,13 @@
     "Review acquisition, repeat purchasing, customer value, and account access from one workspace.": "Review acquisition, repeat purchasing, customer value, and account access from one workspace.",
     "Customer value": "Customer value",
     "All customer values": "All customer values",
-    "Highest spend first": "Highest spend first"
+    "Highest spend first": "Highest spend first",
+    "Catalog / Attributes / Values": "Catalog / Attributes / Values",
+    "Add and edit the reusable values for this attribute.": "Add and edit the reusable values for this attribute.",
+    "Edit value": "Edit value",
+    "Delete value": "Delete value",
+    "Values used by variants are protected from rename and deletion to keep catalog data consistent.": "Values used by variants are protected from rename and deletion to keep catalog data consistent.",
+    "Rename and delete are locked while this value is in use.": "Rename and delete are locked while this value is in use.",
+    "Used values cannot be renamed": "Used values cannot be renamed",
+    "No values match your search.": "No values match your search."
 }
