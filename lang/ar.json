@@ -2921,5 +2921,20 @@
   "Preview the visual direction before saving. Content is illustrative; only colors and shape settings are represented here.": "عاين الاتجاه البصري قبل الحفظ. المحتوى توضيحي فقط، والمعاينة تمثل الألوان وإعدادات الشكل.",
   "Preview only": "معاينة فقط",
   "No unsaved changes": "لا توجد تغييرات غير محفوظة",
-  "Unsaved changes": "توجد تغييرات غير محفوظة"
+  "Unsaved changes": "توجد تغييرات غير محفوظة",
+  "Publish readiness": "جاهزية النشر",
+  "Complete the core product information, then review the recommended storefront details.": "أكمل بيانات المنتج الأساسية، ثم راجع التفاصيل الموصى بها لواجهة المتجر.",
+  "Visible on storefront": "ظاهر في واجهة المتجر",
+  "Hidden from storefront": "مخفي من واجهة المتجر",
+  "Product image": "صورة المنتج",
+  "SKU / Barcode": "SKU / الباركود",
+  "Internal stock identifier used by inventory and future POS workflows.": "معرّف داخلي للمخزون يُستخدم في إدارة المخزون ومسارات نقاط البيع المستقبلية.",
+  "Optional scannable identifier for retail and stock operations.": "معرّف اختياري قابل للمسح لعمليات البيع بالتجزئة والمخزون.",
+  "Storefront status": "حالة الظهور في المتجر",
+  "Active — visible on storefront": "نشط — ظاهر في واجهة المتجر",
+  "Inactive — hidden from storefront": "غير نشط — مخفي من واجهة المتجر",
+  "Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.": "الحفظ والظهور في المتجر منفصلان: أبقِ المنتج غير نشط أثناء تجهيز محتواه.",
+  "Complete the required product information before saving.": "أكمل بيانات المنتج المطلوبة قبل الحفظ.",
+  "Core information is ready. Complete the recommended details before publishing.": "البيانات الأساسية جاهزة. أكمل التفاصيل الموصى بها قبل النشر.",
+  "Product content is ready for storefront review.": "محتوى المنتج جاهز لمراجعة واجهة المتجر."
 }
