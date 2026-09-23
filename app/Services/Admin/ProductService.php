@@ -13,7 +13,7 @@ use RuntimeException;
 
 class ProductService
 {
-    protected string $logChannel = 'admin_products';
+    protected string $logChannel = 'stack';
 
     protected function logInfo(string $message, array $context = []): void
     {
