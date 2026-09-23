@@ -2175,5 +2175,8 @@
     "In transit": "In transit",
     "Exceptions": "Exceptions",
     "Delivery operations": "Delivery operations",
-    "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions."
+    "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.": "Move quickly between orders waiting for dispatch, shipments in transit, and delivery exceptions.",
+    "Paid amount": "Paid amount",
+    "Payment operations": "Payment operations",
+    "Review payment exceptions, pending records, and successful collections from one finance workspace.": "Review payment exceptions, pending records, and successful collections from one finance workspace."
 }
