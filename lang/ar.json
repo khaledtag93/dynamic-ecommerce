@@ -3127,5 +3127,7 @@
     "Paid and refunded payments cannot be changed manually. Use the order refund workflow when money is returned.": "لا يمكن تغيير المدفوعات المدفوعة أو المستردة يدويًا. استخدم مسار استرداد الطلب عند إعادة الأموال.",
     "Only safe next statuses are available. Manual changes should be backed by provider or transaction evidence.": "تظهر فقط الحالات التالية الآمنة. يجب أن تستند التغييرات اليدوية إلى دليل من مزود الدفع أو المعاملة.",
     "This manual payment status transition is not allowed. Verify the payment evidence and use the appropriate order or gateway flow.": "هذا الانتقال اليدوي لحالة الدفع غير مسموح. تحقق من دليل الدفع واستخدم مسار الطلب أو بوابة الدفع المناسب.",
-    "A paid payment cannot be downgraded manually. Use the order refund action when money is returned.": "لا يمكن إرجاع حالة دفعة مدفوعة يدويًا. استخدم إجراء استرداد الطلب عند إعادة الأموال."
+    "A paid payment cannot be downgraded manually. Use the order refund action when money is returned.": "لا يمكن إرجاع حالة دفعة مدفوعة يدويًا. استخدم إجراء استرداد الطلب عند إعادة الأموال.",
+    "Last gateway transition": "آخر انتقال من بوابة الدفع",
+    "Gateway transaction reference": "مرجع معاملة بوابة الدفع"
 }
