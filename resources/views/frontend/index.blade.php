@@ -18,7 +18,7 @@
                 <a href="#on-sale-products" class="retail-promo-pod retail-promo-pod--deal">
                     <span class="retail-promo-pod__icon"><i class="bi bi-tags"></i></span>
                     <span class="retail-promo-pod__copy">
-                        <strong>{{ __('V42 Special Offers') }}</strong>
+                        <strong>{{ __('Today offers') }}</strong>
                         <small>{{ __('Catch electronics deals before they end') }}</small>
                     </span>
                 </a>
@@ -34,7 +34,7 @@
                 <a href="#best-sellers" class="retail-promo-pod retail-promo-pod--hot">
                     <span class="retail-promo-pod__icon"><i class="bi bi-fire"></i></span>
                     <span class="retail-promo-pod__copy">
-                        <strong>{{ __('V42 Popular Products') }}</strong>
+                        <strong>{{ __('Popular now') }}</strong>
                         <small>{{ __('Products customers keep choosing') }}</small>
                     </span>
                 </a>
