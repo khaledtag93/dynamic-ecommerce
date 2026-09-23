@@ -50,10 +50,23 @@ class Values extends Component
     {
         $this->validate();
 
+        $existingValue = $this->valueId
+            ? ProductAttributeValue::query()
+                ->where('attribute_id', $this->attributeId)
+                ->findOrFail($this->valueId)
+            : null;
+
+        if ($existingValue && $existingValue->value !== trim($this->value) && $this->variantUsageCount($existingValue) > 0) {
+            $this->addError('value', __('This value is already used by product variants and cannot be renamed.'));
+            return;
+        }
+
         ProductAttributeValue::updateOrCreate(
-            ['id' => $this->valueId],
             [
+                'id' => $this->valueId,
                 'attribute_id' => $this->attributeId,
+            ],
+            [
                 'value' => trim($this->value),
             ]
         );
@@ -64,7 +77,9 @@ class Values extends Component
 
     public function edit($id)
     {
-        $item = ProductAttributeValue::findOrFail($id);
+        $item = ProductAttributeValue::query()
+            ->where('attribute_id', $this->attributeId)
+            ->findOrFail($id);
 
         $this->valueId = $item->id;
         $this->value = $item->value;
@@ -147,10 +162,18 @@ class Values extends Component
                 return $value;
             });
 
+        $allValues = ProductAttributeValue::query()
+            ->where('attribute_id', $this->attributeId)
+            ->get()
+            ->map(function (ProductAttributeValue $value) {
+                $value->variant_usage_count = $this->variantUsageCount($value);
+                return $value;
+            });
+
         $stats = [
-            'total' => ProductAttributeValue::where('attribute_id', $this->attributeId)->count(),
-            'in_use' => $values->where('variant_usage_count', '>', 0)->count(),
-            'unused' => $values->where('variant_usage_count', 0)->count(),
+            'total' => $allValues->count(),
+            'in_use' => $allValues->where('variant_usage_count', '>', 0)->count(),
+            'unused' => $allValues->where('variant_usage_count', 0)->count(),
         ];
 
         return view('livewire.admin.attribute.values', compact('attribute', 'values', 'stats'))
