@@ -2047,7 +2047,7 @@
     "Repeat buyer reactivation": "إعادة تنشيط العملاء المتكررين",
     "Repeat buyer retargeting rule": "قاعدة إعادة استهداف العملاء المتكررين",
     "Repeat buyer reward": "مكافأة العميل المتكرر",
-    "Repeat buyers": "العملاء المتكررون",
+    "Repeat buyers": "عملاء متكررون",
     "Repeat buyers inside the selected window.": "العملاء العائدون داخل الفترة المحددة.",
     "Reporting window": "فترة التقرير",
     "Required details": "بيانات مطلوبة",
@@ -3107,5 +3107,12 @@
     "Choose the promotion model first, then complete only the fields that apply to that pricing rule.": "اختر نوع العرض أولًا ثم أكمل فقط الحقول التي تنطبق على قاعدة التسعير المختارة.",
     "Eligibility": "شروط التطبيق",
     "Please review the promotion details:": "يرجى مراجعة تفاصيل العرض:",
-    "Save failed because of an unexpected problem. Your changes were not saved. Please try again.": "فشل الحفظ بسبب مشكلة غير متوقعة. لم يتم حفظ التعديلات. يرجى المحاولة مرة أخرى."
+    "Save failed because of an unexpected problem. Your changes were not saved. Please try again.": "فشل الحفظ بسبب مشكلة غير متوقعة. لم يتم حفظ التعديلات. يرجى المحاولة مرة أخرى.",
+    "Customers with two or more orders.": "عملاء لديهم طلبان أو أكثر.",
+    "Customer revenue": "إيرادات العملاء",
+    "Gross order value linked to registered accounts.": "إجمالي قيمة الطلبات المرتبطة بالحسابات المسجلة.",
+    "Review acquisition, repeat purchasing, customer value, and account access from one workspace.": "راجع اكتساب العملاء وتكرار الشراء وقيمة العميل وصلاحيات الحساب من مساحة عمل واحدة.",
+    "Customer value": "قيمة العميل",
+    "All customer values": "كل مستويات قيمة العملاء",
+    "Highest spend first": "الأعلى إنفاقًا أولًا"
 }
