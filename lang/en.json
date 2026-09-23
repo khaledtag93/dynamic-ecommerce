@@ -1998,5 +1998,19 @@
   "Your order has been received and is now part of your account history.": "Your order has been received and is now part of your account history.",
   "Your order is saved and visible inside your account.": "Your order is saved and visible inside your account.",
   "Your workspaces": "Your workspaces",
-  "العربية": "العربية"
+  "العربية": "العربية",
+  "Professional Commerce": "Professional Commerce",
+  "Choose a polished starting point. You can fine-tune the palette later without changing the rest of your store settings.": "Choose a polished starting point. You can fine-tune the palette later without changing the rest of your store settings.",
+  "Custom theme": "Custom theme",
+  "Selected theme": "Selected theme",
+  "Reapply selected preset": "Reapply selected preset",
+  "Reapply restores the selected preset colors if you changed individual fields.": "Reapply restores the selected preset colors if you changed individual fields.",
+  "Start with the core brand colors. Open the advanced palette only when you need detailed control.": "Start with the core brand colors. Open the advanced palette only when you need detailed control.",
+  "Storefront": "Storefront",
+  "Advanced palette": "Advanced palette",
+  "Fine-tune surfaces, borders, tables, hover states, and button text.": "Fine-tune surfaces, borders, tables, hover states, and button text.",
+  "Preview the visual direction before saving. Content is illustrative; only colors and shape settings are represented here.": "Preview the visual direction before saving. Content is illustrative; only colors and shape settings are represented here.",
+  "Preview only": "Preview only",
+  "No unsaved changes": "No unsaved changes",
+  "Unsaved changes": "Unsaved changes"
 }
