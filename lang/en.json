@@ -2216,5 +2216,10 @@
     "Values used by variants are protected from rename and deletion to keep catalog data consistent.": "Values used by variants are protected from rename and deletion to keep catalog data consistent.",
     "Rename and delete are locked while this value is in use.": "Rename and delete are locked while this value is in use.",
     "Used values cannot be renamed": "Used values cannot be renamed",
-    "No values match your search.": "No values match your search."
+    "No values match your search.": "No values match your search.",
+    "Financial state locked": "Financial state locked",
+    "Paid and refunded payments cannot be changed manually. Use the order refund workflow when money is returned.": "Paid and refunded payments cannot be changed manually. Use the order refund workflow when money is returned.",
+    "Only safe next statuses are available. Manual changes should be backed by provider or transaction evidence.": "Only safe next statuses are available. Manual changes should be backed by provider or transaction evidence.",
+    "This manual payment status transition is not allowed. Verify the payment evidence and use the appropriate order or gateway flow.": "This manual payment status transition is not allowed. Verify the payment evidence and use the appropriate order or gateway flow.",
+    "A paid payment cannot be downgraded manually. Use the order refund action when money is returned.": "A paid payment cannot be downgraded manually. Use the order refund action when money is returned."
 }
