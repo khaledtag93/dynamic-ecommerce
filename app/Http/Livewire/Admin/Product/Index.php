@@ -190,6 +190,44 @@ class Index extends Component
         return $this->productsQuery()->count();
     }
 
+    public function getCatalogHealthProperty(): array
+    {
+        $baseQuery = Product::query();
+
+        $total = (clone $baseQuery)->count();
+        $active = (clone $baseQuery)->where('status', 1)->count();
+        $hidden = max(0, $total - $active);
+
+        $needsContent = Product::query()
+            ->where(function ($query) {
+                $query->whereNull('description')
+                    ->orWhere('description', '')
+                    ->orWhere(function ($identifierQuery) {
+                        $identifierQuery->where(function ($skuQuery) {
+                            $skuQuery->whereNull('sku')->orWhere('sku', '');
+                        })->where(function ($barcodeQuery) {
+                            $barcodeQuery->whereNull('barcode')->orWhere('barcode', '');
+                        });
+                    })
+                    ->orWhereDoesntHave('productImages');
+            })
+            ->count();
+
+        $lowStock = Product::query()
+            ->where('has_variants', false)
+            ->whereNotNull('low_stock_threshold')
+            ->whereColumn('quantity', '<=', 'low_stock_threshold')
+            ->count();
+
+        return [
+            'total' => $total,
+            'active' => $active,
+            'hidden' => $hidden,
+            'needs_content' => $needsContent,
+            'low_stock' => $lowStock,
+        ];
+    }
+
     public function deleteSingle($id)
     {
         $product = Product::with('images')->findOrFail($id);
