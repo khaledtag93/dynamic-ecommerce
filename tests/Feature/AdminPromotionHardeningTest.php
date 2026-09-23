@@ -142,6 +142,61 @@ class AdminPromotionHardeningTest extends TestCase
         $this->assertSame('Lower priority better discount', $result['label']);
     }
 
+    public function test_category_percentage_requires_a_category(): void
+    {
+        $owner = \App\Models\User::factory()->create(['role_as' => 1]);
+
+        $this->actingAs($owner)
+            ->post(route('admin.promotions.store'), [
+                'name' => 'Missing category',
+                'type' => PromotionRule::TYPE_CATEGORY_PERCENTAGE,
+                'discount_value' => 15,
+                'priority' => 0,
+                'is_active' => 1,
+            ])
+            ->assertSessionHasErrors('category_id');
+
+        $this->assertDatabaseMissing('promotion_rules', ['name' => 'Missing category']);
+    }
+
+    public function test_switching_promotion_type_clears_irrelevant_configuration(): void
+    {
+        $owner = \App\Models\User::factory()->create(['role_as' => 1]);
+        $category = $this->category('Old Category', 'old-category');
+
+        $promotion = PromotionRule::create([
+            'name' => 'Changing rule',
+            'type' => PromotionRule::TYPE_BUY_X_GET_Y,
+            'discount_value' => 0,
+            'category_id' => $category->id,
+            'buy_quantity' => 2,
+            'get_quantity' => 1,
+            'priority' => 4,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('admin.promotions.update', $promotion), [
+                'name' => 'Changing rule',
+                'type' => PromotionRule::TYPE_ORDER_FIXED,
+                'discount_value' => 30,
+                'category_id' => $category->id,
+                'buy_quantity' => 9,
+                'get_quantity' => 3,
+                'priority' => 4,
+                'is_active' => 1,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $promotion->refresh();
+
+        $this->assertSame(PromotionRule::TYPE_ORDER_FIXED, $promotion->type);
+        $this->assertNull($promotion->category_id);
+        $this->assertNull($promotion->buy_quantity);
+        $this->assertNull($promotion->get_quantity);
+        $this->assertSame('30.00', $promotion->discount_value);
+    }
+
     private function category(string $name, string $slug): Category
     {
         return Category::create([
