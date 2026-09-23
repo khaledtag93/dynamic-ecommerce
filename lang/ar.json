@@ -2936,5 +2936,8 @@
   "Saving and storefront visibility are separate: keep the product inactive while its content is still being prepared.": "الحفظ والظهور في المتجر منفصلان: أبقِ المنتج غير نشط أثناء تجهيز محتواه.",
   "Complete the required product information before saving.": "أكمل بيانات المنتج المطلوبة قبل الحفظ.",
   "Core information is ready. Complete the recommended details before publishing.": "البيانات الأساسية جاهزة. أكمل التفاصيل الموصى بها قبل النشر.",
-  "Product content is ready for storefront review.": "محتوى المنتج جاهز لمراجعة واجهة المتجر."
+  "Product content is ready for storefront review.": "محتوى المنتج جاهز لمراجعة واجهة المتجر.",
+  "Content readiness": "اكتمال المحتوى",
+  "Content complete": "المحتوى مكتمل",
+  "Needs content": "يحتاج استكمال المحتوى"
 }
