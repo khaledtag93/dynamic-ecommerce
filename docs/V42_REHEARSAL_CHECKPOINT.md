@@ -290,7 +290,7 @@ This file is the handoff/checkpoint for continuing the Dynamic e-commerce V42 ha
 - Current verification state: source change confirmed in GitHub; QAS and Production deployment of this cleanup are still pending.
 - Required continuation:
   1. deploy QAS with `bash deploy-qas.sh`;
-  2. confirm QAS reports commit `41a2f99` and HTTP 200;
+  2. confirm QAS reports the current `v42-clean-baseline` branch head and HTTP 200; the deployed application tree must include cleanup commit `41a2f99` (later documentation-only commits are acceptable);
   3. browser-check the two restored labels;
   4. run Production dry-run for exact commit `41a2f99`;
   5. only after approval, execute Production for exact commit `41a2f99`;
