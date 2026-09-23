@@ -10,6 +10,8 @@
         $query = array_filter([
             'search' => $filters['search'] ?? null,
             'visibility' => $filters['visibility'] ?? null,
+            'usage' => $filters['usage'] ?? null,
+            'readiness' => $filters['readiness'] ?? null,
             'sort' => $column,
             'direction' => $sort === $column && $direction === 'asc' ? 'desc' : 'asc',
         ], fn ($value) => $value !== null && $value !== '');
@@ -34,6 +36,8 @@
         ['label' => __('Visible'), 'value' => $stats['visible'], 'copy' => __('Customer-facing categories that can be browsed.'), 'icon' => 'mdi-eye-outline'],
         ['label' => __('Hidden'), 'value' => $stats['hidden'], 'copy' => __('Temporarily hidden categories.'), 'icon' => 'mdi-eye-off-outline'],
         ['label' => __('With products'), 'value' => $stats['with_products'], 'copy' => __('Categories already linked to products.'), 'icon' => 'mdi-package-variant'],
+        ['label' => __('Empty categories'), 'value' => $stats['empty'], 'copy' => __('Categories with no linked products yet.'), 'icon' => 'mdi-package-variant-closed'],
+        ['label' => __('Needs content'), 'value' => $stats['needs_content'], 'copy' => __('Missing a description or category image.'), 'icon' => 'mdi-text-box-search-outline'],
     ] as $card)
         <div class="col-md-6 col-xl-3">
             <div class="admin-card admin-stat-card h-100">
@@ -48,6 +52,24 @@
 
 <div class="admin-card mb-4">
     <div class="admin-card-body">
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">
+            <div>
+                <h4 class="mb-1">{{ __('Category operations') }}</h4>
+                <p class="text-muted small mb-0">{{ __('Jump into cleanup queues before narrowing the list with detailed filters.') }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('admin.categories.index', ['usage' => 'empty']) }}" class="btn {{ $filters['usage'] === 'empty' ? 'btn-primary' : 'btn-light border' }} btn-sm btn-text-icon">
+                    <i class="mdi mdi-package-variant-closed"></i><span>{{ __('Empty') }} · {{ $stats['empty'] }}</span>
+                </a>
+                <a href="{{ route('admin.categories.index', ['readiness' => 'needs_content']) }}" class="btn {{ $filters['readiness'] === 'needs_content' ? 'btn-primary' : 'btn-light border' }} btn-sm btn-text-icon">
+                    <i class="mdi mdi-text-box-search-outline"></i><span>{{ __('Needs content') }} · {{ $stats['needs_content'] }}</span>
+                </a>
+                <a href="{{ route('admin.categories.index', ['visibility' => 'hidden']) }}" class="btn {{ $filters['visibility'] === 'hidden' ? 'btn-primary' : 'btn-light border' }} btn-sm btn-text-icon">
+                    <i class="mdi mdi-eye-off-outline"></i><span>{{ __('Hidden') }} · {{ $stats['hidden'] }}</span>
+                </a>
+            </div>
+        </div>
+
         <form method="GET" class="admin-filter-grid admin-filter-grid-categories" data-submit-loading>
             <div>
                 <label class="form-label fw-semibold">{{ __('Search') }}</label>
@@ -59,6 +81,21 @@
                     <option value="">{{ __('All') }}</option>
                     <option value="visible" @selected($filters['visibility'] === 'visible')>{{ __('Visible') }}</option>
                     <option value="hidden" @selected($filters['visibility'] === 'hidden')>{{ __('Hidden') }}</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label fw-semibold">{{ __('Product usage') }}</label>
+                <select name="usage" class="form-select">
+                    <option value="">{{ __('All categories') }}</option>
+                    <option value="used" @selected($filters['usage'] === 'used')>{{ __('With products') }}</option>
+                    <option value="empty" @selected($filters['usage'] === 'empty')>{{ __('Empty categories') }}</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label fw-semibold">{{ __('Content readiness') }}</label>
+                <select name="readiness" class="form-select">
+                    <option value="">{{ __('All content states') }}</option>
+                    <option value="needs_content" @selected($filters['readiness'] === 'needs_content')>{{ __('Needs content') }}</option>
                 </select>
             </div>
             <input type="hidden" name="sort" value="{{ $sort }}">
@@ -79,7 +116,7 @@
                 <div class="text-muted small">{{ __('Showing :count category record(s) on this page.', ['count' => $categories->count()]) }}</div>
             </div>
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                @if($filters['search'] || $filters['visibility'])
+                @if($filters['search'] || $filters['visibility'] || $filters['usage'] || $filters['readiness'])
                     <span class="admin-chip">{{ __('Filtered results') }}</span>
                 @endif
                 <a href="{{ route('admin.products.index') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-package-variant"></i><span>{{ __('Products') }}</span></a>
