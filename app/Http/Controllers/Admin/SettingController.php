@@ -45,6 +45,29 @@ class SettingController extends Controller
     private function themePresets(): array
     {
         return [
+            'professional_commerce' => [
+                'theme_preset' => 'professional_commerce',
+                'theme_label' => 'Professional Commerce',
+                'brand_primary_color' => '#2563eb',
+                'brand_secondary_color' => '#0f172a',
+                'brand_accent_color' => '#0891b2',
+                'brand_background_color' => '#f8fafc',
+                'brand_surface_color' => '#ffffff',
+                'brand_soft_color' => '#eff6ff',
+                'brand_border_color' => '#dbe3ef',
+                'brand_muted_bg_color' => '#f1f5f9',
+                'brand_table_head_color' => '#f8fafc',
+                'brand_row_hover_color' => '#f8fafc',
+                'brand_button_text_color' => '#ffffff',
+                'admin_sidebar_color' => '#0b1220',
+                'admin_header_color' => '#ffffff',
+                'admin_surface_color' => '#ffffff',
+                'admin_card_border_color' => '#e2e8f0',
+                'admin_accent_soft_color' => '#ecfeff',
+                'admin_primary_soft_color' => '#dbeafe',
+                'customer_card_radius' => '18',
+                'customer_badge_style' => 'soft',
+            ],
             'sunset_bakery' => [
                 'theme_preset' => 'sunset_bakery',
                 'brand_primary_color' => '#f97316',
@@ -319,7 +342,7 @@ class SettingController extends Controller
             'admin_logo_path' => ['nullable', 'string', 'max:255'],
             'hero_banner_path' => ['nullable', 'string', 'max:255'],
             'customer_card_radius' => ['nullable', 'integer', 'min:8', 'max:40'],
-            'customer_badge_style' => ['nullable', 'string', 'max:50'],
+            'customer_badge_style' => ['nullable', 'string', 'max:50', 'in:pill,soft,outline'],
             'homepage_sections_order' => ['nullable', 'string', 'max:255'],
 
             'show_home_hero' => ['nullable', 'boolean'],
@@ -331,6 +354,7 @@ class SettingController extends Controller
             'show_home_best_sellers' => ['nullable', 'boolean'],
             'show_home_on_sale_products' => ['nullable', 'boolean'],
             'show_home_promo_banners' => ['nullable', 'boolean'],
+            'show_home_trust_blocks' => ['nullable', 'boolean'],
             'show_home_promo_banner' => ['nullable', 'boolean'],
 
             'home_featured_products_title' => ['nullable', 'string', 'max:120'],
@@ -415,11 +439,14 @@ class SettingController extends Controller
         return [
             'show_home_hero',
             'show_home_categories',
+            'show_home_featured_categories',
             'show_home_featured_products',
+            'show_home_manual_featured_products',
             'show_home_latest_products',
             'show_home_best_sellers',
             'show_home_on_sale_products',
             'show_home_promo_banners',
+            'show_home_trust_blocks',
             'show_home_promo_banner',
             'save_as_custom_theme',
             'promo_banner_1_active',
