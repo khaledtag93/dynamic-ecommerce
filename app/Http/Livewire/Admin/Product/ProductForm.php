@@ -18,7 +18,7 @@ use Throwable;
 
 class ProductForm extends Component
 {
-    protected string $logChannel = 'admin_products';
+    protected string $logChannel = 'stack';
     use WithFileUploads;
 
     public $productId = null;
@@ -1426,7 +1426,7 @@ class ProductForm extends Component
                 'has_variants' => (bool) $this->hasVariants,
             ]);
 
-            $this->saveErrorMessage = 'Save failed بسبب مشكلة غير متوقعة. لم يتم حفظ التعديلات. جرّب مرة تانية، ولو المشكلة مستمرة راجع اللوج.';
+            $this->saveErrorMessage = __('Save failed because of an unexpected problem. Your changes were not saved. Please try again.');
             $this->addError('save', $this->saveErrorMessage);
             $this->dispatchToast('error', $this->saveErrorMessage, 6500);
             $this->dispatchScrollToFirstError();
