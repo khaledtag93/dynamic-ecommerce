@@ -65,9 +65,12 @@ class PaymentController extends Controller
     {
         $payment->load('order.items', 'order.user');
 
+        $allowedStatuses = $this->paymentService->allowedManualStatuses($payment);
+
         return view('admin.payments.show', [
             'payment' => $payment,
-            'statusOptions' => Payment::statusOptions(),
+            'statusOptions' => array_intersect_key(Payment::statusOptions(), array_flip($allowedStatuses)),
+            'paymentLocked' => in_array($payment->status, [Payment::STATUS_PAID, Payment::STATUS_REFUNDED], true),
         ]);
     }
 
