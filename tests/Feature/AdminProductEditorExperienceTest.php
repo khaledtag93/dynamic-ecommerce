@@ -216,6 +216,61 @@ class AdminProductEditorExperienceTest extends TestCase
         $this->assertTrue((bool) $untouched->fresh()->status);
     }
 
+    public function test_catalog_operational_views_apply_expected_work_queues(): void
+    {
+        $category = $this->createCategory('Operational Views', 'operational-views');
+
+        Product::create([
+            'name' => 'Needs Content Queue',
+            'slug' => 'needs-content-queue',
+            'category_id' => $category->id,
+            'base_price' => 10,
+            'quantity' => 2,
+            'low_stock_threshold' => 3,
+            'stock_status' => 'in_stock',
+            'status' => 0,
+            'is_featured' => 0,
+        ]);
+
+        Product::create([
+            'name' => 'Featured Storefront Product',
+            'slug' => 'featured-storefront-product',
+            'category_id' => $category->id,
+            'description' => 'Complete catalog content',
+            'sku' => 'OPS-001',
+            'base_price' => 20,
+            'quantity' => 5,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+            'is_featured' => 1,
+        ]);
+
+        Livewire::test(Index::class)
+            ->call('applySavedView', 'attention')
+            ->assertSet('savedView', 'attention')
+            ->assertSet('readinessFilter', 'needs_attention')
+            ->call('applySavedView', 'inventory')
+            ->assertSet('savedView', 'inventory')
+            ->assertSet('stockFilter', 'low')
+            ->call('applySavedView', 'storefront')
+            ->assertSet('savedView', 'storefront')
+            ->assertSet('statusFilter', '1')
+            ->call('applySavedView', 'featured')
+            ->assertSet('savedView', 'featured')
+            ->assertSet('featuredFilter', '1');
+    }
+
+    public function test_reset_filters_exits_operational_view(): void
+    {
+        Livewire::test(Index::class)
+            ->call('applySavedView', 'featured')
+            ->assertSet('savedView', 'featured')
+            ->call('resetFilters')
+            ->assertSet('savedView', '')
+            ->assertSet('featuredFilter', '')
+            ->assertSet('perPage', 10);
+    }
+
     private function createCategory(string $name, string $slug): Category
     {
         return Category::create([
