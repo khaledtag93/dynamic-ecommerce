@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use LogicException;
 
 class GrowthValidationDemoService
 {
@@ -26,6 +27,8 @@ class GrowthValidationDemoService
 
     public function seed(bool $resetGrowthArtifacts = true): array
     {
+        $this->ensureSafeEnvironment();
+
         return DB::transaction(function () use ($resetGrowthArtifacts) {
             $category = $this->ensureDemoCategory();
             $products = $this->ensureDemoProducts($category);
@@ -54,6 +57,8 @@ class GrowthValidationDemoService
 
     public function clear(bool $removeProducts = false): array
     {
+        $this->ensureSafeEnvironment();
+
         return DB::transaction(function () use ($removeProducts) {
             $users = User::query()->where('email', 'like', '%+'.self::DEMO_KEY.'@%')->get();
             $summary = [
@@ -82,6 +87,13 @@ class GrowthValidationDemoService
 
             return $summary;
         });
+    }
+
+    protected function ensureSafeEnvironment(): void
+    {
+        if (! app()->environment('local', 'testing', 'staging')) {
+            throw new LogicException('Growth validation demo data is limited to local, testing, and staging environments.');
+        }
     }
 
     protected function clearUserDemoData(User $user, bool $resetGrowthArtifacts = true): void

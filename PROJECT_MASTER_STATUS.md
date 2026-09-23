@@ -1,14 +1,24 @@
 # MASTER PROJECT STATUS
 ## Dynamic E-commerce System (Tag Marketplace)
 
+> Living status: start with [the documentation guide](docs/README.md) for the current implementation/CI/QAS/Production ledger and the dated audit links. Historical checkpoints below are retained as evidence; their “next step” statements describe the date they were written.
+
 ## Current state
 - **Official application baseline:** V42
 - **Baseline description:** Cost Calculator refactor + Arabic/English translation updates
 - **Current working branch:** `v42-clean-baseline`
-- **Current phase:** Post-deployment stabilization and source-control promotion
+- **Current phase:** Incremental commercial-readiness fixes on the V42 working line, with CI → QAS → review → Production promotion per exact commit
 - **GitHub `main`:** still on the older baseline and has not yet been promoted to the validated V42 branch
 - **Production:** V42 routine deployment flow is validated; exact application commit `95e9f50` was deployed successfully with HTTP 200
 - **Production domain:** `tag-marketplace.com`
+
+## Latest working-line update — 2026-09-23
+- Batch 0 code now requires an explicit non-owner staff role when a customer receives admin access, assigns/removes that role transactionally, and prevents changing an owner through the customer profile. Customer-list access editing moved to the profile to simplify the table.
+- The product page no longer creates synthetic ratings, reviews, sales, viewer and save counts; repeated unverified reassurance blocks were removed. The purchase/variant controls remain, and the initial stock note uses the selected variant stock.
+- Growth validation demo seed/clear is now restricted to local, testing and QAS/staging at the HTTP and service layers; its operations controls are hidden in Production. Existing demo records have not been audited or removed.
+- Focused promotion/demotion, permission-boundary and Production demo-guard regression tests were added. **This batch is pending CI, QAS visual verification and Production deployment** until those checks are recorded with exact commits.
+- The pre-existing roleless-admin Super Admin fallback is still active. This is a **partial authorization fix**; inventory current admins, designate and explicitly assign the owner, then remove the fallback with migration/rollback tests. Other P0 release gates in the audits remain open.
+- The source audit and UI review are dated baselines, and their later implementation states are tracked in the [documentation guide](docs/README.md). Update this section and the ledger for every subsequent batch.
 
 ## V42 baseline status
 - Clean V42 Git baseline completed and verified.

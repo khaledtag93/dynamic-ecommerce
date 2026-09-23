@@ -3,6 +3,8 @@ Date: 2026-09-23
 Branch audited: `v42-clean-baseline`
 Scope: architecture, storefront, catalog, checkout, orders, payments, inventory, admin, authorization, analytics/growth, bilingual support, SEO, performance, testing, operations, and commercial readiness.
 
+**Current-state note (2026-09-23):** This audit records the inspected baseline. The first implementation batch on `v42-clean-baseline` has closed the customer-promotion path that created a roleless admin and removed fabricated product-page social proof in source. CI/QAS/Production verification is recorded separately in the [documentation guide](README.md) and [master status](../PROJECT_MASTER_STATUS.md). The legacy Super Admin fallback and real reviews remain open.
+
 Screen-by-screen admin/storefront evidence, live Production observations, additional trust and demo-data findings, and measurable UX gates are in [UI/UX and commercial-readiness review](UI_UX_AND_COMMERCIAL_READINESS_REVIEW_2026-09-23.md). This companion narrows the broad UX recommendations here into reviewable work batches.
 
 ## Executive summary
@@ -30,7 +32,7 @@ The current priority should not be adding more advanced modules. The highest-val
 
 `App\Models\User::isSuperAdmin()` currently treats a legacy admin (`role_as=1`) with no attached role as Super Admin.
 
-`Admin\CustomerController::updateRole()` can promote a normal customer to `role_as=1` without assigning a staff role. The promoted account therefore falls into the legacy no-role Super Admin fallback.
+At the audited baseline, `Admin\CustomerController::updateRole()` could promote a normal customer to `role_as=1` without assigning a staff role. The first source batch requires a limited staff role and changes both fields transactionally; existing roleless admin accounts are unchanged.
 
 This conflicts with the product rule that one explicit owner is Super Admin while other staff must receive limited explicit roles.
 
@@ -43,7 +45,7 @@ Required:
 
 ### 2. Fabricated storefront social proof
 
-The current product page generates customer-facing social-proof values from the product ID:
+At the audited baseline, the product page generated customer-facing social-proof values from the product ID:
 - synthetic average rating;
 - synthetic review count;
 - synthetic sold count;
@@ -51,7 +53,7 @@ The current product page generates customer-facing social-proof values from the 
 - synthetic wishlist/save count;
 - three mock customer reviews.
 
-A real `ProductReview` model/table exists, but there is no complete customer review submission/moderation/display workflow.
+The first source batch removes those fabricated blocks; it is not yet deployed. A real `ProductReview` model/table exists, but there is no complete customer review submission/moderation/display workflow.
 
 Required:
 - remove fake production-facing social proof;

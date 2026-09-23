@@ -14,43 +14,13 @@
         ? $gallery
         : collect([(object) ['image_url' => $product->main_image_url ?: 'https://via.placeholder.com/900x900?text=No+Image']]);
     $stockQty = (int) ($product->quantity_value ?? 0);
-    $isLowStock = $product->in_stock && $stockQty > 0 && $stockQty <= max(5, (int) ($product->low_stock_threshold ?? 3));
     $defaultImage = optional($galleryImages->first())->image_url ?: 'https://via.placeholder.com/900x900?text=No+Image';
     $activeVariants = ($product->activeVariants ?? collect())->values();
     $defaultVariant = $activeVariants->firstWhere('is_default', true) ?: $activeVariants->first();
     $selectedVariantStock = (int) ($defaultVariant->stock ?? $stockQty);
-    $reviewSeed = max(4.5, min(4.9, 4.6 + (($product->id % 4) * 0.1)));
-    $reviewCount = 32 + (($product->id % 9) * 11);
-    $soldCount = 120 + (($product->id % 8) * 23);
-    $viewersCount = 5 + (($product->id % 6) * 3);
-    $wishlistCount = 14 + (($product->id % 7) * 8);
-    $mockReviews = collect([
-        [
-            'name' => __('Nour'),
-            'title' => __('Fast delivery and exactly as shown'),
-            'body' => __('The product details were clear, delivery was fast, and the order process was easy.'),
-            'rating' => 5,
-        ],
-        [
-            'name' => __('Karim'),
-            'title' => __('Clean checkout and good value'),
-            'body' => __('The price and available options were easy to understand before checkout.'),
-            'rating' => 5,
-        ],
-        [
-            'name' => __('Mariam'),
-            'title' => __('Looks professional and reliable'),
-            'body' => __('The product arrived as expected and support was helpful after purchase.'),
-            'rating' => 4,
-        ],
-    ]);
-    $trustBlocks = [
-        ['icon' => 'bi-truck', 'title' => __('Fast shipping'), 'copy' => __('Clear delivery information before checkout.')],
-        ['icon' => 'bi-arrow-repeat', 'title' => __('Easy returns'), 'copy' => __('Clear return support when eligible.')],
-        ['icon' => 'bi-shield-check', 'title' => __('Secure payments'), 'copy' => __('Cash on delivery and online payment options are supported where available.')],
-        ['icon' => 'bi-patch-check', 'title' => __('Quality promise'), 'copy' => __('Original products with clear details and support after purchase.')],
-    ];
-    $paymentTrust = [__('Visa'), __('Mastercard'), __('Cash'), __('Secure checkout')];
+    $displayStock = $activeVariants->isNotEmpty() ? $selectedVariantStock : $stockQty;
+    $selectedAvailable = $product->in_stock && $displayStock > 0;
+    $isLowStock = $product->in_stock && $displayStock > 0 && $displayStock <= max(5, (int) ($product->low_stock_threshold ?? 3));
     $bundleProducts = ($bundleProducts ?? collect())->values();
     $addonProducts = ($addonProducts ?? collect())->values();
     $bundleSeedTotal = $currentPrice + $bundleProducts->sum(fn ($item) => (float) ($item->current_price ?? 0));
@@ -67,13 +37,6 @@
             <span>{{ \Illuminate\Support\Str::limit($product->name, 40) }}</span>
         </nav>
 
-        <div class="product-trust-strip mb-4">
-            <span><i class="bi bi-truck"></i>{{ __('Delivery options') }}</span>
-            <span><i class="bi bi-shield-lock"></i>{{ __('Secure checkout') }}</span>
-            <span><i class="bi bi-arrow-counterclockwise"></i>{{ __('Easy returns') }}</span>
-            <span><i class="bi bi-patch-check"></i>{{ __('Original products') }}</span>
-        </div>
-
         @include('frontend.partials.behavioral-offers', ['cards' => $behavioralOffers['cards'] ?? collect()])
 
         <div class="row g-4 g-xl-5 align-items-start">
@@ -85,7 +48,7 @@
                         @endif
 
                         @if($isLowStock)
-                            <span class="product-floating-note"><i class="bi bi-lightning-charge-fill"></i> {{ __('Only :count left in stock', ['count' => $stockQty]) }}</span>
+                            <span class="product-floating-note"><i class="bi bi-lightning-charge-fill"></i> {{ __('Only :count left in stock', ['count' => $displayStock]) }}</span>
                         @endif
 
                         <img
@@ -97,7 +60,7 @@
                         >
                     </div>
 
-                    <div class="row g-2 mb-3">
+                    <div class="row g-2">
                         @foreach($galleryImages as $index => $image)
                             <div class="col-3 col-md-2">
                                 <button
@@ -112,27 +75,6 @@
                             </div>
                         @endforeach
                     </div>
-
-                    <div class="product-gallery-benefits mb-4">
-                        <span><i class="bi bi-images"></i> {{ __('Product photos') }}</span>
-                        <span><i class="bi bi-zoom-in"></i> {{ __('Tap thumbnails to preview') }}</span>
-                        <span><i class="bi bi-heart"></i> {{ __('Saved by :count shoppers', ['count' => $wishlistCount]) }}</span>
-                    </div>
-
-                    <div class="product-proof-grid">
-                        <article>
-                            <strong>+{{ $soldCount }}</strong>
-                            <span>{{ __('Bought recently') }}</span>
-                        </article>
-                        <article>
-                            <strong>{{ number_format($reviewSeed, 1) }}/5</strong>
-                            <span>{{ __('Average rating') }}</span>
-                        </article>
-                        <article>
-                            <strong>{{ $viewersCount }}</strong>
-                            <span>{{ __('Viewing now') }}</span>
-                        </article>
-                    </div>
                 </div>
             </div>
 
@@ -140,8 +82,7 @@
                 <div class="lc-card p-4 product-buy-card sticky-lg-top" style="top: 100px;" id="productPurchaseCard">
                     <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
                         <span class="lc-badge"><i class="bi bi-grid"></i> {{ $product->category->name ?? __('General') }}</span>
-                        <span class="lc-badge {{ $product->in_stock ? '' : 'opacity-75' }}"><i class="bi {{ $product->in_stock ? 'bi-check-circle' : 'bi-x-circle' }}"></i> {{ $product->in_stock ? __('Ready to ship') : __('Unavailable now') }}</span>
-                        <span class="lc-badge"><i class="bi bi-star-fill"></i> {{ number_format($reviewSeed, 1) }} / 5 · {{ __(':count reviews', ['count' => $reviewCount]) }}</span>
+                        <span class="lc-badge {{ $product->in_stock ? '' : 'opacity-75' }}"><i class="bi {{ $product->in_stock ? 'bi-check-circle' : 'bi-x-circle' }}"></i> {{ $product->in_stock ? __('Available') : __('Unavailable now') }}</span>
                     </div>
 
                     <h1 class="fw-bold mb-3 product-page-title">{{ $product->name }}</h1>
@@ -156,14 +97,16 @@
                         @endif
                     </div>
 
-                    <div class="product-urgency-banner mb-3 {{ $product->in_stock ? ($isLowStock ? 'is-warning' : 'is-success') : 'is-muted' }}" id="productStockBanner">
-                        <i class="bi {{ $product->in_stock ? ($isLowStock ? 'bi-alarm' : 'bi-check2-circle') : 'bi-exclamation-octagon' }}"></i>
+                    <div class="product-urgency-banner mb-3 {{ $selectedAvailable ? ($isLowStock ? 'is-warning' : 'is-success') : 'is-muted' }}" id="productStockBanner">
+                        <i class="bi {{ $selectedAvailable ? ($isLowStock ? 'bi-alarm' : 'bi-check2-circle') : 'bi-exclamation-octagon' }}"></i>
                         <div>
                             <strong id="productStockHeadline">
                                 @if(!$product->in_stock)
                                     {{ __('Currently unavailable') }}
+                                @elseif(!$selectedAvailable)
+                                    {{ __('Selected option is out of stock') }}
                                 @elseif($isLowStock)
-                                    {{ __('Only :count pieces left', ['count' => $stockQty]) }}
+                                    {{ __('Only :count pieces left', ['count' => $displayStock]) }}
                                 @else
                                     {{ __('In stock and ready for checkout') }}
                                 @endif
@@ -172,21 +115,9 @@
                         </div>
                     </div>
 
-                    <div class="product-social-strip mb-4">
-                        <span><i class="bi bi-fire"></i>{{ __('Hot right now') }}</span>
-                        <span><i class="bi bi-eye"></i>{{ __(':count viewing now', ['count' => $viewersCount]) }}</span>
-                        <span><i class="bi bi-bag-check"></i>{{ __('+ :count sold', ['count' => $soldCount]) }}</span>
-                    </div>
-
                     @if($product->description)
-                        <p class="text-muted mb-4">{{ $product->description }}</p>
+                        <p class="text-muted mb-4">{{ \Illuminate\Support\Str::limit($product->description, 180) }}</p>
                     @endif
-
-                    <div class="product-page-highlights mb-4">
-                        <div><i class="bi bi-cash-coin"></i><span><strong>{{ __('Clear price') }}</strong><br><small>{{ __('The product price and any available offer are shown clearly.') }}</small></span></div>
-                        <div><i class="bi bi-truck"></i><span><strong>{{ __('Secure order') }}</strong><br><small>{{ __('Review delivery and payment details before checkout.') }}</small></span></div>
-                        <div><i class="bi bi-lightning-charge"></i><span><strong>{{ __('Easy checkout') }}</strong><br><small>{{ __('Add the product to cart or continue directly to checkout.') }}</small></span></div>
-                    </div>
 
                     <form method="POST" action="{{ route('cart.store', $product) }}" class="d-grid gap-3 mb-4" id="productPurchaseForm" data-submit-loading>
                         @csrf
@@ -250,18 +181,12 @@
                             </div>
                         </div>
 
-                        <div class="payment-confidence-row">
-                            @foreach($paymentTrust as $trustItem)
-                                <span>{{ $trustItem }}</span>
-                            @endforeach
-                        </div>
-
                         <div class="d-grid gap-2">
-                            <button class="btn lc-btn-primary btn-lg" type="submit" id="addToCartButton" data-loading-text="{{ __('Adding...') }}" {{ $product->in_stock ? '' : 'disabled' }}>
-                                <i class="bi bi-bag-plus me-2"></i>{{ $product->in_stock ? __('Add to cart') : __('Out of stock') }}
+                            <button class="btn lc-btn-primary btn-lg" type="submit" id="addToCartButton" data-loading-text="{{ __('Adding...') }}" {{ $selectedAvailable ? '' : 'disabled' }}>
+                                <i class="bi bi-bag-plus me-2"></i>{{ $selectedAvailable ? __('Add to cart') : __('Out of stock') }}
                             </button>
 
-                            <button class="btn lc-btn-soft btn-lg" type="submit" name="redirect_to" value="checkout" id="buyNowButton" data-loading-text="{{ __('Preparing checkout...') }}" {{ $product->in_stock ? '' : 'disabled' }}>
+                            <button class="btn lc-btn-soft btn-lg" type="submit" name="redirect_to" value="checkout" id="buyNowButton" data-loading-text="{{ __('Preparing checkout...') }}" {{ $selectedAvailable ? '' : 'disabled' }}>
                                 <i class="bi bi-lightning-charge-fill me-2"></i>{{ __('Buy now') }}
                             </button>
                         </div>
@@ -276,29 +201,6 @@
                         </a>
                     </form>
 
-                    <div class="product-page-assurance">
-                        <div class="product-page-assurance__item">
-                            <i class="bi bi-shield-check"></i>
-                            <div>
-                                <div class="fw-bold">{{ __('Secure checkout') }}</div>
-                                <div class="text-muted small">{{ __('Your payment and order details are handled safely.') }}</div>
-                            </div>
-                        </div>
-                        <div class="product-page-assurance__item">
-                            <i class="bi bi-arrow-repeat"></i>
-                            <div>
-                                <div class="fw-bold">{{ __('Return support') }}</div>
-                                <div class="text-muted small">{{ __('Return and exchange requests are handled according to store policy.') }}</div>
-                            </div>
-                        </div>
-                        <div class="product-page-assurance__item">
-                            <i class="bi bi-patch-check"></i>
-                            <div>
-                                <div class="fw-bold">{{ __('Trusted shopping') }}</div>
-                                <div class="text-muted small">{{ __('Clear product details and support help you order with confidence.') }}</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -306,27 +208,8 @@
         <div class="row g-4 mt-1 mt-lg-4">
             <div class="col-lg-8">
                 <div class="lc-card p-4 p-lg-5 h-100">
-                    <span class="lc-section-kicker mb-3">{{ __('Why this product is worth checking') }}</span>
-                    <h2 class="h3 fw-bold mb-3">{{ __('Product details, specifications, and support') }}</h2>
-                    <p class="text-muted mb-4">{{ $product->description ?: __('Product details, benefits, and specifications will appear here when available.') }}</p>
-
-                    <div class="product-conversion-grid">
-                        <article>
-                            <i class="bi bi-hand-thumbs-up"></i>
-                            <h3>{{ __('Clear value') }}</h3>
-                            <p>{{ __('The current price, savings, and availability are shown clearly before checkout.') }}</p>
-                        </article>
-                        <article>
-                            <i class="bi bi-box-seam"></i>
-                            <h3>{{ __('Visual confidence') }}</h3>
-                            <p>{{ __('Review photos, price, availability, and product information before adding to cart.') }}</p>
-                        </article>
-                        <article>
-                            <i class="bi bi-chat-heart"></i>
-                            <h3>{{ __('Social proof ready') }}</h3>
-                            <p>{{ __('Reviews, support notes, and related products help you compare before ordering.') }}</p>
-                        </article>
-                    </div>
+                    <h2 class="h3 fw-bold mb-3">{{ __('Product details') }}</h2>
+                    <p class="text-muted mb-0">{{ $product->description ?: __('More product details will be added soon.') }}</p>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -342,20 +225,6 @@
                 </div>
             </div>
         </div>
-
-        <section class="mt-5">
-            <div class="row g-4">
-                @foreach($trustBlocks as $block)
-                    <div class="col-md-6 col-xl-3">
-                        <article class="product-trust-card h-100">
-                            <div class="product-trust-card__icon"><i class="bi {{ $block['icon'] }}"></i></div>
-                            <h3>{{ $block['title'] }}</h3>
-                            <p>{{ $block['copy'] }}</p>
-                        </article>
-                    </div>
-                @endforeach
-            </div>
-        </section>
 
         @if($bundleProducts->isNotEmpty() || $addonProducts->isNotEmpty())
             <section class="mt-5">
@@ -450,54 +319,6 @@
                 </div>
             </section>
         @endif
-
-        <section class="mt-5">
-            <div class="lc-card p-4 p-lg-5 mb-4">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                    <div>
-                        <span class="lc-section-kicker">{{ __('Customer reviews') }}</span>
-                        <h2 class="h3 fw-bold mb-2">{{ __('What customers say') }}</h2>
-                        <p class="text-muted mb-0">{{ __('Reviews and order activity help you compare with more confidence.') }}</p>
-                    </div>
-                    <div class="review-summary-badge">
-                        <strong>{{ number_format($reviewSeed, 1) }}</strong>
-                        <span>{{ __('Based on :count reviews', ['count' => $reviewCount]) }}</span>
-                    </div>
-                </div>
-
-                <div class="product-review-overview mb-4">
-                    <div class="product-review-overview__stat">
-                        <strong>+{{ $soldCount }}</strong>
-                        <span>{{ __('orders placed') }}</span>
-                    </div>
-                    <div class="product-review-overview__stat">
-                        <strong>{{ $reviewCount }}</strong>
-                        <span>{{ __('reviews') }}</span>
-                    </div>
-                    <div class="product-review-overview__stat">
-                        <strong>{{ $wishlistCount }}</strong>
-                        <span>{{ __('saved for later') }}</span>
-                    </div>
-                </div>
-
-                <div class="row g-3">
-                    @foreach($mockReviews as $review)
-                        <div class="col-md-6 col-xl-4">
-                            <article class="product-review-card h-100">
-                                <div class="product-review-stars mb-2">
-                                    @for($i = 0; $i < $review['rating']; $i++)
-                                        <i class="bi bi-star-fill"></i>
-                                    @endfor
-                                </div>
-                                <h3 class="h6 fw-bold mb-2">{{ $review['title'] }}</h3>
-                                <p class="text-muted mb-3">{{ $review['body'] }}</p>
-                                <div class="small fw-bold">{{ $review['name'] }}</div>
-                            </article>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
 
         @if(($offerSignals ?? collect())->isNotEmpty())
             <section class="mt-5">
@@ -604,7 +425,6 @@
 .lc-breadcrumb{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;font-weight:700;color:var(--lc-muted)}
 .lc-breadcrumb a{text-decoration:none;color:var(--lc-primary-dark)}
 .product-gallery-card,.product-buy-card{overflow:hidden}
-.product-trust-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.9rem}.product-trust-strip span{display:flex;align-items:center;justify-content:center;gap:.55rem;padding:.9rem 1rem;border-radius:1rem;background:rgba(255,255,255,.76);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);font-weight:800;color:var(--lc-primary-dark);box-shadow:0 12px 30px color-mix(in srgb,var(--lc-primary) 8%, transparent)}
 .product-gallery-main{border-radius:1.5rem;background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 98%, transparent),color-mix(in srgb,var(--lc-soft) 88%, white));padding:.65rem;border:1px solid color-mix(in srgb,var(--lc-border) 80%, white)}
 .product-gallery-main__image{width:100%;aspect-ratio:1/1;object-fit:cover}
 .product-thumb-button{transition:transform .2s ease,opacity .2s ease,box-shadow .2s ease}.product-thumb-button:hover{transform:translateY(-2px);opacity:.96}.product-thumb-button.is-active .product-thumb-button__image{box-shadow:0 0 0 2px color-mix(in srgb,var(--lc-primary) 48%, white)}.product-thumb-button__image{aspect-ratio:1/1;object-fit:cover;border:1px solid color-mix(in srgb,var(--lc-border) 75%, white)}
@@ -613,30 +433,18 @@ body[dir="rtl"] .lc-product-badge--large{left:auto;right:1rem}
 .product-floating-note{position:absolute;right:1rem;bottom:1rem;display:inline-flex;align-items:center;gap:.5rem;padding:.65rem .9rem;border-radius:999px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);font-weight:800;color:#9a3412;box-shadow:0 16px 34px rgba(15,23,42,.12)}
 body[dir="rtl"] .product-floating-note{right:auto;left:1rem}
 .product-page-title{line-height:1.12}
-.product-page-highlights,.product-page-assurance,.product-conversion-grid{display:grid;gap:.85rem}
 .product-offer-signal-card{height:100%;padding:1rem 1rem 1.05rem;border-radius:1.1rem;background:linear-gradient(180deg,rgba(255,255,255,.96),color-mix(in srgb,var(--lc-soft) 72%, white));border:1px solid color-mix(in srgb,var(--lc-border) 78%, white);box-shadow:0 14px 32px color-mix(in srgb,var(--lc-primary) 8%, transparent)}.product-offer-signal-card__chip{display:inline-flex;align-items:center;padding:.4rem .65rem;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:.75rem;font-weight:800}.product-offer-signal-card__emphasis{font-size:.78rem;color:var(--lc-primary-dark)}
-.product-page-highlights div,.product-page-assurance__item{display:flex;gap:.8rem;align-items:flex-start;padding:.95rem 1rem;border-radius:1rem;background:color-mix(in srgb,var(--lc-soft) 68%, white);border:1px solid color-mix(in srgb,var(--lc-border) 78%, white)}
-.product-page-highlights i,.product-page-assurance__item i,.product-conversion-grid i{color:var(--lc-primary-dark);font-size:1.05rem;margin-top:.15rem}
 .product-quick-facts{display:grid;gap:1rem}.product-quick-facts div{display:flex;justify-content:space-between;gap:1rem;padding-bottom:.9rem;border-bottom:1px dashed color-mix(in srgb,var(--lc-border) 80%, white)}.product-quick-facts div:last-child{padding-bottom:0;border-bottom:0}.product-quick-facts span{color:var(--lc-muted)}
 .product-urgency-banner{display:flex;gap:.9rem;align-items:flex-start;padding:1rem 1.1rem;border-radius:1.1rem;border:1px solid transparent}.product-urgency-banner i{font-size:1.15rem;margin-top:.05rem}.product-urgency-banner.is-success{background:#ecfdf3;border-color:#bbf7d0;color:#166534}.product-urgency-banner.is-warning{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.product-urgency-banner.is-muted{background:#f8fafc;border-color:#e2e8f0;color:#475569}
-.product-social-strip{display:flex;flex-wrap:wrap;gap:.65rem}.product-social-strip span{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .8rem;border-radius:999px;background:color-mix(in srgb,var(--lc-soft) 76%, white);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);font-weight:700;color:var(--lc-primary-dark)}
 .product-qty-control{display:grid;grid-template-columns:52px 1fr 52px;gap:.6rem;align-items:center}.product-qty-control__btn{border-radius:1rem;border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);background:var(--lc-surface);font-weight:800;font-size:1.25rem;padding:.65rem .5rem}
-.product-gallery-benefits{display:flex;flex-wrap:wrap;gap:.65rem}.product-gallery-benefits span,.review-summary-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .85rem;border-radius:999px;background:color-mix(in srgb,var(--lc-soft) 72%, white);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);font-weight:700;color:var(--lc-primary-dark)}
-.product-proof-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.85rem}.product-proof-grid article{padding:1rem;border-radius:1rem;background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 96%, transparent),color-mix(in srgb,var(--lc-soft) 78%, white));border:1px solid color-mix(in srgb,var(--lc-border) 78%, white);text-align:center}.product-proof-grid strong{display:block;font-size:1.2rem}.product-proof-grid span{display:block;color:var(--lc-muted);font-size:.92rem;margin-top:.25rem}
 .variant-pills-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}.variant-pill{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;text-align:start;width:100%;padding:1rem;border-radius:1rem;border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 98%, transparent),color-mix(in srgb,var(--lc-soft) 76%, white));transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}.variant-pill:hover{transform:translateY(-2px);box-shadow:0 16px 30px color-mix(in srgb,var(--lc-primary) 10%, transparent)}.variant-pill.is-active{border-color:color-mix(in srgb,var(--lc-primary) 45%, white);box-shadow:0 16px 36px color-mix(in srgb,var(--lc-primary) 16%, transparent);background:#fff}.variant-pill.is-disabled{opacity:.5}.variant-pill__title{font-weight:800;color:var(--lc-text)}.variant-pill__meta{font-size:.88rem;color:var(--lc-muted)}
-.payment-confidence-row{display:flex;flex-wrap:wrap;gap:.5rem}.payment-confidence-row span{display:inline-flex;align-items:center;justify-content:center;padding:.55rem .8rem;border-radius:999px;background:#fff;border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);font-weight:700;color:var(--lc-text)}
 .product-mini-checkout-note{display:flex;align-items:flex-start;gap:.7rem;padding:.95rem 1rem;border-radius:1rem;background:color-mix(in srgb,var(--lc-soft) 70%, white);border:1px solid color-mix(in srgb,var(--lc-border) 78%, white);color:var(--lc-muted);font-size:.94rem}.product-mini-checkout-note i{color:var(--lc-primary-dark);margin-top:.1rem}
-.product-conversion-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-conversion-grid article{padding:1rem;border-radius:1.1rem;background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 96%, transparent),color-mix(in srgb,var(--lc-soft) 70%, white));border:1px solid color-mix(in srgb,var(--lc-border) 75%, white)}.product-conversion-grid h3{font-size:1rem;font-weight:800;margin:.75rem 0 .45rem}.product-conversion-grid p{margin:0;color:var(--lc-muted)}
-.product-trust-card{padding:1.3rem;border-radius:1.2rem;background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 98%, transparent),color-mix(in srgb,var(--lc-soft) 76%, white));border:1px solid color-mix(in srgb,var(--lc-border) 76%, white);height:100%}.product-trust-card__icon{width:52px;height:52px;border-radius:1rem;display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--lc-soft) 86%, white);border:1px solid color-mix(in srgb,var(--lc-border) 82%, white);color:var(--lc-primary-dark);font-size:1.15rem;margin-bottom:1rem}.product-trust-card h3{font-size:1.05rem;font-weight:800;margin:0 0 .5rem}.product-trust-card p{margin:0;color:var(--lc-muted)}
-.product-review-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.85rem}.product-review-overview__stat{padding:1rem;border-radius:1rem;background:color-mix(in srgb,var(--lc-soft) 72%, white);border:1px solid color-mix(in srgb,var(--lc-border) 78%, white);text-align:center}.product-review-overview__stat strong{display:block;font-size:1.25rem}.product-review-overview__stat span{display:block;margin-top:.2rem;color:var(--lc-muted)}
-.product-review-card{padding:1.2rem;border-radius:1.2rem;background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 98%, transparent),color-mix(in srgb,var(--lc-soft) 76%, white));border:1px solid color-mix(in srgb,var(--lc-border) 76%, white);box-shadow:0 16px 34px color-mix(in srgb,var(--lc-primary) 8%, transparent)}
 .aov-bundle-shell{background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--lc-soft) 74%, white) 100%)}.aov-bundle-grid{display:grid;gap:.9rem}.aov-bundle-card,.aov-addon-card{position:relative;display:grid;grid-template-columns:auto 88px 1fr;gap:1rem;align-items:center;padding:1rem;border-radius:1.15rem;border:1px solid color-mix(in srgb,var(--lc-border) 78%, white);background:rgba(255,255,255,.9);box-shadow:0 14px 32px color-mix(in srgb,var(--lc-primary) 6%, transparent)}.aov-bundle-card.is-main{background:linear-gradient(180deg,color-mix(in srgb,var(--lc-soft) 60%, white),#fff)}.aov-bundle-card img{width:88px;height:88px;object-fit:cover;border-radius:1rem}.aov-bundle-check input,.aov-addon-card input{width:1.1rem;height:1.1rem}.aov-bundle-price{font-weight:800;color:var(--lc-primary-dark)}.aov-summary-card{padding:1.25rem;border-radius:1.2rem;background:#fff;border:1px solid color-mix(in srgb,var(--lc-border) 78%, white);box-shadow:0 16px 34px color-mix(in srgb,var(--lc-primary) 8%, transparent)}.aov-addon-card{grid-template-columns:1fr;align-items:start;padding:1rem 1rem 1.2rem}.aov-addon-card__media img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:1rem}.aov-addon-card input{position:absolute;top:1rem;inset-inline-end:1rem}.aov-addon-card:hover,.aov-bundle-card:hover{transform:translateY(-2px);transition:transform .2s ease,box-shadow .2s ease}.aov-addon-card:has(input:checked),.aov-bundle-card:has(input:checked){border-color:color-mix(in srgb,var(--lc-primary) 42%, white);box-shadow:0 18px 40px color-mix(in srgb,var(--lc-primary) 14%, transparent)}
-.product-review-stars{display:flex;gap:.25rem;color:#f59e0b}.review-summary-badge{justify-content:center}.review-summary-badge strong{font-size:1.15rem}
 .product-mobile-sticky{position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:1030;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1rem;border-radius:1.2rem;background:rgba(255,255,255,.96);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 18px 46px rgba(15,23,42,.16);backdrop-filter:blur(12px)}
 .product-desktop-sticky{position:fixed;left:1.5rem;right:1.5rem;bottom:1.25rem;z-index:1030;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;border-radius:1.2rem;background:rgba(255,255,255,.96);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 24px 54px rgba(15,23,42,.16);backdrop-filter:blur(14px);transform:translateY(140%);opacity:0;pointer-events:none;transition:all .25s ease}.product-desktop-sticky.is-visible{transform:translateY(0);opacity:1;pointer-events:auto}.product-desktop-sticky__title{font-weight:800}.product-desktop-sticky__meta{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;color:var(--lc-muted)}.product-desktop-sticky__meta strong{color:var(--lc-text)}
 body[dir="rtl"] .product-mobile-sticky,body[dir="rtl"] .product-desktop-sticky{direction:rtl}
-@media (max-width: 991.98px){.product-trust-strip,.product-proof-grid,.product-review-overview{grid-template-columns:1fr 1fr}.product-buy-card{position:static!important;top:auto!important}.product-conversion-grid{grid-template-columns:1fr}.product-page-shell{padding-bottom:6rem}.variant-pills-grid{grid-template-columns:1fr}.aov-bundle-card{grid-template-columns:auto 72px 1fr}.aov-bundle-card img{width:72px;height:72px}}
-@media (max-width: 767.98px){.product-trust-strip,.product-proof-grid,.product-review-overview{grid-template-columns:1fr}.product-trust-strip span{justify-content:flex-start}.aov-bundle-card{grid-template-columns:1fr;text-align:start}.aov-bundle-card img{width:100%;max-width:120px;height:auto;aspect-ratio:1/1}.aov-bundle-check{position:absolute;top:1rem;inset-inline-end:1rem}}
+@media (max-width: 991.98px){.product-buy-card{position:static!important;top:auto!important}.product-page-shell{padding-bottom:6rem}.variant-pills-grid{grid-template-columns:1fr}.aov-bundle-card{grid-template-columns:auto 72px 1fr}.aov-bundle-card img{width:72px;height:72px}}
+@media (max-width: 767.98px){.aov-bundle-card{grid-template-columns:1fr;text-align:start}.aov-bundle-card img{width:100%;max-width:120px;height:auto;aspect-ratio:1/1}.aov-bundle-check{position:absolute;top:1rem;inset-inline-end:1rem}}
 </style>
 @endpush
 
@@ -759,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else if (optionStock <= 5) {
                 stockBanner.classList.add('is-warning');
                 stockHeadline.textContent = '{{ __('Only :count pieces left', ['count' => '__count__']) }}'.replace('__count__', optionStock);
-                stockMeta.textContent = '{{ __('Low-stock messages can create healthy urgency for faster action.') }}';
+                stockMeta.textContent = '{{ __('Stock shown for the selected option.') }}';
             } else {
                 stockBanner.classList.add('is-success');
                 stockHeadline.textContent = '{{ __('In stock and ready for checkout') }}';

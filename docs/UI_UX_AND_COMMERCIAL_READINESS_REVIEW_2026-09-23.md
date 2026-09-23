@@ -5,6 +5,8 @@ Date: 2026-09-23
 Repository baseline: `v42-clean-baseline` at `c1f2146` (documentation head; application deployment is tracked separately).
 Companion: [Full project audit](FULL_PROJECT_AUDIT_2026-09-23.md).
 
+**Implementation note (2026-09-23):** A subsequent working-line batch removed the synthetic product-page social proof and redundant reassurance sections, moved customer-role editing from each table row into the customer profile, and guarded demo seed/clear in source against Production execution. Existing demo records and live storefront content have not been cleaned. These source changes still require CI and QAS checks before any Production claim. See the [current documentation ledger](README.md).
+
 ## Scope and evidence
 
 This adds a screen-by-screen product review to the repository audit. I inspected the Blade/Livewire views, route/controller/service paths, and the public Arabic storefront at `https://tag-marketplace.com/` and `/products/moble`. A deliberately unmatched query (`/?q=zzzx-no-product-923`) returned the normal homepage. I did **not** sign in to the admin, place an order, measure production Core Web Vitals, or inspect production database records. Admin visual behavior and mobile behavior must be checked in QAS with representative data before calling the UX work complete.

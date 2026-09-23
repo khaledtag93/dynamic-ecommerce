@@ -175,6 +175,8 @@ class GrowthController extends Controller
 
     public function seedValidationDemo(GrowthValidationDemoService $growthValidationDemoService): RedirectResponse
     {
+        abort_unless(app()->environment('local', 'testing', 'staging'), 403);
+
         $result = $growthValidationDemoService->seed();
 
         return back()->with('success', __('Growth validation demo data was added successfully. Users: :users | Orders: :orders | Events: :events | Demo products: :products', [
@@ -187,6 +189,8 @@ class GrowthController extends Controller
 
     public function clearValidationDemo(GrowthValidationDemoService $growthValidationDemoService): RedirectResponse
     {
+        abort_unless(app()->environment('local', 'testing', 'staging'), 403);
+
         $result = $growthValidationDemoService->clear(true);
 
         return back()->with('success', __('Growth validation demo data was cleared successfully. Users: :users | Orders: :orders | Events: :events | Products removed: :products', [

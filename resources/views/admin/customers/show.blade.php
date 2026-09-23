@@ -10,7 +10,7 @@
 
     <div class="row g-3 mb-4">
         @foreach([
-            ['label' => __('Role'), 'value' => (int) $user->role_as === 1 ? __('Admin') : __('Customer'), 'copy' => $user->email, 'icon' => 'mdi-account-circle-outline'],
+            ['label' => __('Role'), 'value' => $user->roles->first()?->name ?? ((int) $user->role_as === 1 ? __('Unassigned admin (legacy)') : __('Customer')), 'copy' => $user->email, 'icon' => 'mdi-account-circle-outline'],
             ['label' => __('Orders'), 'value' => $summary['orders_count'], 'copy' => __('Total orders placed by this account.'), 'icon' => 'mdi-cart-outline'],
             ['label' => __('Total spend'), 'value' => 'EGP ' . number_format($summary['total_spend'], 2), 'copy' => __('Gross order value across all orders.'), 'icon' => 'mdi-cash-multiple'],
             ['label' => __('Refunded'), 'value' => 'EGP ' . number_format($summary['refund_total'], 2), 'copy' => __('Total refunded amount for this customer.'), 'icon' => 'mdi-cash-refund'],
@@ -36,18 +36,34 @@
                         <div class="text-muted">{{ $user->email }}</div>
                         <div class="text-muted small mt-1">{{ __('Joined') }} {{ $user->created_at?->format('d M Y, h:i A') }}</div>
                     </div>
-                    <form method="POST" action="{{ route('admin.customers.update-role', $user) }}" class="d-grid gap-3" data-submit-loading>
-                        @csrf
-                        @method('PATCH')
-                        <div>
-                            <label class="form-label fw-semibold">{{ __('Access role') }}</label>
-                            <select name="role_as" class="form-select">
-                                <option value="0" @selected((int) $user->role_as === 0)>{{ __('Customer') }}</option>
-                                <option value="1" @selected((int) $user->role_as === 1)>{{ __('Admin') }}</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary" data-loading-text="{{ __('Saving...') }}">{{ __('Update role') }}</button>
-                    </form>
+                    @if(request()->user()?->isSuperAdmin() && ! $user->isSuperAdmin())
+                        <form method="POST" action="{{ route('admin.customers.update-role', $user) }}" class="d-grid gap-3" data-submit-loading>
+                            @csrf
+                            @method('PATCH')
+                            <div>
+                                <label for="accountAccess" class="form-label fw-semibold">{{ __('Account access') }}</label>
+                                <select id="accountAccess" name="role_as" class="form-select" required>
+                                    <option value="0" @selected((int) old('role_as', $user->role_as) === 0)>{{ __('Customer') }}</option>
+                                    <option value="1" @selected((int) old('role_as', $user->role_as) === 1)>{{ __('Admin staff') }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="accountStaffRole" class="form-label fw-semibold">{{ __('Staff role (required for admin access)') }}</label>
+                                <select id="accountStaffRole" name="role_id" class="form-select">
+                                    <option value="">{{ __('Select a staff role') }}</option>
+                                    @foreach($staffRoles as $staffRole)
+                                        <option value="{{ $staffRole->id }}" @selected((int) old('role_id', $user->roles->first()?->id) === $staffRole->id)>{{ $staffRole->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text">{{ __('Choose a limited staff role before granting admin access. Customer access does not use a staff role.') }}</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" data-loading-text="{{ __('Saving...') }}">{{ __('Update access') }}</button>
+                        </form>
+                    @elseif($user->isSuperAdmin())
+                        <p class="text-muted small mb-0">{{ __('Owner access cannot be changed from a customer profile.') }}</p>
+                    @else
+                        <p class="text-muted small mb-0">{{ __('Only the owner can change staff access.') }}</p>
+                    @endif
                 </div>
             </div>
         </div>

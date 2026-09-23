@@ -1,6 +1,7 @@
 @extends('admin.growth.layout')
 
 @section('growth-module-content')
+@if(app()->environment('local', 'testing', 'staging'))
 <div class="gm-panel">
     <div class="gm-section"><div><h4>{{ __('Live validation mode') }}</h4><div class="gm-mini">{{ __('Generate safe demo customers, orders, and behavior events for realistic validation.') }}</div></div></div>
     <div class="gm-two">
@@ -14,6 +15,7 @@
     </div>
     <div class="gm-alert mt-3">{{ __('CLI alternative: php artisan growth:seed-demo ثم php artisan growth:run. ولو عايز تمسح الداتا التجريبية استخدم php artisan growth:seed-demo --clear') }}</div>
 </div>
+@endif
 
 <div class="gm-two">
     <div class="gm-panel">

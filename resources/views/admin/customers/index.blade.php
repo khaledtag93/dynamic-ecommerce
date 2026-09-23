@@ -78,7 +78,7 @@
                                 </td>
                                 <td>
                                     <span class="badge admin-status-badge {{ (int) $user->role_as === 1 ? 'badge-soft-info' : 'badge-soft-secondary' }}">
-                                        {{ (int) $user->role_as === 1 ? __('Admin') : __('Customer') }}
+                                        {{ $user->roles->first()?->name ?? ((int) $user->role_as === 1 ? __('Unassigned admin (legacy)') : __('Customer')) }}
                                     </span>
                                 </td>
                                 <td>{{ $user->orders_count }}</td>
@@ -88,18 +88,7 @@
                                     <div class="text-muted small">{{ $user->created_at?->format('h:i A') }}</div>
                                 </td>
                                 <td class="text-end">
-                                    <div class="d-flex gap-2 justify-content-end flex-wrap">
-                                        <a href="{{ route('admin.customers.show', $user) }}" class="btn-table-icon btn-view" title="{{ __('View customer') }}"><i class="mdi mdi-eye-outline"></i></a>
-                                        <form method="POST" action="{{ route('admin.customers.update-role', $user) }}" class="admin-inline-update justify-content-end" data-submit-loading>
-                                            @csrf
-                                            @method('PATCH')
-                                            <select name="role_as" class="form-select form-select-sm admin-inline-select" style="min-width: 130px;">
-                                                <option value="0" @selected((int) $user->role_as === 0)>{{ __('Customer') }}</option>
-                                                <option value="1" @selected((int) $user->role_as === 1)>{{ __('Admin') }}</option>
-                                            </select>
-                                            <button type="submit" class="btn-table-icon btn-save" title="{{ __('Save role') }}" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-check"></i></button>
-                                        </form>
-                                    </div>
+                                    <a href="{{ route('admin.customers.show', $user) }}" class="btn btn-light border btn-sm">{{ __('View account') }}</a>
                                 </td>
                             </tr>
                         @endforeach
