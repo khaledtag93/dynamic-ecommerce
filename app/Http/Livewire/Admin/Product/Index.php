@@ -313,7 +313,17 @@ class Index extends Component
             return;
         }
 
-        $this->pendingBulkDeleteCount = count(array_unique($this->selectedProducts));
+        $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
+        $actualIds = Product::query()->whereIn('id', $ids)->pluck('id')->map(fn ($id) => (string) $id)->all();
+
+        if (empty($actualIds)) {
+            $this->resetSelection();
+            session()->flash('error', __('No matching products were found.'));
+            return;
+        }
+
+        $this->selectedProducts = $actualIds;
+        $this->pendingBulkDeleteCount = count($actualIds);
 
         $this->dispatchBrowserEvent('open-product-bulk-delete-confirmation', [
             'count' => $this->pendingBulkDeleteCount,
@@ -333,9 +343,21 @@ class Index extends Component
 
         $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
 
+        if (count($ids) !== $this->pendingBulkDeleteCount) {
+            $this->pendingBulkDeleteCount = 0;
+            session()->flash('error', __('The product selection changed. Please review and confirm the deletion again.'));
+            return;
+        }
+
         $products = Product::with('images')
             ->whereIn('id', $ids)
             ->get();
+
+        if ($products->count() !== $this->pendingBulkDeleteCount) {
+            $this->pendingBulkDeleteCount = 0;
+            session()->flash('error', __('The selected products changed. Please review and confirm the deletion again.'));
+            return;
+        }
 
         foreach ($products as $product) {
             foreach ($product->images as $image) {
