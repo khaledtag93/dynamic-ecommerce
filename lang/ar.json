@@ -3018,5 +3018,18 @@
     "Movement type": "نوع الحركة",
     "All types": "كل الأنواع",
     "All sources": "كل المصادر",
-    "Open product": "فتح المنتج"
+    "Open product": "فتح المنتج",
+    "Purchase orders": "طلبات الشراء",
+    "All procurement records.": "كل سجلات المشتريات.",
+    "Awaiting receipt": "بانتظار الاستلام",
+    "Orders that still need stock receiving.": "طلبات ما زالت تحتاج إلى استلام المخزون.",
+    "Purchases already added to inventory.": "مشتريات تمت إضافتها بالفعل إلى المخزون.",
+    "Procurement value": "قيمة المشتريات",
+    "Total recorded purchase value.": "إجمالي قيمة المشتريات المسجلة.",
+    "Procurement workspace": "مساحة عمل المشتريات",
+    "Find purchase orders quickly and focus on stock that still needs to be received.": "اعثر على طلبات الشراء بسرعة وركز على المخزون الذي ما زال يحتاج إلى الاستلام.",
+    "Search purchases": "البحث في المشتريات",
+    "Reference, supplier, or company": "المرجع أو المورد أو الشركة",
+    "All suppliers": "كل الموردين",
+    "Receiving...": "جارٍ الاستلام..."
 }
