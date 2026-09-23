@@ -16,10 +16,41 @@ class PurchaseController extends Controller
 {
     public function __construct(protected PurchaseService $purchaseService) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $purchases = Purchase::with('supplier')->latest('id')->paginate(15);
-        return view('admin.purchases.index', compact('purchases'));
+        $filters = [
+            'search' => trim((string) $request->string('search')),
+            'status' => (string) $request->string('status'),
+            'supplier_id' => (string) $request->string('supplier_id'),
+            'per_page' => max(15, min(100, (int) $request->integer('per_page', 15))),
+        ];
+
+        $purchases = Purchase::query()
+            ->with('supplier')
+            ->when($filters['search'], function ($query, $search) {
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('reference', 'like', "%{$search}%")
+                        ->orWhereHas('supplier', fn ($supplier) => $supplier
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('company', 'like', "%{$search}%"));
+                });
+            })
+            ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
+            ->when($filters['supplier_id'], fn ($query, $supplierId) => $query->where('supplier_id', $supplierId))
+            ->latest('id')
+            ->paginate($filters['per_page'])
+            ->withQueryString();
+
+        $stats = [
+            'total' => Purchase::count(),
+            'awaiting' => Purchase::where('status', '!=', Purchase::STATUS_RECEIVED)->count(),
+            'received' => Purchase::where('status', Purchase::STATUS_RECEIVED)->count(),
+            'value' => (float) Purchase::sum('grand_total'),
+        ];
+
+        $suppliers = Supplier::orderBy('name')->get(['id', 'name', 'company']);
+
+        return view('admin.purchases.index', compact('purchases', 'filters', 'stats', 'suppliers'));
     }
 
     public function create()
