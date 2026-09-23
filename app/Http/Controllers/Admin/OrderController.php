@@ -27,6 +27,8 @@ class OrderController extends Controller
             'status' => (string) $request->string('status'),
             'payment_status' => (string) $request->string('payment_status'),
             'payment_method' => (string) $request->string('payment_method'),
+            'queue' => (string) $request->string('queue'),
+            'per_page' => max(12, min(100, (int) $request->integer('per_page', 12))),
             'sort' => (string) $request->string('sort', 'created_at'),
             'direction' => strtolower((string) $request->string('direction', 'desc')) === 'asc' ? 'asc' : 'desc',
         ];
@@ -58,9 +60,12 @@ class OrderController extends Controller
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
             ->when($filters['payment_status'], fn ($query, $paymentStatus) => $query->where('payment_status', $paymentStatus))
             ->when($filters['payment_method'], fn ($query, $paymentMethod) => $query->where('payment_method', $paymentMethod))
+            ->when($filters['queue'] === 'action', fn ($query) => $query->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING]))
+            ->when($filters['queue'] === 'unpaid', fn ($query) => $query->whereNotIn('payment_status', [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_REFUNDED, Order::PAYMENT_STATUS_PARTIALLY_REFUNDED]))
+            ->when($filters['queue'] === 'refunds', fn ($query) => $query->where('refund_total', '>', 0))
             ->orderBy($sortColumn, $filters['direction'])
             ->when($sortColumn !== 'created_at', fn ($query) => $query->orderByDesc('created_at'))
-            ->paginate(12)
+            ->paginate($filters['per_page'])
             ->withQueryString();
 
         $paidStatuses = [
@@ -85,6 +90,9 @@ class OrderController extends Controller
             'refunds_total' => (float) OrderRefund::sum('amount'),
             'paid_total' => (float) $paidTotal,
             'avg_total' => (float) ($totalOrders > 0 ? Order::avg('grand_total') : 0),
+            'needs_action' => Order::whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING])->count(),
+            'unpaid' => Order::whereNotIn('payment_status', [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_REFUNDED, Order::PAYMENT_STATUS_PARTIALLY_REFUNDED])->count(),
+            'with_refunds' => Order::where('refund_total', '>', 0)->count(),
         ];
 
         return view('admin.orders.index', [
@@ -171,7 +179,7 @@ class OrderController extends Controller
 
             return redirect()
                 ->route('admin.orders.show', $order)
-                ->with('success', 'Refund recorded successfully.');
+                ->with('success', __('Refund recorded successfully.'));
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
@@ -188,7 +196,7 @@ class OrderController extends Controller
     protected function performStatusUpdate(Order $order, string $newStatus): string
     {
         if ($newStatus === Order::STATUS_CANCELLED && $order->status !== Order::STATUS_CANCELLED) {
-            $this->orderActionService->cancel($order, 'Cancelled by admin.', optional(auth()->user())->id);
+            $this->orderActionService->cancel($order, __('Cancelled by admin.'), optional(auth()->user())->id);
 
             $this->adminActivityLogService->log(
                 'order_management',
@@ -201,7 +209,7 @@ class OrderController extends Controller
                 ]
             );
 
-            return 'Order cancelled successfully and stock was restored.';
+            return __('Order cancelled successfully and stock was restored.');
         }
 
         $oldStatus = $order->status;
@@ -223,6 +231,6 @@ class OrderController extends Controller
             ]
         );
 
-        return 'Order status updated successfully.';
+        return __('Order status updated successfully.');
     }
 }
