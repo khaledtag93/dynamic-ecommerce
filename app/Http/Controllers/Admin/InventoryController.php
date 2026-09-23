@@ -5,12 +5,36 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryMovement;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $movements = InventoryMovement::with(['product', 'variant', 'purchase', 'order'])->latest('id')->paginate(20);
+        $filters = [
+            'search' => trim((string) $request->string('search')),
+            'type' => (string) $request->string('type'),
+            'reference' => (string) $request->string('reference'),
+            'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
+        ];
+
+        $movements = InventoryMovement::query()
+            ->with(['product', 'variant', 'purchase', 'order'])
+            ->when($filters['search'], function ($query, $search) {
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('reason', 'like', "%{$search}%")
+                        ->orWhereHas('product', fn ($product) => $product->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('variant', fn ($variant) => $variant->where('sku', 'like', "%{$search}%"))
+                        ->orWhereHas('order', fn ($order) => $order->where('order_number', 'like', "%{$search}%"));
+                });
+            })
+            ->when($filters['type'], fn ($query, $type) => $query->where('type', $type))
+            ->when($filters['reference'] === 'order', fn ($query) => $query->whereNotNull('order_id'))
+            ->when($filters['reference'] === 'purchase', fn ($query) => $query->whereNotNull('purchase_id'))
+            ->when($filters['reference'] === 'manual', fn ($query) => $query->whereNull('order_id')->whereNull('purchase_id'))
+            ->latest('id')
+            ->paginate($filters['per_page'])
+            ->withQueryString();
         $lowStockProducts = Product::query()
             ->where(function ($query) {
                 $query->where('has_variants', false)->whereColumn('quantity', '<=', 'reorder_point');
@@ -29,6 +53,12 @@ class InventoryController extends Controller
             ->take(12)
             ->get();
 
-        return view('admin.inventory.index', compact('movements', 'lowStockProducts', 'nearExpiryProducts'));
+        $movementTypes = InventoryMovement::query()
+            ->whereNotNull('type')
+            ->distinct()
+            ->orderBy('type')
+            ->pluck('type');
+
+        return view('admin.inventory.index', compact('movements', 'lowStockProducts', 'nearExpiryProducts', 'filters', 'movementTypes'));
     }
 }
