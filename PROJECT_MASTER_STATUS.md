@@ -347,10 +347,18 @@ The current `v42-clean-baseline` branch now includes a broad operational-admin p
 - Final Attribute Values batch CI: **green**, run `35934209260`, head `1672bc9a`.
 
 ### Next hardening sequence
-1. Harden payment state transitions and gateway/admin idempotency while preserving reconciliation UX.
-2. Harden delivery transition/status/timestamp/notification rules.
-3. Verify purchase receiving transaction/idempotency and inventory movement behavior.
-4. Continue Settings/branding/colors UX overhaul.
-5. Build employee operations, POS/cashier, barcode workflows, and detailed invoice printing as separate coherent product batches.
+1. Harden delivery transition/status/timestamp/notification rules.
+2. Verify purchase receiving transaction/idempotency and inventory movement behavior.
+3. Continue Settings/branding/colors UX overhaul.
+4. Build employee operations, POS/cashier, barcode workflows, and detailed invoice printing as separate coherent product batches.
 
 > Standing Definition of Done for each batch: business safety + UI/UX + Admin V2 consistency + EN/AR localization + regression tests + documentation + verified CI.
+
+
+## Payments V2 hardening closure — 2026-09-24
+- Explicit safe manual transition allow-list; refunded is terminal and paid cannot be manually downgraded.
+- Gateway callbacks are row-locked and replay-safe; terminal paid/refunded states reject stale downgrades.
+- Regression coverage includes invalid manual regression, callback replay idempotency, and late-failure protection after paid confirmation.
+- Payment Details locks terminal financial states, exposes only safe next states, points returned-money handling to the order refund workflow, and surfaces HMAC plus gateway reconciliation evidence.
+- English/Arabic safety and reconciliation copy completed for the touched payment workflow.
+- Final Payments V2 CI: **green**, run `35935259115`, head `48fc7c0d`.
