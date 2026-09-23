@@ -139,6 +139,74 @@
         </div>
     </div>
 
+    {{-- Operational Views --}}
+    <div class="card admin-card mb-4 product-toolbar-card">
+        <div class="card-body p-3 p-lg-4">
+            <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-3">
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h5 class="mb-0">{{ __('Operational views') }}</h5>
+                        @if($this->activeFilterCount > 0)
+                            <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border">
+                                {{ $this->activeFilterCount }} {{ __('active filters') }}
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-muted mb-0 small">{{ __('Jump directly into the catalog queues your team works most often.') }}</p>
+                </div>
+
+                @if($savedView)
+                    <button type="button" class="btn btn-light border btn-sm" wire:click="resetFilters">
+                        <i class="mdi mdi-close-circle-outline me-1"></i>{{ __('Exit operational view') }}
+                    </button>
+                @endif
+            </div>
+
+            <div class="row g-2">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <button type="button" class="catalog-view-card {{ $savedView === 'attention' ? 'is-active' : '' }}" wire:click="applySavedView('attention')">
+                        <span class="catalog-view-icon"><i class="mdi mdi-text-box-search-outline"></i></span>
+                        <span class="catalog-view-content">
+                            <strong>{{ __('Content queue') }}</strong>
+                            <small>{{ __('Products needing content review') }}</small>
+                        </span>
+                        <span class="catalog-view-count">{{ $this->catalogOperations['attention'] }}</span>
+                    </button>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <button type="button" class="catalog-view-card {{ $savedView === 'inventory' ? 'is-active' : '' }}" wire:click="applySavedView('inventory')">
+                        <span class="catalog-view-icon"><i class="mdi mdi-package-variant-closed-alert"></i></span>
+                        <span class="catalog-view-content">
+                            <strong>{{ __('Inventory queue') }}</strong>
+                            <small>{{ __('Low and unavailable stock') }}</small>
+                        </span>
+                        <span class="catalog-view-count">{{ $this->catalogOperations['inventory'] }}</span>
+                    </button>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <button type="button" class="catalog-view-card {{ $savedView === 'storefront' ? 'is-active' : '' }}" wire:click="applySavedView('storefront')">
+                        <span class="catalog-view-icon"><i class="mdi mdi-storefront-outline"></i></span>
+                        <span class="catalog-view-content">
+                            <strong>{{ __('Storefront') }}</strong>
+                            <small>{{ __('Currently visible products') }}</small>
+                        </span>
+                        <span class="catalog-view-count">{{ $this->catalogOperations['storefront'] }}</span>
+                    </button>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <button type="button" class="catalog-view-card {{ $savedView === 'featured' ? 'is-active' : '' }}" wire:click="applySavedView('featured')">
+                        <span class="catalog-view-icon"><i class="mdi mdi-star-circle-outline"></i></span>
+                        <span class="catalog-view-content">
+                            <strong>{{ __('Featured products') }}</strong>
+                            <small>{{ __('Current merchandising selection') }}</small>
+                        </span>
+                        <span class="catalog-view-count">{{ $this->catalogOperations['featured'] }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Filters --}}
     <div class="card admin-card mb-4 product-toolbar-card">
         <div class="card-body p-3 p-lg-4">
@@ -358,7 +426,7 @@
 
     {{-- Table --}}
     <div class="card admin-card overflow-hidden position-relative">
-        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,featuredFilter,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,confirmBulkDelete,confirmDelete,duplicate">
+        <div class="table-loading-overlay" wire:loading.flex wire:target="search,statusFilter,categoryFilter,brandFilter,readinessFilter,stockFilter,featuredFilter,savedView,applySavedView,perPage,sortBy,resetFilters,toggleStatus,bulkSetStatus,bulkSetFeatured,saveInlineBasePrice,saveInlineSalePrice,saveInlineQty,confirmBulkDelete,confirmDelete,duplicate">
             <div class="loading-box">
                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                 {{ __('Loading...') }}
@@ -959,6 +1027,73 @@
     </script>
 
     <style>
+        .catalog-view-card {
+            width: 100%;
+            min-height: 92px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid var(--bs-border-color);
+            border-radius: 14px;
+            background: var(--bs-body-bg);
+            text-align: start;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+
+        .catalog-view-card:hover {
+            border-color: rgba(var(--bs-primary-rgb), .45);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, .07);
+            transform: translateY(-1px);
+        }
+
+        .catalog-view-card.is-active {
+            border-color: rgba(var(--bs-primary-rgb), .65);
+            box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), .08);
+        }
+
+        .catalog-view-icon {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(var(--bs-primary-rgb), .08);
+            color: var(--bs-primary);
+            font-size: 1.25rem;
+        }
+
+        .catalog-view-content {
+            min-width: 0;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .catalog-view-content strong {
+            color: var(--bs-body-color);
+        }
+
+        .catalog-view-content small {
+            color: var(--bs-secondary-color);
+        }
+
+        .catalog-view-count {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: var(--bs-tertiary-bg);
+            color: var(--bs-body-color);
+            font-weight: 700;
+        }
+
         .product-admin-page {
             --primary-color: var(--admin-primary);
             --primary-soft: var(--admin-primary-soft);
