@@ -4,13 +4,19 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $notifications = auth()->user()->notifications()->latest()->paginate(15);
+        $notifications = auth()->user()->notifications()->latest()->paginate(15)->withQueryString();
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('frontend.notifications._results', compact('notifications'));
+        }
+
         $unreadCount = auth()->user()->unreadNotifications()->count();
 
         return view('frontend.notifications.index', compact('notifications', 'unreadCount'));
