@@ -6,6 +6,7 @@ use App\Models\EmployeeAttendanceCorrection;
 use App\Models\EmployeeAttendanceSession;
 use App\Models\User;
 use App\Services\Commerce\AdminActivityLogService;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -58,7 +59,14 @@ class AttendanceCorrectionService
             $previousClockIn = $lockedSession->effectiveClockInAt();
             $previousClockOut = $lockedSession->effectiveClockOutAt();
 
-            if ($requestedClockOutAt && $requestedClockOutAt <= $requestedClockInAt) {
+            $requestedClockInAt = $requestedClockInAt instanceof CarbonInterface
+                ? $requestedClockInAt
+                : Carbon::parse($requestedClockInAt);
+            $requestedClockOutAt = $requestedClockOutAt
+                ? ($requestedClockOutAt instanceof CarbonInterface ? $requestedClockOutAt : Carbon::parse($requestedClockOutAt))
+                : null;
+
+            if ($requestedClockOutAt && $requestedClockOutAt->lte($requestedClockInAt)) {
                 throw ValidationException::withMessages([
                     'requested_clock_out_at' => __('Corrected clock-out must be after corrected clock-in.'),
                 ]);
