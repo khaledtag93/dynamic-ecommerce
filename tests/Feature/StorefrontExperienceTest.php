@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -65,6 +67,49 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee(route('frontend.products.show', $matching->slug))
             ->assertSee(asset('images/storefront-placeholder.svg'))
             ->assertDontSee('via.placeholder.com', false);
+    }
+
+    public function test_checkout_uses_aligned_billing_toggle_and_real_payment_options(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::query()->create([
+            'name' => 'Checkout Category',
+            'slug' => 'checkout-category-' . Str::lower(Str::random(6)),
+            'description' => 'Checkout test category',
+            'status' => 0,
+        ]);
+
+        $product = Product::query()->create([
+            'name' => 'Checkout Product',
+            'slug' => 'checkout-product-' . Str::lower(Str::random(6)),
+            'category_id' => $category->id,
+            'description' => 'Checkout test product',
+            'base_price' => 500,
+            'quantity' => 5,
+            'status' => true,
+            'has_variants' => false,
+        ]);
+
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'unit_price' => 500,
+            'quantity' => 1,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('checkout.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('<div class="checkout-toggle-card mb-3">', false)
+            ->assertSee('Cash on Delivery')
+            ->assertSee('Bank Transfer')
+            ->assertSee('Online Payment')
+            ->assertDontSee('>Visa<', false)
+            ->assertDontSee('>Mastercard<', false);
     }
 
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
