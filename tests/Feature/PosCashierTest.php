@@ -262,6 +262,150 @@ class PosCashierTest extends TestCase
         ]);
     }
 
+    public function test_cashier_can_hold_and_resume_sale_without_mutating_inventory(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('POS Held Product', '6224000000010', 5, false, 22, 8);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin);
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+
+        $this->post(route('admin.pos.hold', $cart), [
+            'hold_label' => 'Counter A',
+            'customer_name' => 'Held Customer',
+            'notes' => 'Customer will return.',
+        ])->assertRedirect(route('admin.pos.index'))->assertSessionHas('success');
+
+        $heldCart = $cart->fresh();
+        $this->assertSame(PosCart::STATUS_HELD, $heldCart->status);
+        $this->assertNull($heldCart->open_token);
+        $this->assertSame('Counter A', $heldCart->hold_label);
+        $this->assertNotNull($heldCart->held_at);
+        $this->assertSame('Held Customer', $heldCart->customer_name);
+        $this->assertSame('Customer will return.', $heldCart->notes);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'pos_sale_held',
+            'subject_id' => $heldCart->id,
+        ]);
+
+        $this->get(route('admin.pos.index'))
+            ->assertOk()
+            ->assertSee('Counter A')
+            ->assertSee(__('Resume sale'));
+
+        $newOpenCart = PosCart::query()
+            ->where('cashier_user_id', $admin->id)
+            ->where('status', PosCart::STATUS_OPEN)
+            ->firstOrFail();
+
+        $this->assertNotSame($heldCart->id, $newOpenCart->id);
+        $this->assertTrue($newOpenCart->items()->doesntExist());
+
+        $this->post(route('admin.pos.resume', $heldCart))
+            ->assertRedirect(route('admin.pos.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(PosCart::STATUS_ABANDONED, $newOpenCart->fresh()->status);
+        $this->assertNull($newOpenCart->fresh()->open_token);
+
+        $resumedCart = $heldCart->fresh();
+        $this->assertSame(PosCart::STATUS_OPEN, $resumedCart->status);
+        $this->assertSame('cashier:' . $admin->id, $resumedCart->open_token);
+        $this->assertNull($resumedCart->held_at);
+        $this->assertSame('Held Customer', $resumedCart->customer_name);
+        $this->assertSame('Customer will return.', $resumedCart->notes);
+        $this->assertSame(2, (int) $resumedCart->items()->sum('quantity'));
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'pos_sale_resumed',
+            'subject_id' => $resumedCart->id,
+        ]);
+    }
+
+    public function test_resume_is_blocked_when_current_sale_contains_items(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $heldProduct = $this->product('POS First Held Product', '6224000000011', 3, false, 12);
+        $currentProduct = $this->product('POS Current Product', '6224000000012', 3, false, 14);
+
+        $heldCart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $heldCart), ['barcode' => $heldProduct->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.hold', $heldCart), [
+            'hold_label' => 'Waiting customer',
+        ])->assertSessionHas('success');
+
+        $currentCart = app(PosService::class)->cartFor($admin);
+
+        $this->post(route('admin.pos.scan', $currentCart), ['barcode' => $currentProduct->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.resume', $heldCart))
+            ->assertSessionHasErrors('cart');
+
+        $this->assertSame(PosCart::STATUS_HELD, $heldCart->fresh()->status);
+        $this->assertSame(PosCart::STATUS_OPEN, $currentCart->fresh()->status);
+        $this->assertSame('cashier:' . $admin->id, $currentCart->fresh()->open_token);
+        $this->assertSame(1, (int) $currentCart->items()->sum('quantity'));
+    }
+
+    public function test_held_sale_discard_and_ownership_guards_do_not_touch_stock(): void
+    {
+        $firstCashier = User::factory()->create(['role_as' => 1]);
+        $secondCashier = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('POS Discard Held Product', '6224000000013', 4, false, 16);
+        $cart = app(PosService::class)->cartFor($firstCashier);
+
+        $this->actingAs($firstCashier)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.hold', $cart), [
+            'hold_label' => 'Do not lose',
+        ])->assertSessionHas('success');
+
+        $this->actingAs($secondCashier)
+            ->post(route('admin.pos.resume', $cart))
+            ->assertSessionHasErrors('cart');
+
+        $this->delete(route('admin.pos.held.destroy', $cart))
+            ->assertSessionHasErrors('cart');
+
+        $this->assertSame(PosCart::STATUS_HELD, $cart->fresh()->status);
+        $this->assertSame(4, (int) $product->fresh()->quantity);
+
+        $this->actingAs($firstCashier)
+            ->delete(route('admin.pos.held.destroy', $cart))
+            ->assertRedirect(route('admin.pos.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(PosCart::STATUS_ABANDONED, $cart->fresh()->status);
+        $this->assertNull($cart->fresh()->held_at);
+        $this->assertSame(4, (int) $product->fresh()->quantity);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $firstCashier->id,
+            'action' => 'pos_held_sale_discarded',
+            'subject_id' => $cart->id,
+        ]);
+    }
+
     public function test_pos_receipt_is_read_only_and_supports_print_paper_sizes(): void
     {
         $admin = User::factory()->create(['role_as' => 1]);
