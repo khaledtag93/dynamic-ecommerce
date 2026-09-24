@@ -46,16 +46,23 @@ class PurchaseController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $stats = [
-            'total' => Purchase::count(),
+        $queueStats = [
             'awaiting' => Purchase::where('status', Purchase::STATUS_ORDERED)->count(),
+        ];
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.purchases._results', compact('purchases', 'filters', 'queueStats'));
+        }
+
+        $stats = $queueStats + [
+            'total' => Purchase::count(),
             'received' => Purchase::where('status', Purchase::STATUS_RECEIVED)->count(),
             'value' => (float) Purchase::sum('grand_total'),
         ];
 
         $suppliers = Supplier::orderBy('name')->get(['id', 'name', 'company']);
 
-        return view('admin.purchases.index', compact('purchases', 'filters', 'stats', 'suppliers'));
+        return view('admin.purchases.index', compact('purchases', 'filters', 'stats', 'queueStats', 'suppliers'));
     }
 
     public function create()
