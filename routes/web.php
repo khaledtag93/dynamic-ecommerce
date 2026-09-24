@@ -267,6 +267,9 @@ Route::prefix('admin')
             Route::patch('/pos/carts/{posCart}/items/{posCartItem}', 'updateQuantity')->name('pos.items.update');
             Route::delete('/pos/carts/{posCart}/items/{posCartItem}', 'removeItem')->name('pos.items.destroy');
             Route::delete('/pos/carts/{posCart}', 'clear')->name('pos.clear');
+            Route::post('/pos/carts/{posCart}/hold', 'hold')->name('pos.hold');
+            Route::post('/pos/carts/{posCart}/resume', 'resume')->name('pos.resume');
+            Route::delete('/pos/carts/{posCart}/held', 'discardHeld')->name('pos.held.destroy');
             Route::post('/pos/carts/{posCart}/checkout', 'checkout')->name('pos.checkout');
             Route::get('/pos/sales/{order}', 'sale')->name('pos.sales.show');
         });
