@@ -144,6 +144,13 @@ class FrontendController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('frontend.products._search_results', [
+                'products' => $products,
+                'filters' => $filters,
+            ]);
+        }
+
         return view('frontend.products.search', [
             'products' => $products,
             'filters' => $filters,
