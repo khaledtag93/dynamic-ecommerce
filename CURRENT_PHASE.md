@@ -536,6 +536,11 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - The QAS deploy script's error handler returns the application from maintenance mode after failure.
 - Before rerun, inspect `employee_attendance_breaks`; if the failed migration left an empty partial table, drop only that empty table and rerun the normal QAS deploy. Production unchanged.
 
+### QAS deploy preflight hardening — 2026-09-25
+- `deploy-qas.sh` now fails before migrations if Workforce Blade templates contain corrupted class-reference patterns such as `AppModels...` or `IlluminateSupport...`.
+- The deploy also validates Workforce route registration before touching the database.
+- This hardening was added after the QAS 500 incident so similar source corruption is caught during deployment rather than after release.
+
 ### Workforce Payroll Foundation V1 — 2026-09-25
 - Application source checkpoint `b51a93e6` adds scoped payroll permissions, current employee compensation profiles, non-overlapping payroll periods, Draft/Approved/Paid payroll runs, frozen employee payroll entries, explicit pay components and printable/self-owned payslips.
 - Sensitive payroll access is separate from ordinary `workforce.manage`: Finance Manager receives payroll view/manage/self; Operations Manager, Cashier and Support Agent receive self-payslip access only; Super Admin inherits all.
