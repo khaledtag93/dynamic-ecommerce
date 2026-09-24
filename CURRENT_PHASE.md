@@ -445,3 +445,27 @@ Verification:
 - Production and `main`: unchanged
 
 Deliberate boundary: this is a sales receipt, not a fiscal/tax invoice. Formal invoice work still requires verified legal/tax identity, configured tax rules and jurisdiction-appropriate numbering.
+
+
+### POS Hold / Resume V1 — 2026-09-24
+Application implementation verified at `8bf77cc`:
+- dedicated held POS cart state with optional label and held timestamp
+- cashier-owned Hold / Resume / Discard workflow
+- customer name and sale notes preserved across hold/resume
+- held queue visible inside the POS workspace
+- one active cart invariant protected by the existing unique open token plus cashier-row serialization during resume
+- resume blocked while the current active cart contains items
+- empty active cart safely abandoned when a held sale is resumed
+- hold/resume/discard create cashier-attributed activity-log entries
+- no stock, Order, Payment or Inventory Movement mutation while holding/resuming/discarding
+- EN/AR UI and focused regression coverage
+
+Verification:
+- Hardening CI `36044608065`: passed at application head `8bf77cc`
+- 177 tests / 1047 assertions
+- clean MySQL migration, Laravel routes/boot, Blade/config compilation and frontend production build passed
+- consolidated authenticated QAS: deferred by owner
+- QAS application HEAD: `0a08253`
+- Production and `main`: unchanged
+
+Deliberate boundary: held carts do not reserve stock or freeze prices. Checkout remains authoritative and rechecks current stock/prices.
