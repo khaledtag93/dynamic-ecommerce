@@ -4,7 +4,18 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Purchase Details')" :description="__('Reference') . ': ' . $purchase->reference">
-    <div class="d-flex gap-2 flex-wrap"><a href="{{ route('admin.purchases.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to purchases') }}</span></a>@if($purchase->status === \App\Models\Purchase::STATUS_ORDERED)<form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading data-confirm-title="{{ __('Confirm stock receipt') }}" data-confirm-message="{{ __('Receive this purchase and add its quantities to inventory?') }}" data-confirm-subtitle="{{ __('Receiving will update stock and cost for each line once.') }}" data-confirm-ok="{{ __('Confirm receipt') }}">@csrf<button class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button></form>@endif</div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ route('admin.purchases.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to purchases') }}</span></a>
+        @if($purchase->status === \App\Models\Purchase::STATUS_ORDERED)
+            <a href="{{ route('admin.purchases.receiving', $purchase) }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-barcode-scan"></i><span>{{ __('Receive by barcode') }}</span></a>
+            <form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading data-confirm-title="{{ __('Confirm stock receipt') }}" data-confirm-message="{{ __('Receive this purchase and add its quantities to inventory without barcode verification?') }}" data-confirm-subtitle="{{ __('Manual receiving remains available. Stock and cost will still be updated once under the protected receipt transaction.') }}" data-confirm-ok="{{ __('Receive manually') }}">
+                @csrf
+                <button class="btn btn-light border btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive manually') }}</span></button>
+            </form>
+        @elseif($purchase->status === \App\Models\Purchase::STATUS_RECEIVED && $purchase->receivingProgress->isNotEmpty())
+            <a href="{{ route('admin.purchases.receiving', $purchase) }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-barcode-scan"></i><span>{{ __('View barcode receiving') }}</span></a>
+        @endif
+    </div>
 </x-admin.page-header>
 
 <div class="admin-page-shell">

@@ -283,6 +283,10 @@ Route::prefix('admin')
                 Route::get('/purchases/create', 'create')->name('purchases.create');
                 Route::post('/purchases', 'store')->name('purchases.store');
                 Route::get('/purchases/{purchase}', 'show')->name('purchases.show');
+                Route::get('/purchases/{purchase}/receiving', 'receiving')->name('purchases.receiving');
+                Route::post('/purchases/{purchase}/receiving/scan', 'scanReceiving')->name('purchases.receiving.scan');
+                Route::post('/purchases/{purchase}/receiving/items/{purchaseItem}/undo', 'undoReceiving')->name('purchases.receiving.undo');
+                Route::post('/purchases/{purchase}/receive-verified', 'receiveVerified')->name('purchases.receive-verified');
                 Route::post('/purchases/{purchase}/receive', 'receive')->name('purchases.receive');
             });
 

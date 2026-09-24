@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use App\Models\Supplier;
+use App\Services\Commerce\PurchaseReceivingService;
 use App\Services\Commerce\PurchaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class PurchaseController extends Controller
 {
-    public function __construct(protected PurchaseService $purchaseService) {}
+    public function __construct(
+        protected PurchaseService $purchaseService,
+        protected PurchaseReceivingService $purchaseReceivingService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -63,8 +68,106 @@ class PurchaseController extends Controller
 
     public function show(Purchase $purchase)
     {
-        $purchase->load(['supplier', 'items.product', 'items.variant']);
+        $purchase->load(['supplier', 'items.product', 'items.variant', 'receivingProgress']);
         return view('admin.purchases.show', compact('purchase'));
+    }
+
+    public function receiving(Purchase $purchase)
+    {
+        $purchase->load([
+            'supplier',
+            'items.product',
+            'items.variant',
+            'receivingProgress.lastScannedBy',
+        ]);
+
+        $progressByItem = $purchase->receivingProgress->keyBy('purchase_item_id');
+        $orderedUnits = (int) $purchase->items->sum(fn ($item) => (int) $item->quantity);
+        $verifiedUnits = (int) $purchase->items->sum(
+            fn ($item) => min(
+                (int) $item->quantity,
+                (int) optional($progressByItem->get($item->id))->verified_quantity
+            )
+        );
+        $remainingUnits = max(0, $orderedUnits - $verifiedUnits);
+        $complete = $purchase->items->isNotEmpty()
+            && $purchase->items->every(
+                fn ($item) => (int) optional($progressByItem->get($item->id))->verified_quantity === (int) $item->quantity
+            );
+
+        $receivingStats = [
+            'ordered_units' => $orderedUnits,
+            'verified_units' => $verifiedUnits,
+            'remaining_units' => $remainingUnits,
+            'complete' => $complete,
+        ];
+
+        return view('admin.purchases.receiving', compact(
+            'purchase',
+            'progressByItem',
+            'receivingStats'
+        ));
+    }
+
+    public function scanReceiving(Request $request, Purchase $purchase)
+    {
+        $data = $request->validate([
+            'barcode' => ['required', 'string', 'max:255'],
+            'purchase_item_id' => ['nullable', 'integer'],
+        ]);
+
+        $result = $this->purchaseReceivingService->scan(
+            $purchase,
+            $data['barcode'],
+            (int) $request->user()->id,
+            isset($data['purchase_item_id']) ? (int) $data['purchase_item_id'] : null,
+        );
+
+        if ($result['status'] === 'needs_line_selection') {
+            return redirect()
+                ->route('admin.purchases.receiving', $purchase)
+                ->with('warning', __('This barcode matches more than one purchase line. Choose the exact line before counting the scan.'))
+                ->with('receiving_barcode', trim((string) $data['barcode']))
+                ->with('receiving_choices', $result['choices']);
+        }
+
+        if ($result['status'] === 'already_complete') {
+            return redirect()
+                ->route('admin.purchases.receiving', $purchase)
+                ->with('warning', __('That purchase line is already fully verified. No extra unit was counted.'));
+        }
+
+        return redirect()
+            ->route('admin.purchases.receiving', $purchase)
+            ->with('success', $result['status'] === 'line_complete'
+                ? __('Purchase line fully verified.')
+                : __('One unit verified by barcode.'));
+    }
+
+    public function undoReceiving(Request $request, Purchase $purchase, PurchaseItem $purchaseItem)
+    {
+        $changed = $this->purchaseReceivingService->undoOne(
+            $purchase,
+            $purchaseItem,
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('admin.purchases.receiving', $purchase)
+            ->with($changed ? 'success' : 'warning', $changed
+                ? __('Removed one verified unit from this purchase line.')
+                : __('This purchase line has no verified units to undo.'));
+    }
+
+    public function receiveVerified(Purchase $purchase)
+    {
+        $receivedNow = $this->purchaseService->receiveVerified($purchase);
+
+        return redirect()
+            ->route('admin.purchases.show', $purchase)
+            ->with($receivedNow ? 'success' : 'warning', $receivedNow
+                ? __('Barcode-verified purchase received and stock updated successfully.')
+                : __('This purchase was already received. No stock was added again.'));
     }
 
     public function store(Request $request)
