@@ -503,6 +503,9 @@
                                     @if($hasVariants) disabled @endif
                                 >
                                 @error('quantity') <small class="text-danger">{{ $message }}</small> @enderror
+                                @if(!$hasVariants)
+                                    <small class="text-muted d-block mt-1">{{ __('Stock changes in this editor are recorded in inventory history.') }}</small>
+                                @endif
                             </div>
 
                             <div class="col-md-3">
@@ -792,6 +795,9 @@
                                                     <label class="form-label">{{ __('Stock') }}</label>
                                                     <input type="number" class="form-control @error('variants.' . $i . '.stock') is-invalid product-error-field @enderror" placeholder="0" wire:model.defer="variants.{{ $i }}.stock">
                                                     @error('variants.' . $i . '.stock') <small class="text-danger">{{ $message }}</small> @enderror
+                                                    @if($i === 0)
+                                                        <small class="text-muted d-block mt-1">{{ __('Set variant stock to zero before deleting that variant.') }}</small>
+                                                    @endif
                                                 </div>
 
                                                 <div class="col-md-2">

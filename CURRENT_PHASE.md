@@ -328,3 +328,8 @@ The next working-line code batch hardens purchase receiving and product–varian
 The owner deferred manual QAS tests until a later consolidated review phase. Each code slice still receives automated CI, and no unreviewed QAS behavior is marked accepted for Production.
 
 The next source slice adds a counted-stock adjustment workspace with product/variant selection, stale-count protection, one signed movement and admin attribution per real change, bilingual UI and regression tests. See `docs/INVENTORY_ADJUSTMENT_2026-09-24.md`. Hardening CI run `36028959639` passed at code commit `50cb707` (128 tests, 675 assertions). QAS remains on `0a08253` and does not include this batch. `main` and Production are unchanged.
+
+### Catalog stock audit — 2026-09-24
+The product editor now records opening and changed simple/variant stock as signed inventory movements with admin activity inside the catalog transaction. It checks loaded counts and variant membership under lock, blocks structural changes that would discard stock, and refreshes variant IDs after save. Catalog quick quantity edits use the counted-stock service; copies start at zero stock. New copy and audit guidance is bilingual. See `docs/CATALOG_STOCK_AUDIT_2026-09-24.md` and `tests/Feature/CatalogStockAuditTest.php`.
+
+Verification: automated CI pending for this source batch; consolidated manual QAS review remains deferred by the owner. QAS application HEAD is still the operator-confirmed `0a08253`; `main` and Production are unchanged.

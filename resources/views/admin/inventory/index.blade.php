@@ -167,7 +167,12 @@
                                 @elseif($movement->order)
                                     <span class="small">{{ __('Order') }} {{ $movement->order->order_number ?? ('#' . $movement->order->id) }}</span>
                                 @else
-                                    <span class="text-muted small">{{ ($movement->meta['source'] ?? null) === 'manual_adjustment' ? __('Manual adjustment') : __('Manual / system') }}</span>
+                                    <span class="text-muted small">{{ match ($movement->meta['source'] ?? null) {
+                                        'manual_adjustment' => __('Manual adjustment'),
+                                        'catalog_editor' => __('Product editor'),
+                                        'catalog_inline' => __('Catalog quick edit'),
+                                        default => __('Manual / system'),
+                                    } }}</span>
                                 @endif
                             </td>
                             <td>{{ $movement->reason ?: '—' }}</td>

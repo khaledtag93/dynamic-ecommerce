@@ -15,7 +15,7 @@ class InventoryAdjustmentService
         protected AdminActivityLogService $activityLogService,
     ) {}
 
-    public function setStock(int $productId, ?int $variantId, int $expectedStock, int $newStock, string $reason, int $actorId): ?InventoryMovement
+    public function setStock(int $productId, ?int $variantId, int $expectedStock, int $newStock, string $reason, ?int $actorId, string $source = 'manual_adjustment'): ?InventoryMovement
     {
         if ($newStock < 0 || trim($reason) === '') {
             throw ValidationException::withMessages([
@@ -23,7 +23,7 @@ class InventoryAdjustmentService
             ]);
         }
 
-        return DB::transaction(function () use ($productId, $variantId, $expectedStock, $newStock, $reason, $actorId) {
+        return DB::transaction(function () use ($productId, $variantId, $expectedStock, $newStock, $reason, $actorId, $source) {
             $product = Product::query()->whereKey($productId)->lockForUpdate()->first();
             if (! $product) {
                 throw ValidationException::withMessages([
@@ -58,7 +58,7 @@ class InventoryAdjustmentService
                 'reason' => trim($reason),
                 'movement_unit_cost' => (float) ($variant?->cost_price ?? $product->cost_price ?? 0),
                 'meta' => [
-                    'source' => 'manual_adjustment',
+                    'source' => $source,
                     'stock_before' => $currentStock,
                     'stock_after' => $newStock,
                     'admin_user_id' => $actorId,

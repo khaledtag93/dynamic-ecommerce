@@ -2473,5 +2473,21 @@
     "Stock adjustments, purchases, and order deductions will appear here once activity starts.": "Stock adjustments, purchases, and order deductions will appear here once activity starts.",
     "available": "available",
     "expiry date": "expiry date",
-    "items": "items"
+    "items": "items",
+    "Catalog quick edit": "Catalog quick edit",
+    "Catalog quick stock update": "Catalog quick stock update",
+    "Product editor": "Product editor",
+    "Product editor stock update": "Product editor stock update",
+    "Set simple-product stock to zero before switching to variants.": "Set simple-product stock to zero before switching to variants.",
+    "Set a variant stock to zero before removing it.": "Set a variant stock to zero before removing it.",
+    "Set variant stock to zero before deleting that variant.": "Set variant stock to zero before deleting that variant.",
+    "Stock changes in this editor are recorded in inventory history.": "Stock changes in this editor are recorded in inventory history.",
+    "Reload the product quantity before editing it.": "Reload the product quantity before editing it.",
+    "Quantity updated successfully for product #:id.": "Quantity updated successfully for product #:id.",
+    "Stock is already at this quantity.": "Stock is already at this quantity.",
+    "Quantity is required.": "Quantity is required.",
+    "Quantity must be a whole number.": "Quantity must be a whole number.",
+    "Quantity cannot be negative.": "Quantity cannot be negative.",
+    "This product uses variants. Please edit stock from variant rows.": "This product uses variants. Please edit stock from variant rows.",
+    "Product duplicated with zero stock. You can now edit the copied product.": "Product duplicated with zero stock. You can now edit the copied product."
 }

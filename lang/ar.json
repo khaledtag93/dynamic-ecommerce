@@ -3374,5 +3374,21 @@
     "Stock adjustments, purchases, and order deductions will appear here once activity starts.": "ستظهر هنا تعديلات المخزون والمشتريات والكميات المخصومة للطلبات عند بدء النشاط.",
     "available": "متاح",
     "expiry date": "تاريخ الصلاحية",
-    "items": "أصناف"
+    "items": "أصناف",
+    "Catalog quick edit": "تعديل سريع من قائمة المنتجات",
+    "Catalog quick stock update": "تحديث مخزون من قائمة المنتجات",
+    "Product editor": "محرر المنتج",
+    "Product editor stock update": "تحديث مخزون من محرر المنتج",
+    "Set simple-product stock to zero before switching to variants.": "اضبط مخزون المنتج البسيط على صفر قبل التحويل إلى خيارات المنتج.",
+    "Set a variant stock to zero before removing it.": "اضبط مخزون خيار المنتج على صفر قبل حذفه.",
+    "Set variant stock to zero before deleting that variant.": "اضبط مخزون خيار المنتج على صفر قبل حذفه.",
+    "Stock changes in this editor are recorded in inventory history.": "تُسجل تغييرات المخزون من هذا المحرر في سجل حركات المخزون.",
+    "Reload the product quantity before editing it.": "أعد تحميل كمية المنتج قبل تعديلها.",
+    "Quantity updated successfully for product #:id.": "تم تحديث كمية المنتج رقم #:id بنجاح.",
+    "Stock is already at this quantity.": "المخزون مسجل بالفعل بهذه الكمية.",
+    "Quantity is required.": "الكمية مطلوبة.",
+    "Quantity must be a whole number.": "يجب أن تكون الكمية عددًا صحيحًا.",
+    "Quantity cannot be negative.": "لا يمكن أن تكون الكمية سالبة.",
+    "This product uses variants. Please edit stock from variant rows.": "هذا المنتج له خيارات متعددة. عدّل المخزون من صف خيار المنتج.",
+    "Product duplicated with zero stock. You can now edit the copied product.": "تم نسخ المنتج بمخزون صفري. يمكنك الآن تعديل النسخة الجديدة."
 }

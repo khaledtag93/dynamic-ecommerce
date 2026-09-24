@@ -9,6 +9,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductVariant;
 use App\Services\Admin\ProductService;
 use App\Services\Admin\ProductVariantService;
+use App\Services\Admin\CatalogStockAuditService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -34,6 +35,8 @@ class ProductForm extends Component
     public $base_price = '';
     public $sale_price = '';
     public $quantity = 0;
+    public $loadedQuantity = null;
+    public $loadedVariantStocks = [];
     public $stock_status = 'in_stock';
     public $low_stock_threshold = '';
     public $status = 1;
@@ -300,6 +303,7 @@ class ProductForm extends Component
         $this->base_price = $product->base_price ?? $product->price;
         $this->sale_price = $product->sale_price;
         $this->quantity = $product->quantity_value ?? $product->quantity ?? 0;
+        $this->loadedQuantity = (int) $product->quantity;
         $this->stock_status = $product->stock_status ?: 'in_stock';
         $this->low_stock_threshold = $product->low_stock_threshold;
         $this->status = (int) $product->status;
@@ -338,14 +342,18 @@ class ProductForm extends Component
     {
         $this->variants = [];
 
+        $variants = $product->relationLoaded('variants')
+            ? $product->variants
+            : $product->variants()->with('attributes.attribute')->get();
+
+        $this->loadedVariantStocks = $variants
+            ->mapWithKeys(fn ($variant) => [$variant->id => (int) $variant->stock])
+            ->toArray();
+
         if (!(bool) ($product->has_variants ?? false)) {
             $this->variantExpanded = [];
             return;
         }
-
-        $variants = $product->relationLoaded('variants')
-            ? $product->variants
-            : $product->variants()->with('attributes.attribute')->get();
 
         $this->variants = $variants
             ->sortBy([['sort_order', 'asc'], ['id', 'asc']])
@@ -1373,7 +1381,7 @@ class ProductForm extends Component
         );
     }
 
-    public function save(ProductService $productService, ProductVariantService $productVariantService)
+    public function save(ProductService $productService, ProductVariantService $productVariantService, CatalogStockAuditService $stockAudit)
     {
         if ($this->isSaving) {
             return;
@@ -1420,29 +1428,53 @@ class ProductForm extends Component
             $this->ensureBarcodeUniqueness($validated, $normalizedVariants);
             $this->markPerformance($trace, 'normalized');
 
-            $product = $productService->save(
-                $validated,
-                $this->productId ? (int) $this->productId : null,
-                $this->newImages
-            );
+            $product = DB::transaction(function () use ($productService, $productVariantService, $stockAudit, $validated, $normalizedVariants, $isVariantMode, &$trace) {
+                $original = null;
+                $existingVariants = collect();
 
-            $this->syncAovRelations($product);
+                if ($this->productId) {
+                    [$original, $existingVariants] = $stockAudit->lockAndCheck(
+                        (int) $this->productId,
+                        $this->loadedQuantity === null ? null : (int) $this->loadedQuantity,
+                        $this->loadedVariantStocks
+                    );
+                }
 
-            $this->markPerformance($trace, 'product_saved');
+                $stockAudit->guardStructure($original, $existingVariants, $isVariantMode, $normalizedVariants);
 
+                $product = $productService->save(
+                    $validated,
+                    $this->productId ? (int) $this->productId : null,
+                    $this->newImages
+                );
+
+                $this->syncAovRelations($product);
+                $this->markPerformance($trace, 'product_saved');
+
+                if ($isVariantMode) {
+                    $productVariantService->saveVariants($product, $normalizedVariants);
+                    $this->markPerformance($trace, 'variants_saved');
+                } else {
+                    if ($product->variants()->exists()) {
+                        $product->variants()->delete();
+                    }
+                    $this->markPerformance($trace, 'variants_cleared');
+                }
+
+                $stockAudit->recordChanges($original, $existingVariants, $product, auth()->id());
+
+                return $product;
+            });
+
+            $this->loadedQuantity = (int) $product->quantity;
             if ($isVariantMode) {
-                $productVariantService->saveVariants($product, $normalizedVariants);
-                $this->markPerformance($trace, 'variants_saved');
-                $this->refreshImagesOnly();
+                $this->fillVariantsStateFromProduct($product->fresh(['variants.attributes.attribute']));
             } else {
-                if ($product->variants()->exists()) {
-                    $product->variants()->delete();
-                }
-                $this->markPerformance($trace, 'variants_cleared');
+                $this->loadedVariantStocks = [];
+            }
 
-                if (!empty($this->newImages)) {
-                    $this->refreshImagesOnly();
-                }
+            if ($isVariantMode || !empty($this->newImages)) {
+                $this->refreshImagesOnly();
             }
 
             $this->applyOptimisticSaveState($product, $wasEditing);

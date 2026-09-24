@@ -6,9 +6,11 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\Admin\ProductService;
+use App\Services\Commerce\InventoryAdjustmentService;
 use App\Support\MediaPath;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -51,6 +53,7 @@ class Index extends Component
     // Inline Edit - Quantity
     public $editingQtyId = null;
     public $inlineQty = [];
+    public $inlineQtyOriginal = [];
 
     protected $listeners = ['productSaved' => '$refresh'];
 
@@ -460,6 +463,7 @@ class Index extends Component
         $this->editingBasePriceId = null;
         $this->editingSalePriceId = null;
         $this->editingQtyId = null;
+        $this->inlineQtyOriginal = [];
     }
 
     protected function resetInlineValidationFor(string $field, int $id): void
@@ -502,9 +506,9 @@ class Index extends Component
                 "inlineQty.$id" => ['required', 'integer', 'min:0'],
             ],
             [
-                "inlineQty.$id.required" => 'Quantity is required.',
-                "inlineQty.$id.integer" => 'Quantity must be a whole number.',
-                "inlineQty.$id.min" => 'Quantity cannot be negative.',
+                "inlineQty.$id.required" => __('Quantity is required.'),
+                "inlineQty.$id.integer" => __('Quantity must be a whole number.'),
+                "inlineQty.$id.min" => __('Quantity cannot be negative.'),
             ]
         );
     }
@@ -640,20 +644,23 @@ class Index extends Component
         $this->cancelAllInlineEdits();
         $this->resetInlineValidationFor('inlineQty', (int) $id);
 
+        $product = Product::findOrFail((int) $id);
         $this->editingQtyId = $id;
-        $this->inlineQty[$id] = $qty;
+        $this->inlineQty[$id] = (int) $product->quantity;
+        $this->inlineQtyOriginal[$id] = (int) $product->quantity;
     }
 
     public function cancelEditQty()
     {
         if ($this->editingQtyId) {
             $this->resetInlineValidationFor('inlineQty', (int) $this->editingQtyId);
+            unset($this->inlineQtyOriginal[(int) $this->editingQtyId]);
         }
 
         $this->editingQtyId = null;
     }
 
-    public function saveInlineQty($id)
+    public function saveInlineQty($id, InventoryAdjustmentService $adjustments)
     {
         $id = (int) $id;
 
@@ -664,17 +671,36 @@ class Index extends Component
 
         if ($this->productUsesVariants($product)) {
             $this->editingQtyId = null;
-            session()->flash('error', 'This product uses variants. Please edit stock from variant rows.');
+            session()->flash('error', __('This product uses variants. Please edit stock from variant rows.'));
             return;
         }
 
-        Product::whereKey($id)->update([
-            'quantity' => (int) $this->inlineQty[$id],
-        ]);
+        if (! array_key_exists($id, $this->inlineQtyOriginal)) {
+            $this->addError("inlineQty.$id", __('Reload the product quantity before editing it.'));
+            return;
+        }
+
+        try {
+            $movement = $adjustments->setStock(
+                $id,
+                null,
+                (int) $this->inlineQtyOriginal[$id],
+                (int) $this->inlineQty[$id],
+                __('Catalog quick stock update'),
+                auth()->id(),
+                'catalog_inline'
+            );
+        } catch (ValidationException $exception) {
+            $this->addError("inlineQty.$id", collect($exception->errors())->flatten()->first());
+            return;
+        }
 
         $this->editingQtyId = null;
+        unset($this->inlineQtyOriginal[$id]);
 
-        session()->flash('message', "Quantity updated successfully for product #{$id}.");
+        session()->flash('message', $movement
+            ? __('Quantity updated successfully for product #:id.', ['id' => $id])
+            : __('Stock is already at this quantity.'));
     }
 
     protected function contentReadinessIssues(Product $product): array
@@ -872,7 +898,7 @@ class Index extends Component
 
         $newProduct = $productService->duplicateProduct($product);
 
-        session()->flash('message', 'Product duplicated successfully. You can now edit the copied product.');
+        session()->flash('message', __('Product duplicated with zero stock. You can now edit the copied product.'));
 
         return redirect()->route('admin.products.edit', $newProduct->id);
     }
