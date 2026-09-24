@@ -67,9 +67,9 @@
                     ['label' => __('Pending'), 'value' => $summary['pending'] ?? 0, 'class' => 'info'],
                 ] as $item)
                     <div class="col-lg col-md-4 col-sm-6">
-                        <div class="admin-card admin-stat-card wa-metric-card h-100 p-3">
-                            <div class="text-muted small mb-1">{{ $item['label'] }}</div>
-                            <div class="fs-3 fw-bold text-{{ $item['class'] }}">{{ $item['value'] }}</div>
+                        <div class="admin-card admin-stat-card wa-metric-card h-100">
+                            <div class="admin-stat-label">{{ $item['label'] }}</div>
+                            <div class="admin-stat-value">{{ $item['value'] }}</div>
                         </div>
                     </div>
                 @endforeach
@@ -316,23 +316,23 @@
         <div class="admin-card-body">
             <div class="row g-4 mb-4">
                 <div class="col-xl-4 col-md-6">
-                    <div class="wa-section-card p-4 h-100">
-                        <div class="text-muted small mb-1">{{ __('Order confirmation logs') }}</div>
-                        <div class="fs-3 fw-bold text-primary">{{ $messageTypeSummary['order_confirmation'] ?? 0 }}</div>
+                    <div class="admin-card admin-stat-card wa-message-stat-card h-100">
+                        <div class="admin-stat-label">{{ __('Order confirmation logs') }}</div>
+                        <div class="admin-stat-value">{{ $messageTypeSummary['order_confirmation'] ?? 0 }}</div>
                         <div class="admin-helper-text mt-2">{{ __('Created checkout messages and manual confirmation sends.') }}</div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-md-6">
-                    <div class="wa-section-card p-4 h-100">
-                        <div class="text-muted small mb-1">{{ __('Order status update logs') }}</div>
-                        <div class="fs-3 fw-bold text-warning">{{ $messageTypeSummary['order_status_update'] ?? 0 }}</div>
+                    <div class="admin-card admin-stat-card wa-message-stat-card h-100">
+                        <div class="admin-stat-label">{{ __('Order status update logs') }}</div>
+                        <div class="admin-stat-value">{{ $messageTypeSummary['order_status_update'] ?? 0 }}</div>
                         <div class="admin-helper-text mt-2">{{ __('Confirmed / processing / cancelled lifecycle updates.') }}</div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-md-6">
-                    <div class="wa-section-card p-4 h-100">
-                        <div class="text-muted small mb-1">{{ __('Delivery update logs') }}</div>
-                        <div class="fs-3 fw-bold text-success">{{ $messageTypeSummary['delivery_update'] ?? 0 }}</div>
+                    <div class="admin-card admin-stat-card wa-message-stat-card h-100">
+                        <div class="admin-stat-label">{{ __('Delivery update logs') }}</div>
+                        <div class="admin-stat-value">{{ $messageTypeSummary['delivery_update'] ?? 0 }}</div>
                         <div class="admin-helper-text mt-2">{{ __('Shipped, out for delivery, and delivered notifications.') }}</div>
                     </div>
                 </div>
