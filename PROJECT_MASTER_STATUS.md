@@ -58,14 +58,14 @@
 - Five channel/queue switches now use aligned toggle cards and shared admin switch sizing; delivery/message summary metrics use the shared admin stat-card language.
 - Provider/template/test/resend/log workflows and server-managed credential handling remain functionally unchanged.
 - English/Arabic workspace copy and focused regression coverage were added. See `docs/WHATSAPP_WORKSPACE_UX_2026-09-24.md`.
-- Source implementation is complete for this UI iteration; final branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
+- Source implementation and automated regression verification are complete for this UI iteration. Hardening CI run `36005416310` passed at `2a237e1`; authenticated English/Arabic desktop/mobile QAS review remains required. Production is unchanged.
 
 ## Cost Calculator UX checkpoint — 2026-09-24
 - The existing V42 Cost Calculator received a focused UI polish without changing recipe/cost/profit/margin logic.
 - Legacy orange workflow styling now follows configurable admin theme tokens; live cost summary cards reuse the shared admin stat-card language.
 - Raw Materials / Product Recipe / Profit Calculation shortcuts were added, and raw-material deletion now uses the shared in-app confirmation flow instead of browser `confirm()`.
 - English/Arabic copy and focused UI regression coverage were added. See `docs/COST_CALCULATOR_UX_2026-09-24.md`.
-- Source implementation is complete for this polish iteration; final branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
+- Source implementation and automated regression verification are complete for this polish iteration. Hardening CI run `36005416310` passed at `2a237e1`; authenticated English/Arabic desktop/mobile QAS review remains required. Production is unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
