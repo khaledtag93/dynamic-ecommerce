@@ -4,6 +4,7 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Point of Sale')" :title="__('Sale complete')" :description="$order->order_number">
+    <a href="{{ route('admin.pos.sales.show', $order) }}?receipt=1&paper=80" target="_blank" rel="noopener" class="btn btn-light border btn-text-icon"><i class="mdi mdi-printer-outline"></i><span>{{ __('Print receipt') }}</span></a>
     <a href="{{ route('admin.pos.index') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-cash-register"></i><span>{{ __('Start new sale') }}</span></a>
     @if(auth()->user()->hasPermission('orders.view'))
         <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-open-in-new"></i><span>{{ __('Open order record') }}</span></a>
