@@ -38,17 +38,17 @@
                             </td>
                             <td>{{ $employee->department ?: '—' }}</td>
                             <td>
-                                <div class="fw-semibold">{{ AppModelsEmployeeProfile::employmentTypeOptions()[$employee->employment_type] ?? IlluminateSupportStr::headline($employee->employment_type) }}</div>
+                                <div class="fw-semibold">{{ \App\Models\EmployeeProfile::employmentTypeOptions()[$employee->employment_type] ?? \Illuminate\Support\Str::headline($employee->employment_type) }}</div>
                                 <div class="text-muted small">{{ $employee->hire_date ? __('Since :date', ['date' => $employee->hire_date->format('d M Y')]) : __('Hire date not set') }}</div>
                             </td>
                             <td>
                                 @php($statusClass = match($employee->status) {
-                                    AppModelsEmployeeProfile::STATUS_ACTIVE => 'badge-soft-success',
-                                    AppModelsEmployeeProfile::STATUS_ON_LEAVE => 'badge-soft-warning',
-                                    AppModelsEmployeeProfile::STATUS_TERMINATED => 'badge-soft-danger',
+                                    \App\Models\EmployeeProfile::STATUS_ACTIVE => 'badge-soft-success',
+                                    \App\Models\EmployeeProfile::STATUS_ON_LEAVE => 'badge-soft-warning',
+                                    \App\Models\EmployeeProfile::STATUS_TERMINATED => 'badge-soft-danger',
                                     default => 'badge-soft-secondary',
                                 })
-                                <span class="badge admin-status-badge {{ $statusClass }}">{{ AppModelsEmployeeProfile::statusOptions()[$employee->status] ?? IlluminateSupportStr::headline($employee->status) }}</span>
+                                <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeProfile::statusOptions()[$employee->status] ?? \Illuminate\Support\Str::headline($employee->status) }}</span>
                             </td>
                             <td>
                                 @if($employee->openAttendanceSession)
