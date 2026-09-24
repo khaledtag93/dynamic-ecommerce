@@ -3260,5 +3260,6 @@
     "End all attendance breaks touching this payroll period before generating payroll.": "End all attendance breaks touching this payroll period before generating payroll.",
     "Resolve pending attendance corrections touching this payroll period before generating payroll.": "Resolve pending attendance corrections touching this payroll period before generating payroll.",
     "Resolve pending leave requests touching this payroll period before generating payroll.": "Resolve pending leave requests touching this payroll period before generating payroll.",
-    "Payroll deductions cannot make net pay negative.": "Payroll deductions cannot make net pay negative."
+    "Payroll deductions cannot make net pay negative.": "Payroll deductions cannot make net pay negative.",
+    "Salary compensation must cover the full payroll period in V1. Configure an explicit proration policy before processing partial-period salary.": "Salary compensation must cover the full payroll period in V1. Configure an explicit proration policy before processing partial-period salary."
 }
