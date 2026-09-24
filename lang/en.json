@@ -2873,5 +2873,6 @@
     "You are clocked in.": "You are clocked in.",
     "You are clocked out.": "You are clocked out.",
     "Team & workforce": "Team & workforce",
-    "Clock out the employee before changing to a non-active employment status.": "Clock out the employee before changing to a non-active employment status."
+    "Clock out the employee before changing to a non-active employment status.": "Clock out the employee before changing to a non-active employment status.",
+    "Search cashier by name, email, employee code, or department": "Search cashier by name, email, employee code, or department"
 }
