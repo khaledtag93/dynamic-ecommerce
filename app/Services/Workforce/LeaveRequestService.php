@@ -100,6 +100,8 @@ class LeaveRequestService
     public function approve(EmployeeLeaveRequest $request, User $reviewer, ?string $notes = null): EmployeeLeaveRequest
     {
         return DB::transaction(function () use ($request, $reviewer, $notes) {
+            $employee = EmployeeProfile::query()->whereKey($request->employee_profile_id)->lockForUpdate()->firstOrFail();
+
             $locked = EmployeeLeaveRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
 
             if (! $locked->isPending()) {
@@ -108,7 +110,6 @@ class LeaveRequestService
                 ]);
             }
 
-            $employee = EmployeeProfile::query()->whereKey($locked->employee_profile_id)->lockForUpdate()->firstOrFail();
             $type = EmployeeLeaveType::query()->whereKey($locked->employee_leave_type_id)->lockForUpdate()->firstOrFail();
 
             $balance = $this->balanceService->balance($employee, $type, (int) $locked->starts_on->year);
