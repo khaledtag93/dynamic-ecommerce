@@ -8,11 +8,11 @@
     $authNotificationCount = (int) ($authNotificationCount ?? 0);
     $customerLogoPath = \App\Support\AdminBranding::resolveMediaPath($storeSettings['logo_path'] ?? $storeSettings['logo'] ?? null, 'logo');
     $localizedStoreTagline = ($isRtl ?? false)
-        ? ($storeSettings['store_tagline_ar'] ?? $storeSettings['store_tagline'] ?? __('أجهزة وإلكترونيات أصلية مع دفع آمن وتوصيل سريع.'))
-        : ($storeSettings['store_tagline_en'] ?? $storeSettings['store_tagline'] ?? __('Original electronics with secure checkout and fast delivery.'));
+        ? ($storeSettings['store_tagline_ar'] ?? $storeSettings['store_tagline'] ?? __('تجربة تسوق موثوقة بأسعار واضحة ودفع آمن ودعم يمكن الاعتماد عليه.'))
+        : ($storeSettings['store_tagline_en'] ?? $storeSettings['store_tagline'] ?? __('A reliable shopping experience with clear prices, secure checkout, and dependable support.'));
     $localizedFooterAbout = ($isRtl ?? false)
-        ? ($storeSettings['footer_about_ar'] ?? $storeSettings['footer_about'] ?? __('تسوق الموبايلات واللابتوبات والألعاب والسماعات والشاشات والإكسسوارات والأجهزة الذكية بأسعار واضحة ودعم موثوق.'))
-        : ($storeSettings['footer_about_en'] ?? $storeSettings['footer_about'] ?? __('Shop phones, laptops, gaming, audio, TVs, accessories, and smart devices with clear prices and trusted support.'));
+        ? ($storeSettings['footer_about_ar'] ?? $storeSettings['footer_about'] ?? __('تصفّح منتجات المتجر بأسعار واضحة ودفع آمن ودعم يساعدك قبل وبعد الشراء.'))
+        : ($storeSettings['footer_about_en'] ?? $storeSettings['footer_about'] ?? __('Browse products across the store with clear prices, secure checkout, and helpful support.'));
     $localizedFooterCopyright = ($isRtl ?? false)
         ? ($storeSettings['footer_copyright_ar'] ?? $storeSettings['footer_copyright'] ?? __('جميع الحقوق محفوظة.'))
         : ($storeSettings['footer_copyright_en'] ?? $storeSettings['footer_copyright'] ?? __('All rights reserved.'));
@@ -22,7 +22,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Storefront')</title>
-    <meta name="description" content="@yield('meta_description', __('Shop electronics, phones, laptops, gaming, audio, TVs, and smart devices online.'))">
+    <meta name="description" content="@yield('meta_description', __('Browse products, offers, and categories with secure checkout and clear delivery information.'))">
     @php($faviconPath = \App\Support\AdminBranding::resolveMediaPath($storeSettings['favicon_path'] ?? null, 'favicon'))
     @if($faviconPath)
         <link rel="icon" type="image/x-icon" href="{{ \App\Support\AdminBranding::mediaUrl($faviconPath, 'favicon') }}">
@@ -580,7 +580,7 @@
         <div class="container retail-topbar__inner">
             <div class="retail-topbar__message">
                 <i class="bi bi-lightning-charge-fill"></i>
-                <span>{{ __('Exclusive electronics deals, fast delivery, and trusted support.') }}</span>
+                <span>{{ __('Current offers, dependable delivery, and trusted support.') }}</span>
             </div>
             <div class="retail-topbar__actions">
                 <span class="d-none d-lg-inline-flex"><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
@@ -609,7 +609,7 @@
 
                 <form class="retail-search d-none d-lg-flex" action="{{ route('frontend.home') }}" method="GET" role="search">
                     <i class="bi bi-search"></i>
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search phones, laptops, TVs, gaming, and accessories') }}">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products, categories, and offers') }}">
                     <button type="submit">{{ __('Search') }}</button>
                 </form>
 
@@ -677,7 +677,7 @@
                                             @if($category->image_url)
                                                 <img src="{{ $category->image_url }}" alt="{{ $category->name }}">
                                             @else
-                                                <i class="bi bi-phone"></i>
+                                                <i class="bi bi-grid"></i>
                                             @endif
                                         </span>
                                         <span>
@@ -714,7 +714,7 @@
 
                 <form class="retail-search retail-search--mobile d-lg-none" action="{{ route('frontend.home') }}" method="GET" role="search">
                     <i class="bi bi-search"></i>
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search electronics') }}">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products') }}">
                     <button type="submit">{{ __('Search') }}</button>
                 </form>
             </div>
@@ -802,7 +802,7 @@
         </div>
         <div class="storefront-footer__bottom">
             <span>© {{ now()->year }} {{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Tag Marketplace' }}. {{ $localizedFooterCopyright }}</span>
-            <span>{{ __('Built for a better electronics shopping experience.') }}</span>
+            <span>{{ __('Built for a clear and dependable shopping experience.') }}</span>
         </div>
     </div>
 </footer>
