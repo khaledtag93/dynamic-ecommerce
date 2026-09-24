@@ -369,6 +369,49 @@ class StorefrontExperienceTest extends TestCase
             ->assertDontSee('Mark all as read');
     }
 
+    public function test_cart_uses_customer_facing_offer_labels(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::query()->create([
+            'name' => 'Cart Offer Category',
+            'slug' => 'cart-offer-category-' . Str::lower(Str::random(6)),
+            'description' => 'Cart offer category',
+            'meta_title' => 'Cart Offer Category',
+            'meta_keyword' => 'cart offer',
+            'meta_description' => 'Cart offer category',
+            'status' => 0,
+        ]);
+
+        $product = Product::query()->create([
+            'name' => 'Cart Offer Product',
+            'slug' => 'cart-offer-product-' . Str::lower(Str::random(6)),
+            'category_id' => $category->id,
+            'description' => 'Cart offer product',
+            'base_price' => 180,
+            'quantity' => 5,
+            'status' => true,
+            'has_variants' => false,
+        ]);
+
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'unit_price' => 180,
+            'quantity' => 1,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('cart.index'));
+
+        $response
+            ->assertOk()
+            ->assertDontSee('Personalized offers')
+            ->assertDontSee('Smart offers')
+            ->assertDontSee('Return path');
+    }
+
     public function test_cart_removal_uses_storefront_confirmation_flow(): void
     {
         $user = User::factory()->create();
