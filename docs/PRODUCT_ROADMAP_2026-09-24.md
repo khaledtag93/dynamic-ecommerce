@@ -115,7 +115,9 @@ Core:
 
 **Shift Scheduling V1 implemented in source — 2026-09-25:** `ff423286` adds employee work shifts with Draft/Published/Cancelled lifecycle, overlap protection, live manager schedule, My Schedule and first schedule-vs-attendance comparison. Detailed checkpoint: `WORKFORCE_SHIFT_SCHEDULING_V1_2026-09-25.md`. CI verification is pending; QAS/Production are unchanged.
 
-**Next implementation order:** Attendance Rules & Corrections V1 → leave types/balances/requests → payroll/deductions.
+**Attendance Rules & Corrections V1 implemented in source — 2026-09-25:** `b7fe238d` adds break tracking, immutable recorded-vs-effective attendance, audited correction requests/approval, centralized late/early/absence rules and net worked time. Work Schedule now consumes the same rule output. See `WORKFORCE_ATTENDANCE_RULES_CORRECTIONS_V1_2026-09-25.md`. CI verification is pending; this slice is not yet claimed on QAS.
+
+**Next implementation order:** Leave Management V1 → payroll foundation.
 
 
 Keep workforce identity related to, but not overloaded into, the customer account model.
