@@ -101,7 +101,7 @@ class PosController extends Controller
                 'barcode' => $product->barcode,
                 'stock' => (int) $product->quantity_value,
                 'price' => (float) $product->current_price,
-                'selectable' => ! $product->has_variants && trim((string) $product->barcode) !== '',
+                'selectable' => ! $product->has_variants,
             ])->concat($variants->map(fn ($variant) => [
                 'product' => $variant->product,
                 'variant' => $variant,
@@ -110,7 +110,7 @@ class PosController extends Controller
                 'barcode' => $variant->barcode,
                 'stock' => (int) $variant->stock,
                 'price' => (float) $variant->current_price,
-                'selectable' => trim((string) $variant->barcode) !== '',
+                'selectable' => true,
             ]))->take(10)->values();
         }
 
@@ -255,6 +255,32 @@ class PosController extends Controller
             ->with('success', __('Added :item to the POS cart.', [
                 'item' => $item->variant_name ?: $item->product_name,
             ]));
+    }
+
+    public function addCatalogItem(Request $request, PosCart $posCart, Product $product)
+    {
+        $data = $request->validate([
+            'variant_id' => ['nullable', 'integer'],
+        ]);
+
+        $variant = null;
+        if (! empty($data['variant_id'])) {
+            $variant = ProductVariant::query()
+                ->whereKey((int) $data['variant_id'])
+                ->where('product_id', $product->id)
+                ->firstOrFail();
+        }
+
+        $item = $this->posService->addCatalogItem(
+            $posCart,
+            $product,
+            $variant,
+            (int) $request->user()->id,
+        );
+
+        return redirect()->route('admin.pos.index')->with('success', __('Added :item to the POS cart.', [
+            'item' => $item->variant_name ?: $item->product_name,
+        ]));
     }
 
     public function updateQuantity(Request $request, PosCart $posCart, PosCartItem $posCartItem)
