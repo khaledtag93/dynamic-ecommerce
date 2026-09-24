@@ -31,6 +31,9 @@
                                     <span class="lc-status-badge {{ $order->status === \App\Models\Order::STATUS_COMPLETED ? 'lc-badge-success' : ($order->status === \App\Models\Order::STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->status_label }}</span>
                                     <span class="lc-status-badge {{ $order->payment_status === \App\Models\Order::PAYMENT_STATUS_PAID ? 'lc-badge-success' : ($order->payment_status === \App\Models\Order::PAYMENT_STATUS_FAILED ? 'lc-badge-danger' : 'lc-badge-unpaid') }}">{{ $order->payment_status_label }}</span>
                                     <span class="lc-status-badge {{ $order->delivery_status === \App\Models\Order::DELIVERY_STATUS_DELIVERED ? 'lc-badge-success' : ($order->delivery_status === \App\Models\Order::DELIVERY_STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->delivery_status_label }}</span>
+                                    @if($order->sales_channel === $order::SALES_CHANNEL_POS)
+                                        <span class="lc-status-badge lc-badge-processing">{{ __('In-store') }}</span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-xl-2 col-lg-2 col-sm-4 col-6">
