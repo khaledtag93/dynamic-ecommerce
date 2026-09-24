@@ -261,6 +261,10 @@ Route::prefix('admin')
             });
         });
 
+        Route::middleware('permission:pos.shifts.review')->controller(PosController::class)->group(function () {
+            Route::get('/pos/shifts', 'shifts')->name('pos.shifts.index');
+        });
+
         Route::middleware('permission:pos.manage')->controller(PosController::class)->group(function () {
             Route::get('/pos', 'index')->name('pos.index');
             Route::post('/pos/shifts/open', 'openShift')->name('pos.shifts.open');
