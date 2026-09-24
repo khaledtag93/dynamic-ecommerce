@@ -156,7 +156,7 @@
                         @error('cart')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
                     </form>
 
-                    <details class="mt-3" @if(mb_strlen($productSearch) >= 2) open @endif>
+                    <details class="mt-3">
                         <summary class="fw-semibold" style="cursor:pointer"><i class="mdi mdi-magnify me-1"></i>{{ __('Find product manually') }}</summary>
                         <div class="pos-live-search mt-3" data-pos-live-search data-url="{{ route('admin.pos.lookups.products') }}" data-kind="product">
                             <div class="input-group">
