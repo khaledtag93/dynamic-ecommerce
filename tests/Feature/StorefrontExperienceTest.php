@@ -317,6 +317,50 @@ class StorefrontExperienceTest extends TestCase
             ->assertDontSee('Mark all as read');
     }
 
+    public function test_cart_removal_uses_storefront_confirmation_flow(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::query()->create([
+            'name' => 'Cart Category',
+            'slug' => 'cart-category-' . Str::lower(Str::random(6)),
+            'description' => 'Cart category',
+            'meta_title' => 'Cart Category',
+            'meta_keyword' => 'cart',
+            'meta_description' => 'Cart category',
+            'status' => 0,
+        ]);
+
+        $product = Product::query()->create([
+            'name' => 'Cart Product',
+            'slug' => 'cart-product-' . Str::lower(Str::random(6)),
+            'category_id' => $category->id,
+            'description' => 'Cart product',
+            'base_price' => 150,
+            'quantity' => 5,
+            'status' => true,
+            'has_variants' => false,
+        ]);
+
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'unit_price' => 150,
+            'quantity' => 1,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('cart.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('id="storefrontConfirmModal"', false)
+            ->assertSee('data-confirm-title="Remove item"', false)
+            ->assertSee('data-confirm-message="Remove this item from your cart?"', false)
+            ->assertDontSee('onclick="return confirm(', false);
+    }
+
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
     {
         $settings = app(StoreSettingsService::class)->all();
