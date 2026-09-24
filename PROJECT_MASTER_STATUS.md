@@ -116,6 +116,13 @@
 - Catalog quick quantity edits use the counted-stock service with stale-count protection and a distinct source. Product duplication starts at zero independent stock. Inventory history labels the three admin sources. English/Arabic UI and focused regression coverage are included; see [`docs/CATALOG_STOCK_AUDIT_2026-09-24.md`](docs/CATALOG_STOCK_AUDIT_2026-09-24.md).
 - The catalog stock batch is CI-verified: [Hardening CI 36031782934](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36031782934) passed at `6889248` with 135 tests (736 assertions) and the frontend production build. The operator-confirmed QAS application HEAD remains `0a08253`; manual review is deferred to the consolidated phase. Production and `main` are unchanged.
 
+## Barcode Scan-to-Find V1 checkpoint — 2026-09-24
+- Inventory now has a dedicated scanner workspace that accepts HID keyboard-mode barcode input and uses the shared exact barcode resolver rather than fuzzy search.
+- Exact simple-product and variant matches link into the existing counted-stock adjustment workflow; scanner lookup itself does not mutate inventory.
+- Parent product barcodes on variant products require explicit variant selection, while unknown and legacy ambiguous barcodes cannot reach stock actions.
+- Inventory/Adjust Stock navigation, English/Arabic copy and focused regression coverage are included. See `docs/BARCODE_SCAN_TO_FIND_V1_2026-09-24.md`.
+- Camera scanning, barcode label printing and POS cart behavior remain future slices. Branch-head CI is pending. QAS remains on `0a08253`; Production and `main` are unchanged.
+
 ## Barcode / SKU Foundation V1 checkpoint — 2026-09-24
 - The active product editor now applies SKU uniqueness across products and variants, matching the existing cross-catalog barcode safety rule. Duplicate identifiers inside the same pending product/variant payload are rejected before save.
 - The shared identifier service now resolves exact SKU values as well as barcodes and refuses ambiguous legacy matches instead of guessing. Catalog search can find a parent product by variant SKU or barcode.

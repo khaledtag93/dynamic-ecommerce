@@ -351,3 +351,21 @@ Verification state:
 - Production and `main`: unchanged
 
 See `docs/BARCODE_SKU_FOUNDATION_V1_2026-09-24.md`.
+
+
+### Barcode Scan-to-Find V1 — 2026-09-24
+Source implementation on `v42-clean-baseline` now:
+- adds a permission-scoped Inventory scanner workspace for HID keyboard-mode barcode scanners
+- resolves exact product/variant barcodes through the shared identifier service
+- links exact matches to the existing stale-count protected stock adjustment workflow
+- requires explicit variant choice when a parent barcode identifies a variant product
+- blocks unknown or ambiguous legacy barcodes from stock actions
+- adds Inventory/Adjust Stock navigation, EN/AR copy, regression tests and implementation notes
+
+Verification state:
+- branch-head CI: pending
+- consolidated authenticated QAS review: deferred by owner
+- QAS application HEAD: still `0a08253`
+- Production and `main`: unchanged
+
+See `docs/BARCODE_SCAN_TO_FIND_V1_2026-09-24.md`.
