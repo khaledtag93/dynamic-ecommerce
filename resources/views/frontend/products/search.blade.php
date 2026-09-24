@@ -71,7 +71,7 @@
             <div>
                 <span class="lc-section-kicker mb-2">{{ __('Catalog results') }}</span>
                 <h2 class="h3 fw-bold mb-1">
-                    {{ trans_choice(':count product found|:count products found', $products->total(), ['count' => $products->total()]) }}
+                    {{ __('Products found: :count', ['count' => number_format($products->total())]) }}
                 </h2>
                 @if($filters['q'])
                     <div class="text-muted">{{ __('Matching “:query” across the visible catalog.', ['query' => $filters['q']]) }}</div>
