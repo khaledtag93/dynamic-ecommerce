@@ -1,47 +1,33 @@
 @extends('layouts.app')
 
+@section('title', __('Reset password') . ' | ' . ($storeSettings['store_name'] ?? 'Storefront'))
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
+<section class="py-5 lc-page-shell">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-5 col-lg-6">
+                <div class="lc-card p-4 p-lg-5">
+                    <div class="text-center mb-4">
+                        <div class="text-uppercase small text-muted fw-bold">{{ __('Account access') }}</div>
+                        <h1 class="fw-bold mb-2">{{ __('Reset your password') }}</h1>
+                        <p class="text-muted mb-0">{{ __('Enter the email address used for your account and we will send a reset link if it matches an account.') }}</p>
+                    </div>
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    <form method="POST" action="{{ route('password.email') }}">
+                    <form method="POST" action="{{ route('password.email') }}" class="d-grid gap-3">
                         @csrf
-
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                        <div>
+                            <label for="email" class="form-label fw-bold">{{ __('Email address') }}</label>
+                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+                            @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Send Password Reset Link') }}
-                                </button>
-                            </div>
-                        </div>
+                        <button type="submit" class="btn lc-btn-primary">{{ __('Send reset link') }}</button>
+                        <div class="text-center text-muted">{{ __('Remembered your password?') }} <a href="{{ route('login') }}">{{ __('Back to login') }}</a></div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 @endsection

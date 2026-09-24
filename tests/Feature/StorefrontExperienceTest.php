@@ -519,4 +519,45 @@ class StorefrontExperienceTest extends TestCase
         $this->assertSame('', $settings['store_business_website']);
         $this->assertSame('', $settings['store_contact_hours']);
     }
+
+    public function test_customer_account_access_pages_use_storefront_ui(): void
+    {
+        $login = $this->get(route('login'));
+
+        $login
+            ->assertOk()
+            ->assertSee('Login to your account')
+            ->assertSee('lc-card p-4 p-lg-5', false);
+
+        $reset = $this->get(route('password.request'));
+
+        $reset
+            ->assertOk()
+            ->assertSee('Reset your password')
+            ->assertSee('Send reset link')
+            ->assertSee('lc-form-control', false)
+            ->assertDontSee('<div class="card-header">', false);
+    }
+
+    public function test_small_screen_navigation_exposes_account_and_login_paths(): void
+    {
+        $user = User::factory()->create();
+
+        $authenticated = $this->actingAs($user)->get(route('frontend.home'));
+
+        $authenticated
+            ->assertOk()
+            ->assertSee('class="d-md-none" href="'.route('orders.index').'"', false)
+            ->assertSee('class="d-md-none" href="'.route('notifications.index').'"', false);
+
+        auth()->logout();
+
+        $guest = $this->get(route('frontend.home'));
+
+        $guest
+            ->assertOk()
+            ->assertSee('class="d-md-none" href="'.route('login').'"', false)
+            ->assertSee(route('register'));
+    }
+
 }

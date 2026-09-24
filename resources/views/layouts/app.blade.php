@@ -699,6 +699,8 @@
                         <a href="#latest-products">{{ __('New arrivals') }}</a>
                         <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
                         @auth
+                            <a class="d-md-none" href="{{ route('orders.index') }}"><i class="bi bi-receipt me-1"></i>{{ __('My Orders') }}</a>
+                            <a class="d-md-none" href="{{ route('notifications.index') }}"><i class="bi bi-bell me-1"></i>{{ __('Notifications') }}</a>
                             @if((int) auth()->user()->role_as === 1)
                                 <a href="{{ route('admin.dashboard') }}">{{ __('Admin Dashboard') }}</a>
                             @endif
@@ -707,6 +709,7 @@
                                 <button class="retail-link-button" type="submit">{{ __('Logout') }}</button>
                             </form>
                         @else
+                            <a class="d-md-none" href="{{ route('login') }}">{{ __('Login') }}</a>
                             <a href="{{ route('register') }}">{{ __('Create account') }}</a>
                         @endauth
                     </div>

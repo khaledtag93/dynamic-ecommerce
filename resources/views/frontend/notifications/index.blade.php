@@ -23,9 +23,13 @@
                         </div>
                         <div class="d-flex gap-2">
                             @if(!$notification->read_at)
-                                <form method="POST" action="{{ route('notifications.read', $notification) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-secondary rounded-4">{{ __('Open') }}</button></form>
+                                <form method="POST" action="{{ route('notifications.read', $notification) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn btn-sm btn-outline-secondary rounded-4">{{ !empty($payload['action_url']) ? __('View update') : __('Mark as read') }}</button>
+                                </form>
                             @elseif(!empty($payload['action_url']))
-                                <a href="{{ $payload['action_url'] }}" class="btn btn-sm btn-outline-secondary rounded-4">{{ __('Open') }}</a>
+                                <a href="{{ $payload['action_url'] }}" class="btn btn-sm btn-outline-secondary rounded-4">{{ __('View update') }}</a>
                             @endif
                         </div>
                     </div>
