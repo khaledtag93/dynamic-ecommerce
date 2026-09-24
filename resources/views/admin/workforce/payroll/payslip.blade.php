@@ -44,7 +44,7 @@
         <div class="col-xl-4">
             <div class="admin-card h-100"><div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Snapshot inputs') }}</h4>
-                <div class="mb-3"><div class="text-muted small">{{ __('Pay basis') }}</div><div class="fw-semibold">{{ AppModelsEmployeeCompensation::payBasisOptions()[$entry->pay_basis_snapshot] ?? IlluminateSupportStr::headline($entry->pay_basis_snapshot) }}</div></div>
+                <div class="mb-3"><div class="text-muted small">{{ __('Pay basis') }}</div><div class="fw-semibold">{{ \App\Models\EmployeeCompensation::payBasisOptions()[$entry->pay_basis_snapshot] ?? \Illuminate\Support\Str::headline($entry->pay_basis_snapshot) }}</div></div>
                 <div class="mb-3"><div class="text-muted small">{{ __('Base rate') }}</div><div class="fw-semibold">{{ number_format((float)$entry->base_rate_snapshot, 2) }} {{ $entry->currency_snapshot }}</div></div>
                 <div class="mb-3"><div class="text-muted small">{{ __('Effective net attendance') }}</div><div class="fw-semibold">{{ __(':hours h :minutes m', ['hours' => $hours, 'minutes' => $minutes]) }}</div></div>
                 <div class="mb-3"><div class="text-muted small">{{ __('Attendance sessions') }}</div><div class="fw-semibold">{{ $entry->attendance_session_count }}</div></div>
@@ -60,17 +60,17 @@
                     <table class="table admin-table align-middle mb-0">
                         <tbody>
                             <tr><td>{{ __('Base pay') }}</td><td class="text-end fw-semibold">{{ number_format((float)$entry->base_pay, 2) }} {{ $entry->currency_snapshot }}</td></tr>
-                            @foreach($entry->adjustments->where('type', AppModelsPayrollAdjustment::TYPE_OVERTIME) as $adjustment)
+                            @foreach($entry->adjustments->where('type', \App\Models\PayrollAdjustment::TYPE_OVERTIME) as $adjustment)
                                 <tr><td>{{ __('Overtime') }} · {{ $adjustment->label }}<div class="text-muted small">{{ $adjustment->reason }}</div></td><td class="text-end">{{ number_format((float)$adjustment->amount, 2) }} {{ $entry->currency_snapshot }}</td></tr>
                             @endforeach
-                            @foreach($entry->adjustments->where('type', AppModelsPayrollAdjustment::TYPE_ALLOWANCE) as $adjustment)
+                            @foreach($entry->adjustments->where('type', \App\Models\PayrollAdjustment::TYPE_ALLOWANCE) as $adjustment)
                                 <tr><td>{{ __('Allowance') }} · {{ $adjustment->label }}<div class="text-muted small">{{ $adjustment->reason }}</div></td><td class="text-end">{{ number_format((float)$adjustment->amount, 2) }} {{ $entry->currency_snapshot }}</td></tr>
                             @endforeach
-                            @foreach($entry->adjustments->where('type', AppModelsPayrollAdjustment::TYPE_BONUS) as $adjustment)
+                            @foreach($entry->adjustments->where('type', \App\Models\PayrollAdjustment::TYPE_BONUS) as $adjustment)
                                 <tr><td>{{ __('Bonus') }} · {{ $adjustment->label }}<div class="text-muted small">{{ $adjustment->reason }}</div></td><td class="text-end">{{ number_format((float)$adjustment->amount, 2) }} {{ $entry->currency_snapshot }}</td></tr>
                             @endforeach
                             <tr class="fw-bold"><td>{{ __('Gross pay') }}</td><td class="text-end">{{ number_format((float)$entry->gross_pay, 2) }} {{ $entry->currency_snapshot }}</td></tr>
-                            @foreach($entry->adjustments->where('type', AppModelsPayrollAdjustment::TYPE_DEDUCTION) as $adjustment)
+                            @foreach($entry->adjustments->where('type', \App\Models\PayrollAdjustment::TYPE_DEDUCTION) as $adjustment)
                                 <tr><td>{{ __('Deduction') }} · {{ $adjustment->label }}<div class="text-muted small">{{ $adjustment->reason }}</div></td><td class="text-end text-danger">-{{ number_format((float)$adjustment->amount, 2) }} {{ $entry->currency_snapshot }}</td></tr>
                             @endforeach
                             <tr class="fw-bold fs-5"><td>{{ __('Net pay') }}</td><td class="text-end">{{ number_format((float)$entry->net_pay, 2) }} {{ $entry->currency_snapshot }}</td></tr>
