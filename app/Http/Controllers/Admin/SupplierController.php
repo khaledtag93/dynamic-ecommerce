@@ -55,15 +55,22 @@ class SupplierController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $stats = [
-            'total' => Supplier::count(),
-            'active' => Supplier::where('is_active', true)->count(),
+        $queueStats = [
             'inactive' => Supplier::where('is_active', false)->count(),
-            'with_purchases' => Supplier::has('purchases')->count(),
             'unused' => Supplier::doesntHave('purchases')->count(),
         ];
 
-        return view('admin.suppliers.index', compact('suppliers', 'filters', 'stats'));
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.suppliers._results', compact('suppliers', 'filters', 'queueStats'));
+        }
+
+        $stats = $queueStats + [
+            'total' => Supplier::count(),
+            'active' => Supplier::where('is_active', true)->count(),
+            'with_purchases' => Supplier::has('purchases')->count(),
+        ];
+
+        return view('admin.suppliers.index', compact('suppliers', 'filters', 'stats', 'queueStats'));
     }
 
     public function create() { return view('admin.suppliers.create', ['supplier' => new Supplier()]); }
