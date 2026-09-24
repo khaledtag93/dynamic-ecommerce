@@ -32,6 +32,8 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 
 ### Admin shell
 - Finalize sidebar/topbar/navigation hierarchy and role-aware actions.
+- **Long-form action rule:** forms/workspaces with primary actions below the fold should use a reusable responsive sticky action dock (Save / Checkout / Approve / Update as appropriate), preserving safe content clearance, RTL, mobile behavior, validation visibility, and keyboard accessibility. Do not add sticky chrome when the primary action is already naturally visible.
+- **Operational search rule:** high-frequency workflows should prefer fast contains/autocomplete-style discovery over exact-only lookup when ambiguity can be presented safely; show enough identity context to choose correctly without exposing unnecessary customer data.
 - Standardize page headers, filters, tables, empty states, form actions, confirmations, toasts, validation and mobile behavior.
 - Remove duplicated guidance cards and internal/demo wording that does not belong in a real merchant product.
 - Reduce oversized pages by using focused sections/workspaces without breaking form state.
@@ -85,8 +87,8 @@ Build POS as a focused operational application, not as another dense admin page.
 
 Core:
 - PIN-based staff session/identity and location assignment.
-- Product search + barcode scan + category shortcuts.
-- Cart, quantity, line discount, order discount, customer attach/create.
+- Product search + barcode scan + category shortcuts. POS product entry must support both fast exact HID scanning and a manual contains-style Name / SKU / Barcode fallback with stock/price context.
+- Cart, quantity, line discount, order discount, customer attach/create. Existing-customer lookup should support contains-style name/email/phone discovery, with phone sourced from saved customer addresses until a canonical customer phone field is introduced.
 - Cash/COD/custom payment foundation; online/card terminal integrations remain provider-specific.
 - Hold/resume cart, notes and controlled manual price/discount permissions.
 - Sale, cancel/void, return/exchange and restock workflows with manager approval where configured.
