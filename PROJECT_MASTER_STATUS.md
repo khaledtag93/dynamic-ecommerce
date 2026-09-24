@@ -67,6 +67,15 @@
 - English/Arabic copy and focused UI regression coverage were added. See `docs/COST_CALCULATOR_UX_2026-09-24.md`.
 - Source implementation and automated regression verification are complete for this polish iteration. Hardening CI run `36005416310` passed at `2a237e1`; authenticated English/Arabic desktop/mobile QAS review remains required. Production is unchanged.
 
+## Storefront Foundation UX checkpoint — 2026-09-24
+- Customer-facing defaults are now marketplace-neutral instead of electronics-specific, while exact customized content remains untouched.
+- Duplicate homepage shortcut navigation was removed; the hero keeps one concise shortcut row.
+- Header search now uses a real `/search` product-results flow with availability/offer/sort filters and pagination instead of submitting an ignored home-page query.
+- Known fake contact defaults are removed from code/seeding and safely scrubbed only on exact legacy-value matches.
+- Product/category/cart/checkout missing-image fallbacks now use a local storefront SVG instead of `via.placeholder.com`.
+- English/Arabic copy and focused `StorefrontExperienceTest` coverage were added. See `docs/STOREFRONT_FOUNDATION_UX_2026-09-24.md`.
+- Source implementation is complete for this foundation iteration; branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
+
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
 - Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.
