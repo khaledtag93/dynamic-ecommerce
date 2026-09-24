@@ -32,9 +32,16 @@ Improve the customer-facing storefront without disturbing checkout, cart, pricin
 - Corrected hero navigation direction: LTR uses normal previous-left / next-right chevrons; RTL flips the direction automatically.
 - Corrected the primary CTA arrow to point forward in LTR and flip in RTL.
 
+### Payment/account safety
+- Order Details and Order Success no longer render raw payment-provider `checkout_error` values to customers.
+- Customer pages now show safe retry/support guidance instead of technical provider responses.
+- Order Details no longer exposes raw provider status codes as the primary customer-facing payment status.
+- Detailed gateway diagnostics remain an admin/log concern.
+
 ### Regression coverage
 - Updated `StorefrontExperienceTest` for the product-detail cleanup and checkout reassurance copy.
 - Added coverage for the brand-token hero styling and RTL hero navigation behavior.
+- Extended payment-error coverage so Paymob Result, Order Details, and Order Success all reject raw gateway error output.
 
 ## Validation state
 
@@ -52,3 +59,4 @@ Improve the customer-facing storefront without disturbing checkout, cart, pricin
 4. Product with variants: price, stock, quantity limits, Add to cart, Buy now, and bundle behavior must remain unchanged.
 5. Checkout: billing toggle alignment, payment options, addresses, totals, offers, and Place order.
 6. English/Arabic wording and RTL spacing at mobile widths.
+7. Simulate a QAS online-payment initiation failure and confirm no raw provider error/status is exposed on Paymob Result, Order Details, or Order Success.
