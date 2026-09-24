@@ -222,8 +222,8 @@ class WorkShiftController extends Controller
                 ->first(function (EmployeeAttendanceSession $session) use ($shift) {
                     $sessionEnd = $session->clock_out_at ?? now();
 
-                    return $session->clock_in_at < $shift->ends_at
-                        && $sessionEnd > $shift->starts_at;
+                    return $session->clock_in_at->lt($shift->ends_at)
+                        && $sessionEnd->gt($shift->starts_at);
                 });
 
             return [$shift->id => $matching];
