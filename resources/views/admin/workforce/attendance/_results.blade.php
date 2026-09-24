@@ -4,7 +4,7 @@
         <div class="admin-table-toolbar">
             <div>
                 <h4 class="mb-1">{{ __('Attendance sessions') }}</h4>
-                <div class="text-muted small">{{ __('Showing :count session(s) on this page.', ['count' => $sessions->count()]) }}</div>
+                <div class="text-muted small">{{ __('Recorded time stays immutable; approved corrections drive effective and net worked time.') }}</div>
             </div>
             @if($filters['search'] || $filters['status'] || $filters['date'])
                 <span class="admin-chip">{{ __('Filtered results') }}</span>
@@ -16,42 +16,61 @@
                 <thead>
                     <tr>
                         <th>{{ __('Employee') }}</th>
-                        <th>{{ __('Department') }}</th>
-                        <th>{{ __('Clock in') }}</th>
-                        <th>{{ __('Clock out') }}</th>
-                        <th>{{ __('Duration') }}</th>
+                        <th>{{ __('Recorded') }}</th>
+                        <th>{{ __('Effective') }}</th>
+                        <th>{{ __('Breaks') }}</th>
+                        <th>{{ __('Net worked') }}</th>
+                        <th>{{ __('Correction') }}</th>
                         <th>{{ __('Source') }}</th>
-                        <th>{{ __('Notes') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($sessions as $session)
                         @php
-                            $duration = $session->durationMinutes();
-                            $hours = intdiv($duration, 60);
-                            $minutes = $duration % 60;
+                            $net = $session->netWorkedMinutes();
+                            $netHours = intdiv($net, 60);
+                            $netMinutes = $net % 60;
+                            $breakMinutes = $session->breakMinutes();
                         @endphp
                         <tr>
                             <td>
                                 <div class="fw-bold">{{ $session->employee?->user?->name ?: __('Missing account') }}</div>
-                                <div class="text-muted small">{{ $session->employee?->employee_code ?: '—' }}</div>
+                                <div class="text-muted small">{{ $session->employee?->employee_code ?: '—' }}@if($session->employee?->department) · {{ $session->employee->department }}@endif</div>
                             </td>
-                            <td>{{ $session->employee?->department ?: '—' }}</td>
-                            <td>{{ optional($session->clock_in_at)->format('d M Y H:i') ?: '—' }}</td>
                             <td>
-                                @if($session->clock_out_at)
-                                    {{ $session->clock_out_at->format('d M Y H:i') }}
-                                @else
-                                    <span class="badge admin-status-badge badge-soft-success">{{ __('Open now') }}</span>
+                                <div>{{ $session->clock_in_at?->format('d M Y H:i') ?: '—' }}</div>
+                                <div class="text-muted small">→ {{ $session->clock_out_at?->format('d M Y H:i') ?: __('Open now') }}</div>
+                            </td>
+                            <td>
+                                <div class="{{ $session->hasApprovedCorrection() ? 'fw-semibold' : '' }}">{{ $session->effectiveClockInAt()?->format('d M Y H:i') ?: '—' }}</div>
+                                <div class="text-muted small">→ {{ $session->effectiveClockOutAt()?->format('d M Y H:i') ?: __('Open now') }}</div>
+                                @if($session->hasApprovedCorrection())
+                                    <span class="badge admin-status-badge badge-soft-success mt-1">{{ __('Corrected') }}</span>
                                 @endif
                             </td>
-                            <td>{{ __(':hours h :minutes m', ['hours' => $hours, 'minutes' => $minutes]) }}</td>
-                            <td>{{ IlluminateSupportStr::headline($session->source) }}</td>
+                            <td>{{ __(':minutes min', ['minutes' => $breakMinutes]) }}</td>
+                            <td>{{ __(':hours h :minutes m', ['hours' => $netHours, 'minutes' => $netMinutes]) }}</td>
                             <td>
-                                <div class="small">{{ $session->clock_in_notes ?: '—' }}</div>
-                                @if($session->clock_out_notes)<div class="text-muted small mt-1">{{ $session->clock_out_notes }}</div>@endif
+                                @if($session->pendingCorrection)
+                                    <span class="badge admin-status-badge badge-soft-warning">{{ __('Pending review') }}</span>
+                                @elseif($session->hasApprovedCorrection())
+                                    <span class="badge admin-status-badge badge-soft-success">{{ __('Approved correction') }}</span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
                             </td>
+                            <td>{{ IlluminateSupportStr::headline($session->source) }}</td>
                         </tr>
+                        @if($session->clock_in_notes || $session->clock_out_notes)
+                            <tr>
+                                <td colspan="7" class="pt-0 border-top-0">
+                                    <div class="small text-muted">
+                                        @if($session->clock_in_notes)<strong>{{ __('Clock-in note') }}:</strong> {{ $session->clock_in_notes }}@endif
+                                        @if($session->clock_out_notes)<span class="ms-3"><strong>{{ __('Clock-out note') }}:</strong> {{ $session->clock_out_notes }}</span>@endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                     @empty
                         <tr>
                             <td colspan="7" class="py-5">
