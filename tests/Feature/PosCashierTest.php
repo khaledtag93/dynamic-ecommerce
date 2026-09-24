@@ -317,6 +317,14 @@ class PosCashierTest extends TestCase
         $this->assertSame($customer->email, $order->customer_email);
         $this->assertSame($customer->id, (int) data_get($order->meta, 'customer_user_id'));
         $this->assertSame(2, (int) $product->fresh()->quantity);
+
+        $this->actingAs($customer)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee(__('In-store purchase'))
+            ->assertSee(__('This purchase was completed at the store counter. No shipping address is required.'))
+            ->assertSee(__('Paid by card terminal at the store counter.'))
+            ->assertDontSee(__('Shipping address'));
     }
 
     public function test_pos_customer_attachment_is_owner_scoped_and_rejects_staff_accounts(): void
