@@ -27,8 +27,8 @@
                     @forelse($corrections as $correction)
                         @php
                             $statusClass = match($correction->status) {
-                                AppModelsEmployeeAttendanceCorrection::STATUS_APPROVED => 'badge-soft-success',
-                                AppModelsEmployeeAttendanceCorrection::STATUS_REJECTED => 'badge-soft-danger',
+                                \App\Models\EmployeeAttendanceCorrection::STATUS_APPROVED => 'badge-soft-success',
+                                \App\Models\EmployeeAttendanceCorrection::STATUS_REJECTED => 'badge-soft-danger',
                                 default => 'badge-soft-warning',
                             };
                         @endphp
@@ -48,7 +48,7 @@
                             </td>
                             <td style="min-width: 220px">{{ $correction->reason }}</td>
                             <td>
-                                <span class="badge admin-status-badge {{ $statusClass }}">{{ AppModelsEmployeeAttendanceCorrection::statusOptions()[$correction->status] ?? IlluminateSupportStr::headline($correction->status) }}</span>
+                                <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeAttendanceCorrection::statusOptions()[$correction->status] ?? \Illuminate\Support\Str::headline($correction->status) }}</span>
                                 @if($correction->reviewed_at)
                                     <div class="text-muted small mt-1">{{ $correction->reviewed_at->format('d M Y H:i') }}</div>
                                     @if($correction->reviewedBy)<div class="text-muted small">{{ $correction->reviewedBy->name }}</div>@endif
