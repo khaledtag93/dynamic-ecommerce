@@ -73,6 +73,7 @@
 - Header search now uses a real `/search` product-results flow with availability/offer/sort filters and pagination instead of submitting an ignored home-page query.
 - Known fake contact defaults are removed from code/seeding and safely scrubbed only on exact legacy-value matches.
 - Product/category/cart/checkout missing-image fallbacks now use a local storefront SVG instead of `via.placeholder.com`.
+- Checkout now advertises only enabled payment methods and uses an aligned billing-address toggle; Product Detail preserves uncropped merchandise imagery and reports the true gallery count.
 - English/Arabic copy and focused `StorefrontExperienceTest` coverage were added. See `docs/STOREFRONT_FOUNDATION_UX_2026-09-24.md`.
 - Source implementation is complete for this foundation iteration; branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
 
