@@ -44,9 +44,9 @@
                         @endif
                         @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID)
                             <div class="alert alert-warning mt-3 mb-0 rounded-4 small">
-                                {{ __('Online payment is not completed yet. You can safely reopen the secure payment page without creating duplicate paid orders.') }}
+                                {{ __('Online payment is not completed yet. You can reopen the secure payment page to try again.') }}
                                 @if(!empty(data_get($latestPayment, 'meta.checkout_error')))
-                                    <div class="mt-2 fw-semibold">{{ __('Latest gateway start issue') }}: {{ data_get($latestPayment, 'meta.checkout_error') }}</div>
+                                    <div class="mt-2">{{ __('If the payment page does not open, contact support with your order number.') }}</div>
                                 @endif
                             </div>
                         @endif
