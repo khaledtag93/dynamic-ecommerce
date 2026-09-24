@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
@@ -44,17 +45,32 @@ class CustomerController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $stats = [
-            'total' => User::count(),
-            'admins' => User::where('role_as', 1)->count(),
-            'customers' => User::where('role_as', 0)->count(),
+        $queueStats = [
             'buyers' => User::has('orders')->count(),
             'no_orders' => User::doesntHave('orders')->count(),
             'repeat_buyers' => User::has('orders', '>=', 2)->count(),
-            'revenue' => (float) User::query()->withSum('orders', 'grand_total')->get()->sum('orders_sum_grand_total'),
         ];
 
-        return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'value', 'perPage', 'stats'));
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.customers._results', compact(
+                'users',
+                'search',
+                'role',
+                'activity',
+                'value',
+                'perPage',
+                'queueStats',
+            ));
+        }
+
+        $stats = $queueStats + [
+            'total' => User::count(),
+            'admins' => User::where('role_as', 1)->count(),
+            'customers' => User::where('role_as', 0)->count(),
+            'revenue' => (float) Order::whereNotNull('user_id')->sum('grand_total'),
+        ];
+
+        return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'value', 'perPage', 'stats', 'queueStats'));
     }
 
     public function show(User $user)
