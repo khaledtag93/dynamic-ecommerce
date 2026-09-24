@@ -415,7 +415,11 @@ class PaymentService
                 : __('Online payment is enabled, but the gateway credentials are still incomplete in the admin settings.');
         }
 
-        return __('You can pay the courier when the shipment reaches you.');
+        return match ($order->payment_method) {
+            Order::PAYMENT_METHOD_POS_CASH => __('Paid in cash at the store counter.'),
+            Order::PAYMENT_METHOD_POS_CARD => __('Paid by card terminal at the store counter.'),
+            default => __('You can pay the courier when the shipment reaches you.'),
+        };
     }
 
     public function notifyPaymentStatusChanged(Order $order, Payment $payment): void
