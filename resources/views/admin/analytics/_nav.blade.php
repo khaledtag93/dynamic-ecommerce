@@ -41,41 +41,17 @@
 @endphp
 
 <style>
-.analytics-nav-wrap{display:grid;gap:12px}.analytics-nav{display:flex;gap:10px;flex-wrap:wrap}.analytics-nav-link{display:inline-flex;align-items:center;gap:10px;padding:11px 14px;border-radius:18px;background:#fff;border:1px solid rgba(15,23,42,.08);font-weight:700;color:#0f172a;text-decoration:none;transition:.2s ease;min-width:0}.analytics-nav-link:hover{border-color:rgba(249,115,22,.35);color:#ea580c;transform:translateY(-1px)}.analytics-nav-link.active{background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-color:transparent;box-shadow:0 12px 24px rgba(249,115,22,.22)}.analytics-nav-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:12px;background:#fff7ed;color:#c2410c;flex:0 0 auto}.analytics-nav-link.active .analytics-nav-icon{background:rgba(255,255,255,.18);color:#fff}.analytics-nav-copy{display:grid;min-width:0}.analytics-nav-label{line-height:1.2}.analytics-nav-hint{font-size:.78rem;font-weight:600;color:#64748b;line-height:1.3;margin-top:3px}.analytics-nav-link.active .analytics-nav-hint{color:rgba(255,255,255,.82)}.analytics-read-strip{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-radius:18px;background:#fff;border:1px solid rgba(15,23,42,.06);box-shadow:0 14px 30px rgba(15,23,42,.05)}.analytics-read-strip .title{font-size:.9rem;font-weight:800;color:#0f172a}.analytics-read-strip .help{font-size:.82rem;color:#64748b;line-height:1.55}.analytics-read-strip .chips{display:flex;gap:8px;flex-wrap:wrap}.analytics-read-strip .chip{display:inline-flex;align-items:center;padding:8px 11px;border-radius:999px;background:#f8fafc;border:1px solid rgba(15,23,42,.06);font-size:.78rem;font-weight:700;color:#334155}
+.analytics-nav{display:flex;gap:10px;flex-wrap:wrap}.analytics-nav-link{display:inline-flex;align-items:center;gap:10px;padding:10px 13px;border-radius:16px;background:var(--admin-surface);border:1px solid var(--admin-border);font-weight:700;color:var(--admin-text);text-decoration:none;transition:.18s ease;min-width:0}.analytics-nav-link:hover{border-color:color-mix(in srgb,var(--admin-primary) 35%,var(--admin-border));color:var(--admin-primary);transform:translateY(-1px)}.analytics-nav-link.active{background:var(--admin-primary);color:#fff;border-color:var(--admin-primary);box-shadow:0 10px 24px color-mix(in srgb,var(--admin-primary) 22%,transparent)}.analytics-nav-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:color-mix(in srgb,var(--admin-primary) 9%,var(--admin-surface));color:var(--admin-primary);flex:0 0 auto}.analytics-nav-link.active .analytics-nav-icon{background:rgba(255,255,255,.16);color:#fff}.analytics-nav-copy{display:grid;min-width:0}.analytics-nav-label{line-height:1.2}.analytics-nav-hint{font-size:.76rem;font-weight:600;color:var(--admin-muted);line-height:1.3;margin-top:2px}.analytics-nav-link.active .analytics-nav-hint{color:rgba(255,255,255,.82)}@media(max-width:640px){.analytics-nav-link{flex:1 1 calc(50% - 10px)}}
 </style>
 
-<div class="analytics-nav-wrap">
-    <div class="analytics-nav">
-        @foreach ($analyticsNavItems as $item)
-            <a href="{{ $item['url'] }}" class="analytics-nav-link {{ $item['active'] ? 'active' : '' }}">
-                <span class="analytics-nav-icon"><i class="mdi {{ $item['icon'] }}"></i></span>
-                <span class="analytics-nav-copy">
-                    <span class="analytics-nav-label">{{ $item['label'] }}</span>
-                    <span class="analytics-nav-hint">{{ $item['hint'] }}</span>
-                </span>
-            </a>
-        @endforeach
-    </div>
-
-    <div class="analytics-read-strip">
-        <div>
-            <div class="title">{{ __('Operator reading mode') }}</div>
-            <div class="help">{{ __('Read top to bottom: summary first, pressure second, then open the drilldown that explains the next action.') }}</div>
-        </div>
-        <div class="chips">
-            <span class="chip">{{ __('Faster scan') }}</span>
-            <span class="chip">{{ __('Less repetition') }}</span>
-            <span class="chip">{{ __('Context preserved') }}</span>
-        </div>
-    </div>
-</div>
-
-@if (! empty($analyticsFlowItems ?? []))
-    <div class="mt-3">
-        @include('admin.analytics._flow_hub', [
-            'flowTitle' => $analyticsFlowTitle ?? __('Cross-page flow'),
-            'flowSubtitle' => $analyticsFlowSubtitle ?? __('Open the next page directly from the current insight without resetting your reporting window.'),
-            'flowItems' => $analyticsFlowItems,
-        ])
-    </div>
-@endif
+<nav class="analytics-nav" aria-label="{{ __('Analytics navigation') }}">
+    @foreach ($analyticsNavItems as $item)
+        <a href="{{ $item['url'] }}" class="analytics-nav-link {{ $item['active'] ? 'active' : '' }}">
+            <span class="analytics-nav-icon"><i class="mdi {{ $item['icon'] }}"></i></span>
+            <span class="analytics-nav-copy">
+                <span class="analytics-nav-label">{{ $item['label'] }}</span>
+                <span class="analytics-nav-hint">{{ $item['hint'] }}</span>
+            </span>
+        </a>
+    @endforeach
+</nav>
