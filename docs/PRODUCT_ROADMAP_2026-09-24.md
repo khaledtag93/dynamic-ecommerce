@@ -91,6 +91,8 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 
 **Procurement / Inventory interaction update — 2026-09-25:** Suppliers, Purchases and Inventory Movement Explorer now reuse the same server-rendered progressive live-list infrastructure for their safe read-only search/filter/sort/queue/pagination interactions. Destructive, stock-receipt and inventory-changing actions remain explicit backend mutations. Inventory fragment requests no longer recompute low-stock/expiry workspaces. Application revision `7df29ec`; CI verification remains pending and QAS/Production are unchanged.
 
+**Finance / Promotions interaction update — 2026-09-25:** Payments, Coupons and Promotion Rules now reuse the same live-list infrastructure for safe read-only search/filter/queue/sort/pagination flows. Payment status, coupon mutation and promotion mutation remain server-authoritative. Coupon Type sorting was corrected and promotion sorting is now surfaced in the UI. Application revision `b79177a`; CI verification remains pending and QAS/Production are unchanged.
+
 Build POS as a focused operational application, not as another dense admin page.
 
 Core:
