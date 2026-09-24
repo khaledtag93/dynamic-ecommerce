@@ -88,6 +88,7 @@
 - Customer-facing Product Detail copy was cleaned up: internal stock/settings wording and the technical gallery count were removed, and empty descriptions no longer show placeholder `coming soon` copy.
 - Checkout keeps its already-correct aligned billing switch, while customer reassurance/offer labels were simplified to clearer production wording without changing payment/order logic.
 - The Home hero now follows configurable storefront brand tokens instead of hard-coded dark-blue/orange campaign colors, and previous/next/CTA arrow direction is correct for both LTR and RTL.
+- Customer Order Details and Order Success now hide raw gateway `checkout_error`/provider-status details and use safe retry/support guidance instead.
 - English/Arabic copy and focused storefront regression coverage were updated. See `docs/STOREFRONT_CUSTOMER_UX_2026-09-24.md`.
 - Source implementation is complete for this iteration; branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
 
