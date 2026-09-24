@@ -4,7 +4,9 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Finance')" :title="__('Payments')" :description="__('Payment foundation is now ready for COD, transfer, and future gateway integrations.')">
-    <a href="{{ route('admin.settings.payments') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-cog-outline"></i><span>{{ __('Payment settings') }}</span></a>
+    @if(auth()->user()?->hasPermission('payments.settings'))
+        <a href="{{ route('admin.settings.payments') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-cog-outline"></i><span>{{ __('Payment settings') }}</span></a>
+    @endif
 </x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>
