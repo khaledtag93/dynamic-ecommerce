@@ -275,6 +275,7 @@ class PosService
             $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
             $lockedCart->items()->delete();
             $lockedCart->update([
+                'hold_label' => null,
                 'customer_name' => null,
                 'notes' => null,
             ]);
