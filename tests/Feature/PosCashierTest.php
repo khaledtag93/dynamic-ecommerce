@@ -100,6 +100,49 @@ class PosCashierTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 0);
     }
 
+    public function test_manual_catalog_add_does_not_require_a_barcode(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('Manual POS Product', '', 3, false, 22);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.catalog.add', ['posCart' => $cart->id, 'product' => $product->id]))
+            ->assertRedirect(route('admin.pos.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('pos_cart_items', [
+            'pos_cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_variant_id' => null,
+            'quantity' => 1,
+        ]);
+        $this->assertSame(3, (int) $product->fresh()->quantity);
+    }
+
+    public function test_manual_catalog_add_requires_exact_variant_for_variant_products(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('Manual Variant Product', '', 0, true, 30);
+        $variant = $this->variant($product, 'MANUAL-VAR-1', '', 2, 35);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.catalog.add', ['posCart' => $cart->id, 'product' => $product->id]))
+            ->assertSessionHasErrors('product');
+
+        $this->post(route('admin.pos.catalog.add', ['posCart' => $cart->id, 'product' => $product->id]), [
+            'variant_id' => $variant->id,
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseHas('pos_cart_items', [
+            'pos_cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+    }
+
     public function test_variant_product_requires_exact_variant_barcode(): void
     {
         $admin = User::factory()->create(['role_as' => 1]);
