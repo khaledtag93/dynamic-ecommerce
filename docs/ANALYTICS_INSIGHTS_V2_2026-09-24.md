@@ -36,7 +36,9 @@ The page also contained a duplicated `chart-suite` anchor and analytics-specific
 - Replaced hard-coded orange navigation and toolbar surfaces with configurable admin theme variables.
 - Kept the export summary in the DOM for CSV/print behavior while hiding the duplicate table from the normal screen view.
 - Added Arabic/English copy for the new hierarchy.
-- Added `AdminAnalyticsExperienceTest` to guard the simplified section structure and prevent the removed duplicate layers from returning.
+- Growth analytics now removes its duplicated signal-card layer and redundant executive-focus block; the remaining focus + signal + campaign structure keeps the same growth data with less repetition.
+- Offers analytics now removes the extra hero/operator-summary layers before its primary KPIs, keeps one offer-focus story, and uses admin theme tokens for coupon charts instead of hard-coded orange.
+- Added `AdminAnalyticsExperienceTest` to guard the Overview, Growth, and Offers hierarchy and prevent the removed duplicate layers from returning.
 
 ## Validation state
 
@@ -55,4 +57,6 @@ The page also contained a duplicated `chart-suite` anchor and analytics-specific
 5. Verify Product drilldown links preserve range parameters.
 6. Verify Print view and CSV export still work even though the export table is hidden on screen.
 7. Review English and Arabic/RTL layouts, especially range controls, comparison rows and mobile section navigation.
-8. Confirm configurable Branding & Appearance colors propagate to Analytics navigation/cards without hard-coded orange surfaces.
+8. Confirm configurable Branding & Appearance colors propagate to Analytics navigation/cards and Offers charts without hard-coded orange surfaces.
+9. Verify Growth shows each audience-pressure signal once and keeps campaign/rule/product opportunity data unchanged.
+10. Verify Offers keeps the same coupon totals, leaderboard, chart, promotion posture, and performance table after the summary-layer cleanup.
