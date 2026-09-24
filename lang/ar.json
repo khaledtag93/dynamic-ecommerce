@@ -3696,5 +3696,10 @@
     "Opening note": "ملاحظة الافتتاح",
     "Closing note": "ملاحظة الإغلاق",
     "No cash shifts match these filters.": "لا توجد ورديات صندوق تطابق عوامل التصفية.",
-    "Try changing the cashier or status filters.": "جرّب تغيير الكاشير أو حالة الوردية."
+    "Try changing the cashier or status filters.": "جرّب تغيير الكاشير أو حالة الوردية.",
+    "Open shifts": "الورديات المفتوحة",
+    "Closed shifts": "الورديات المغلقة",
+    "Shifts with variance": "ورديات بها فرق",
+    "Total shortage": "إجمالي العجز",
+    "Total overage": "إجمالي الزيادة"
 }
