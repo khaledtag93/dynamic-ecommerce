@@ -37,7 +37,7 @@
             @if($hasCheckoutFailure)
                 <div class="alert alert-warning rounded-4 text-start mb-4">
                     <div class="fw-semibold mb-1">{{ __('Secure payment page could not be opened') }}</div>
-                    <div class="small mb-2">{{ data_get($payment, 'meta.checkout_error') }}</div>
+                    <div class="small mb-2">{{ __('We could not start the secure payment session. No successful payment was confirmed, and you can retry safely from your order page.') }}</div>
                     @if(!empty(data_get($payment, 'meta.checkout_error_at')))
                         <div class="small text-muted">{{ __('Last attempt') }}: {{ data_get($payment, 'meta.checkout_error_at') }}</div>
                     @endif
