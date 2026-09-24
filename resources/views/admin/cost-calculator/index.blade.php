@@ -9,8 +9,8 @@
 
 <style>
     .cost-calculator-page .cost-workflow-card {
-        border: 1px solid rgba(255, 145, 0, .22);
-        background: linear-gradient(135deg, rgba(255, 145, 0, .08), rgba(17, 24, 39, .03));
+        border: 1px solid color-mix(in srgb, var(--admin-primary) 22%, var(--admin-border));
+        background: linear-gradient(135deg, color-mix(in srgb, var(--admin-primary-soft) 64%, var(--admin-surface)), color-mix(in srgb, var(--admin-surface) 96%, var(--admin-bg)));
         border-radius: 18px;
         padding: 16px;
     }
@@ -26,8 +26,9 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: #111827;
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
         color: #fff;
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--admin-primary) 22%, transparent);
         font-weight: 800;
         flex: 0 0 30px;
     }
@@ -41,9 +42,33 @@
     .cost-calculator-page .cost-section-title h5,
     .cost-calculator-page .cost-section-title h6 { margin-bottom: 0; }
     .cost-calculator-page .cost-summary-card {
-        border: 1px solid rgba(255, 145, 0, .18);
-        background: #fffaf5;
+        border: 1px solid color-mix(in srgb, var(--admin-primary) 16%, var(--admin-border));
+        background: color-mix(in srgb, var(--admin-primary-soft) 24%, var(--admin-surface));
     }
+    .cost-calculator-page .cost-section-nav {
+        display: flex;
+        gap: .55rem;
+        flex-wrap: wrap;
+    }
+    .cost-calculator-page .cost-section-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .58rem .82rem;
+        border-radius: 999px;
+        border: 1px solid var(--admin-border);
+        background: var(--admin-surface);
+        color: var(--admin-text);
+        text-decoration: none;
+        font-size: .82rem;
+        font-weight: 800;
+    }
+    .cost-calculator-page .cost-section-nav a:hover {
+        color: var(--admin-primary-dark);
+        border-color: color-mix(in srgb, var(--admin-primary) 30%, var(--admin-border));
+        background: var(--admin-primary-soft);
+    }
+    .cost-calculator-page [id^="cost-"] { scroll-margin-top: 1.5rem; }
     .cost-calculator-page .cost-table th,
     .cost-calculator-page .cost-table td {
         vertical-align: middle;
@@ -117,6 +142,14 @@
         </div>
     </div>
 
+    <nav class="cost-section-nav" aria-label="{{ __('Cost calculator sections') }}">
+        <a href="#cost-materials"><i class="mdi mdi-flask-outline"></i>{{ __('Raw Materials') }}</a>
+        <a href="#cost-recipe"><i class="mdi mdi-clipboard-list-outline"></i>{{ __('Product Recipe') }}</a>
+        @if($selectedProduct)
+            <a href="#cost-results"><i class="mdi mdi-chart-line"></i>{{ __('Profit Calculation') }}</a>
+        @endif
+    </nav>
+
     <div class="cost-workflow-card mb-4">
         <div class="row g-3">
             <div class="col-md-4">
@@ -150,7 +183,7 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-xl-4">
+        <div class="col-xl-4" id="cost-materials">
             <div class="admin-card h-100">
                 <div class="cost-section-title">
                     <div>
@@ -160,7 +193,7 @@
                     <span class="badge bg-light text-dark">{{ $materials->count() }}</span>
                 </div>
 
-                <form method="POST" action="{{ route('admin.cost-calculator.materials.store') }}" class="mb-4">
+                <form method="POST" action="{{ route('admin.cost-calculator.materials.store') }}" class="mb-4" data-submit-loading>
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">{{ __('Material name') }}</label>
@@ -211,7 +244,7 @@
                                     <td>{{ $material->unit }}</td>
                                     <td class="text-end">{{ number_format($material->unit_price, 2) }}</td>
                                     <td class="text-end">
-                                        <form method="POST" action="{{ route('admin.cost-calculator.materials.destroy', $material) }}" onsubmit="return confirm('{{ __('Delete this material?') }}')">
+                                        <form method="POST" action="{{ route('admin.cost-calculator.materials.destroy', $material) }}" data-submit-loading data-confirm-title="{{ __('Delete material') }}" data-confirm-message="{{ __('Delete this material?') }}" data-confirm-subtitle="{{ __('This removes the reusable material record. Saved recipe history should be reviewed before continuing.') }}" data-confirm-ok="{{ __('Delete') }}" data-confirm-cancel="{{ __('Cancel') }}">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-sm btn-outline-danger" type="submit" title="{{ __('Delete') }}">
@@ -231,7 +264,7 @@
             </div>
         </div>
 
-        <div class="col-xl-8">
+        <div class="col-xl-8" id="cost-recipe">
             <div class="admin-card">
                 <div class="cost-section-title">
                     <div>
@@ -261,7 +294,7 @@
                 </form>
 
                 @if($selectedProduct)
-                    <form method="POST" action="{{ route('admin.cost-calculator.save') }}" id="costCalculatorForm">
+                    <form method="POST" action="{{ route('admin.cost-calculator.save') }}" id="costCalculatorForm" data-submit-loading>
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $selectedProduct->id }}">
 
@@ -325,27 +358,27 @@
                             </table>
                         </div>
 
-                        <div class="row g-3 mb-4">
+                        <div class="row g-3 mb-4" id="cost-results">
                             <div class="col-md-6 col-xl-3">
-                                <div class="admin-card cost-summary-card h-100">
+                                <div class="admin-card admin-stat-card cost-summary-card h-100">
                                     <div class="text-muted small">{{ __('Materials cost') }}</div>
                                     <h4 class="mb-0"><span id="materialsCostLabel">0.00</span></h4>
                                 </div>
                             </div>
                             <div class="col-md-6 col-xl-3">
-                                <div class="admin-card cost-summary-card h-100">
+                                <div class="admin-card admin-stat-card cost-summary-card h-100">
                                     <div class="text-muted small">{{ __('Extra cost') }}</div>
                                     <h4 class="mb-0"><span id="extraCostLabel">0.00</span></h4>
                                 </div>
                             </div>
                             <div class="col-md-6 col-xl-3">
-                                <div class="admin-card cost-summary-card h-100">
+                                <div class="admin-card admin-stat-card cost-summary-card h-100">
                                     <div class="text-muted small">{{ __('Total cost') }}</div>
                                     <h4 class="mb-0"><span id="totalCostLabel">0.00</span></h4>
                                 </div>
                             </div>
                             <div class="col-md-6 col-xl-3">
-                                <div class="admin-card cost-summary-card h-100">
+                                <div class="admin-card admin-stat-card cost-summary-card h-100">
                                     <div class="text-muted small">{{ __('Profit / Margin') }}</div>
                                     <h4 class="mb-0"><span id="profitLabel">0.00</span></h4>
                                     <div class="small text-muted"><span id="marginLabel">0.00</span>%</div>
