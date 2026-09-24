@@ -101,7 +101,7 @@
 
             <div class="col-lg-4">
                 <div class="lc-card p-4 mb-4">
-                    @if($order->sales_channel === AppModelsOrder::SALES_CHANNEL_POS)
+                    @if($order->sales_channel === $order::SALES_CHANNEL_POS)
                         <h4 class="fw-bold mb-3">{{ __('In-store purchase') }}</h4>
                         <div class="text-muted small">{{ __('This purchase was completed at the store counter. No shipping address is required.') }}</div>
                         <hr>
