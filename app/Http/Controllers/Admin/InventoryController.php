@@ -46,6 +46,11 @@ class InventoryController extends Controller
             ->latest('id')
             ->paginate($filters['per_page'])
             ->withQueryString();
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.inventory._results', compact('movements', 'filters'));
+        }
+
         $lowStockProducts = Product::query()
             ->where(function ($query) {
                 $query->where('has_variants', false)->whereColumn('quantity', '<=', 'reorder_point');
@@ -70,7 +75,19 @@ class InventoryController extends Controller
             ->orderBy('type')
             ->pluck('type');
 
-        return view('admin.inventory.index', compact('movements', 'lowStockProducts', 'nearExpiryProducts', 'filters', 'movementTypes'));
+        $inventoryStats = [
+            'total_movements' => InventoryMovement::count(),
+            'movement_types' => $movementTypes->count(),
+        ];
+
+        return view('admin.inventory.index', compact(
+            'movements',
+            'lowStockProducts',
+            'nearExpiryProducts',
+            'filters',
+            'movementTypes',
+            'inventoryStats',
+        ));
     }
 
     public function scanForm(Request $request)
