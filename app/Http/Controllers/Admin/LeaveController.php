@@ -188,6 +188,11 @@ class LeaveController extends Controller
             'employees' => EmployeeProfile::query()->with('user')->orderBy('employee_code')->get(),
             'leaveTypes' => EmployeeLeaveType::query()->where('is_active', true)->orderBy('name')->get(),
             'year' => now()->year,
+            'adjustments' => EmployeeLeaveAdjustment::query()
+                ->with(['employee.user', 'leaveType', 'createdBy'])
+                ->latest('created_at')
+                ->take(50)
+                ->get(),
         ]);
     }
 
