@@ -263,6 +263,8 @@ Route::prefix('admin')
 
         Route::middleware('permission:pos.manage')->controller(PosController::class)->group(function () {
             Route::get('/pos', 'index')->name('pos.index');
+            Route::post('/pos/carts/{posCart}/customers/{user}', 'attachCustomer')->name('pos.customer.attach');
+            Route::delete('/pos/carts/{posCart}/customer', 'detachCustomer')->name('pos.customer.detach');
             Route::post('/pos/carts/{posCart}/scan', 'scan')->name('pos.scan');
             Route::patch('/pos/carts/{posCart}/items/{posCartItem}', 'updateQuantity')->name('pos.items.update');
             Route::delete('/pos/carts/{posCart}/items/{posCartItem}', 'removeItem')->name('pos.items.destroy');
