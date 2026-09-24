@@ -8,10 +8,21 @@ use Illuminate\Http\Request;
 
 class ImportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $jobs = ImportJob::latest('id')->paginate(20);
-        return view('admin.imports.index', compact('jobs'));
+        $jobs = ImportJob::latest('id')->paginate(20)->withQueryString();
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.imports._results', compact('jobs'));
+        }
+
+        $stats = [
+            'total' => ImportJob::count(),
+            'draft' => ImportJob::where('status', 'draft')->count(),
+            'named_files' => ImportJob::whereNotNull('file_name')->where('file_name', '!=', '')->count(),
+        ];
+
+        return view('admin.imports.index', compact('jobs', 'stats'));
     }
 
     public function store(Request $request)
