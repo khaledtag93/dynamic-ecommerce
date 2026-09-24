@@ -93,6 +93,8 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 
 **Finance / Promotions interaction update — 2026-09-25:** Payments, Coupons and Promotion Rules now reuse the same live-list infrastructure for safe read-only search/filter/queue/sort/pagination flows. Payment status, coupon mutation and promotion mutation remain server-authoritative. Coupon Type sorting was corrected and promotion sorting is now surfaced in the UI. Application revision `b79177a`; CI verification remains pending and QAS/Production are unchanged.
 
+**Live / no-reload phase closure — 2026-09-25:** Application revision `eedd109` closes the broad migration. Deliveries, Categories, Import pagination, storefront Search/Category browsing, My Orders pagination and Customer Notifications pagination join the earlier live surfaces. Product Admin remains Livewire. Business mutations remain server-authoritative by design. Detailed matrix: `LIVE_NO_RELOAD_CLOSURE_2026-09-25.md`. CI verification is pending; QAS/Production are unchanged. Future work should move to the next product priority and apply this interaction standard incrementally when screens are touched.
+
 Build POS as a focused operational application, not as another dense admin page.
 
 Core:
