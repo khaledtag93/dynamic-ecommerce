@@ -71,19 +71,24 @@ class PayrollController extends Controller
             'entries.adjustments.createdBy',
         ]);
 
-        $totals = [
-            'base' => (float) $payrollRun->entries->sum('base_pay'),
-            'overtime' => (float) $payrollRun->entries->sum('overtime_pay'),
-            'allowances' => (float) $payrollRun->entries->sum('allowances_total'),
-            'bonuses' => (float) $payrollRun->entries->sum('bonuses_total'),
-            'deductions' => (float) $payrollRun->entries->sum('deductions_total'),
-            'gross' => (float) $payrollRun->entries->sum('gross_pay'),
-            'net' => (float) $payrollRun->entries->sum('net_pay'),
-        ];
+        $totalsByCurrency = $payrollRun->entries
+            ->groupBy('currency_snapshot')
+            ->map(function ($entries, $currency) {
+                return [
+                    'currency' => $currency,
+                    'employees' => $entries->count(),
+                    'base' => (float) $entries->sum('base_pay'),
+                    'overtime' => (float) $entries->sum('overtime_pay'),
+                    'allowances' => (float) $entries->sum('allowances_total'),
+                    'bonuses' => (float) $entries->sum('bonuses_total'),
+                    'deductions' => (float) $entries->sum('deductions_total'),
+                    'gross' => (float) $entries->sum('gross_pay'),
+                    'net' => (float) $entries->sum('net_pay'),
+                ];
+            })
+            ->values();
 
-        $currencies = $payrollRun->entries->pluck('currency_snapshot')->unique()->values();
-
-        return view('admin.workforce.payroll.run', compact('payrollRun', 'totals', 'currencies'));
+        return view('admin.workforce.payroll.run', compact('payrollRun', 'totalsByCurrency'));
     }
 
     public function addAdjustment(Request $request, PayrollEntry $payrollEntry)
