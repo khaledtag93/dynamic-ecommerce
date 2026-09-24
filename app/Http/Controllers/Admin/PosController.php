@@ -8,9 +8,11 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
+use App\Models\PosCashShift;
 use App\Models\User;
 use App\Services\Commerce\PosService;
 use App\Services\Commerce\PosReturnService;
+use App\Services\Commerce\PosCashShiftService;
 use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,6 +22,7 @@ class PosController extends Controller
     public function __construct(
         protected PosService $posService,
         protected PosReturnService $posReturnService,
+        protected PosCashShiftService $posCashShiftService,
         protected StoreSettingsService $storeSettingsService,
     ) {}
 
@@ -32,6 +35,12 @@ class PosController extends Controller
             fn (PosCart $heldCart) => [$heldCart->id => $this->posService->summary($heldCart)]
         );
         $canDiscount = $request->user()->hasPermission('pos.discount');
+        $cashShift = PosCashShift::query()
+            ->where('cashier_user_id', $request->user()->id)
+            ->whereNull('closed_at')
+            ->latest('id')
+            ->first();
+        $cashShiftSummary = $cashShift ? $this->posCashShiftService->summary($cashShift) : null;
         $customerSearch = trim((string) $request->string('customer_search'));
         $customerResults = collect();
         $productSearch = trim((string) $request->string('product_search'));
@@ -115,6 +124,8 @@ class PosController extends Controller
             'heldCarts',
             'heldSummaries',
             'canDiscount',
+            'cashShift',
+            'cashShiftSummary',
             'customerSearch',
             'customerResults',
             'productSearch',
@@ -123,6 +134,41 @@ class PosController extends Controller
             'cashPaymentMethod',
             'cardPaymentMethod'
         ));
+    }
+
+    public function openShift(Request $request)
+    {
+        $data = $request->validate([
+            'opening_cash' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+            'opening_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->posCashShiftService->openShift(
+            $request->user(),
+            (float) $data['opening_cash'],
+            $data['opening_notes'] ?? null,
+        );
+
+        return redirect()->route('admin.pos.index')->with('success', __('Cash shift opened.'));
+    }
+
+    public function closeShift(Request $request, PosCashShift $posCashShift)
+    {
+        $data = $request->validate([
+            'closing_cash_counted' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+            'closing_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $closed = $this->posCashShiftService->closeShift(
+            $posCashShift,
+            $request->user(),
+            (float) $data['closing_cash_counted'],
+            $data['closing_notes'] ?? null,
+        );
+
+        return redirect()->route('admin.pos.index')->with('success', __('Cash shift closed. Variance: EGP :variance', [
+            'variance' => number_format((float) $closed->cash_variance, 2),
+        ]));
     }
 
     public function attachCustomer(Request $request, PosCart $posCart, User $user)
