@@ -1096,7 +1096,7 @@ class ProductForm extends Component
 
             $productConflict = Product::query()
                 ->where('barcode', $productBarcode)
-                ->when($this->productId, fn ($query) => $query->whereKeyNot($this->productId))
+                ->when($this->productId, fn ($query) => $query->where('id', '!=', $this->productId))
                 ->exists();
 
             $variantConflict = ProductVariant::query()
@@ -1130,7 +1130,7 @@ class ProductForm extends Component
 
             $productConflict = Product::query()
                 ->where('barcode', $barcode)
-                ->when($this->productId, fn ($query) => $query->whereKeyNot($this->productId))
+                ->when($this->productId, fn ($query) => $query->where('id', '!=', $this->productId))
                 ->exists();
 
             $variantConflict = ProductVariant::query()
@@ -1396,6 +1396,8 @@ class ProductForm extends Component
             ]);
 
             $validated = $this->validate();
+            $validated['sku'] = filled($validated['sku'] ?? null) ? trim((string) $validated['sku']) : null;
+            $validated['barcode'] = filled($validated['barcode'] ?? null) ? trim((string) $validated['barcode']) : null;
             $this->markPerformance($trace, 'validated');
 
             $validated['has_variants'] = $isVariantMode;
