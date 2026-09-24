@@ -396,7 +396,7 @@ class PosService
                 ]
             );
 
-            return $lockedCart->fresh(['items.product', 'items.variant']);
+            return $lockedCart->fresh(['items.product', 'items.variant', 'customer']);
         });
     }
 
