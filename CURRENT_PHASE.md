@@ -513,6 +513,17 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - Two focused feature tests passed locally (29 assertions) in the separate SQLite compatibility test worktree. All compiled Blade templates passed PHP lint, along with changed PHP files, JavaScript syntax and `git diff --check` in the application checkout. Integrated MySQL CI passed at `19a4b8c` in run `36059356857` (197 tests / 1248 assertions).
 - Explicit owner approval superseded the earlier automatic publication block. The GitHub connection recreated the two local source trees exactly as `bb10f96` and `19a4b8c`; the final source tree is identical to local `f69d5cb`. QAS was last confirmed at `0a08253`; `main` and Production are unchanged, and consolidated manual QAS review stays deferred.
 
+### Workforce Foundation V1 — 2026-09-25
+- Application source checkpoint `b0fc6d20` introduces the first real employee domain: `employee_profiles` linked one-to-one with existing staff users plus `employee_attendance_sessions` for clock-in/out history.
+- Authentication and roles stay on `users`; employee code, job title, department, employment type/status, hire/termination dates, phone and notes live on the workforce profile. Linked staff identity is stable after creation.
+- New permissions: `workforce.view`, `workforce.manage`, `workforce.clock`. Operations Manager receives all three; Cashier, Support Agent and Finance Manager receive personal clock access only; Super Admin inherits all.
+- Employee Directory and Attendance Review use the shared live/no-reload pattern. My Time Clock provides safe personal clock-in/out with recent attendance history.
+- Attendance writes are transaction/lock protected: no missing-profile clock-in, no double clock-in, no clock-out without an open session, and only Active employees may start a session. Manager cannot move a clocked-in employee to a non-active employment state until clock-out.
+- Clock-in/out actions are written to the existing admin activity audit log.
+- POS Cash Shift Review now displays/searches linked employee code and department. Attendance is intentionally not a POS checkout prerequisite yet.
+- Detailed scope and next slice: `docs/WORKFORCE_FOUNDATION_2026-09-25.md`. Branch-head CI is pending independent verification; QAS remains `0a08253`; Production is unchanged.
+- Next implementation slice: **Shift Scheduling V1**, followed by leave balances/requests and payroll/deductions.
+
 ### Live / no-reload phase closure — 2026-09-25
 - The cross-product live/read-navigation migration is now closed in source at application revision `eedd109`. Detailed coverage and intentional boundaries: `docs/LIVE_NO_RELOAD_CLOSURE_2026-09-25.md`.
 - Final Admin additions: Deliveries and Categories now use live search/filter/queue/sort/pagination; Import Jobs uses live pagination and global KPI counts. Admin Products remains Livewire rather than duplicating the fragment helper.
