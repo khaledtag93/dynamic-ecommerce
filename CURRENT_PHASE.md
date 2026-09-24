@@ -513,6 +513,14 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - Two focused feature tests passed locally (29 assertions) in the separate SQLite compatibility test worktree. All compiled Blade templates passed PHP lint, along with changed PHP files, JavaScript syntax and `git diff --check` in the application checkout. Integrated MySQL CI passed at `19a4b8c` in run `36059356857` (197 tests / 1248 assertions).
 - Explicit owner approval superseded the earlier automatic publication block. The GitHub connection recreated the two local source trees exactly as `bb10f96` and `19a4b8c`; the final source tree is identical to local `f69d5cb`. QAS was last confirmed at `0a08253`; `main` and Production are unchanged, and consolidated manual QAS review stays deferred.
 
+### Procurement & inventory live lists — 2026-09-25
+- Suppliers now use the shared live-list helper for debounced supplier search, status/usage/per-page filters, unused/inactive queues, column sorting and pagination. The normal GET route remains the no-JavaScript/error fallback and supplier deletion rules are unchanged.
+- Purchases now use live search, status, supplier and per-page filters plus the Awaiting receipt queue and pagination. Purchase receipt remains an explicit confirmed POST through the existing inventory-safe receiving service; no optimistic inventory mutation was introduced.
+- Inventory Movement Explorer now updates search, movement type, source and pagination without reloading Low Stock / Near Expiry panels. Live fragment requests skip overview queries entirely.
+- Inventory overview semantics were corrected for live navigation: the Movements card now represents the global ledger count, the old filter-dependent Current page card was replaced by a stable Movement types count, and the current-page/matching counts live with the replaceable movement table.
+- English/Arabic copy was added for the new inventory states. Focused regression coverage was added in `AdminSupplierLiveListTest`, `AdminPurchaseLiveListTest`, and `AdminInventoryLiveListTest` for authorization, filters, pagination and escaped output.
+- Current application source revision for this batch: `7df29ec`. Branch-head CI has not yet been independently verified, so this checkpoint remains CI-pending. QAS remains at the previously recorded `0a08253`; `main` and Production are unchanged.
+
 ### Admin Customers live list — 2026-09-25
 - Admin Customers now uses the shared live-list pattern for debounced name/email search, role/activity/value filters, per-page changes, quick customer queues and pagination without a full-page reload.
 - The same permission-protected route serves a small Blade results fragment for live requests while preserving the normal GET form, shareable URL, browser Back/Forward and full-page fallback when JavaScript is unavailable or a request fails.
