@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
@@ -119,6 +120,10 @@ class EmployeeController extends Controller
 
     private function validateEmployee(Request $request, ?EmployeeProfile $employee = null): array
     {
+        $request->merge([
+            'employee_code' => Str::upper(trim((string) $request->input('employee_code'))),
+        ]);
+
         $rules = [
             'employee_code' => [
                 'required',
@@ -131,7 +136,7 @@ class EmployeeController extends Controller
             'employment_type' => ['required', Rule::in(array_keys(EmployeeProfile::employmentTypeOptions()))],
             'status' => ['required', Rule::in(array_keys(EmployeeProfile::statusOptions()))],
             'hire_date' => ['nullable', 'date'],
-            'termination_date' => ['nullable', 'date'],
+            'termination_date' => ['nullable', 'date', 'after_or_equal:hire_date'],
             'phone' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
