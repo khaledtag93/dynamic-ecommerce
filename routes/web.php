@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DeliveryController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\DeployCenterController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\DashBoardController;
@@ -409,6 +411,24 @@ Route::prefix('admin')
 
         Route::middleware('permission:delivery.view')->get('/deliveries', [DeliveryController::class, 'index'])->name('deliveries.index');
         Route::middleware('permission:delivery.manage')->patch('/deliveries/{order}', [DeliveryController::class, 'update'])->name('deliveries.update');
+
+        Route::middleware('permission:workforce.clock')->controller(AttendanceController::class)->group(function () {
+            Route::get('/workforce/time-clock', 'timeClock')->name('workforce.time-clock');
+            Route::post('/workforce/time-clock/in', 'clockIn')->name('workforce.clock-in');
+            Route::post('/workforce/time-clock/out', 'clockOut')->name('workforce.clock-out');
+        });
+
+        Route::middleware('permission:workforce.view')->group(function () {
+            Route::get('/workforce/employees', [EmployeeController::class, 'index'])->name('workforce.employees.index');
+            Route::get('/workforce/attendance', [AttendanceController::class, 'index'])->name('workforce.attendance.index');
+        });
+
+        Route::middleware('permission:workforce.manage')->controller(EmployeeController::class)->group(function () {
+            Route::get('/workforce/employees/create', 'create')->name('workforce.employees.create');
+            Route::post('/workforce/employees', 'store')->name('workforce.employees.store');
+            Route::get('/workforce/employees/{employeeProfile}/edit', 'edit')->name('workforce.employees.edit');
+            Route::put('/workforce/employees/{employeeProfile}', 'update')->name('workforce.employees.update');
+        });
 
         Route::middleware('permission:notifications.view')->group(function () {
             Route::get('/notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
