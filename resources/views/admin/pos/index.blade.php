@@ -166,31 +166,7 @@
                             <div class="form-text">{{ __('Type at least 2 characters. Use arrow keys and Enter to add an item.') }}</div>
                             <div class="pos-live-results d-none" role="listbox"></div>
                         </div>
-                        @if(mb_strlen($productSearch) >= 2)
-                            <div class="d-grid gap-2 mt-3">
-                                @forelse($productResults as $result)
-                                    <div class="pos-search-result">
-                                        <div class="min-w-0">
-                                            <div class="fw-semibold">{{ $result['label'] }}</div>
-                                            <div class="text-muted small">{{ $result['sku'] ?: __('No SKU') }} @if($result['barcode']) · <span class="font-monospace">{{ $result['barcode'] }}</span>@endif · {{ __('Stock') }}: {{ $result['stock'] }} · EGP {{ number_format($result['price'], 2) }}</div>
-                                        </div>
-                                        @if($result['selectable'] && $result['stock'] > 0)
-                                            <form method="POST" action="{{ route('admin.pos.catalog.add', ['posCart' => $cart->id, 'product' => $result['product']->id]) }}" data-submit-loading>
-                                                @csrf
-                                                @if($result['variant'])<input type="hidden" name="variant_id" value="{{ $result['variant']->id }}">@endif
-                                                <button class="btn btn-primary btn-sm">{{ __('Add') }}</button>
-                                            </form>
-                                        @elseif(!$result['selectable'])
-                                            <span class="badge badge-soft-warning">{{ __('Choose a variant') }}</span>
-                                        @else
-                                            <span class="badge badge-soft-secondary">{{ __('Out of stock') }}</span>
-                                        @endif
-                                    </div>
-                                @empty
-                                    <div class="text-muted small">{{ __('No sellable products match this search.') }}</div>
-                                @endforelse
-                            </div>
-                        @endif
+
                     </details>
                 </div>
             </div>
@@ -454,28 +430,7 @@
 
                         @error('customer')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
 
-                        @if(mb_strlen($customerSearch) >= 2)
-                            @if($customerResults->isNotEmpty())
-                                <div class="d-grid gap-2 mt-3">
-                                    @foreach($customerResults as $customerResult)
-                                        <div class="d-flex justify-content-between align-items-center gap-3 border rounded-3 p-2">
-                                            <div class="min-w-0">
-                                                <div class="fw-semibold text-truncate">{{ $customerResult->name }}</div>
-                                                <div class="text-muted small text-truncate">{{ $customerResult->email }}</div>
-                                                @php($customerPhone = optional($customerResult->addresses->sortByDesc('is_default_shipping')->first())->phone)
-                                                @if($customerPhone)<div class="text-muted small text-truncate"><i class="mdi mdi-phone-outline me-1"></i>{{ $customerPhone }}</div>@endif
-                                            </div>
-                                            <form method="POST" action="{{ route('admin.pos.customer.attach', ['posCart' => $cart->id, 'user' => $customerResult->id]) }}" data-submit-loading>
-                                                @csrf
-                                                <button class="btn btn-primary btn-sm" data-loading-text="{{ __('Attaching...') }}">{{ __('Attach') }}</button>
-                                            </form>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="text-muted small mt-3">{{ __('No customer accounts match this search.') }}</div>
-                            @endif
-                        @endif
+
                     </div>
 
                     <div class="pos-total-row">
