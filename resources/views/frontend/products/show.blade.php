@@ -111,7 +111,7 @@
                                     {{ __('In stock and ready for checkout') }}
                                 @endif
                             </strong>
-                            <div class="small opacity-75" id="productStockMeta">{{ __('Stock is updated from the product availability settings.') }}</div>
+                            <div class="small opacity-75" id="productStockMeta">{{ __('Availability is checked again before checkout.') }}</div>
                         </div>
                     </div>
 
@@ -206,21 +206,24 @@
         </div>
 
         <div class="row g-4 mt-1 mt-lg-4">
-            <div class="col-lg-8">
-                <div class="lc-card p-4 p-lg-5 h-100">
-                    <h2 class="h3 fw-bold mb-3">{{ __('Product details') }}</h2>
-                    <p class="text-muted mb-0">{{ $product->description ?: __('More product details will be added soon.') }}</p>
+            @if($product->description)
+                <div class="col-lg-8">
+                    <div class="lc-card p-4 p-lg-5 h-100">
+                        <h2 class="h3 fw-bold mb-3">{{ __('Product details') }}</h2>
+                        <p class="text-muted mb-0">{{ $product->description }}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-4">
+            @endif
+            <div class="{{ $product->description ? 'col-lg-4' : 'col-12' }}">
                 <div class="lc-card p-4 h-100">
                     <span class="lc-section-kicker mb-3">{{ __('Quick facts') }}</span>
                     <div class="product-quick-facts">
                         <div><span>{{ __('Category') }}</span><strong>{{ $product->category->name ?? __('General') }}</strong></div>
-                        <div><span>{{ __('Stock') }}</span><strong id="quickFactAvailability">{{ $product->in_stock ? __('Available') : __('Unavailable') }}</strong></div>
-                        <div><span>{{ __('Quantity left') }}</span><strong id="quickFactQty">{{ $selectedVariantStock > 0 ? $selectedVariantStock : ($stockQty > 0 ? $stockQty : __('N/A')) }}</strong></div>
-                        <div><span>{{ __('Variants') }}</span><strong>{{ $activeVariants->count() ?: __('Standard') }}</strong></div>
-                        <div><span>{{ __('Gallery images') }}</span><strong>{{ $gallery->count() }}</strong></div>
+                        <div><span>{{ __('Availability') }}</span><strong id="quickFactAvailability">{{ $product->in_stock ? __('Available') : __('Unavailable') }}</strong></div>
+                        @if($displayStock > 0)
+                            <div><span>{{ __('Quantity available') }}</span><strong id="quickFactQty">{{ $displayStock }}</strong></div>
+                        @endif
+                        <div><span>{{ __('Purchase option') }}</span><strong>{{ $activeVariants->isNotEmpty() ? trans_choice(':count variants', $activeVariants->count(), ['count' => $activeVariants->count()]) : __('Standard') }}</strong></div>
                     </div>
                 </div>
             </div>
