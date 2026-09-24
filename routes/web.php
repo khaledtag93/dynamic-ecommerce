@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\AttendanceCorrectionController;
+use App\Http\Controllers\Admin\LeaveController;
+use App\Http\Controllers\Admin\LeaveTypeController;
 use App\Http\Controllers\Admin\WorkShiftController;
 use App\Http\Controllers\Admin\DeployCenterController;
 use App\Http\Controllers\Admin\AnalyticsController;
@@ -429,11 +431,19 @@ Route::prefix('admin')
 
         Route::middleware('permission:workforce.clock')->get('/workforce/my-schedule', [WorkShiftController::class, 'mySchedule'])->name('workforce.my-schedule');
 
+        Route::middleware('permission:workforce.clock')->controller(LeaveController::class)->group(function () {
+            Route::get('/workforce/my-leave', 'myLeave')->name('workforce.my-leave');
+            Route::post('/workforce/my-leave/request', 'requestLeave')->name('workforce.leave.request');
+            Route::patch('/workforce/my-leave/{employeeLeaveRequest}/cancel', 'cancelLeave')->name('workforce.leave.cancel');
+        });
+
         Route::middleware('permission:workforce.view')->group(function () {
             Route::get('/workforce/employees', [EmployeeController::class, 'index'])->name('workforce.employees.index');
             Route::get('/workforce/attendance', [AttendanceController::class, 'index'])->name('workforce.attendance.index');
             Route::get('/workforce/schedule', [WorkShiftController::class, 'index'])->name('workforce.schedule.index');
             Route::get('/workforce/corrections', [AttendanceCorrectionController::class, 'index'])->name('workforce.corrections.index');
+            Route::get('/workforce/leave', [LeaveController::class, 'index'])->name('workforce.leave.index');
+            Route::get('/workforce/leave-types', [LeaveTypeController::class, 'index'])->name('workforce.leave-types.index');
         });
 
         Route::middleware('permission:workforce.manage')->controller(EmployeeController::class)->group(function () {
@@ -454,6 +464,20 @@ Route::prefix('admin')
         Route::middleware('permission:workforce.manage')->controller(AttendanceCorrectionController::class)->group(function () {
             Route::patch('/workforce/corrections/{employeeAttendanceCorrection}/approve', 'approve')->name('workforce.corrections.approve');
             Route::patch('/workforce/corrections/{employeeAttendanceCorrection}/reject', 'reject')->name('workforce.corrections.reject');
+        });
+
+        Route::middleware('permission:workforce.manage')->controller(LeaveController::class)->group(function () {
+            Route::patch('/workforce/leave/{employeeLeaveRequest}/approve', 'approve')->name('workforce.leave.approve');
+            Route::patch('/workforce/leave/{employeeLeaveRequest}/reject', 'reject')->name('workforce.leave.reject');
+            Route::get('/workforce/leave-adjustment', 'adjustmentForm')->name('workforce.leave.adjustment');
+            Route::post('/workforce/leave-adjustment', 'adjustBalance')->name('workforce.leave.adjust');
+        });
+
+        Route::middleware('permission:workforce.manage')->controller(LeaveTypeController::class)->group(function () {
+            Route::get('/workforce/leave-types/create', 'create')->name('workforce.leave-types.create');
+            Route::post('/workforce/leave-types', 'store')->name('workforce.leave-types.store');
+            Route::get('/workforce/leave-types/{employeeLeaveType}/edit', 'edit')->name('workforce.leave-types.edit');
+            Route::put('/workforce/leave-types/{employeeLeaveType}', 'update')->name('workforce.leave-types.update');
         });
 
         Route::middleware('permission:notifications.view')->group(function () {
