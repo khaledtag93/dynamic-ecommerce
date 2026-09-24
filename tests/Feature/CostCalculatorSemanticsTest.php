@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\ProductCostSummary;
+use App\Models\RawMaterial;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,13 @@ class CostCalculatorSemanticsTest extends TestCase
     public function test_cost_calculator_uses_theme_aware_sections_and_in_app_delete_confirmation(): void
     {
         $admin = User::factory()->create(['role_as' => 1]);
+
+        RawMaterial::query()->create([
+            'name' => 'Test Material',
+            'code' => 'MAT-TEST',
+            'unit' => 'kg',
+            'unit_price' => 10,
+        ]);
 
         $response = $this->actingAs($admin)
             ->get(route('admin.cost-calculator.index'));
