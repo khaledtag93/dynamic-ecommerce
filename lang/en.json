@@ -2766,5 +2766,10 @@
     "Updating results...": "Updating results...",
     "Results updated.": "Results updated.",
     "Could not update results. Open the full page to retry.": "Could not update results. Open the full page to retry.",
-    "Open full page": "Open full page"
+    "Open full page": "Open full page",
+    "Movement types": "Movement types",
+    "Movement categories currently recorded in the inventory ledger.": "Movement categories currently recorded in the inventory ledger.",
+    ":count total matching movement(s)": ":count total matching movement(s)",
+    "No inventory movements found": "No inventory movements found",
+    "Try clearing the filters or wait for new stock activity.": "Try clearing the filters or wait for new stock activity."
 }
