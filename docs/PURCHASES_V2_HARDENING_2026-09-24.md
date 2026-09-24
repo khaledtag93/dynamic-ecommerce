@@ -14,7 +14,7 @@ Working branch: `v42-clean-baseline`. This batch is source work; it has not been
 ## Verification
 
 - `PurchaseReceivingHardeningTest` covers repeated receipt, multi-line balances, selected-variant stock, draft/cancelled/empty rejection, all-or-nothing invalid lines, missing/mismatched variants, invalid admin creation and replay feedback.
-- Branch-head Hardening CI: pending until the code commit is pushed. Authenticated admin QAS review: pending. Production and `main`: unchanged.
+- [Hardening CI run 36023870549](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36023870549) passed at code commit `e723b0c`: PHP syntax, clean MySQL migration, Blade compilation, 122 tests (628 assertions), and frontend build. Authenticated admin QAS review: pending. Production and `main`: unchanged.
 
 ## QAS focus after CI and deployment
 

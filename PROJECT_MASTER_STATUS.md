@@ -103,7 +103,7 @@
 ## Purchases V2 receipt hardening checkpoint — 2026-09-24
 - The next working-line batch serializes receipt under a purchase row lock and transaction, permits only ordered nonempty purchases, validates every product/variant line before stock changes, and treats repeated receipt as an informational replay.
 - Admin purchase creation validates product–variant ownership under lock; awaiting count and receive buttons only reflect ordered purchases. The form now requires variants where appropriate and escapes dynamic content. EN/AR confirmations, errors and regression coverage are included. See [`docs/PURCHASES_V2_HARDENING_2026-09-24.md`](docs/PURCHASES_V2_HARDENING_2026-09-24.md).
-- This new batch is not covered by the account QAS upload. Branch-head CI and authenticated QAS review are separate gates; Production and `main` are unchanged.
+- [Hardening CI run 36023870549](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36023870549) passed at code commit `e723b0c` (122 tests, 628 assertions), including clean MySQL migration, Blade compilation and frontend build. This new batch is not covered by the account QAS upload; authenticated QAS review remains open. Production and `main` are unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
