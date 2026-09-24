@@ -35,7 +35,9 @@
         function syncForm(url) {
             for (const field of form.elements) {
                 if (!field.name || !('value' in field)) continue;
-                field.value = url.searchParams.get(field.name) || '';
+                field.value = url.searchParams.get(field.name)
+                    ?? field.dataset.liveDefault
+                    ?? (field.tagName === 'SELECT' ? field.options[0]?.value ?? '' : '');
             }
         }
 
@@ -64,6 +66,7 @@
                 if (current !== revision) return;
 
                 results.innerHTML = next.innerHTML;
+                syncForm(url);
                 if (historyMode === 'push' && url.href !== window.location.href) {
                     window.history.pushState(null, '', url.href);
                 } else if (historyMode === 'replace') {
@@ -111,12 +114,22 @@
         });
 
         results.addEventListener('click', (event) => {
-            const link = event.target.closest('.pagination a[href]');
+            const link = event.target.closest('.pagination a[href], a[data-live-link][href]');
             if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             const url = new URL(link.href, window.location.href);
             if (url.origin !== base.origin || url.pathname !== base.pathname) return;
             event.preventDefault();
             load(url, 'push');
+        });
+
+        results.addEventListener('submit', (event) => {
+            if (!event.target.matches('form[data-submit-loading]')) return;
+            const button = event.submitter;
+            if (!button || button.dataset.loadingApplied === '1') return;
+            button.dataset.loadingApplied = '1';
+            button.disabled = true;
+            event.target.setAttribute('aria-busy', 'true');
+            status.textContent = button.dataset.loadingText || status.dataset.loading;
         });
 
         window.addEventListener('popstate', () => {

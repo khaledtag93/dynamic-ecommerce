@@ -68,6 +68,21 @@ class OrderController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
+        $queueStats = [
+            'needs_action' => Order::whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING])->count(),
+            'unpaid' => Order::whereNotIn('payment_status', [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_REFUNDED, Order::PAYMENT_STATUS_PARTIALLY_REFUNDED])->count(),
+            'with_refunds' => Order::where('refund_total', '>', 0)->count(),
+        ];
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.orders._results', [
+                'orders' => $orders,
+                'filters' => $filters,
+                'queueStats' => $queueStats,
+                'statusOptions' => Order::statusOptions(),
+            ]);
+        }
+
         $paidStatuses = [
             Order::PAYMENT_STATUS_PAID,
             Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
@@ -81,7 +96,7 @@ class OrderController extends Controller
 
         $totalOrders = Order::count();
 
-        $stats = [
+        $stats = $queueStats + [
             'total' => $totalOrders,
             'pending' => Order::where('status', Order::STATUS_PENDING)->count(),
             'processing' => Order::where('status', Order::STATUS_PROCESSING)->count(),
@@ -90,15 +105,13 @@ class OrderController extends Controller
             'refunds_total' => (float) OrderRefund::sum('amount'),
             'paid_total' => (float) $paidTotal,
             'avg_total' => (float) ($totalOrders > 0 ? Order::avg('grand_total') : 0),
-            'needs_action' => Order::whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING])->count(),
-            'unpaid' => Order::whereNotIn('payment_status', [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_REFUNDED, Order::PAYMENT_STATUS_PARTIALLY_REFUNDED])->count(),
-            'with_refunds' => Order::where('refund_total', '>', 0)->count(),
         ];
 
         return view('admin.orders.index', [
             'orders' => $orders,
             'filters' => $filters,
             'stats' => $stats,
+            'queueStats' => $queueStats,
             'statusOptions' => Order::statusOptions(),
             'paymentStatusOptions' => Order::paymentStatusOptions(),
             'paymentMethodOptions' => Order::paymentMethodOptions(),
