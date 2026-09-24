@@ -182,10 +182,10 @@
                                 <div class="lc-card p-4 cart-offers-card">
                                     <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
                                         <div>
-                                            <h4 class="fw-bold mb-1">{{ __('Personalized offers') }}</h4>
-                                            <div class="text-muted small">{{ __('Selected products that may complete your order.') }}</div>
+                                            <h4 class="fw-bold mb-1">{{ __('Available offers') }}</h4>
+                                            <div class="text-muted small">{{ __('Offers and products available for this cart.') }}</div>
                                         </div>
-                                        <span class="lc-badge"><i class="bi bi-magic"></i>{{ __('Smart offers') }}</span>
+                                        <span class="lc-badge"><i class="bi bi-magic"></i>{{ __('Suggested offers') }}</span>
                                     </div>
                                     <div class="d-grid gap-3">
                                         @foreach($offerSignals as $signal)
@@ -287,7 +287,7 @@
                     'subtitle' => __('Recently viewed'),
                     'title' => __('Still thinking about these?'),
                     'description' => __('Products you opened recently are saved here for easy access.'),
-                    'badge' => __('Return path'),
+                    'badge' => __('Recently viewed'),
                 ])
             @endif
         </div>
