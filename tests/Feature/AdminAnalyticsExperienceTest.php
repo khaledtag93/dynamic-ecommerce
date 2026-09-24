@@ -75,6 +75,21 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertDontSee('Executive focus');
     }
 
+    public function test_growth_insights_reuses_shared_admin_metric_cards(): void
+    {
+        $owner = User::factory()->create(['role_as' => 1]);
+
+        $response = $this->actingAs($owner)
+            ->get(route('admin.growth.insights'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Attributed revenue')
+            ->assertSee('Average churn risk');
+
+        $this->assertSame(4, substr_count($response->getContent(), 'admin-card admin-stat-card gm-card'));
+    }
+
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void
     {
         $owner = User::factory()->create(['role_as' => 1]);
