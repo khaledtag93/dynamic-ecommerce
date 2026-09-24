@@ -13,7 +13,7 @@ Working branch: `v42-clean-baseline`. Source implementation only; QAS currently 
 ## Verification and boundary
 
 - `InventoryAdjustmentTest` covers signed movements and audit attribution, stale/repeated counts, no-op, variant ownership and isolation, permission boundary, request validation and the admin flow.
-- CI: pending code commit. Manual QAS review has been deferred by the owner for a consolidated review phase; Production and `main` remain unchanged.
+- [Hardening CI run 36028959639](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36028959639) passed at code commit `50cb707`: PHP syntax, clean MySQL migration, route and Blade compilation, 128 tests (675 assertions), and frontend build. Manual QAS review has been deferred by the owner for a consolidated review phase; Production and `main` remain unchanged.
 - This adds an audited **manual adjustment path**. Existing direct product edits and other stock sources have their own behavior; the batch does not claim that every historic or alternate quantity edit has an inventory movement.
 
 ## Consolidated QAS review later

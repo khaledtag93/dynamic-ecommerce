@@ -109,7 +109,7 @@
 
 ## Inventory counted-stock adjustment checkpoint — 2026-09-24
 - A dedicated admin workflow now takes an exact product/variant counted quantity and reason. The service locks the target, rejects mismatched variants and stale form counts, and records one signed inventory movement plus admin activity for a real change. A no-op creates no movement. See [`docs/INVENTORY_ADJUSTMENT_2026-09-24.md`](docs/INVENTORY_ADJUSTMENT_2026-09-24.md).
-- English/Arabic copy and focused regression tests are included. CI is pending; this new source batch is not on QAS `0a08253`. Manual QAS review is intentionally queued for the later consolidated pass. Production and `main` are unchanged.
+- English/Arabic copy and focused regression tests are included. [Hardening CI run 36028959639](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36028959639) passed at code commit `50cb707` (128 tests, 675 assertions). This new source batch is not on QAS `0a08253`. Manual QAS review is intentionally queued for the later consolidated pass. Production and `main` are unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
