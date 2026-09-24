@@ -148,9 +148,10 @@ class WorkforceFoundationTest extends TestCase
 
         $manager = $this->staffWithRole('operations_manager');
         $cashier = $this->staffWithRole('cashier');
+        $cashier->update(['name' => '<script>Live Employee</script>']);
         $other = $this->staffWithRole('cashier');
 
-        $employee = $this->employeeFor($cashier, '<script>EMP-LIVE</script>');
+        $employee = $this->employeeFor($cashier, 'EMP-LIVE');
         $employee->update(['department' => 'Retail', 'job_title' => '<script>Cashier</script>']);
         $this->employeeFor($other, 'EMP-OTHER')->update(['department' => 'Warehouse']);
 
@@ -171,14 +172,14 @@ class WorkforceFoundationTest extends TestCase
             ->assertOk()
             ->assertSee('data-live-list', false)
             ->assertSee('data-live-results', false)
-            ->assertSee('&lt;script&gt;EMP-LIVE&lt;/script&gt;', false)
+            ->assertSee('&lt;script&gt;Live Employee&lt;/script&gt;', false)
             ->assertSee('&lt;script&gt;Cashier&lt;/script&gt;', false)
             ->assertDontSee('EMP-OTHER');
 
         $this->withHeader('X-Live-List', '1')->get($directoryUrl)
             ->assertOk()
             ->assertSee('data-live-results', false)
-            ->assertSee('&lt;script&gt;EMP-LIVE&lt;/script&gt;', false)
+            ->assertSee('&lt;script&gt;Live Employee&lt;/script&gt;', false)
             ->assertDontSee('EMP-OTHER')
             ->assertDontSee('data-live-filter', false)
             ->assertDontSee('<html', false);
