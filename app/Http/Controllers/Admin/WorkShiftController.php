@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeAttendanceSession;
 use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
+use App\Services\Workforce\AttendanceRulesService;
 use App\Services\Workforce\WorkShiftService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -13,8 +14,10 @@ use Illuminate\Validation\Rule;
 
 class WorkShiftController extends Controller
 {
-    public function __construct(protected WorkShiftService $workShiftService)
-    {
+    public function __construct(
+        protected WorkShiftService $workShiftService,
+        protected AttendanceRulesService $attendanceRulesService,
+    ) {
     }
 
     public function index(Request $request)
@@ -57,10 +60,10 @@ class WorkShiftController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $attendanceByShift = $this->attendanceMapForShifts($shifts->getCollection());
+        $attendanceDataByShift = $this->attendanceDataForShifts($shifts->getCollection());
 
         if ($request->header('X-Live-List') === '1') {
-            return response()->view('admin.workforce.schedule._results', compact('shifts', 'filters', 'attendanceByShift'));
+            return response()->view('admin.workforce.schedule._results', compact('shifts', 'filters', 'attendanceDataByShift'));
         }
 
         $stats = [
@@ -87,7 +90,7 @@ class WorkShiftController extends Controller
         return view('admin.workforce.schedule.index', compact(
             'shifts',
             'filters',
-            'attendanceByShift',
+            'attendanceDataByShift',
             'stats',
             'departments',
         ));
@@ -196,23 +199,20 @@ class WorkShiftController extends Controller
         return preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) ? $value : '';
     }
 
-    private function attendanceMapForShifts(Collection $shifts): Collection
+    private function attendanceDataForShifts(Collection $shifts): Collection
     {
         if ($shifts->isEmpty()) {
             return collect();
         }
 
         $employeeIds = $shifts->pluck('employee_profile_id')->unique()->values();
-        $minimumStart = $shifts->min('starts_at');
-        $maximumEnd = $shifts->max('ends_at');
+        $minimumStart = $shifts->min('starts_at')->copy()->subDay();
+        $maximumEnd = $shifts->max('ends_at')->copy()->addDay();
 
         $sessions = EmployeeAttendanceSession::query()
+            ->with(['breaks', 'approvedCorrection'])
             ->whereIn('employee_profile_id', $employeeIds)
-            ->where('clock_in_at', '<', $maximumEnd)
-            ->where(function ($query) use ($minimumStart) {
-                $query->whereNull('clock_out_at')
-                    ->orWhere('clock_out_at', '>', $minimumStart);
-            })
+            ->whereBetween('clock_in_at', [$minimumStart, $maximumEnd])
             ->orderBy('clock_in_at')
             ->get()
             ->groupBy('employee_profile_id');
@@ -220,13 +220,19 @@ class WorkShiftController extends Controller
         return $shifts->mapWithKeys(function (EmployeeWorkShift $shift) use ($sessions) {
             $matching = $sessions->get($shift->employee_profile_id, collect())
                 ->first(function (EmployeeAttendanceSession $session) use ($shift) {
-                    $sessionEnd = $session->clock_out_at ?? now();
+                    $sessionStart = $session->effectiveClockInAt();
+                    $sessionEnd = $session->effectiveClockOutAt() ?? now();
 
-                    return $session->clock_in_at->lt($shift->ends_at)
+                    return $sessionStart->lt($shift->ends_at)
                         && $sessionEnd->gt($shift->starts_at);
                 });
 
-            return [$shift->id => $matching];
+            return [
+                $shift->id => [
+                    'session' => $matching,
+                    'assessment' => $this->attendanceRulesService->assessShift($shift, $matching),
+                ],
+            ];
         });
     }
 }
