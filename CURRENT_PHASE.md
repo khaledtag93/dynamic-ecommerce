@@ -345,7 +345,7 @@ Source implementation on `v42-clean-baseline` now:
 - adds EN/AR guidance, regression tests and a focused implementation note
 
 Verification state:
-- branch-head CI: pending
+- Hardening CI `36035395851`: passed at `05eb13c` with 141 tests (762 assertions) plus frontend production build
 - consolidated authenticated QAS review: deferred by owner
 - QAS application HEAD: still `0a08253`
 - Production and `main`: unchanged

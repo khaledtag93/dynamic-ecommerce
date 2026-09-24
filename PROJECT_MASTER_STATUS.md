@@ -121,7 +121,7 @@
 - The shared identifier service now resolves exact SKU values as well as barcodes and refuses ambiguous legacy matches instead of guessing. Catalog search can find a parent product by variant SKU or barcode.
 - Product duplication clears SKU and barcode while preserving the existing zero-stock copy rule so a copied record cannot inherit a sellable retail identity.
 - English/Arabic guidance and focused regression coverage are included. See `docs/BARCODE_SKU_FOUNDATION_V1_2026-09-24.md`.
-- No risky database-wide product identifier uniqueness migration was added; legacy collisions remain detectable and must be audited before stronger schema constraints. Branch-head CI is pending. QAS remains on `0a08253`; Production and `main` are unchanged.
+- No risky database-wide product identifier uniqueness migration was added; legacy collisions remain detectable and must be audited before stronger schema constraints. [Hardening CI 36035395851](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36035395851) passed at `05eb13c` with 141 tests (762 assertions) and the frontend production build. QAS remains on `0a08253`; Production and `main` are unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.

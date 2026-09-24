@@ -31,6 +31,8 @@ Prepare the catalog for reliable inventory scanning and future POS work without 
 
 Focused tests cover exact SKU lookup, product/variant collision rejection, parent catalog search by variant identifier, safe product duplication, and the existing exact-barcode ambiguity behavior.
 
+Hardening CI run `36035395851` passed at application/documentation head `05eb13c`: PHP syntax, Bash syntax, clean MySQL migration, Laravel boot/routes, config + Blade compilation, **141 tests (762 assertions)**, and frontend production build.
+
 ## Consolidated QAS checks
 
 1. Create/edit a simple product with unique SKU and barcode in English and Arabic.
