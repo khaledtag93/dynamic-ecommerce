@@ -83,6 +83,11 @@ class EmployeeProfile extends Model
             ->latestOfMany();
     }
 
+    public function workShifts()
+    {
+        return $this->hasMany(EmployeeWorkShift::class);
+    }
+
     public function posCashShifts()
     {
         return $this->hasMany(PosCashShift::class, 'cashier_user_id', 'user_id');
