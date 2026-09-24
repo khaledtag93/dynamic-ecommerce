@@ -81,7 +81,10 @@
                                     @csrf
                                     <input type="hidden" name="customer_name" id="posHoldCustomerName">
                                     <input type="hidden" name="notes" id="posHoldNotes">
-                                    <input type="text" name="hold_label" maxlength="80" value="{{ old('hold_label', $cart->hold_label) }}" class="form-control form-control-sm" style="width: 190px" placeholder="{{ __('Hold label (optional)') }}">
+                                    <div>
+                                        <input type="text" name="hold_label" maxlength="80" value="{{ old('hold_label', $cart->hold_label) }}" class="form-control form-control-sm @error('hold_label') is-invalid @enderror" style="width: 190px" placeholder="{{ __('Hold label (optional)') }}">
+                                        @error('hold_label')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    </div>
                                     <button class="btn btn-light border btn-sm btn-text-icon" data-loading-text="{{ __('Holding...') }}">
                                         <i class="mdi mdi-pause-circle-outline"></i><span>{{ __('Hold sale') }}</span>
                                     </button>
