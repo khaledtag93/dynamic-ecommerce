@@ -257,18 +257,26 @@
         @if($can('delivery.view'))
         <div class="admin-card mb-4" id="delivery-card">
             <div class="admin-card-body">
-                <h4 class="mb-3">{{ __('Delivery') }}</h4>
+                <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                    <h4 class="mb-0">{{ __('Delivery') }}</h4>
+                    <span class="badge admin-status-badge {{ $order->delivery_status_badge_class }}">{{ $order->delivery_status_label }}</span>
+                </div>
+                <div class="admin-summary-list mb-3">
+                    <div class="summary-row"><span class="text-muted">{{ __('Shipped at') }}</span><strong>{{ optional($order->shipped_at)->format('d M Y, h:i A') ?: '—' }}</strong></div>
+                    <div class="summary-row"><span class="text-muted">{{ __('Delivered at') }}</span><strong>{{ optional($order->delivered_at)->format('d M Y, h:i A') ?: '—' }}</strong></div>
+                </div>
                 @if($can('delivery.manage'))
-                <form method="POST" action="{{ route('admin.deliveries.update', $order) }}" data-submit-loading>
+                <form method="POST" action="{{ route('admin.deliveries.update', $order) }}" data-submit-loading data-delivery-form data-current-status="{{ $order->delivery_status }}">
                     @csrf
                     @method('PATCH')
                     <div class="mb-3">
                         <label class="form-label fw-semibold">{{ __('Delivery status') }}</label>
                         <select name="delivery_status" class="form-select">
                             @foreach($deliveryStatusOptions as $value => $label)
-                                <option value="{{ $value }}" @selected($order->delivery_status === $value)>{{ $label }}</option>
+                                <option value="{{ $value }}" @selected($order->delivery_status === $value) @disabled(!$order->canTransitionDeliveryTo($value))>{{ $label }}</option>
                             @endforeach
                         </select>
+                        <div class="section-note">{{ __('Only valid next delivery statuses are enabled. Customer notifications and WhatsApp updates are sent only when the status actually changes.') }}</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">{{ __('Courier') }}</label>
@@ -286,11 +294,32 @@
                         <label class="form-label fw-semibold">{{ __('Delivery notes') }}</label>
                         <textarea name="delivery_notes" rows="3" class="form-control">{{ old('delivery_notes', $order->delivery_notes) }}</textarea>
                     </div>
-                    <button type="submit" class="btn btn-light border w-100">{{ __('Save delivery details') }}</button>
+                    <button type="submit" class="btn btn-primary w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save delivery details') }}</span></button>
                 </form>
                 @else
                     <div class="text-muted small">{{ $order->shipping_provider ?: __('No courier assigned') }} · {{ $order->tracking_number ?: __('No tracking number') }}</div>
                 @endif
+            </div>
+        </div>
+        @endif
+
+        @if($can('delivery.manage'))
+        <div class="modal fade" id="deliveryStatusConfirmModal" tabindex="-1" aria-labelledby="deliveryStatusConfirmTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deliveryStatusConfirmTitle">{{ __('Confirm delivery status change') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">{{ __('You are changing the delivery status to :status.', ['status' => '__STATUS__']) }}</p>
+                        <p class="text-muted small mb-0">{{ __('This status change may notify the customer and queue a WhatsApp delivery update when that channel is enabled.') }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">{{ __('Keep current status') }}</button>
+                        <button type="button" class="btn btn-primary" data-confirm-delivery-status>{{ __('Confirm status change') }}</button>
+                    </div>
+                </div>
             </div>
         </div>
         @endif
@@ -343,4 +372,50 @@
 .admin-order-jump a:hover, .admin-order-jump a:focus-visible { color: var(--admin-primary-dark); border-color: var(--admin-primary); }
 [id^="order-"], #delivery-card { scroll-margin-top: 6rem; }
 </style>
+@endpush
+
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('[data-delivery-form]');
+    const modalElement = document.getElementById('deliveryStatusConfirmModal');
+
+    if (!form || !modalElement || typeof bootstrap === 'undefined') {
+        return;
+    }
+
+    const statusSelect = form.querySelector('[name="delivery_status"]');
+    const confirmButton = modalElement.querySelector('[data-confirm-delivery-status]');
+    const bodyCopy = modalElement.querySelector('.modal-body p');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    let confirmed = false;
+
+    form.addEventListener('submit', function (event) {
+        if (confirmed || !statusSelect || statusSelect.value === form.dataset.currentStatus) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const selectedLabel = statusSelect.options[statusSelect.selectedIndex]?.text || statusSelect.value;
+        if (bodyCopy) {
+            bodyCopy.textContent = @json(__('You are changing the delivery status to :status.', ['status' => '__STATUS__'])).replace('__STATUS__', selectedLabel);
+        }
+
+        modal.show();
+    });
+
+    confirmButton?.addEventListener('click', function () {
+        confirmed = true;
+        modal.hide();
+
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            form.submit();
+        }
+    });
+});
+</script>
 @endpush
