@@ -536,6 +536,14 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - The QAS deploy script's error handler returns the application from maintenance mode after failure.
 - Before rerun, inspect `employee_attendance_breaks`; if the failed migration left an empty partial table, drop only that empty table and rerun the normal QAS deploy. Production unchanged.
 
+### QAS Workforce integration checkpoint — 2026-09-25
+- Operator confirmed the latest Workforce build was deployed to QAS successfully.
+- Core Workforce pages now open successfully on QAS, including Employees, Work Schedule, Attendance Corrections and Leave.
+- This confirms the prior migration/FK-name recovery and Workforce Blade namespace repairs are no longer blocking page load on QAS.
+- QAS deployment checkpoint corresponds to the latest branch state around `463c244c` plus documentation-only follow-up commits.
+- This is a **page-load / integration checkpoint**, not a full functional acceptance. Detailed EN/AR, desktop/mobile, permissions, payroll calculations, attendance flows, leave flows and payslip validation remain part of the consolidated QAS review.
+- Production remains unchanged.
+
 ### QAS deploy preflight hardening — 2026-09-25
 - `deploy-qas.sh` now fails before migrations if Workforce Blade templates contain corrupted class-reference patterns such as `AppModels...` or `IlluminateSupport...`.
 - The deploy also validates Workforce route registration before touching the database.
