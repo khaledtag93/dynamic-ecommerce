@@ -31,7 +31,7 @@ class AttendanceController extends Controller
         ];
 
         $sessions = EmployeeAttendanceSession::query()
-            ->with('employee.user')
+            ->with(['employee.user', 'breaks', 'approvedCorrection', 'pendingCorrection'])
             ->when($filters['search'], function ($query, $search) {
                 $query->whereHas('employee', function ($employeeQuery) use ($search) {
                     $employeeQuery->where('employee_code', 'like', "%{$search}%")
@@ -66,11 +66,15 @@ class AttendanceController extends Controller
     public function timeClock(Request $request)
     {
         $employee = $request->user()->employeeProfile()
-            ->with('openAttendanceSession')
+            ->with(['openAttendanceSession.breaks', 'openAttendanceSession.openBreak'])
             ->first();
 
         $recentSessions = $employee
-            ? $employee->attendanceSessions()->latest('clock_in_at')->take(10)->get()
+            ? $employee->attendanceSessions()
+                ->with(['breaks', 'approvedCorrection', 'pendingCorrection'])
+                ->latest('clock_in_at')
+                ->take(10)
+                ->get()
             : collect();
 
         return view('admin.workforce.time-clock', compact('employee', 'recentSessions'));
@@ -100,5 +104,27 @@ class AttendanceController extends Controller
         return redirect()
             ->route('admin.workforce.time-clock')
             ->with('success', __('You are clocked out.'));
+    }
+
+    public function startBreak(Request $request)
+    {
+        $data = $request->validate([
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->attendanceService->startBreak($request->user(), $data['notes'] ?? null);
+
+        return redirect()
+            ->route('admin.workforce.time-clock')
+            ->with('success', __('Break started.'));
+    }
+
+    public function endBreak(Request $request)
+    {
+        $this->attendanceService->endBreak($request->user());
+
+        return redirect()
+            ->route('admin.workforce.time-clock')
+            ->with('success', __('Break ended.'));
     }
 }
