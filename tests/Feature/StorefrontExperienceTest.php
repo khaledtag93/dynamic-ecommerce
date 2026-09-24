@@ -62,7 +62,9 @@ class StorefrontExperienceTest extends TestCase
             ->assertOk()
             ->assertSee('Ocean Blue Backpack')
             ->assertDontSee('Classic Desk Lamp')
-            ->assertSee(route('frontend.products.show', $matching->slug));
+            ->assertSee(route('frontend.products.show', $matching->slug))
+            ->assertSee(asset('images/storefront-placeholder.svg'))
+            ->assertDontSee('via.placeholder.com', false);
     }
 
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
