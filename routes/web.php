@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\AttendanceCorrectionController;
 use App\Http\Controllers\Admin\WorkShiftController;
 use App\Http\Controllers\Admin\DeployCenterController;
 use App\Http\Controllers\Admin\AnalyticsController;
@@ -417,6 +418,13 @@ Route::prefix('admin')
             Route::get('/workforce/time-clock', 'timeClock')->name('workforce.time-clock');
             Route::post('/workforce/time-clock/in', 'clockIn')->name('workforce.clock-in');
             Route::post('/workforce/time-clock/out', 'clockOut')->name('workforce.clock-out');
+            Route::post('/workforce/time-clock/break/start', 'startBreak')->name('workforce.break-start');
+            Route::post('/workforce/time-clock/break/end', 'endBreak')->name('workforce.break-end');
+        });
+
+        Route::middleware('permission:workforce.clock')->controller(AttendanceCorrectionController::class)->group(function () {
+            Route::get('/workforce/time-clock/sessions/{employeeAttendanceSession}/correction', 'create')->name('workforce.corrections.create');
+            Route::post('/workforce/time-clock/sessions/{employeeAttendanceSession}/correction', 'store')->name('workforce.corrections.store');
         });
 
         Route::middleware('permission:workforce.clock')->get('/workforce/my-schedule', [WorkShiftController::class, 'mySchedule'])->name('workforce.my-schedule');
@@ -425,6 +433,7 @@ Route::prefix('admin')
             Route::get('/workforce/employees', [EmployeeController::class, 'index'])->name('workforce.employees.index');
             Route::get('/workforce/attendance', [AttendanceController::class, 'index'])->name('workforce.attendance.index');
             Route::get('/workforce/schedule', [WorkShiftController::class, 'index'])->name('workforce.schedule.index');
+            Route::get('/workforce/corrections', [AttendanceCorrectionController::class, 'index'])->name('workforce.corrections.index');
         });
 
         Route::middleware('permission:workforce.manage')->controller(EmployeeController::class)->group(function () {
@@ -440,6 +449,11 @@ Route::prefix('admin')
             Route::get('/workforce/schedule/{employeeWorkShift}/edit', 'edit')->name('workforce.schedule.edit');
             Route::put('/workforce/schedule/{employeeWorkShift}', 'update')->name('workforce.schedule.update');
             Route::patch('/workforce/schedule/{employeeWorkShift}/cancel', 'cancel')->name('workforce.schedule.cancel');
+        });
+
+        Route::middleware('permission:workforce.manage')->controller(AttendanceCorrectionController::class)->group(function () {
+            Route::patch('/workforce/corrections/{employeeAttendanceCorrection}/approve', 'approve')->name('workforce.corrections.approve');
+            Route::patch('/workforce/corrections/{employeeAttendanceCorrection}/reject', 'reject')->name('workforce.corrections.reject');
         });
 
         Route::middleware('permission:notifications.view')->group(function () {
