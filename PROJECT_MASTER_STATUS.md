@@ -56,6 +56,21 @@
 - All new Attendance/Leave foreign keys in the affected pending migrations now use explicit short constraint names; source fix head `5d03a205`.
 - The failed deploy's error handler restores QAS from maintenance mode. Before rerun, remove only an empty partial `employee_attendance_breaks` table if it exists. Production unchanged.
 
+## Workforce Payroll Foundation V1 — 2026-09-25
+- Added `employee_compensations`, `payroll_periods`, `payroll_runs`, `payroll_entries` and `payroll_adjustments` with explicit short MySQL constraint/index names.
+- Added scoped payroll permissions: `workforce.payroll.self`, `workforce.payroll.view`, `workforce.payroll.manage`. Finance Manager gets view/manage/self; Operations Manager/Cashier/Support get self only; Super Admin gets all.
+- Compensation supports Salary-per-payroll-period or Hourly basis, base rate, currency, effective dates, overtime eligibility/reference multiplier and notes. Historical runs snapshot values and do not change after compensation edits.
+- Payroll periods cannot overlap and must end before generation. Salary partial-period coverage is blocked until an explicit proration policy exists.
+- Payroll generation snapshots effective attendance, breaks, approved corrections, paid/unpaid approved leave, compensation and employee identity. Pending attendance corrections/leave plus open attendance/breaks block included employees only.
+- V1 deliberately does not auto-monetize paid/unpaid leave or calculate overtime, tax, social insurance or jurisdiction-specific deductions.
+- Explicit pay components: Overtime, Allowance, Bonus, Deduction. Deduction rollback protects against negative Net pay.
+- Lifecycle: Draft → Approved → Paid. Approval freezes adjustment changes and closes the period; Paid cannot be reached from Draft.
+- Run summaries are grouped by currency; My Payslips shows only finalized own payroll entries; printable payslip view included.
+- Audit coverage includes compensation, period creation, generation, component add/remove, approval and Paid transition.
+- Regression coverage: `WorkforcePayrollTest` plus recursive `WorkforceBladeIntegrityTest`.
+- Application source: `b51a93e6`. CI pending with no visible workflow/status. QAS Workforce remains unaccepted pending full recovery/redeploy and consolidated validation; Payroll is not on QAS. Production unchanged.
+- Next: **Workforce QAS integration / consolidated validation** → critical commerce gaps → Payroll V2 only after real merchant/jurisdiction policy.
+
 ## Workforce Leave Management V1 — 2026-09-25
 - Added `employee_leave_types` for configurable English/Arabic paid/unpaid leave policy and default annual entitlement.
 - Added `employee_leave_requests` with Pending / Approved / Rejected / Cancelled lifecycle and reviewer audit fields.
