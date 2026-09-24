@@ -129,7 +129,7 @@
                 <div class="category-results-bar mb-4">
                     <div>
                         <strong>{{ $products->total() }}</strong>
-                        <span>{{ __(':count products found', ['count' => $products->total()]) }}</span>
+                        <span>{{ __('Products found') }}</span>
                     </div>
                     @if($filters['q'] || $filters['availability'] !== 'all' || $filters['offer'] !== 'all')
                         <div class="category-results-active-filters">
@@ -221,7 +221,7 @@
 <style>
 .category-hero-card{background:linear-gradient(135deg,color-mix(in srgb,var(--lc-surface) 98%, transparent),color-mix(in srgb,var(--lc-soft) 86%, white))}
 .category-hero-card__media{min-height:100%}.category-hero-card__image{object-fit:cover;min-height:340px}
-.category-hero-stats{display:flex;flex-wrap:wrap;gap:.9rem}.category-hero-stat{min-width:120px;padding:1rem;border-radius:1rem;background:#fff;border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 12px 26px color-mix(in srgb,var(--lc-primary) 8%, transparent)}.category-hero-stat strong{display:block;font-size:1.45rem;line-height:1}.category-hero-stat span{display:block;margin-top:.35rem;color:var(--lc-muted);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
+.category-hero-stats{display:flex;flex-wrap:wrap;gap:.9rem}.category-hero-stat{min-width:120px;padding:1rem;border-radius:1rem;background:var(--lc-surface);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 12px 26px color-mix(in srgb,var(--lc-primary) 8%, transparent)}.category-hero-stat strong{display:block;font-size:1.45rem;line-height:1}.category-hero-stat span{display:block;margin-top:.35rem;color:var(--lc-muted);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
 .category-grid-meta,.category-results-active-filters{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}.category-grid-meta span,.category-results-active-filters span,.category-results-bar{display:inline-flex;align-items:center;gap:.45rem;padding:.6rem .9rem;border-radius:999px;background:color-mix(in srgb,var(--lc-soft) 72%, white);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);font-weight:700;color:var(--lc-primary-dark)}
 .category-results-bar{justify-content:space-between;display:flex;flex-wrap:wrap}
 .category-filter-card{background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 98%, transparent),color-mix(in srgb,var(--lc-soft) 82%, white))}
@@ -229,7 +229,7 @@
 body[dir="rtl"] .category-filter-search-icon{left:auto;right:1rem}
 .category-empty-state .lc-empty-icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--lc-soft) 82%, white);font-size:2rem;color:var(--lc-primary-dark);margin-bottom:1rem}
 .category-pagination-wrap nav{display:flex;justify-content:center}.category-pagination-wrap .pagination{gap:.45rem;flex-wrap:wrap}.category-pagination-wrap .page-link{border:none;border-radius:.9rem;padding:.72rem .95rem;color:var(--lc-primary-dark);background:color-mix(in srgb,var(--lc-soft) 72%, white);font-weight:800;box-shadow:none}.category-pagination-wrap .page-item.active .page-link{background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff}
-.quick-view-modal-content{border-radius:1.5rem;overflow:hidden}.quick-view-media-wrap{background:linear-gradient(180deg,color-mix(in srgb,var(--lc-soft) 78%, white),color-mix(in srgb,var(--lc-surface) 96%, transparent));min-height:100%}.quick-view-image{object-fit:contain;min-height:360px;padding:1.25rem}.quick-view-stock{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .85rem;border-radius:999px;background:#ecfdf3;border:1px solid #bbf7d0;font-weight:800;color:#166534}
+.quick-view-modal-content{border-radius:1.5rem;overflow:hidden}.quick-view-media-wrap{background:linear-gradient(180deg,color-mix(in srgb,var(--lc-soft) 78%, white),color-mix(in srgb,var(--lc-surface) 96%, transparent));min-height:100%}.quick-view-image{object-fit:contain;min-height:360px;padding:1.25rem}.quick-view-stock{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .85rem;border-radius:999px;background:var(--lc-success-bg);border:1px solid color-mix(in srgb,var(--lc-success-text) 18%,var(--lc-border));font-weight:800;color:var(--lc-success-text)}
 @media (max-width: 1199.98px){.sticky-xl-top{position:static!important;top:auto!important}}
 @media (max-width: 991.98px){.category-hero-card__image{min-height:240px}.category-results-bar{border-radius:1.2rem}}
 </style>
