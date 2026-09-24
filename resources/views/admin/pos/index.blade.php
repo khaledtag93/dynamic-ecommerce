@@ -169,13 +169,13 @@
                                             <div class="text-muted small">{{ $result['sku'] ?: __('No SKU') }} @if($result['barcode']) · <span class="font-monospace">{{ $result['barcode'] }}</span>@endif · {{ __('Stock') }}: {{ $result['stock'] }} · EGP {{ number_format($result['price'], 2) }}</div>
                                         </div>
                                         @if($result['selectable'] && $result['stock'] > 0)
-                                            <form method="POST" action="{{ route('admin.pos.scan', $cart) }}" data-submit-loading>
+                                            <form method="POST" action="{{ route('admin.pos.catalog.add', ['posCart' => $cart->id, 'product' => $result['product']->id]) }}" data-submit-loading>
                                                 @csrf
-                                                <input type="hidden" name="barcode" value="{{ $result['barcode'] }}">
+                                                @if($result['variant'])<input type="hidden" name="variant_id" value="{{ $result['variant']->id }}">@endif
                                                 <button class="btn btn-primary btn-sm">{{ __('Add') }}</button>
                                             </form>
                                         @elseif(!$result['selectable'])
-                                            <span class="badge badge-soft-warning">{{ __('Barcode required') }}</span>
+                                            <span class="badge badge-soft-warning">{{ __('Choose a variant') }}</span>
                                         @else
                                             <span class="badge badge-soft-secondary">{{ __('Out of stock') }}</span>
                                         @endif
