@@ -6,8 +6,8 @@
 <div class="admin-page-shell">
     @php
         $statusClass = match($payrollRun->status) {
-            AppModelsPayrollRun::STATUS_PAID => 'badge-soft-success',
-            AppModelsPayrollRun::STATUS_APPROVED => 'badge-soft-info',
+            \App\Models\PayrollRun::STATUS_PAID => 'badge-soft-success',
+            \App\Models\PayrollRun::STATUS_APPROVED => 'badge-soft-info',
             default => 'badge-soft-warning',
         };
     @endphp
@@ -43,7 +43,7 @@
             <div class="row g-3 align-items-center">
                 <div class="col-md-3">
                     <div class="text-muted small">{{ __('Status') }}</div>
-                    <span class="badge admin-status-badge {{ $statusClass }}">{{ AppModelsPayrollRun::statusOptions()[$payrollRun->status] ?? IlluminateSupportStr::headline($payrollRun->status) }}</span>
+                    <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\PayrollRun::statusOptions()[$payrollRun->status] ?? \Illuminate\Support\Str::headline($payrollRun->status) }}</span>
                 </div>
                 <div class="col-md-3">
                     <div class="text-muted small">{{ __('Period') }}</div>
@@ -138,7 +138,7 @@
                                     <div class="text-muted small">{{ $entry->employee_code_snapshot }}</div>
                                 </td>
                                 <td>
-                                    <div>{{ AppModelsEmployeeCompensation::payBasisOptions()[$entry->pay_basis_snapshot] ?? IlluminateSupportStr::headline($entry->pay_basis_snapshot) }}</div>
+                                    <div>{{ \App\Models\EmployeeCompensation::payBasisOptions()[$entry->pay_basis_snapshot] ?? \Illuminate\Support\Str::headline($entry->pay_basis_snapshot) }}</div>
                                     <div class="text-muted small">{{ number_format((float)$entry->base_rate_snapshot, 2) }} {{ $entry->currency_snapshot }}</div>
                                 </td>
                                 <td>
@@ -173,7 +173,7 @@
                                                         <tbody>
                                                             @foreach($entry->adjustments as $adjustment)
                                                                 <tr>
-                                                                    <td>{{ AppModelsPayrollAdjustment::typeOptions()[$adjustment->type] ?? IlluminateSupportStr::headline($adjustment->type) }}</td>
+                                                                    <td>{{ \App\Models\PayrollAdjustment::typeOptions()[$adjustment->type] ?? \Illuminate\Support\Str::headline($adjustment->type) }}</td>
                                                                     <td>{{ $adjustment->label }}</td>
                                                                     <td>{{ number_format((float)$adjustment->amount, 2) }} {{ $entry->currency_snapshot }}</td>
                                                                     <td>{{ $adjustment->reason }}</td>
@@ -199,7 +199,7 @@
                                                     @csrf
                                                     <div class="col-lg-2">
                                                         <select name="type" class="form-select form-select-sm" required>
-                                                            @foreach(AppModelsPayrollAdjustment::typeOptions() as $value => $label)
+                                                            @foreach(\App\Models\PayrollAdjustment::typeOptions() as $value => $label)
                                                                 <option value="{{ $value }}">{{ $label }}</option>
                                                             @endforeach
                                                         </select>
