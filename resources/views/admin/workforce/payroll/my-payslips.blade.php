@@ -39,7 +39,7 @@
                             @forelse($entries as $entry)
                                 <tr>
                                     <td><div class="fw-semibold">{{ $entry->payrollRun?->period?->name }}</div><div class="text-muted small">{{ $entry->payrollRun?->period?->starts_on?->format('d M Y') }} → {{ $entry->payrollRun?->period?->ends_on?->format('d M Y') }}</div></td>
-                                    <td><span class="badge admin-status-badge {{ $entry->payrollRun?->isPaid() ? 'badge-soft-success' : 'badge-soft-info' }}">{{ AppModelsPayrollRun::statusOptions()[$entry->payrollRun->status] ?? IlluminateSupportStr::headline($entry->payrollRun->status) }}</span></td>
+                                    <td><span class="badge admin-status-badge {{ $entry->payrollRun?->isPaid() ? 'badge-soft-success' : 'badge-soft-info' }}">{{ \App\Models\PayrollRun::statusOptions()[$entry->payrollRun->status] ?? \Illuminate\Support\Str::headline($entry->payrollRun->status) }}</span></td>
                                     <td>{{ number_format((float)$entry->gross_pay, 2) }} {{ $entry->currency_snapshot }}</td>
                                     <td>{{ number_format((float)$entry->deductions_total, 2) }} {{ $entry->currency_snapshot }}</td>
                                     <td class="fw-bold">{{ number_format((float)$entry->net_pay, 2) }} {{ $entry->currency_snapshot }}</td>
