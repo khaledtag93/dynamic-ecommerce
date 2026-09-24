@@ -274,10 +274,16 @@
                 <li class="nav-item {{ $isRoute('admin.workforce.corrections.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.corrections.index') }}"><i class="mdi mdi-file-document-edit-outline menu-icon"></i><span class="menu-title">{{ __('Attendance corrections') }}</span></a>
                 </li>
+                <li class="nav-item {{ $isRoute('admin.workforce.leave.index', 'admin.workforce.leave-types.*', 'admin.workforce.leave.adjustment') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.leave.index') }}"><i class="mdi mdi-calendar-check-outline menu-icon"></i><span class="menu-title">{{ __('Leave review') }}</span></a>
+                </li>
                 @endif
                 @if($can('workforce.clock'))
                 <li class="nav-item {{ $isRoute('admin.workforce.my-schedule') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.my-schedule') }}"><i class="mdi mdi-calendar-account-outline menu-icon"></i><span class="menu-title">{{ __('My schedule') }}</span></a>
+                </li>
+                <li class="nav-item {{ $isRoute('admin.workforce.my-leave') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.my-leave') }}"><i class="mdi mdi-beach menu-icon"></i><span class="menu-title">{{ __('My leave') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.time-clock', 'admin.workforce.clock-*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.time-clock') }}"><i class="mdi mdi-clock-check-outline menu-icon"></i><span class="menu-title">{{ __('My time clock') }}</span></a>
