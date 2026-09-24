@@ -270,14 +270,14 @@ class WorkforceSchedulingTest extends TestCase
             ->assertSee('data-live-results', false)
             ->assertSee('&lt;script&gt;Scheduled Cashier&lt;/script&gt;', false)
             ->assertSee('&lt;script&gt;Front Counter&lt;/script&gt;', false)
-            ->assertSee(__('12 min late'))
+            ->assertSee(__(':minutes min late', ['minutes' => 12]))
             ->assertDontSee('EMP-OTHER-SCHED');
 
         $this->withHeader('X-Live-List', '1')->get($url)
             ->assertOk()
             ->assertSee('data-live-results', false)
             ->assertSee('&lt;script&gt;Scheduled Cashier&lt;/script&gt;', false)
-            ->assertSee(__('12 min late'))
+            ->assertSee(__(':minutes min late', ['minutes' => 12]))
             ->assertDontSee('EMP-OTHER-SCHED')
             ->assertDontSee('data-live-filter', false)
             ->assertDontSee('<html', false);
