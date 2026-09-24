@@ -81,8 +81,8 @@
 - The storefront foundation now also hardens customer-facing support/payment/legal flows: raw Paymob errors are hidden, localized contact-hours fallback is respected, Category Quick View preserves product image ratio, Notifications hides empty bulk actions, and Cart removal uses the shared in-app confirmation.
 - Default Privacy / Terms / Refund / Shipping bodies no longer publish assumed legal commitments; blank policies show an explicit unpublished state until reviewed content is configured.
 - Store Content & Policies now carries a legal publishing caution and all seven contact/cancellation toggles use the shared aligned switch treatment.
-- Regression coverage was expanded across these flows. Detailed scope/QAS checks: `docs/STOREFRONT_FOUNDATION_UX_2026-09-24.md`.
-- Production remains unchanged; authenticated English/Arabic desktop/mobile QAS is still required before promotion.
+- Regression coverage was expanded across these flows. Shared product cards are now theme-aware, Category result count duplication is fixed, and Contact hides empty business detail panels while linking configured WhatsApp numbers directly. Detailed scope/QAS checks: `docs/STOREFRONT_FOUNDATION_UX_2026-09-24.md`.
+- Hardening CI run `36011846373` passed at `473a119e`. Production remains unchanged; authenticated English/Arabic desktop/mobile QAS is still required before promotion.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
