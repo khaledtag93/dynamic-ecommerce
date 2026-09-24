@@ -31,8 +31,8 @@ Make the long WhatsApp administration page easier to scan and operate while pres
 ## Validation state
 
 - Source implementation: complete for this UI iteration.
-- Automated regression coverage: added.
-- Branch-head CI: pending.
+- Automated regression coverage: added and passing.
+- Code-head CI: **passed** on `2a237e1` — Hardening CI run `36005416310`.
 - Authenticated English/Arabic desktop/mobile QAS review: pending.
 - Production: unchanged.
 
