@@ -607,7 +607,7 @@
                     </span>
                 </a>
 
-                <form class="retail-search d-none d-lg-flex" action="{{ route('frontend.home') }}" method="GET" role="search">
+                <form class="retail-search d-none d-lg-flex" action="{{ route('frontend.search') }}" method="GET" role="search">
                     <i class="bi bi-search"></i>
                     <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products, categories, and offers') }}">
                     <button type="submit">{{ __('Search') }}</button>
@@ -712,7 +712,7 @@
                     </div>
                 </div>
 
-                <form class="retail-search retail-search--mobile d-lg-none" action="{{ route('frontend.home') }}" method="GET" role="search">
+                <form class="retail-search retail-search--mobile d-lg-none" action="{{ route('frontend.search') }}" method="GET" role="search">
                     <i class="bi bi-search"></i>
                     <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products') }}">
                     <button type="submit">{{ __('Search') }}</button>
