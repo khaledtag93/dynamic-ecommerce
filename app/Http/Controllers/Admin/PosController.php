@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
+use App\Models\User;
 use App\Services\Commerce\PosService;
 use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\Request;
@@ -23,6 +24,22 @@ class PosController extends Controller
         $cart = $this->posService->cartFor($request->user());
         $summary = $this->posService->summary($cart);
         $heldCarts = $this->posService->heldCartsFor($request->user());
+        $customerSearch = trim((string) $request->string('customer_search'));
+        $customerResults = collect();
+
+        if (mb_strlen($customerSearch) >= 2) {
+            $customerResults = User::query()
+                ->select(['id', 'name', 'email'])
+                ->where('role_as', 0)
+                ->where(function ($query) use ($customerSearch) {
+                    $query->where('name', 'like', "%{$customerSearch}%")
+                        ->orWhere('email', 'like', "%{$customerSearch}%");
+                })
+                ->orderBy('name')
+                ->orderBy('id')
+                ->limit(8)
+                ->get();
+        }
 
         $recentSales = Order::query()
             ->where('sales_channel', Order::SALES_CHANNEL_POS)
@@ -38,10 +55,37 @@ class PosController extends Controller
             'cart',
             'summary',
             'heldCarts',
+            'customerSearch',
+            'customerResults',
             'recentSales',
             'cashPaymentMethod',
             'cardPaymentMethod'
         ));
+    }
+
+    public function attachCustomer(Request $request, PosCart $posCart, User $user)
+    {
+        $this->posService->attachCustomer(
+            $posCart,
+            $user,
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('admin.pos.index')
+            ->with('success', __('Customer attached to POS sale.'));
+    }
+
+    public function detachCustomer(Request $request, PosCart $posCart)
+    {
+        $this->posService->detachCustomer(
+            $posCart,
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('admin.pos.index')
+            ->with('success', __('Customer removed from POS sale.'));
     }
 
     public function scan(Request $request, PosCart $posCart)
