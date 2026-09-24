@@ -48,7 +48,7 @@
                     <label class="form-label fw-semibold">{{ __('Status') }}</label>
                     <select name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
-                        @foreach(AppModelsEmployeeProfile::statusOptions() as $value => $label)
+                        @foreach(\App\Models\EmployeeProfile::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -57,7 +57,7 @@
                     <label class="form-label fw-semibold">{{ __('Employment type') }}</label>
                     <select name="employment_type" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All employment types') }}</option>
-                        @foreach(AppModelsEmployeeProfile::employmentTypeOptions() as $value => $label)
+                        @foreach(\App\Models\EmployeeProfile::employmentTypeOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['employment_type'] === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
