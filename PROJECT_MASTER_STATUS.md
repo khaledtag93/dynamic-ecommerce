@@ -46,6 +46,7 @@
 ## Analytics & Insights V2 checkpoint — 2026-09-24
 - The Analytics overview now uses a shorter decision-first hierarchy: four primary KPIs → decision read → trends → funnel/period comparison → commercial drilldowns.
 - Repeated operator/depth/pattern/storytelling layers were removed while preserving the underlying calculations, reporting windows, funnels, comparisons and drilldowns.
+- The same consistency pass now covers Growth and Offers: duplicated growth signal/executive layers and offers hero/operator-summary layers were removed, while campaign/rule/product signals and coupon/promotion detail remain available.
 - Daily detail remains available under an expandable More diagnostics section instead of filling the default page.
 - Shared Analytics navigation and report surfaces now use configurable admin theme tokens instead of hard-coded orange styling; the duplicate on-screen export summary table is hidden while CSV/print behavior remains available.
 - English/Arabic hierarchy copy and a focused `AdminAnalyticsExperienceTest` were added. Detailed scope/QAS checks: `docs/ANALYTICS_INSIGHTS_V2_2026-09-24.md`.
