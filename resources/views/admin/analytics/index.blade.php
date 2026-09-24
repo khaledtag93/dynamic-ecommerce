@@ -428,10 +428,7 @@
 
 @section('content')
 <style>
-.analytics-shell{display:grid;gap:20px}.analytics-card,.analytics-mini,.analytics-trend-card,.analytics-summary-card,.analytics-chart-card{background:#fff;border:1px solid rgba(15,23,42,.06);border-radius:22px;box-shadow:0 18px 45px rgba(15,23,42,.06)}.analytics-card .card-body,.analytics-summary-card,.analytics-trend-card,.analytics-chart-card{padding:22px}.analytics-pills{display:flex;gap:10px;flex-wrap:wrap}.analytics-pill{display:inline-flex;align-items:center;padding:10px 14px;border-radius:999px;background:#fff;border:1px solid rgba(15,23,42,.08);font-weight:700;color:#0f172a;text-decoration:none}.analytics-pill.active{background:linear-gradient(135deg,#f97316,#fb923c);color:#fff;border-color:transparent}.analytics-form{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.analytics-form .form-control,.analytics-form .form-select{min-width:170px;border-radius:14px}.analytics-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.analytics-kpi{height:100%}.analytics-kpi .label{font-size:.92rem;color:#64748b;font-weight:700;margin-bottom:8px}.analytics-kpi .value{font-size:1.95rem;font-weight:800;color:#111827;line-height:1.1}.analytics-kpi .delta{margin-top:8px;font-weight:700;font-size:.9rem}.analytics-kpi .help{margin-top:6px;color:#64748b;font-size:.83rem;line-height:1.6}.analytics-block-title{font-weight:800;font-size:1.05rem;color:#0f172a;margin-bottom:6px}.analytics-block-subtitle{color:#64748b;font-size:.9rem;margin-bottom:16px}.analytics-summary-card{display:grid;gap:16px;background:linear-gradient(135deg,#fff7ed,#ffffff)}.analytics-summary-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.analytics-summary-item{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.8);border:1px solid rgba(249,115,22,.12)}.analytics-summary-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:#ffedd5;color:#c2410c;font-weight:800;flex:0 0 auto}.analytics-story-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.analytics-story-card{padding:18px;border-radius:20px;border:1px solid rgba(15,23,42,.06);background:#fff;box-shadow:0 16px 35px rgba(15,23,42,.05)}.analytics-story-card .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b}.analytics-story-card .metric{font-size:1.5rem;font-weight:800;margin-top:8px}.analytics-story-card .desc{font-size:.87rem;color:#64748b;margin-top:8px;line-height:1.7}.analytics-story-card.good .metric{color:#047857}.analytics-story-card.warn .metric{color:#c2410c}.analytics-story-card.risk .metric{color:#b91c1c}.analytics-storyboard{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.analytics-comparison-card{padding:20px;border-radius:22px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 20px 45px rgba(15,23,42,.16)}.analytics-comparison-card .eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)}.analytics-comparison-card .headline{font-size:1.55rem;font-weight:800;margin-top:8px;line-height:1.35}.analytics-comparison-card .subcopy{font-size:.92rem;line-height:1.8;color:rgba(255,255,255,.82);margin-top:10px}.analytics-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.analytics-compare-tile{padding:14px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}.analytics-compare-tile .tile-label{font-size:.8rem;color:rgba(255,255,255,.72)}.analytics-compare-tile .tile-value{font-size:1.15rem;font-weight:800;margin-top:6px}.analytics-lane-card{padding:20px;border-radius:22px;border:1px solid rgba(15,23,42,.06);background:#fff;box-shadow:0 18px 45px rgba(15,23,42,.05)}.analytics-lane-list{display:grid;gap:12px}.analytics-lane-item{padding:14px 16px;border-radius:16px;background:#f8fafc;border:1px solid rgba(15,23,42,.05)}.analytics-lane-item .lane-label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#64748b}.analytics-lane-item .lane-value{font-size:1rem;font-weight:800;color:#0f172a;margin-top:5px}.analytics-lane-item .lane-help{font-size:.86rem;color:#64748b;margin-top:7px;line-height:1.6}.analytics-insight-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.analytics-mini{padding:16px;height:100%;background:#f8fafc}.analytics-section{display:grid;gap:16px}.analytics-section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.analytics-chip-row{display:flex;gap:10px;flex-wrap:wrap}.analytics-chip{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:#fff7ed;border:1px solid rgba(249,115,22,.14);color:#c2410c;font-weight:700;font-size:.84rem}.analytics-anchor-nav{display:flex;gap:10px;flex-wrap:wrap}.analytics-anchor{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid rgba(15,23,42,.08);font-weight:700;color:#334155;text-decoration:none}.analytics-chart-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.95fr);gap:16px;align-items:start}.analytics-svg-card{padding:18px;border-radius:20px;background:#f8fafc;border:1px solid rgba(15,23,42,.05)}.analytics-svg-wrap{position:relative;width:100%;overflow-x:auto;overflow-y:hidden}.analytics-svg-frame{min-width:520px;width:100%}.analytics-svg{width:100%;height:180px;display:block}.analytics-chart-grid>*{min-width:0}.analytics-shell,.analytics-section,.analytics-card,.analytics-summary-card,.analytics-story-card,.analytics-comparison-card,.analytics-lane-card,.analytics-svg-card{min-width:0}.analytics-gridlines{stroke:rgba(148,163,184,.25);stroke-width:1}.analytics-line.revenue{fill:none;stroke:#f97316;stroke-width:3}.analytics-line.orders{fill:none;stroke:#94a3b8;stroke-width:3}.analytics-line.aov{fill:none;stroke:#0f172a;stroke-width:2.5}.analytics-area.revenue{fill:rgba(249,115,22,.12)}.analytics-area.orders{fill:rgba(148,163,184,.12)}.analytics-axis{display:flex;justify-content:space-between;gap:8px;margin-top:8px;color:#64748b;font-size:.78rem;overflow-x:auto;padding-bottom:2px}.analytics-axis span{flex:0 0 auto;min-width:44px;text-align:center}.analytics-axis.compact span{min-width:64px;font-size:.74rem}.analytics-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}.analytics-chart-legend span{display:inline-flex;align-items:center;gap:8px;color:#64748b;font-size:.83rem}.analytics-chart-legend i{display:inline-block;width:12px;height:12px;border-radius:999px}.analytics-chart-legend .rev{background:#f97316}.analytics-chart-legend .ord{background:#94a3b8}.analytics-chart-legend .aov{background:#0f172a}.analytics-list{display:grid;gap:14px}.analytics-row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid rgba(15,23,42,.06)}.analytics-row:last-child{border-bottom:none}.analytics-bar-track{height:10px;border-radius:999px;background:#eef2f7;overflow:hidden}.analytics-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#f97316,#fb923c)}.analytics-bar-fill.soft{background:linear-gradient(90deg,#cbd5e1,#94a3b8)}.analytics-bar-fill.dark{background:linear-gradient(90deg,#0f172a,#334155)}.analytics-table-wrap{overflow:auto}.analytics-table{width:100%;border-collapse:collapse}.analytics-table th,.analytics-table td{padding:12px 10px;border-bottom:1px solid rgba(15,23,42,.06);white-space:nowrap}.analytics-table th{font-size:.84rem;color:#64748b;text-transform:uppercase;letter-spacing:.03em}.analytics-funnel-step{padding:16px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,.05);margin-bottom:12px}.analytics-detail-stack{display:grid;gap:12px}.analytics-detail-card{padding:14px 16px;border-radius:18px;background:#fff;border:1px solid rgba(15,23,42,.06)}.analytics-leader-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media (max-width: 1400px){.analytics-chart-grid{grid-template-columns:1fr}.analytics-detail-stack{grid-template-columns:repeat(2,minmax(0,1fr));display:grid}}@media (max-width: 1200px){.analytics-grid-4,.analytics-insight-grid,.analytics-story-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-storyboard,.analytics-chart-grid,.analytics-leader-grid,.analytics-detail-stack{grid-template-columns:1fr}}@media (max-width: 768px){.analytics-grid-4,.analytics-insight-grid,.analytics-story-grid{grid-template-columns:1fr}}
-
-.analytics-depth-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:18px 0}.analytics-depth-card,.analytics-pattern-card,.analytics-chart-compare-card{background:#fff;border:1px solid rgba(15,23,42,.06);border-radius:22px;padding:18px 20px;box-shadow:0 14px 30px rgba(15,23,42,.04)}.analytics-depth-card.good,.analytics-pattern-card.good{background:linear-gradient(180deg,rgba(240,253,244,.9),#fff)}.analytics-depth-card.warn,.analytics-pattern-card.warn{background:linear-gradient(180deg,rgba(255,251,235,.92),#fff)}.analytics-depth-label{font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700;margin-bottom:6px}.analytics-depth-value,.analytics-pattern-value{font-size:1.35rem;font-weight:800;color:#0f172a}.analytics-depth-help{color:#64748b;font-size:.86rem;margin-top:6px}.analytics-pattern-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:18px}.analytics-chart-compare-card{display:grid;grid-template-columns:1fr 1.2fr;gap:18px;margin-bottom:18px}.analytics-compare-stack{display:grid;gap:14px}.analytics-compare-row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid rgba(15,23,42,.06)}.analytics-compare-row:last-child{border-bottom:none}.analytics-compare-label{font-weight:700;color:#0f172a}.analytics-compare-help{font-size:.85rem;color:#64748b;margin-top:4px}.analytics-compare-value{font-weight:800;color:#0f172a;white-space:nowrap}.analytics-deep-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}.analytics-deep-card{background:#fff;border:1px solid rgba(15,23,42,.06);border-radius:22px;padding:20px;box-shadow:0 14px 30px rgba(15,23,42,.04)}.analytics-deep-list{display:grid;gap:12px}.analytics-deep-item{padding:14px 16px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,.05)}.analytics-deep-item .eyebrow{font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:#64748b;font-weight:700}.analytics-deep-item .value{font-size:1.2rem;font-weight:800;color:#0f172a;margin-top:6px}.analytics-deep-item .help{color:#64748b;font-size:.86rem;line-height:1.65;margin-top:6px}.analytics-deep-item.good{background:linear-gradient(180deg,rgba(240,253,244,.9),#fff)}.analytics-deep-item.warn{background:linear-gradient(180deg,rgba(255,251,235,.92),#fff)}.analytics-deep-item.risk{background:linear-gradient(180deg,rgba(254,242,242,.95),#fff)}.analytics-period-table{display:grid;gap:10px}.analytics-period-row{display:grid;grid-template-columns:1.1fr .8fr .8fr .6fr;gap:12px;align-items:start;padding:14px 0;border-bottom:1px solid rgba(15,23,42,.06)}.analytics-period-row.header{padding-top:0;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#64748b}.analytics-period-label{font-weight:800;color:#0f172a}.analytics-period-help{font-size:.84rem;color:#64748b;line-height:1.55;margin-top:4px}.analytics-period-delta{font-weight:800;text-align:end}.analytics-return-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.analytics-return-card{padding:16px;border-radius:18px;background:#fff7ed;border:1px solid rgba(249,115,22,.14)}.analytics-return-card .return-label{font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:#9a3412;font-weight:700}.analytics-return-card .return-title{font-size:1rem;font-weight:800;color:#7c2d12;margin-top:6px}.analytics-return-card .return-value{font-size:1.2rem;font-weight:800;color:#0f172a;margin-top:6px}.analytics-return-card .return-help{font-size:.84rem;color:#7c2d12;line-height:1.6;margin-top:6px}@media (max-width:1200px){.analytics-depth-strip,.analytics-pattern-grid,.analytics-chart-compare-card,.analytics-deep-grid,.analytics-return-grid{grid-template-columns:1fr 1fr}}@media (max-width:768px){.analytics-depth-strip,.analytics-pattern-grid,.analytics-chart-compare-card,.analytics-deep-grid,.analytics-return-grid{grid-template-columns:1fr}}
-
+.analytics-shell{display:grid;gap:18px}.analytics-toolbar-card,.analytics-panel,.analytics-chart-card,.analytics-detail-card{background:var(--admin-surface);border:1px solid var(--admin-border);border-radius:20px;box-shadow:0 14px 34px rgba(15,23,42,.05)}.analytics-toolbar-card,.analytics-panel{padding:20px}.analytics-range-row{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap}.analytics-pills{display:flex;gap:8px;flex-wrap:wrap}.analytics-pill{display:inline-flex;align-items:center;padding:9px 13px;border-radius:999px;background:color-mix(in srgb,var(--admin-surface) 92%,var(--admin-primary) 8%);border:1px solid var(--admin-border);font-weight:700;color:var(--admin-text);text-decoration:none}.analytics-pill:hover{border-color:color-mix(in srgb,var(--admin-primary) 35%,var(--admin-border));color:var(--admin-primary)}.analytics-pill.active{background:var(--admin-primary);color:#fff;border-color:var(--admin-primary)}.analytics-form{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.analytics-form .form-control{min-width:160px}.analytics-section-nav{display:flex;gap:8px;flex-wrap:wrap}.analytics-section-nav a{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:var(--admin-surface);border:1px solid var(--admin-border);font-size:.84rem;font-weight:700;color:var(--admin-muted);text-decoration:none}.analytics-section-nav a:hover{color:var(--admin-primary);border-color:color-mix(in srgb,var(--admin-primary) 35%,var(--admin-border))}.analytics-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.analytics-kpi-card{padding:18px 20px}.analytics-kpi-label{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--admin-muted)}.analytics-kpi-value{font-size:1.7rem;font-weight:800;color:var(--admin-text);margin-top:8px;line-height:1.15}.analytics-kpi-meta{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:10px;font-size:.84rem}.analytics-kpi-help{color:var(--admin-muted);font-size:.82rem;line-height:1.55;margin-top:8px}.analytics-section-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px}.analytics-title{font-size:1.05rem;font-weight:800;color:var(--admin-text)}.analytics-subtitle{font-size:.88rem;color:var(--admin-muted);line-height:1.65;margin-top:4px}.analytics-decision-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.analytics-summary-list,.analytics-lane-list,.analytics-list{display:grid;gap:10px}.analytics-summary-item,.analytics-lane-item{padding:13px 14px;border-radius:15px;background:color-mix(in srgb,var(--admin-surface) 92%,var(--admin-bg) 8%);border:1px solid var(--admin-border)}.analytics-summary-item{display:flex;gap:10px;align-items:flex-start}.analytics-summary-index{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;background:color-mix(in srgb,var(--admin-primary) 12%,var(--admin-surface));color:var(--admin-primary);font-weight:800;flex:0 0 auto}.analytics-lane-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--admin-muted);font-weight:800}.analytics-lane-value{font-weight:800;color:var(--admin-text);margin-top:4px}.analytics-lane-help{font-size:.84rem;color:var(--admin-muted);line-height:1.55;margin-top:5px}.analytics-chart-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.8fr);gap:16px}.analytics-chart-card{padding:18px;min-width:0}.analytics-svg-wrap{position:relative;width:100%;overflow-x:auto;overflow-y:hidden}.analytics-svg-frame{min-width:520px;width:100%}.analytics-svg{width:100%;height:180px;display:block}.analytics-gridlines{stroke:color-mix(in srgb,var(--admin-border) 70%,transparent);stroke-width:1}.analytics-line.revenue{fill:none;stroke:var(--admin-primary);stroke-width:3}.analytics-line.orders{fill:none;stroke:var(--admin-muted);stroke-width:3}.analytics-line.aov{fill:none;stroke:var(--admin-text);stroke-width:2.5}.analytics-area.revenue{fill:color-mix(in srgb,var(--admin-primary) 12%,transparent)}.analytics-area.orders{fill:color-mix(in srgb,var(--admin-muted) 10%,transparent)}.analytics-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}.analytics-chart-legend span{display:inline-flex;align-items:center;gap:7px;color:var(--admin-muted);font-size:.82rem}.analytics-chart-legend i{display:inline-block;width:10px;height:10px;border-radius:999px}.analytics-chart-legend .rev{background:var(--admin-primary)}.analytics-chart-legend .ord{background:var(--admin-muted)}.analytics-chart-legend .aov{background:var(--admin-text)}.analytics-axis{display:flex;justify-content:space-between;gap:8px;margin-top:8px;color:var(--admin-muted);font-size:.74rem;overflow-x:auto}.analytics-axis span{flex:0 0 auto;min-width:44px;text-align:center}.analytics-secondary-stack{display:grid;gap:14px}.analytics-pulse-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.analytics-pulse{padding:13px;border-radius:15px;background:color-mix(in srgb,var(--admin-surface) 92%,var(--admin-bg) 8%);border:1px solid var(--admin-border)}.analytics-pulse-label{font-size:.74rem;color:var(--admin-muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}.analytics-pulse-value{font-weight:800;color:var(--admin-text);margin-top:5px}.analytics-compare-funnel{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}.analytics-period-table{display:grid}.analytics-period-row{display:grid;grid-template-columns:1.2fr .75fr .75fr .55fr;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--admin-border)}.analytics-period-row:last-child{border-bottom:none}.analytics-period-row.header{font-size:.74rem;font-weight:800;text-transform:uppercase;color:var(--admin-muted)}.analytics-period-label{font-weight:700;color:var(--admin-text)}.analytics-period-help{font-size:.8rem;color:var(--admin-muted);margin-top:3px}.analytics-period-delta{text-align:end;font-weight:800}.analytics-funnel-step{padding:13px 14px;border-radius:15px;background:color-mix(in srgb,var(--admin-surface) 92%,var(--admin-bg) 8%);border:1px solid var(--admin-border)}.analytics-funnel-step+.analytics-funnel-step{margin-top:9px}.analytics-leader-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.analytics-row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--admin-border)}.analytics-row:last-child{border-bottom:none}.analytics-bar-track{height:8px;border-radius:999px;background:color-mix(in srgb,var(--admin-border) 70%,transparent);overflow:hidden}.analytics-bar-fill{height:100%;border-radius:999px;background:var(--admin-primary)}.analytics-bar-fill.soft{background:var(--admin-muted)}.analytics-chip-row{display:flex;gap:8px;flex-wrap:wrap}.analytics-chip{display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;background:color-mix(in srgb,var(--admin-primary) 8%,var(--admin-surface));border:1px solid color-mix(in srgb,var(--admin-primary) 18%,var(--admin-border));color:var(--admin-text);font-size:.8rem;font-weight:700}.analytics-table-wrap{overflow:auto}.analytics-table{width:100%;border-collapse:collapse}.analytics-table th,.analytics-table td{padding:11px 9px;border-bottom:1px solid var(--admin-border);white-space:nowrap}.analytics-table th{font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;color:var(--admin-muted)}.analytics-more{border:1px solid var(--admin-border);border-radius:18px;background:var(--admin-surface);overflow:hidden}.analytics-more summary{cursor:pointer;padding:16px 18px;font-weight:800;color:var(--admin-text);list-style:none}.analytics-more summary::-webkit-details-marker{display:none}.analytics-more summary:after{content:"+";float:inline-end;color:var(--admin-primary);font-size:1.2rem}.analytics-more[open] summary:after{content:"−"}.analytics-more-body{padding:0 18px 18px}.analytics-daily-row{display:grid;grid-template-columns:80px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--admin-border)}.analytics-daily-bars{display:grid;gap:5px}.analytics-daily-meta{text-align:end}.analytics-bar-fill.orders{background:var(--admin-muted)}.analytics-bar-fill.aov{background:var(--admin-text)}@media(max-width:1200px){.analytics-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-decision-grid,.analytics-chart-grid,.analytics-compare-funnel,.analytics-leader-grid{grid-template-columns:1fr}}@media(max-width:768px){.analytics-kpi-grid,.analytics-pulse-grid{grid-template-columns:1fr}.analytics-period-row{grid-template-columns:1fr 1fr}.analytics-period-row.header{display:none}.analytics-period-delta{text-align:start}.analytics-daily-row{grid-template-columns:1fr}.analytics-daily-meta{text-align:start}.analytics-toolbar-card,.analytics-panel{padding:16px}}
 </style>
 
 <div class="analytics-shell">
@@ -444,30 +441,24 @@
             ['label' => __('Revenue Intelligence'), 'current' => true],
         ]"
     >
-        <a href="{{ route('admin.analytics.offers', ['range' => $range, 'from_date' => request('from_date'), 'to_date' => request('to_date')]) }}" class="btn btn-outline-dark">
+        <a href="{{ route('admin.analytics.offers', ['range' => $range, 'from_date' => request('from_date'), 'to_date' => request('to_date')]) }}" class="btn btn-light border">
             <i class="bi bi-ticket-perforated"></i> {{ __('Offers drilldown') }}
         </a>
     </x-admin.page-header>
 
     @include('admin.analytics._nav')
-@include('admin.analytics._trust_panel', ['trust' => $trust ?? [], 'uiState' => $uiState ?? []])
 
-    @include('admin.analytics._report_toolbar', [
-        'title' => __('Revenue Intelligence'),
-        'subtitle' => __('Clean executive wording, export-ready summaries, and a print-friendly operator view for the selected period.'),
-        'period' => $from->format('Y-m-d') . ' → ' . $to->format('Y-m-d'),
-        'reportId' => 'overview-report',
-        'exportRows' => $exportRows,
-    ])
-
-    <div class="analytics-card">
-        <div class="card-body">
-            <div class="analytics-pills mb-3">
-                @foreach (['today' => __('Today'), '7d' => __('Last 7 days'), '30d' => __('Last 30 days'), '90d' => __('Last 90 days')] as $pillKey => $pillLabel)
-                    <a href="{{ route('admin.analytics.index', ['range' => $pillKey]) }}" class="analytics-pill {{ $range === $pillKey ? 'active' : '' }}">{{ $pillLabel }}</a>
-                @endforeach
+    <div class="analytics-toolbar-card">
+        <div class="analytics-range-row">
+            <div>
+                <div class="analytics-title">{{ __('Reporting window') }}</div>
+                <div class="analytics-subtitle">{{ __('Choose a quick range or set exact dates. Every section below uses the same window.') }}</div>
+                <div class="analytics-pills mt-3">
+                    @foreach (['today' => __('Today'), '7d' => __('Last 7 days'), '30d' => __('Last 30 days'), '90d' => __('Last 90 days')] as $pillKey => $pillLabel)
+                        <a href="{{ route('admin.analytics.index', ['range' => $pillKey]) }}" class="analytics-pill {{ $range === $pillKey ? 'active' : '' }}">{{ $pillLabel }}</a>
+                    @endforeach
+                </div>
             </div>
-
             <form method="GET" action="{{ route('admin.analytics.index') }}" class="analytics-form">
                 <input type="hidden" name="range" value="custom">
                 <div>
@@ -478,384 +469,181 @@
                     <label class="form-label">{{ __('To') }}</label>
                     <input type="date" class="form-control" name="to_date" value="{{ request('to_date', $to->toDateString()) }}">
                 </div>
-                <div>
-                    <button class="btn btn-dark" type="submit">{{ __('Apply range') }}</button>
-                </div>
+                <button class="btn btn-primary" type="submit">{{ __('Apply range') }}</button>
             </form>
         </div>
     </div>
 
-    <div class="analytics-anchor-nav">
-        <a href="#operator-summary" class="analytics-anchor">{{ __('Operator summary') }}</a>
-        <a href="#deep-read" class="analytics-anchor">{{ __('Deep read') }}</a>
-        <a href="#kpi-hierarchy" class="analytics-anchor">{{ __('KPI hierarchy') }}</a>
-        <a href="#chart-suite" class="analytics-anchor">{{ __('Chart suite') }}</a>
-        <a href="#drilldowns" class="analytics-anchor">{{ __('Drilldowns') }}</a>
-        <a href="#funnel-health" class="analytics-anchor">{{ __('Funnel health') }}</a>
-    </div>
+    @include('admin.analytics._trust_panel', ['trust' => $trust ?? [], 'uiState' => $uiState ?? []])
 
-    <div class="analytics-depth-strip" id="operator-summary">
-        @foreach ($operatorSummaryCards as $item)
-            <div class="analytics-depth-card neutral">
-                <div class="analytics-depth-label">{{ $item['label'] }}</div>
-                <div class="analytics-depth-value">{{ $item['value'] }}</div>
-                <div class="analytics-depth-help">{{ $item['help'] }}</div>
-            </div>
-        @endforeach
-    </div>
+    @include('admin.analytics._report_toolbar', [
+        'title' => __('Revenue Intelligence'),
+        'subtitle' => __('A concise commercial summary for the selected period.'),
+        'period' => $from->format('Y-m-d') . ' → ' . $to->format('Y-m-d'),
+        'reportId' => 'overview-report',
+        'exportRows' => $exportRows,
+    ])
 
-    <div class="analytics-depth-strip">
-        @foreach ($depthSignals as $signal)
-            <div class="analytics-depth-card {{ $signal['tone'] }}">
-                <div class="analytics-depth-label">{{ $signal['label'] }}</div>
-                <div class="analytics-depth-value">{{ $signal['value'] }}</div>
-                <div class="analytics-depth-help">{{ $signal['help'] }}</div>
-            </div>
-        @endforeach
-    </div>
+    <nav class="analytics-section-nav" aria-label="{{ __('Analytics sections') }}">
+        <a href="#performance">{{ __('Performance') }}</a>
+        <a href="#decision-read">{{ __('Decision read') }}</a>
+        <a href="#trends">{{ __('Trends') }}</a>
+        <a href="#funnel">{{ __('Funnel & comparison') }}</a>
+        <a href="#drilldowns">{{ __('Drilldowns') }}</a>
+    </nav>
 
-    <div class="analytics-pattern-grid">
-        @foreach ($patternRead as $item)
-            <div class="analytics-pattern-card {{ $item['tone'] }}">
-                <div class="analytics-block-title">{{ $item['title'] }}</div>
-                <div class="analytics-pattern-value">{{ $item['value'] }}</div>
-                <div class="analytics-block-subtitle">{{ $item['help'] }}</div>
-            </div>
-        @endforeach
-    </div>
-
-    <div class="analytics-summary-card">
-        <div>
-            <div class="analytics-block-title">{{ __('Executive summary') }}</div>
-            <div class="analytics-block-subtitle">{{ __('Fast executive read first, then open the section that explains pressure or return in more detail.') }}</div>
-        </div>
-        <ul class="analytics-summary-list">
-            @foreach ($executiveSummary as $index => $item)
-                <li class="analytics-summary-item">
-                    <span class="analytics-summary-icon">{{ $index + 1 }}</span>
-                    <span>{{ $item }}</span>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-
-    <div class="analytics-story-grid">
-        @foreach ($storySignals as $signal)
-            <div class="analytics-story-card {{ $signal['tone'] }}">
-                <div class="kicker">{{ $signal['title'] }}</div>
-                <div class="metric">{{ $signal['value'] }}</div>
-                <div class="desc">{{ $signal['description'] }}</div>
-            </div>
-        @endforeach
-    </div>
-
-
-    <div class="analytics-deep-grid" id="deep-read">
-        <div class="analytics-deep-card">
-            <div class="analytics-block-title">{{ __('Reason read') }}</div>
-            <div class="analytics-block-subtitle">{{ __('Direct reasons only: what is helping, what is slowing, and what it means right now.') }}</div>
-            <div class="analytics-deep-list">
-                @foreach ($reasonReads as $item)
-                    <div class="analytics-deep-item {{ $item['tone'] }}">
-                        <div class="eyebrow">{{ $item['title'] }}</div>
-                        <div class="value">{{ $item['value'] }}</div>
-                        <div class="help">{{ $item['help'] }}</div>
+    <section id="performance">
+        <div class="analytics-kpi-grid">
+            @foreach ($kpiCards as $item)
+                <div class="admin-card admin-stat-card analytics-kpi-card">
+                    <div class="analytics-kpi-label">{{ $item['label'] }}</div>
+                    <div class="analytics-kpi-value">{{ $item['value'] }}</div>
+                    <div class="analytics-kpi-meta">
+                        <span class="{{ $item['delta']['class'] }}">{{ __('Vs previous') }}: {{ $item['delta']['text'] }}</span>
                     </div>
-                @endforeach
-            </div>
-        </div>
-        <div class="analytics-deep-card">
-            <div class="analytics-block-title">{{ __('Period comparison') }}</div>
-            <div class="analytics-block-subtitle">{{ __('Current versus previous matching period, without extra reading overhead.') }}</div>
-            <div class="analytics-period-table">
-                <div class="analytics-period-row header">
-                    <div>{{ __('Metric') }}</div>
-                    <div>{{ __('Current') }}</div>
-                    <div>{{ __('Previous') }}</div>
-                    <div class="text-end">{{ __('Delta') }}</div>
-                </div>
-                @foreach ($periodCompareRows as $row)
-                    <div class="analytics-period-row">
-                        <div>
-                            <div class="analytics-period-label">{{ $row['label'] }}</div>
-                            <div class="analytics-period-help">{{ $row['help'] }}</div>
-                        </div>
-                        <div>{{ $row['current'] }}</div>
-                        <div>{{ $row['previous'] }}</div>
-                        <div class="analytics-period-delta">{{ $row['delta'] }}</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    <div class="analytics-deep-grid">
-        <div class="analytics-deep-card">
-            <div class="analytics-block-title">{{ __('Where leakage is happening') }}</div>
-            <div class="analytics-block-subtitle">{{ __('The weakest journey handoffs ranked from highest to lowest pressure.') }}</div>
-            <div class="analytics-deep-list">
-                @forelse ($leakageReads->take(3) as $item)
-                    <div class="analytics-deep-item {{ $item['tone'] }}">
-                        <div class="eyebrow">{{ $item['title'] }}</div>
-                        <div class="value">{{ $item['value'] }}</div>
-                        <div class="help">{{ $item['help'] }}</div>
-                    </div>
-                @empty
-                    <div class="text-muted">{{ __('No meaningful leakage points are visible for this range yet.') }}</div>
-                @endforelse
-            </div>
-        </div>
-        <div class="analytics-deep-card">
-            <div class="analytics-block-title">{{ __('Where the highest return is') }}</div>
-            <div class="analytics-block-subtitle">{{ __('The strongest tracked revenue contributors across products, categories, and offers.') }}</div>
-            <div class="analytics-return-grid">
-                @forelse ($highestReturnRows as $item)
-                    <div class="analytics-return-card">
-                        <div class="return-label">{{ $item['label'] }}</div>
-                        <div class="return-title">{{ $item['title'] }}</div>
-                        <div class="return-value">{{ $item['value'] }}</div>
-                        <div class="return-help">{{ $item['help'] }}</div>
-                    </div>
-                @empty
-                    <div class="text-muted">{{ __('No high-return entities are visible for this range yet.') }}</div>
-                @endforelse
-            </div>
-        </div>
-    </div>
-
-    <div class="analytics-storyboard" id="kpi-hierarchy">
-        <div class="analytics-comparison-card">
-            <div class="eyebrow">{{ __('Comparison storytelling') }}</div>
-            <div class="headline">{{ __('The current window is :direction versus the previous matching period.', ['direction' => $revenueDelta['rate'] >= 0 ? __('building') : __('under pressure')]) }}</div>
-            <div class="subcopy">
-                {{ __('Revenue pace is :rev, order pace is :orders, and cart abandonment is :abandonment. This lets the team see whether performance is being driven by demand, conversion quality, or leakage inside checkout.', ['rev' => $revenueDelta['text'], 'orders' => $ordersDelta['text'], 'abandonment' => $abandonmentDelta['text']]) }}
-            </div>
-            <div class="analytics-compare-grid">
-                <div class="analytics-compare-tile"><div class="tile-label">{{ __('Revenue momentum') }}</div><div class="tile-value">{{ ($revenueMomentum >= 0 ? '+' : '') . number_format($revenueMomentum * 100, 1) }}%</div></div>
-                <div class="analytics-compare-tile"><div class="tile-label">{{ __('Order momentum') }}</div><div class="tile-value">{{ ($ordersMomentum >= 0 ? '+' : '') . number_format($ordersMomentum * 100, 1) }}%</div></div>
-                <div class="analytics-compare-tile"><div class="tile-label">{{ __('Returning buyer mix') }}</div><div class="tile-value">{{ number_format($returningShare * 100, 1) }}%</div></div>
-                <div class="analytics-compare-tile"><div class="tile-label">{{ __('Checkout drops') }}</div><div class="tile-value">{{ number_format($checkoutDropCount) }}</div></div>
-            </div>
-        </div>
-        <div class="analytics-lane-card">
-            <div class="analytics-block-title">{{ __('Operating lanes') }}</div>
-            <div class="analytics-block-subtitle">{{ __('Where to scale, protect, and improve next.') }}</div>
-            <div class="analytics-lane-list">
-                @foreach ($focusLaneItems as $item)
-                    <div class="analytics-lane-item">
-                        <div class="lane-label">{{ $item['label'] }}</div>
-                        <div class="lane-value">{{ $item['value'] }}</div>
-                        <div class="lane-help">{{ $item['help'] }}</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    <div class="analytics-grid-4">
-        @foreach ($kpiCards as $item)
-            <div class="analytics-trend-card analytics-kpi">
-                <div class="label">{{ $item['label'] }}</div>
-                <div class="value">{{ $item['value'] }}</div>
-                <div class="delta {{ $item['delta']['class'] }}">{{ __('Vs previous') }}: {{ $item['delta']['text'] }}</div>
-                <div class="help">{{ $item['help'] }}</div>
-            </div>
-        @endforeach
-    </div>
-
-    <div class="analytics-chart-compare-card" id="chart-suite">
-        <div>
-            <div class="analytics-block-title">{{ __('Chart suite') }}</div>
-            <div class="analytics-block-subtitle">{{ __('Revenue, orders, and average order value in one aligned comparison view.') }}</div>
-        </div>
-        <div class="analytics-compare-stack">
-            @foreach ([
-                ['label' => __('Revenue line'), 'value' => 'EGP ' . number_format((float) ($totals['revenue_gross'] ?? 0), 0), 'help' => __('Gross revenue over the selected period.')],
-                ['label' => __('Orders line'), 'value' => number_format((int) ($totals['orders_count'] ?? 0)), 'help' => __('Confirmed order count in the same range.')],
-                ['label' => __('AOV line'), 'value' => 'EGP ' . number_format((float) ($totals['average_order_value'] ?? 0), 2), 'help' => __('Average order value across tracked orders.')],
-            ] as $item)
-                <div class="analytics-compare-row">
-                    <div>
-                        <div class="analytics-compare-label">{{ $item['label'] }}</div>
-                        <div class="analytics-compare-help">{{ $item['help'] }}</div>
-                    </div>
-                    <div class="analytics-compare-value">{{ $item['value'] }}</div>
+                    <div class="analytics-kpi-help">{{ $item['help'] }}</div>
                 </div>
             @endforeach
         </div>
-    </div>
-
-    <div class="analytics-insight-grid">
-        <div class="analytics-mini h-100">
-            <div class="small text-muted mb-1">{{ __('Data source') }}</div>
-            <div class="fw-bold fs-5">{{ $isAggregated ? __('Aggregated daily stats') : __('Live event fallback') }}</div>
-            <div class="text-muted small mt-2">
-                @if ($isAggregated && $lastAggregatedAt)
-                    {{ __('Last aggregation: :time', ['time' => \Illuminate\Support\Carbon::parse($lastAggregatedAt)->format('Y-m-d H:i')]) }}
-                @elseif ($lastEventAt)
-                    {{ __('Last event seen: :time', ['time' => \Illuminate\Support\Carbon::parse($lastEventAt)->format('Y-m-d H:i')]) }}
-                @else
-                    {{ __('No analytics ingestion timestamps are available yet.') }}
-                @endif
-            </div>
-        </div>
-        <div class="analytics-mini h-100">
-            <div class="small text-muted mb-1">{{ __('Average daily revenue') }}</div>
-            <div class="fw-bold fs-5">EGP {{ number_format($averageDailyRevenue, 2) }}</div>
-            <div class="text-muted small mt-2">{{ __('Average gross revenue per tracked day in the selected window.') }}</div>
-        </div>
-        <div class="analytics-mini h-100">
-            <div class="small text-muted mb-1">{{ __('Average daily orders') }}</div>
-            <div class="fw-bold fs-5">{{ number_format($averageDailyOrders, 1) }}</div>
-            <div class="text-muted small mt-2">{{ __('Typical order rhythm inside the current reporting range.') }}</div>
-        </div>
-        <div class="analytics-mini h-100">
-            <div class="small text-muted mb-1">{{ __('Performance pulse') }}</div>
-            <div class="fw-bold fs-5">{{ __('Best day') }}: {{ data_get($bestDay, 'full_label', '—') }}</div>
-            <div class="text-muted small mt-2">{{ __('Peak revenue: :value', ['value' => 'EGP ' . number_format((float) data_get($bestDay, 'revenue', 0), 2)]) }}<br>{{ __('Softest day: :day', ['day' => data_get($weakestDay, 'full_label', '—')]) }}</div>
-        </div>
-    </div>
-
-    <div class="analytics-section" id="chart-suite">
-        <div class="analytics-section-head">
-            <div>
-                <div class="analytics-block-title">{{ __('Chart suite') }}</div>
-                <div class="analytics-block-subtitle">{{ __('Real visual reads for revenue, order pace, and basket quality using the same tracked data underneath the dashboard.') }}</div>
-            </div>
-            <div class="analytics-chip-row">
-                <span class="analytics-chip">{{ __('Best day') }}: {{ data_get($bestDay, 'label', '—') }}</span>
-                <span class="analytics-chip">{{ __('Softest day') }}: {{ data_get($weakestDay, 'label', '—') }}</span>
-            </div>
-        </div>
-
-        <div class="analytics-chart-grid">
-            <div class="analytics-chart-card">
-                <div class="analytics-block-title">{{ __('Revenue and order trend') }}</div>
-                <div class="analytics-block-subtitle">{{ __('A true line view for pace change across the selected days.') }}</div>
-                <div class="analytics-chart-legend">
-                    <span><i class="rev"></i>{{ __('Revenue') }}</span>
-                    <span><i class="ord"></i>{{ __('Orders') }}</span>
-                </div>
-                <div class="analytics-svg-wrap">
-                    <div class="analytics-svg-frame">
-                    <svg viewBox="0 0 520 180" class="analytics-svg" role="img" aria-label="{{ __('Revenue and orders trend chart') }}">
-                        <line x1="0" y1="30" x2="520" y2="30" class="analytics-gridlines"></line>
-                        <line x1="0" y1="90" x2="520" y2="90" class="analytics-gridlines"></line>
-                        <line x1="0" y1="150" x2="520" y2="150" class="analytics-gridlines"></line>
-                        @if (! empty($revenueSvg['area']))<polygon points="{{ $revenueSvg['area'] }}" class="analytics-area revenue"></polygon>@endif
-                        @if (! empty($ordersSvg['area']))<polygon points="{{ $ordersSvg['area'] }}" class="analytics-area orders"></polygon>@endif
-                        @if (! empty($revenueSvg['line']))<polyline points="{{ $revenueSvg['line'] }}" class="analytics-line revenue"></polyline>@endif
-                        @if (! empty($ordersSvg['line']))<polyline points="{{ $ordersSvg['line'] }}" class="analytics-line orders"></polyline>@endif
-                    </svg>
-                    </div>
-                </div>
-                <div class="analytics-axis {{ $chartLabelStep > 1 ? 'compact' : '' }}">
-                    @forelse ($axisLabels as $row)
-                        <span>{{ $row['label'] }}</span>
-                    @empty
-                        <span>{{ __('No daily labels yet') }}</span>
-                    @endforelse
-                </div>
-            </div>
-            <div class="analytics-detail-stack">
-                <div class="analytics-svg-card">
-                    <div class="analytics-block-title">{{ __('AOV trend') }}</div>
-                    <div class="analytics-block-subtitle">{{ __('Basket quality trend across the same window.') }}</div>
-                    <div class="analytics-chart-legend"><span><i class="aov"></i>{{ __('AOV') }}</span></div>
-                    <div class="analytics-svg-wrap"><div class="analytics-svg-frame"><svg viewBox="0 0 520 180" class="analytics-svg" role="img" aria-label="{{ __('AOV trend chart') }}">
-                        <line x1="0" y1="30" x2="520" y2="30" class="analytics-gridlines"></line>
-                        <line x1="0" y1="90" x2="520" y2="90" class="analytics-gridlines"></line>
-                        <line x1="0" y1="150" x2="520" y2="150" class="analytics-gridlines"></line>
-                        @if (! empty($aovSvg['line']))<polyline points="{{ $aovSvg['line'] }}" class="analytics-line aov"></polyline>@endif
-                    </svg></div></div>
-                    <div class="analytics-axis {{ $chartLabelStep > 1 ? 'compact' : '' }}">
-                        @forelse ($axisLabels as $row)
-                            <span>{{ $row['label'] }}</span>
-                        @empty
-                            <span>{{ __('No daily labels yet') }}</span>
-                        @endforelse
-                    </div>
-                </div>
-                <div class="analytics-svg-card">
-                    <div class="analytics-block-title">{{ __('Quick chart read') }}</div>
-                    <div class="analytics-block-subtitle">{{ __('Use this hierarchy to decide where to click next.') }}</div>
-                    <div class="analytics-lane-list">
-                        <div class="analytics-lane-item"><div class="lane-label">{{ __('If revenue is weak') }}</div><div class="lane-value">{{ __('Check products and categories') }}</div><div class="lane-help">{{ __('Go to the product leaderboard and inspect the softest movers first.') }}</div></div>
-                        <div class="analytics-lane-item"><div class="lane-label">{{ __('If orders are weak') }}</div><div class="lane-value">{{ __('Review growth and offer fit') }}</div><div class="lane-help">{{ __('Compare order pace against checkout drops and coupon pressure.') }}</div></div>
-                        <div class="analytics-lane-item"><div class="lane-label">{{ __('If AOV is weak') }}</div><div class="lane-value">{{ __('Inspect offer quality') }}</div><div class="lane-help">{{ __('Use offers drilldown to see whether discounts are carrying or compressing value.') }}</div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-3" id="funnel-health">
-        <div class="col-lg-7">
-            <div class="analytics-card h-100">
-                <div class="card-body">
-                    <div class="analytics-block-title">{{ __('KPI trend board') }}</div>
-                    <div class="analytics-block-subtitle">{{ __('Daily revenue, orders, and AOV bars for fast day-by-day diagnosis.') }}</div>
-                    <div class="analytics-list">
-                        @if ($dailyChartRows->isEmpty())
-                            <div class="text-muted">{{ __('No analytics data yet for this period.') }}</div>
-                        @else
-                            @foreach ($dailyChartRows as $chartRow)
-                                <div class="analytics-row">
-                                    <div style="min-width:90px"><div class="fw-bold">{{ $chartRow['label'] }}</div><div class="small text-muted">{{ __('CVR') }} {{ number_format($chartRow['conversion_rate'] * 100, 1) }}%</div></div>
-                                    <div class="flex-fill">
-                                        <div class="analytics-bar-track mb-2"><div class="analytics-bar-fill" style="width: {{ max(4, $chartRow['revenue_width']) }}%"></div></div>
-                                        <div class="analytics-bar-track mb-2"><div class="analytics-bar-fill soft" style="width: {{ max(4, $chartRow['orders_width']) }}%"></div></div>
-                                        <div class="analytics-bar-track"><div class="analytics-bar-fill dark" style="width: {{ max(4, $chartRow['aov_width']) }}%"></div></div>
-                                    </div>
-                                    <div class="text-end"><div class="fw-bold">EGP {{ number_format($chartRow['revenue'], 2) }}</div><div class="text-muted small">{{ number_format($chartRow['orders_count']) }} {{ __('orders') }} · {{ __('AOV') }} {{ number_format($chartRow['aov'], 2) }}</div></div>
-                                </div>
-                            @endforeach
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="analytics-card h-100">
-                <div class="card-body">
-                    <div class="analytics-block-title">{{ __('Funnel tracking') }}</div>
-                    <div class="analytics-block-subtitle">{{ __('View → cart → checkout → purchase with direct leakage context.') }}</div>
-                    @foreach ($funnel as $step)
-                        <div class="analytics-funnel-step">
-                            <div class="d-flex justify-content-between align-items-center mb-1"><strong>{{ $step['label'] }}</strong><span>{{ number_format((int) $step['count']) }}</span></div>
-                            <div class="small text-muted">{{ __('From previous: :rate', ['rate' => number_format(((float) ($step['conversion_from_previous'] ?? 0)) * 100, 1) . '%']) }} · {{ __('Drop-off: :rate', ['rate' => number_format(((float) ($step['drop_off_from_previous'] ?? 0)) * 100, 1) . '%']) }}</div>
-                        </div>
-                    @endforeach
-                    <div class="analytics-mini mt-3">
-                        <div class="small text-muted mb-1">{{ __('Largest drop-off') }}</div>
-                        <div class="fw-bold">{{ data_get($largestDrop, 'label', __('No drop-off yet')) }}</div>
-                        <div class="text-muted small">{{ number_format(((float) data_get($largestDrop, 'drop_off_from_previous', 0)) * 100, 1) }}%</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </section>
 
     @if (!($uiState['empty'] ?? false))
-    <div class="analytics-section" id="drilldowns">
-        <div class="analytics-section-head">
-            <div>
-                <div class="analytics-block-title">{{ __('Drilldowns') }}</div>
-                <div class="analytics-block-subtitle">{{ __('Move from the headline KPIs into the entities carrying or dragging performance.') }}</div>
+        <section class="analytics-decision-grid" id="decision-read">
+            <div class="analytics-panel">
+                <div class="analytics-section-head">
+                    <div>
+                        <div class="analytics-title">{{ __('Decision read') }}</div>
+                        <div class="analytics-subtitle">{{ __('Three signals to understand before opening deeper diagnostics.') }}</div>
+                    </div>
+                </div>
+                <div class="analytics-summary-list">
+                    @foreach ($executiveSummary as $index => $item)
+                        <div class="analytics-summary-item">
+                            <span class="analytics-summary-index">{{ $index + 1 }}</span>
+                            <span>{{ $item }}</span>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-            <div class="analytics-chip-row">
-                <span class="analytics-chip">{{ __('Products') }}: {{ number_format($topProducts->count()) }}</span>
-                <span class="analytics-chip">{{ __('Categories') }}: {{ number_format($topCategories->count()) }}</span>
-                <span class="analytics-chip">{{ __('Coupons') }}: {{ number_format($couponPerformance->count()) }}</span>
+            <div class="analytics-panel">
+                <div class="analytics-section-head">
+                    <div>
+                        <div class="analytics-title">{{ __('Operating lanes') }}</div>
+                        <div class="analytics-subtitle">{{ __('Where to scale, protect, and improve next.') }}</div>
+                    </div>
+                </div>
+                <div class="analytics-lane-list">
+                    @foreach ($focusLaneItems as $item)
+                        <div class="analytics-lane-item">
+                            <div class="analytics-lane-label">{{ $item['label'] }}</div>
+                            <div class="analytics-lane-value">{{ $item['value'] }}</div>
+                            <div class="analytics-lane-help">{{ $item['help'] }}</div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
+        </section>
 
-        <div class="analytics-leader-grid">
-            <div class="analytics-card">
-                <div class="card-body">
-                    <div class="analytics-block-title">{{ __('Top products leaderboard') }}</div>
-                    <div class="analytics-block-subtitle">{{ __('Click straight into a product drilldown from the strongest or weakest commercial movers.') }}</div>
-                    <div class="analytics-list">
+        <section class="analytics-panel" id="trends">
+            <div class="analytics-section-head">
+                <div>
+                    <div class="analytics-title">{{ __('Performance trends') }}</div>
+                    <div class="analytics-subtitle">{{ __('Revenue, order pace, and basket quality across the same reporting window.') }}</div>
+                </div>
+                <div class="analytics-chip-row">
+                    <span class="analytics-chip">{{ __('Best day') }}: {{ data_get($bestDay, 'full_label', '—') }}</span>
+                    <span class="analytics-chip">{{ __('Softest day') }}: {{ data_get($weakestDay, 'full_label', '—') }}</span>
+                </div>
+            </div>
+            <div class="analytics-chart-grid">
+                <div class="analytics-chart-card">
+                    <div class="analytics-title">{{ __('Revenue and order trend') }}</div>
+                    <div class="analytics-subtitle">{{ __('Use pace changes here before jumping into products or offers.') }}</div>
+                    <div class="analytics-chart-legend mt-3">
+                        <span><i class="rev"></i>{{ __('Revenue') }}</span>
+                        <span><i class="ord"></i>{{ __('Orders') }}</span>
+                    </div>
+                    <div class="analytics-svg-wrap">
+                        <div class="analytics-svg-frame">
+                            <svg viewBox="0 0 520 180" class="analytics-svg" role="img" aria-label="{{ __('Revenue and orders trend chart') }}">
+                                <line x1="0" y1="30" x2="520" y2="30" class="analytics-gridlines"></line>
+                                <line x1="0" y1="90" x2="520" y2="90" class="analytics-gridlines"></line>
+                                <line x1="0" y1="150" x2="520" y2="150" class="analytics-gridlines"></line>
+                                @if (! empty($revenueSvg['area']))<polygon points="{{ $revenueSvg['area'] }}" class="analytics-area revenue"></polygon>@endif
+                                @if (! empty($ordersSvg['area']))<polygon points="{{ $ordersSvg['area'] }}" class="analytics-area orders"></polygon>@endif
+                                @if (! empty($revenueSvg['line']))<polyline points="{{ $revenueSvg['line'] }}" class="analytics-line revenue"></polyline>@endif
+                                @if (! empty($ordersSvg['line']))<polyline points="{{ $ordersSvg['line'] }}" class="analytics-line orders"></polyline>@endif
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="analytics-axis">
+                        @forelse ($axisLabels as $row)<span>{{ $row['label'] }}</span>@empty<span>{{ __('No daily labels yet') }}</span>@endforelse
+                    </div>
+                </div>
+                <div class="analytics-secondary-stack">
+                    <div class="analytics-chart-card">
+                        <div class="analytics-title">{{ __('AOV trend') }}</div>
+                        <div class="analytics-subtitle">{{ __('Average basket quality across the selected days.') }}</div>
+                        <div class="analytics-chart-legend mt-3"><span><i class="aov"></i>{{ __('AOV') }}</span></div>
+                        <div class="analytics-svg-wrap"><div class="analytics-svg-frame">
+                            <svg viewBox="0 0 520 180" class="analytics-svg" role="img" aria-label="{{ __('AOV trend chart') }}">
+                                <line x1="0" y1="30" x2="520" y2="30" class="analytics-gridlines"></line>
+                                <line x1="0" y1="90" x2="520" y2="90" class="analytics-gridlines"></line>
+                                <line x1="0" y1="150" x2="520" y2="150" class="analytics-gridlines"></line>
+                                @if (! empty($aovSvg['line']))<polyline points="{{ $aovSvg['line'] }}" class="analytics-line aov"></polyline>@endif
+                            </svg>
+                        </div></div>
+                    </div>
+                    <div class="analytics-pulse-grid">
+                        <div class="analytics-pulse"><div class="analytics-pulse-label">{{ __('Average daily revenue') }}</div><div class="analytics-pulse-value">EGP {{ number_format($averageDailyRevenue, 2) }}</div></div>
+                        <div class="analytics-pulse"><div class="analytics-pulse-label">{{ __('Average daily orders') }}</div><div class="analytics-pulse-value">{{ number_format($averageDailyOrders, 1) }}</div></div>
+                        <div class="analytics-pulse"><div class="analytics-pulse-label">{{ __('Returning buyer share') }}</div><div class="analytics-pulse-value">{{ number_format($returningShare * 100, 1) }}%</div></div>
+                        <div class="analytics-pulse"><div class="analytics-pulse-label">{{ __('Checkout drops') }}</div><div class="analytics-pulse-value">{{ number_format($checkoutDropCount) }}</div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="analytics-compare-funnel" id="funnel">
+            <div class="analytics-panel">
+                <div class="analytics-section-head"><div><div class="analytics-title">{{ __('Period comparison') }}</div><div class="analytics-subtitle">{{ __('Current versus the previous matching period.') }}</div></div></div>
+                <div class="analytics-period-table">
+                    <div class="analytics-period-row header"><div>{{ __('Metric') }}</div><div>{{ __('Current') }}</div><div>{{ __('Previous') }}</div><div>{{ __('Delta') }}</div></div>
+                    @foreach ($periodCompareRows as $row)
+                        <div class="analytics-period-row">
+                            <div><div class="analytics-period-label">{{ $row['label'] }}</div><div class="analytics-period-help">{{ $row['help'] }}</div></div>
+                            <div>{{ $row['current'] }}</div>
+                            <div>{{ $row['previous'] }}</div>
+                            <div class="analytics-period-delta">{{ $row['delta'] }}</div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <div class="analytics-panel">
+                <div class="analytics-section-head"><div><div class="analytics-title">{{ __('Funnel health') }}</div><div class="analytics-subtitle">{{ __('View → cart → checkout → purchase, with direct leakage context.') }}</div></div></div>
+                @foreach ($funnel as $step)
+                    <div class="analytics-funnel-step">
+                        <div class="d-flex justify-content-between align-items-center gap-2"><strong>{{ $step['label'] }}</strong><span>{{ number_format((int) $step['count']) }}</span></div>
+                        <div class="small text-muted mt-1">{{ __('From previous: :rate', ['rate' => number_format(((float) ($step['conversion_from_previous'] ?? 0)) * 100, 1) . '%']) }} · {{ __('Drop-off: :rate', ['rate' => number_format(((float) ($step['drop_off_from_previous'] ?? 0)) * 100, 1) . '%']) }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+
+        <section class="analytics-panel" id="drilldowns">
+            <div class="analytics-section-head">
+                <div><div class="analytics-title">{{ __('Commercial drilldowns') }}</div><div class="analytics-subtitle">{{ __('Open the entities carrying revenue instead of scanning more summary cards.') }}</div></div>
+                <div class="analytics-chip-row">
+                    <span class="analytics-chip">{{ __('Products') }}: {{ number_format($topProducts->count()) }}</span>
+                    <span class="analytics-chip">{{ __('Categories') }}: {{ number_format($topCategories->count()) }}</span>
+                    <span class="analytics-chip">{{ __('Coupons') }}: {{ number_format($couponPerformance->count()) }}</span>
+                </div>
+            </div>
+            <div class="analytics-leader-grid">
+                <div class="analytics-detail-card">
+                    <div class="analytics-title">{{ __('Top products leaderboard') }}</div>
+                    <div class="analytics-subtitle">{{ __('Click a product to continue into its focused performance view.') }}</div>
+                    <div class="analytics-list mt-3">
                         @forelse ($topProducts as $row)
                             <div class="analytics-row">
                                 <div class="flex-fill">
@@ -863,38 +651,35 @@
                                     <div class="text-muted small">{{ number_format((int) data_get($row, 'purchases', 0)) }} {{ __('purchases') }} · {{ __('Qty') }} {{ number_format((int) data_get($row, 'purchased_quantity', 0)) }}</div>
                                     <div class="analytics-bar-track mt-2"><div class="analytics-bar-fill" style="width: {{ min(100, (((float) data_get($row, 'revenue_gross', 0)) / $topProductRevenue) * 100) }}%"></div></div>
                                 </div>
-                                <div class="text-end"><div class="fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div><div class="text-muted small">#{{ $row->product_id }}</div></div>
+                                <div class="text-end fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div>
                             </div>
                         @empty
                             <div class="text-muted">{{ __('No product performance data is available for this range yet.') }}</div>
                         @endforelse
                     </div>
                 </div>
-            </div>
-
-            <div class="analytics-card">
-                <div class="card-body">
-                    <div class="analytics-block-title">{{ __('Category and coupon mix') }}</div>
-                    <div class="analytics-block-subtitle">{{ __('Use this to understand whether performance concentration is broad or narrow.') }}</div>
-                    <div class="analytics-list mb-3">
+                <div class="analytics-detail-card">
+                    <div class="analytics-title">{{ __('Category and coupon mix') }}</div>
+                    <div class="analytics-subtitle">{{ __('A compact concentration view for merchandising and discount quality.') }}</div>
+                    <div class="analytics-list mt-3">
                         @forelse ($topCategories->take(4) as $row)
                             <div class="analytics-row">
                                 <div class="flex-fill">
                                     <div class="fw-bold">{{ $row->category_name ?? __('Uncategorized') }}</div>
                                     <div class="analytics-bar-track mt-2"><div class="analytics-bar-fill soft" style="width: {{ min(100, (((float) data_get($row, 'revenue_gross', 0)) / $topCategoryRevenue) * 100) }}%"></div></div>
                                 </div>
-                                <div class="text-end"><div class="fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div></div>
+                                <div class="text-end fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div>
                             </div>
                         @empty
                             <div class="text-muted">{{ __('No category mix data is available yet.') }}</div>
                         @endforelse
                     </div>
-                    <div class="analytics-block-title">{{ __('Coupon performance') }}</div>
+                    <hr>
                     <div class="analytics-list">
                         @forelse ($couponPerformance->take(4) as $row)
                             <div class="analytics-row">
                                 <div><div class="fw-bold">{{ data_get($row, 'coupon_code', __('No coupon')) }}</div><div class="text-muted small">{{ number_format((int) data_get($row, 'orders_count', 0)) }} {{ __('orders') }}</div></div>
-                                <div class="text-end"><div class="fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div></div>
+                                <div class="text-end fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div>
                             </div>
                         @empty
                             <div class="text-muted">{{ __('No coupon performance records for this range.') }}</div>
@@ -902,41 +687,43 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    @if ($topSessions->isNotEmpty())
-        @if ($uiState['show_watchlist'] ?? false)
-    <div class="analytics-card">
-            <div class="card-body">
-                <div class="analytics-block-title">{{ __('Session watchlist') }}</div>
-                <div class="analytics-block-subtitle">{{ __('High-value sessions that can guide merchandising or retention review.') }}</div>
+        <details class="analytics-more">
+            <summary>{{ __('More diagnostics') }}</summary>
+            <div class="analytics-more-body">
+                <div class="analytics-subtitle mb-2">{{ __('Daily revenue, orders, conversion, and AOV are available here when a deeper operational check is needed.') }}</div>
+                @forelse ($dailyChartRows as $chartRow)
+                    <div class="analytics-daily-row">
+                        <div><div class="fw-bold">{{ $chartRow['label'] }}</div><div class="small text-muted">{{ __('CVR') }} {{ number_format($chartRow['conversion_rate'] * 100, 1) }}%</div></div>
+                        <div class="analytics-daily-bars">
+                            <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width: {{ max(4, $chartRow['revenue_width']) }}%"></div></div>
+                            <div class="analytics-bar-track"><div class="analytics-bar-fill orders" style="width: {{ max(4, $chartRow['orders_width']) }}%"></div></div>
+                            <div class="analytics-bar-track"><div class="analytics-bar-fill aov" style="width: {{ max(4, $chartRow['aov_width']) }}%"></div></div>
+                        </div>
+                        <div class="analytics-daily-meta"><div class="fw-bold">EGP {{ number_format($chartRow['revenue'], 2) }}</div><div class="small text-muted">{{ number_format($chartRow['orders_count']) }} {{ __('orders') }} · {{ __('AOV') }} {{ number_format($chartRow['aov'], 2) }}</div></div>
+                    </div>
+                @empty
+                    <div class="text-muted">{{ __('No analytics data yet for this period.') }}</div>
+                @endforelse
+            </div>
+        </details>
+
+        @if ($topSessions->isNotEmpty() && ($uiState['show_watchlist'] ?? false))
+            <div class="analytics-panel">
+                <div class="analytics-section-head"><div><div class="analytics-title">{{ __('Session watchlist') }}</div><div class="analytics-subtitle">{{ __('High-value sessions for focused retention review.') }}</div></div></div>
                 <div class="analytics-table-wrap">
                     <table class="analytics-table">
-                        <thead>
-                            <tr>
-                                <th>{{ __('Customer') }}</th>
-                                <th>{{ __('Orders') }}</th>
-                                <th>{{ __('Revenue') }}</th>
-                                <th>{{ __('Last order') }}</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>{{ __('Customer') }}</th><th>{{ __('Orders') }}</th><th>{{ __('Revenue') }}</th><th>{{ __('Last order') }}</th></tr></thead>
                         <tbody>
                             @foreach ($topSessions as $session)
-                                <tr>
-                                    <td>{{ data_get($session, 'customer_name', __('Guest')) }}</td>
-                                    <td>{{ number_format((int) data_get($session, 'orders_count', 0)) }}</td>
-                                    <td>EGP {{ number_format((float) data_get($session, 'revenue_gross', 0), 2) }}</td>
-                                    <td>{{ data_get($session, 'last_order_at', '—') }}</td>
-                                </tr>
+                                <tr><td>{{ data_get($session, 'customer_name', __('Guest')) }}</td><td>{{ number_format((int) data_get($session, 'orders_count', 0)) }}</td><td>EGP {{ number_format((float) data_get($session, 'revenue_gross', 0), 2) }}</td><td>{{ data_get($session, 'last_order_at', '—') }}</td></tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
         @endif
-    @endif
     @endif
 </div>
 @endsection
