@@ -283,6 +283,24 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('Secure payment page could not be opened')
             ->assertSee('We could not start the secure payment session.')
             ->assertDontSee('HTTP 401 secret provider response');
+
+        $detail = $this->actingAs($user)->get(route('orders.show', $order));
+
+        $detail
+            ->assertOk()
+            ->assertSee('Secure payment session could not be opened.')
+            ->assertSee('You can try opening the secure payment page again.')
+            ->assertDontSee('HTTP 401 secret provider response')
+            ->assertDontSee('initiation_failed');
+
+        $success = $this->actingAs($user)->get(route('orders.success', $order));
+
+        $success
+            ->assertOk()
+            ->assertSee('Online payment is not completed yet.')
+            ->assertSee('If the payment page does not open, contact support with your order number.')
+            ->assertDontSee('HTTP 401 secret provider response')
+            ->assertDontSee('Latest gateway start issue');
     }
 
     public function test_contact_page_uses_localized_business_hours_fallback(): void
