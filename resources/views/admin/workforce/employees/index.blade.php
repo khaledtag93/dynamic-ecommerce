@@ -12,6 +12,7 @@
         @if(auth()->user()?->hasPermission('workforce.clock'))
             <a href="{{ route('admin.workforce.time-clock') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-clock-check-outline"></i><span>{{ __('My time clock') }}</span></a>
         @endif
+        <a href="{{ route('admin.workforce.schedule.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-calendar-multiselect-outline"></i><span>{{ __('Work schedule') }}</span></a>
         <a href="{{ route('admin.workforce.attendance.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-calendar-clock-outline"></i><span>{{ __('Attendance') }}</span></a>
         @if(auth()->user()?->hasPermission('workforce.manage'))
             <a href="{{ route('admin.workforce.employees.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-account-plus-outline"></i><span>{{ __('Add employee') }}</span></a>
