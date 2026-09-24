@@ -24,6 +24,21 @@ class PosCashierTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_cashier_cannot_open_manager_shift_review_but_operations_manager_can(): void
+    {
+        $cashier = User::factory()->create(['role_as' => 4]);
+        $manager = User::factory()->create(['role_as' => 3]);
+
+        $this->actingAs($cashier)
+            ->get(route('admin.pos.shifts.index'))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->get(route('admin.pos.shifts.index'))
+            ->assertOk()
+            ->assertSee(__('Cash Shift Review'));
+    }
+
     public function test_arabic_pos_validation_does_not_leak_default_english_required_message(): void
     {
         app()->setLocale('ar');
