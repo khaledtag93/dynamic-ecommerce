@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\ProductIdentifierAmbiguityException;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Services\Commerce\InventoryAdjustmentService;
+use App\Services\Commerce\ProductIdentifierService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class InventoryController extends Controller
 {
-    public function __construct(protected InventoryAdjustmentService $adjustmentService) {}
+    public function __construct(
+        protected InventoryAdjustmentService $adjustmentService,
+        protected ProductIdentifierService $identifierService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -64,6 +69,31 @@ class InventoryController extends Controller
             ->pluck('type');
 
         return view('admin.inventory.index', compact('movements', 'lowStockProducts', 'nearExpiryProducts', 'filters', 'movementTypes'));
+    }
+
+    public function scanForm(Request $request)
+    {
+        $data = $request->validate([
+            'barcode' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $barcode = trim((string) ($data['barcode'] ?? ''));
+        $match = null;
+        $lookupError = null;
+
+        if ($barcode !== '') {
+            try {
+                $match = $this->identifierService->resolveBarcode($barcode);
+
+                if ($match) {
+                    $match['product']->loadMissing('variants');
+                }
+            } catch (ProductIdentifierAmbiguityException) {
+                $lookupError = __('This barcode matches multiple catalog records. Resolve the duplicate identifiers before using scanner lookup.');
+            }
+        }
+
+        return view('admin.inventory.scan', compact('barcode', 'match', 'lookupError'));
     }
 
     public function adjustForm(Request $request)

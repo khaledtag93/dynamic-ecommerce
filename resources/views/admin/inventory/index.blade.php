@@ -4,6 +4,7 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Operations')" :title="__('Inventory')" :description="__('Monitor stock movement, low stock alerts, and expiration risks with safer fallbacks.')">
+    <a href="{{ route('admin.inventory.scan') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-barcode-scan"></i><span>{{ __('Scan barcode') }}</span></a>
     <a href="{{ route('admin.inventory.adjust') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-clipboard-edit-outline"></i><span>{{ __('Adjust stock') }}</span></a>
 </x-admin.page-header>
 

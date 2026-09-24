@@ -4,6 +4,7 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Inventory')" :title="__('Adjust stock')" :description="__('Record a counted quantity with a reason. The change will appear in inventory movements.')">
+    <a href="{{ route('admin.inventory.scan') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-barcode-scan"></i><span>{{ __('Scan barcode') }}</span></a>
     <a href="{{ route('admin.inventory.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to inventory') }}</span></a>
 </x-admin.page-header>
 
