@@ -41,6 +41,12 @@ class PosController extends Controller
             ->latest('id')
             ->first();
         $cashShiftSummary = $cashShift ? $this->posCashShiftService->summary($cashShift) : null;
+        $recentCashShifts = PosCashShift::query()
+            ->where('cashier_user_id', $request->user()->id)
+            ->whereNotNull('closed_at')
+            ->latest('closed_at')
+            ->take(5)
+            ->get();
         $customerSearch = trim((string) $request->string('customer_search'));
         $customerResults = collect();
         $productSearch = trim((string) $request->string('product_search'));
@@ -126,6 +132,7 @@ class PosController extends Controller
             'canDiscount',
             'cashShift',
             'cashShiftSummary',
+            'recentCashShifts',
             'customerSearch',
             'customerResults',
             'productSearch',
