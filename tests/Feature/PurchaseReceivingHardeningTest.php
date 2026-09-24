@@ -189,6 +189,10 @@ class PurchaseReceivingHardeningTest extends TestCase
         $category = Category::create([
             'name' => 'Purchase Category '.$token,
             'slug' => 'purchase-category-'.$token,
+            'description' => 'Purchase test category',
+            'meta_title' => 'Purchase test',
+            'meta_keyword' => 'purchase',
+            'meta_description' => 'Purchase test category',
             'status' => false,
         ]);
 
