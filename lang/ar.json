@@ -3701,5 +3701,10 @@
     "Closed shifts": "الورديات المغلقة",
     "Shifts with variance": "ورديات بها فرق",
     "Total shortage": "إجمالي العجز",
-    "Total overage": "إجمالي الزيادة"
+    "Total overage": "إجمالي الزيادة",
+    "Type at least 2 characters. Use arrow keys and Enter to add an item.": "اكتب حرفين على الأقل. استخدم مفاتيح الأسهم وEnter لإضافة الصنف.",
+    "Type at least 2 characters. Use arrow keys and Enter to attach a customer.": "اكتب حرفين على الأقل. استخدم مفاتيح الأسهم وEnter لربط العميل.",
+    "No matching results.": "لا توجد نتائج مطابقة.",
+    "Select": "اختيار",
+    "Choose a variant": "اختر نوع المنتج"
 }
