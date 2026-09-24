@@ -26,6 +26,14 @@
 - The pre-existing roleless-admin Super Admin fallback is still active. This is a **partial authorization fix**; inventory current admins, designate and explicitly assign the owner, then remove the fallback with migration/rollback tests. Other P0 release gates in the audits remain open.
 - The source audit and UI review are dated baselines, and their later implementation states are tracked in the [documentation guide](docs/README.md). Update this section and the ledger for every subsequent batch.
 
+## Deliveries V2 hardening checkpoint — 2026-09-24
+- Delivery mutations now use a row-locked transactional service with an explicit transition matrix for shipping and store-pickup flows.
+- `shipped_at` and `delivered_at` now follow lifecycle rules instead of being rewritten on ordinary metadata saves; out-for-delivery requires prior shipment evidence.
+- Customer database notifications and WhatsApp delivery updates are emitted only when the delivery status actually changes, so metadata-only saves and concurrent replays do not duplicate status messaging.
+- The order delivery editor disables invalid next states, shows shipment/delivery timestamps, and requires in-app confirmation before a real status change. English/Arabic copy and focused regression coverage were added.
+- Detailed scope and QAS checks: [`docs/DELIVERIES_V2_2026-09-24.md`](docs/DELIVERIES_V2_2026-09-24.md).
+- Source implementation is complete for this slice; branch-head CI, authenticated Arabic/English QAS review, and Production promotion remain separate gates. Production is unchanged.
+
 ## Catalog Admin V2 checkpoint — 2026-09-24
 - Catalog administration has expanded beyond Products into Categories, Brands, Attributes, and Attribute Values with operational queues, stronger filters, usage/health metrics, safer destructive actions, and editor workflow improvements.
 - Category editing now enforces unique slugs, image type/size limits, translation-field validation, and protects categories linked to products from deletion.
