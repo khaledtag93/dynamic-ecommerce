@@ -6,7 +6,9 @@
 <section class="py-5 lc-page-shell">
     <div class="container">
         <x-frontend.page-hero :eyebrow="__('Account')" :title="__('Notifications')" :description="__('Keep all payment, delivery, and order updates in one clean account inbox.')" class="mb-4">
-            <form method="POST" action="{{ route('notifications.read-all') }}">@csrf @method('PATCH')<button class="btn lc-btn-soft">{{ __('Mark all as read') }}</button></form>
+            @if(($unreadCount ?? 0) > 0)
+                <form method="POST" action="{{ route('notifications.read-all') }}">@csrf @method('PATCH')<button class="btn lc-btn-soft">{{ __('Mark all as read') }} <span class="ms-1">({{ $unreadCount }})</span></button></form>
+            @endif
         </x-frontend.page-hero>
 
         <div class="lc-grid-shell d-flex flex-column gap-3">
