@@ -163,13 +163,18 @@ public function store(Request $request): RedirectResponse
         return view('frontend.orders.success', compact('order', 'paymentInstructions'));
     }
 
-    public function orders()
+    public function orders(Request $request)
     {
         $orders = Order::query()
             ->withCount('items')
             ->where('user_id', auth()->id())
             ->latest('id')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('frontend.orders._results', compact('orders'));
+        }
 
         return view('frontend.orders.index', compact('orders'));
     }
