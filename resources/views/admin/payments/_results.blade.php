@@ -25,8 +25,12 @@
                 @if($filters['search'] || $filters['status'] || $filters['method'] || $filters['queue'])
                     <span class="admin-chip">{{ __('Filtered results') }}</span>
                 @endif
-                <a href="{{ route('admin.orders.index') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-receipt-text-outline"></i><span>{{ __('Orders') }}</span></a>
-                <a href="{{ route('admin.settings.payments') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-cog-outline"></i><span>{{ __('Settings') }}</span></a>
+                @if(auth()->user()?->hasPermission('orders.view'))
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-receipt-text-outline"></i><span>{{ __('Orders') }}</span></a>
+                @endif
+                @if(auth()->user()?->hasPermission('payments.settings'))
+                    <a href="{{ route('admin.settings.payments') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-cog-outline"></i><span>{{ __('Settings') }}</span></a>
+                @endif
             </div>
         </div>
         <div class="table-responsive">
