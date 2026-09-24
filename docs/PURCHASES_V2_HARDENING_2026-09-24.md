@@ -1,6 +1,6 @@
 # Purchases V2 receipt hardening — 2026-09-24
 
-Working branch: `v42-clean-baseline`. The operator reported a QAS upload after instructions targeting `0a08253` on 2026-09-24. The public login returned HTTP 200; exact server HEAD and authenticated purchase behavior are not yet independently verified. Production is unchanged.
+Working branch: `v42-clean-baseline`. Following the QAS upload, the operator provided server-side `git rev-parse HEAD` output matching `0a08253d61c26f7be841de93c9e5b7ad2d7efdfe` on 2026-09-24. The public login returned HTTP 200. Authenticated purchase behavior has not yet been reviewed. Production is unchanged.
 
 ## Behavior
 
@@ -14,7 +14,7 @@ Working branch: `v42-clean-baseline`. The operator reported a QAS upload after i
 ## Verification
 
 - `PurchaseReceivingHardeningTest` covers repeated receipt, multi-line balances, selected-variant stock, draft/cancelled/empty rejection, all-or-nothing invalid lines, missing/mismatched variants, invalid admin creation and replay feedback.
-- [Hardening CI run 36023870549](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36023870549) passed at code commit `e723b0c`: PHP syntax, clean MySQL migration, Blade compilation, 122 tests (628 assertions), and frontend build. Final documentation head `0a08253` also passed [Hardening CI run 36024229399](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36024229399). Operator-reported QAS upload and public HTTP 200 are recorded; server HEAD and authenticated admin QAS review are pending. Production and `main`: unchanged.
+- [Hardening CI run 36023870549](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36023870549) passed at code commit `e723b0c`: PHP syntax, clean MySQL migration, Blade compilation, 122 tests (628 assertions), and frontend build. Final application head `0a08253` also passed [Hardening CI run 36024229399](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36024229399) and matches the QAS server HEAD supplied by the operator. Authenticated admin QAS review is pending. Production and `main`: unchanged.
 
 ## QAS review focus
 

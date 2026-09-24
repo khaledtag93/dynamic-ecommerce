@@ -16,7 +16,7 @@ Working branch: `v42-clean-baseline`.
 
 - Focused feature tests cover profile/password security, ownership, shipping/billing defaults, checkout prefill and immutable order snapshots.
 - Hardening CI run [36019574401](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36019574401) passed at application commit `05c2c51`: PHP syntax, clean MySQL migration, route boot, Blade compile, 115 tests (579 assertions), and frontend build.
-- The operator reported a QAS upload targeting `a1e8c57` on 2026-09-24 after the rehearsal database snapshot. The public Arabic login returned HTTP 200. Exact server HEAD and authenticated desktop/mobile review in English and Arabic: pending.
+- The operator reported a QAS upload targeting `a1e8c57` on 2026-09-24 after the rehearsal database snapshot. A subsequent Purchases V2 QAS upload was confirmed by user-provided server HEAD `0a08253`, which contains the account code. The public Arabic login returned HTTP 200. Authenticated desktop/mobile review in English and Arabic: pending.
 - Production and `main`: unchanged.
 
 ## QAS focus
