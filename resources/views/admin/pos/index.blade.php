@@ -21,6 +21,11 @@
     .pos-total-row--grand { padding-top: 1rem; margin-top: .35rem; border-top: 1px solid var(--admin-border); font-size: 1.18rem; }
     .pos-entry-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
     .pos-search-result { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .75rem; border: 1px solid var(--admin-border); border-radius: .8rem; }
+    .pos-live-search { position: relative; }
+    .pos-live-results { position: absolute; inset-inline: 0; top: calc(100% + .35rem); z-index: 30; max-height: 360px; overflow-y: auto; padding: .4rem; background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: .9rem; box-shadow: 0 18px 40px rgba(15,23,42,.14); }
+    .pos-live-option { width:100%; display:flex; justify-content:space-between; gap:1rem; align-items:center; padding:.7rem .8rem; border:0; border-radius:.65rem; background:transparent; text-align:start; color:inherit; }
+    .pos-live-option:hover, .pos-live-option.is-active { background: rgba(15,23,42,.055); }
+    .pos-live-option:disabled { opacity:.55; cursor:not-allowed; }
     .pos-shift-history { display:grid; gap:.65rem; }
     .pos-shift-history__row { display:grid; grid-template-columns:minmax(150px,1.2fr) repeat(3,minmax(100px,.65fr)); gap:.75rem; align-items:center; padding:.75rem .9rem; border:1px solid var(--admin-border); border-radius:.85rem; }
     .pos-variance--balanced { color: var(--bs-success); }
@@ -153,13 +158,14 @@
 
                     <details class="mt-3" @if(mb_strlen($productSearch) >= 2) open @endif>
                         <summary class="fw-semibold" style="cursor:pointer"><i class="mdi mdi-magnify me-1"></i>{{ __('Find product manually') }}</summary>
-                        <form method="GET" action="{{ route('admin.pos.index') }}" class="mt-3">
+                        <div class="pos-live-search mt-3" data-pos-live-search data-url="{{ route('admin.pos.lookups.products') }}" data-kind="product">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="mdi mdi-package-variant-closed"></i></span>
-                                <input type="search" name="product_search" value="{{ $productSearch }}" minlength="2" maxlength="255" class="form-control" placeholder="{{ __('Search by product name, SKU, or barcode') }}" autocomplete="off">
-                                <button class="btn btn-light border">{{ __('Search') }}</button>
+                                <input id="posProductSearch" type="search" minlength="2" maxlength="255" class="form-control" placeholder="{{ __('Search by product name, SKU, or barcode') }}" autocomplete="off" aria-autocomplete="list" aria-expanded="false">
                             </div>
-                        </form>
+                            <div class="form-text">{{ __('Type at least 2 characters. Use arrow keys and Enter to add an item.') }}</div>
+                            <div class="pos-live-results d-none" role="listbox"></div>
+                        </div>
                         @if(mb_strlen($productSearch) >= 2)
                             <div class="d-grid gap-2 mt-3">
                                 @forelse($productResults as $result)
@@ -436,25 +442,15 @@
                             </div>
                         @endif
 
-                        <form method="GET" action="{{ route('admin.pos.index') }}" class="mb-2">
+                        <div class="pos-live-search mb-2" data-pos-live-search data-url="{{ route('admin.pos.lookups.customers') }}" data-kind="customer">
                             <label for="posCustomerSearch" class="form-label small fw-semibold">{{ __('Find customer') }}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="mdi mdi-account-search-outline"></i></span>
-                                <input
-                                    id="posCustomerSearch"
-                                    type="search"
-                                    name="customer_search"
-                                    value="{{ $customerSearch }}"
-                                    class="form-control"
-                                    minlength="2"
-                                    maxlength="255"
-                                    placeholder="{{ __('Search by name, email, or phone') }}"
-                                    autocomplete="off"
-                                >
-                                <button class="btn btn-light border">{{ __('Search') }}</button>
+                                <input id="posCustomerSearch" type="search" class="form-control" minlength="2" maxlength="255" placeholder="{{ __('Search by name, email, or phone') }}" autocomplete="off" aria-autocomplete="list" aria-expanded="false">
                             </div>
-                            <div class="form-text">{{ __('Enter at least 2 characters. Matching customer phone numbers from saved addresses are included.') }}</div>
-                        </form>
+                            <div class="form-text">{{ __('Type at least 2 characters. Use arrow keys and Enter to attach a customer.') }}</div>
+                            <div class="pos-live-results d-none" role="listbox"></div>
+                        </div>
 
                         @error('customer')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
 
@@ -665,6 +661,40 @@ document.addEventListener('DOMContentLoaded', function () {
         barcodeInput.focus();
         barcodeInput.select();
     }
+
+    const csrfToken = @json(csrf_token());
+    const addProductUrlTemplate = @json(route('admin.pos.catalog.add', ['posCart' => $cart->id, 'product' => '__PRODUCT__']));
+    const attachCustomerUrlTemplate = @json(route('admin.pos.customer.attach', ['posCart' => $cart->id, 'user' => '__CUSTOMER__']));
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;'}[char]));
+
+    document.querySelectorAll('[data-pos-live-search]').forEach(function (wrap) {
+        const input = wrap.querySelector('input[type="search"]');
+        const panel = wrap.querySelector('.pos-live-results');
+        const kind = wrap.dataset.kind;
+        let timer = null, controller = null, active = -1, results = [];
+        const close = () => { panel.classList.add('d-none'); panel.innerHTML=''; input.setAttribute('aria-expanded','false'); active=-1; };
+        const paintActive = () => panel.querySelectorAll('.pos-live-option').forEach((el,i)=>el.classList.toggle('is-active',i===active));
+        const submitChoice = item => {
+            const form = document.createElement('form'); form.method='POST';
+            form.action = kind === 'product' ? addProductUrlTemplate.replace('__PRODUCT__', item.product_id) : attachCustomerUrlTemplate.replace('__CUSTOMER__', item.id);
+            form.innerHTML = '<input type="hidden" name="_token" value="'+escapeHtml(csrfToken)+'">';
+            if (kind === 'product' && item.variant_id) form.innerHTML += '<input type="hidden" name="variant_id" value="'+Number(item.variant_id)+'">';
+            document.body.appendChild(form); form.submit();
+        };
+        const render = items => {
+            results=items; active=-1;
+            if (!items.length) { panel.innerHTML='<div class="text-muted small p-3">'+@json(__('No matching results.'))+'</div>'; panel.classList.remove('d-none'); input.setAttribute('aria-expanded','true'); return; }
+            panel.innerHTML=items.map((item,i)=>{
+                if(kind==='product') { const disabled=!item.selectable || Number(item.stock)<1; return '<button type="button" class="pos-live-option" data-index="'+i+'" '+(disabled?'disabled':'')+'><span><span class="d-block fw-semibold">'+escapeHtml(item.label)+'</span><span class="text-muted small">'+escapeHtml(item.sku || @json(__('No SKU')))+(item.barcode?' · '+escapeHtml(item.barcode):'')+' · '+@json(__('Stock'))+': '+Number(item.stock)+'</span></span><strong>EGP '+Number(item.price).toFixed(2)+'</strong></button>'; }
+                return '<button type="button" class="pos-live-option" data-index="'+i+'"><span><span class="d-block fw-semibold">'+escapeHtml(item.name)+'</span><span class="text-muted small">'+escapeHtml(item.email)+(item.phone?' · '+escapeHtml(item.phone):'')+'</span></span><span>'+@json(__('Select'))+'</span></button>';
+            }).join('');
+            panel.classList.remove('d-none'); input.setAttribute('aria-expanded','true');
+            panel.querySelectorAll('.pos-live-option:not(:disabled)').forEach(btn=>btn.addEventListener('click',()=>submitChoice(results[Number(btn.dataset.index)])));
+        };
+        input.addEventListener('input', function(){ clearTimeout(timer); const q=input.value.trim(); if(q.length<2){close();return;} timer=setTimeout(async()=>{ if(controller)controller.abort(); controller=new AbortController(); try{const response=await fetch(wrap.dataset.url+'?q='+encodeURIComponent(q),{headers:{'Accept':'application/json'},signal:controller.signal}); if(!response.ok)return; const data=await response.json(); render(data.results||[]);}catch(e){if(e.name!=='AbortError')close();}},250); });
+        input.addEventListener('keydown', function(e){ const buttons=[...panel.querySelectorAll('.pos-live-option:not(:disabled)')]; if(e.key==='Escape'){close();return;} if(panel.classList.contains('d-none')||!buttons.length)return; if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault(); active=e.key==='ArrowDown'?Math.min(active+1,buttons.length-1):Math.max(active-1,0); paintActive(); buttons[active]?.scrollIntoView({block:'nearest'});} else if(e.key==='Enter'&&active>=0){e.preventDefault(); buttons[active]?.click();} });
+        document.addEventListener('click', e=>{ if(!wrap.contains(e.target))close(); });
+    });
 });
 </script>
 @endsection
