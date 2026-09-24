@@ -400,3 +400,27 @@ See `docs/BARCODE_LABEL_PRINTING_V1_2026-09-24.md`.
 - Manual receiving remains available as a protected fallback.
 - Hardening CI 36038635115 passed at application head 0a2ceb9 with 163 tests (889 assertions) plus frontend production build.
 - QAS remains on 0a08253; consolidated authenticated review is deferred. Production and main are unchanged.
+
+
+### POS / Cashier Foundation V1 — 2026-09-24
+Application implementation verified at `ef9797d`:
+- dedicated `pos.manage` permission and Cashier system role
+- persistent per-cashier POS cart
+- exact barcode scan for simple products and variants
+- stock-capped quantity changes with stale-write protection
+- Cash and Card Terminal checkout
+- server-side locked price/cost/stock recheck
+- canonical POS Order, Order Items, paid Payment, Inventory Movements, profit snapshot and cashier audit entry
+- completed-cart replay safety
+- cashier-owned Sale Summary and recent-sales access
+- EN/AR UI and POS regression coverage
+
+Verification:
+- Hardening CI `36041425089`: passed
+- 173 tests / 969 assertions
+- clean MySQL migration, Laravel routes/boot, Blade/config compilation and frontend production build passed
+- consolidated authenticated QAS: deferred by owner
+- QAS application HEAD: `0a08253`
+- Production and `main`: unchanged
+
+Next intended POS slice: formal Receipt / Invoice V1 on top of the verified sale ledger.

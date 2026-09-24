@@ -102,6 +102,16 @@
 - English/Arabic account and address-book copy, compact navigation, in-app deletion confirmation, and focused ownership/profile/default/checkout regression tests were added. See `docs/CUSTOMER_ACCOUNT_ADDRESS_BOOK_2026-09-24.md`.
 - Hardening CI run `36019574401` passed at application commit `05c2c51`: PHP syntax, clean MySQL migration, Blade compile, 115 tests (579 assertions), and frontend build. Authenticated English/Arabic desktop/mobile QAS remains pending. `main` and Production are unchanged.
 
+## POS / Cashier Foundation V1 checkpoint — 2026-09-24
+- Back office now has a dedicated `pos.manage` permission and system Cashier role, plus a persistent database-backed POS cart per cashier.
+- POS is scan-first: exact product/variant barcodes feed the cashier cart one unit at a time, with active-item checks, stock caps, stale quantity protection, remove/clear actions and no stock mutation before checkout.
+- Cash and Card Terminal are dedicated POS payment methods and are not exposed through storefront payment options.
+- Final checkout locks and rechecks the cashier cart, cart items, products and variants, recalculates current price/cost, creates a canonical completed POS Order and paid Payment, deducts inventory, captures profit, closes the cart and writes an admin audit entry in one transaction.
+- POS orders use `sales_channel=pos`; fake customer email/address data is not generated. Completed-cart replay cannot duplicate the sale/payment/inventory deduction.
+- Sale Summary access is cashier-owned unless broader order-view permission exists. Formal receipt/invoice printing is intentionally deferred to the next slice.
+- [Hardening CI 36041425089](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36041425089) passed at application head `ef9797d` with **173 tests (969 assertions)** plus frontend production build.
+- QAS remains on `0a08253`; Production and `main` are unchanged. See `docs/POS_CASHIER_FOUNDATION_V1_2026-09-24.md`.
+
 ## Purchase Barcode Receiving V1 checkpoint — 2026-09-24
 - Ordered purchases now support persistent per-line barcode verification. Each accepted scan counts one physical unit without changing inventory.
 - Exact simple/variant identity uses the shared barcode resolver; parent variant-product barcodes, unknown/out-of-purchase items, and ambiguous identifiers are rejected.
