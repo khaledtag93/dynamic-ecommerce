@@ -97,7 +97,7 @@
 
 @section('content')
 <style>
-.analytics-shell{display:grid;gap:20px}.analytics-card,.analytics-mini,.offers-hero,.offers-trend-card,.offers-chart-card{background:#fff;border:1px solid rgba(15,23,42,.06);border-radius:22px;box-shadow:0 18px 45px rgba(15,23,42,.06)}.analytics-card .card-body,.offers-hero,.offers-trend-card,.offers-chart-card{padding:22px}.analytics-table{width:100%;border-collapse:collapse}.analytics-table th,.analytics-table td{padding:12px 10px;border-bottom:1px solid rgba(15,23,42,.06)}.analytics-table th{font-size:.84rem;color:#64748b;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}.analytics-mini{padding:16px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,.05);height:100%}.offers-hero{background:linear-gradient(135deg,#fff7ed,#ffffff);display:grid;gap:16px}.offers-hero-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.offers-hero-item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.85);border:1px solid rgba(249,115,22,.12)}.offers-anchor-nav{display:flex;gap:10px;flex-wrap:wrap}.offers-anchor{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid rgba(15,23,42,.08);font-weight:700;color:#334155;text-decoration:none}.offers-trend-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.offers-kicker{font-size:.84rem;color:#64748b;font-weight:700}.offers-value{font-size:1.55rem;font-weight:800;color:#0f172a;margin-top:6px}.offers-help{font-size:.82rem;color:#64748b;margin-top:6px}.offers-list{display:grid;gap:14px}.offers-row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid rgba(15,23,42,.06)}.offers-row:last-child{border-bottom:none}.offers-bar{height:10px;border-radius:999px;background:#eef2f7;overflow:hidden;margin-top:8px}.offers-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#f97316,#fb923c)}.offers-storyboard{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.offers-story-card{padding:20px;border-radius:22px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 20px 45px rgba(15,23,42,.16)}.offers-story-card .eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)}.offers-story-card .headline{font-size:1.55rem;font-weight:800;margin-top:8px;line-height:1.35}.offers-story-card .subcopy{font-size:.92rem;line-height:1.8;color:rgba(255,255,255,.82);margin-top:10px}.offers-story-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.offers-story-tile{padding:14px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}.offers-lane-card{padding:20px;border-radius:22px;border:1px solid rgba(15,23,42,.06);background:#fff;box-shadow:0 18px 45px rgba(15,23,42,.05)}.offers-lane-list{display:grid;gap:12px}.offers-lane-item{padding:14px 16px;border-radius:16px;background:#f8fafc;border:1px solid rgba(15,23,42,.05)}.offers-lane-item .lane-label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#64748b}.offers-lane-item .lane-value{font-size:1rem;font-weight:800;color:#0f172a;margin-top:5px}.offers-spark-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.offers-spark-card{padding:16px;border-radius:20px;background:#fff;border:1px solid rgba(15,23,42,.06);box-shadow:0 16px 35px rgba(15,23,42,.05)}.offers-chart-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:16px;align-items:start}.offers-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}.offers-chart-legend span{display:inline-flex;align-items:center;gap:8px;color:#64748b;font-size:.83rem}.offers-chart-legend i{display:inline-block;width:12px;height:12px;border-radius:999px}.offers-chart-legend .rev{background:#f97316}.offers-chart-legend .ord{background:#94a3b8}.offers-svg-wrap{position:relative;width:100%;overflow-x:auto;overflow-y:hidden}.offers-svg-frame{min-width:520px;width:100%}.offers-svg{width:100%;height:220px;display:block}.offers-chart-grid>*{min-width:0}.offers-gridline{stroke:rgba(148,163,184,.25);stroke-width:1}.offers-axis{display:flex;justify-content:space-between;gap:8px;margin-top:8px;color:#64748b;font-size:.78rem;overflow-x:auto;padding-bottom:2px}.offers-axis span{flex:0 0 auto;min-width:60px;text-align:center}.offers-detail-stack{display:grid;gap:12px}@media (max-width: 1400px){.offers-chart-grid{grid-template-columns:1fr}.offers-detail-stack{grid-template-columns:repeat(2,minmax(0,1fr));display:grid}}@media (max-width: 1200px){.offers-trend-grid,.offers-spark-grid,.offers-story-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.offers-storyboard,.offers-chart-grid,.offers-detail-stack{grid-template-columns:1fr}}@media (max-width: 768px){.offers-trend-grid,.offers-spark-grid,.offers-story-grid{grid-template-columns:1fr}}
+.analytics-shell{display:grid;gap:20px}.analytics-card,.analytics-mini,.offers-hero,.offers-trend-card,.offers-chart-card{background:#fff;border:1px solid rgba(15,23,42,.06);border-radius:22px;box-shadow:0 18px 45px rgba(15,23,42,.06)}.analytics-card .card-body,.offers-hero,.offers-trend-card,.offers-chart-card{padding:22px}.analytics-table{width:100%;border-collapse:collapse}.analytics-table th,.analytics-table td{padding:12px 10px;border-bottom:1px solid rgba(15,23,42,.06)}.analytics-table th{font-size:.84rem;color:#64748b;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}.analytics-mini{padding:16px;border-radius:18px;background:#f8fafc;border:1px solid rgba(15,23,42,.05);height:100%}.offers-hero{background:linear-gradient(135deg,color-mix(in srgb,var(--admin-primary) 8%,var(--admin-surface)),#ffffff);display:grid;gap:16px}.offers-hero-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.offers-hero-item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.85);border:1px solid rgba(249,115,22,.12)}.offers-anchor-nav{display:flex;gap:10px;flex-wrap:wrap}.offers-anchor{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid rgba(15,23,42,.08);font-weight:700;color:#334155;text-decoration:none}.offers-trend-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.offers-kicker{font-size:.84rem;color:#64748b;font-weight:700}.offers-value{font-size:1.55rem;font-weight:800;color:#0f172a;margin-top:6px}.offers-help{font-size:.82rem;color:#64748b;margin-top:6px}.offers-list{display:grid;gap:14px}.offers-row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid rgba(15,23,42,.06)}.offers-row:last-child{border-bottom:none}.offers-bar{height:10px;border-radius:999px;background:#eef2f7;overflow:hidden;margin-top:8px}.offers-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--admin-primary),var(--admin-primary-dark))}.offers-storyboard{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.offers-story-card{padding:20px;border-radius:22px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 20px 45px rgba(15,23,42,.16)}.offers-story-card .eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)}.offers-story-card .headline{font-size:1.55rem;font-weight:800;margin-top:8px;line-height:1.35}.offers-story-card .subcopy{font-size:.92rem;line-height:1.8;color:rgba(255,255,255,.82);margin-top:10px}.offers-story-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.offers-story-tile{padding:14px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}.offers-lane-card{padding:20px;border-radius:22px;border:1px solid rgba(15,23,42,.06);background:#fff;box-shadow:0 18px 45px rgba(15,23,42,.05)}.offers-lane-list{display:grid;gap:12px}.offers-lane-item{padding:14px 16px;border-radius:16px;background:#f8fafc;border:1px solid rgba(15,23,42,.05)}.offers-lane-item .lane-label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#64748b}.offers-lane-item .lane-value{font-size:1rem;font-weight:800;color:#0f172a;margin-top:5px}.offers-spark-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.offers-spark-card{padding:16px;border-radius:20px;background:#fff;border:1px solid rgba(15,23,42,.06);box-shadow:0 16px 35px rgba(15,23,42,.05)}.offers-chart-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:16px;align-items:start}.offers-chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}.offers-chart-legend span{display:inline-flex;align-items:center;gap:8px;color:#64748b;font-size:.83rem}.offers-chart-legend i{display:inline-block;width:12px;height:12px;border-radius:999px}.offers-chart-legend .rev{background:var(--admin-primary)}.offers-chart-legend .ord{background:var(--admin-muted)}.offers-svg-wrap{position:relative;width:100%;overflow-x:auto;overflow-y:hidden}.offers-svg-frame{min-width:520px;width:100%}.offers-svg{width:100%;height:220px;display:block}.offers-chart-grid>*{min-width:0}.offers-gridline{stroke:rgba(148,163,184,.25);stroke-width:1}.offers-axis{display:flex;justify-content:space-between;gap:8px;margin-top:8px;color:#64748b;font-size:.78rem;overflow-x:auto;padding-bottom:2px}.offers-axis span{flex:0 0 auto;min-width:60px;text-align:center}.offers-detail-stack{display:grid;gap:12px}@media (max-width: 1400px){.offers-chart-grid{grid-template-columns:1fr}.offers-detail-stack{grid-template-columns:repeat(2,minmax(0,1fr));display:grid}}@media (max-width: 1200px){.offers-trend-grid,.offers-spark-grid,.offers-story-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.offers-storyboard,.offers-chart-grid,.offers-detail-stack{grid-template-columns:1fr}}@media (max-width: 768px){.offers-trend-grid,.offers-spark-grid,.offers-story-grid{grid-template-columns:1fr}}
 </style>
 <x-admin.page-header
     :kicker="__('Revenue intelligence')"
@@ -110,7 +110,7 @@
     ]"
 >
     <span class="admin-topbar-chip">{{ __('Selected range') }}: {{ $from->format('Y-m-d') }} → {{ $to->format('Y-m-d') }}</span>
-    <a href="{{ route('admin.analytics.index', ['range' => $range, 'from_date' => request('from_date'), 'to_date' => request('to_date')]) }}" class="btn btn-outline-dark">{{ __('Back to dashboard') }}</a>
+    <a href="{{ route('admin.analytics.index', ['range' => $range, 'from_date' => request('from_date'), 'to_date' => request('to_date')]) }}" class="btn btn-light border">{{ __('Back to dashboard') }}</a>
 </x-admin.page-header>
 
 @include('admin.analytics._nav')
@@ -118,7 +118,7 @@
 
 @include('admin.analytics._report_toolbar', [
     'title' => __('Offers drilldown'),
-    'subtitle' => __('Promotion efficiency wording is now cleaner for admins, with a concise export summary and print-safe review block.'),
+    'subtitle' => __('A concise promotion-efficiency summary for the selected period.'),
     'period' => $from->format('Y-m-d') . ' → ' . $to->format('Y-m-d'),
     'reportId' => 'offers-report',
     'exportRows' => $exportRows,
@@ -131,21 +131,9 @@
         <a href="#offers-posture" class="offers-anchor">{{ __('Promotion posture') }}</a>
     </div>
 
-    <div class="offers-hero">
-        <div>
-            <div class="fw-bold fs-5">{{ __('Offer performance summary') }}</div>
-            <div class="text-muted small mt-1">{{ __('Understand whether discounts are creating efficient revenue or simply increasing promotional pressure.') }}</div>
-        </div>
-        <ul class="offers-hero-list">
-            <li class="offers-hero-item">{{ $bestCoupon ? __('Top revenue coupon is :code, generating :revenue across :orders orders.', ['code' => $bestCoupon->coupon_code, 'revenue' => 'EGP ' . number_format((float) $bestCoupon->revenue_gross, 2), 'orders' => number_format((int) $bestCoupon->orders_count)]) : __('No coupon-driven revenue has been recorded in this range yet.') }}</li>
-            <li class="offers-hero-item">{{ $heaviestDiscountCoupon ? __('Highest discount burden is currently on :code with :value discounted.', ['code' => $heaviestDiscountCoupon->coupon_code, 'value' => 'EGP ' . number_format((float) $heaviestDiscountCoupon->discount_total, 2)]) : __('No discount burden insight is available yet.') }}</li>
-            <li class="offers-hero-item">{{ __('Effective discount rate across discounted orders is :rate, while :count active promotions are currently configured.', ['rate' => number_format($effectiveDiscountRate * 100, 1) . '%', 'count' => number_format($unusedPromotions)]) }}</li>
-        </ul>
-    </div>
-
     <div class="offers-storyboard">
         <div class="offers-story-card">
-            <div class="eyebrow">{{ __('Offer storytelling') }}</div>
+            <div class="eyebrow">{{ __('Offer focus') }}</div>
             <div class="headline">{{ __('Promotions are currently :mode across :period.', ['mode' => $effectiveDiscountRate <= 0.12 ? __('supporting margin-aware growth') : __('putting pressure on margin quality'), 'period' => $from->format('Y-m-d') . ' → ' . $to->format('Y-m-d')]) }}</div>
             <div class="subcopy">{{ $promoNarrative }}</div>
             <div class="offers-story-grid">
@@ -168,27 +156,11 @@
         </div>
     </div>
 
-    <div class="offers-spark-grid" id="offers-operator-summary">
-        @foreach ($offerOperatorReads as $item)
-            <div class="offers-spark-card">
-                <div class="small text-muted">{{ $item['label'] }}</div>
-                <div class="fw-bold fs-5 mt-1">{{ $item['value'] }}</div>
-                <div class="text-muted small mt-2">{{ $item['help'] }}</div>
-            </div>
-        @endforeach
-    </div>
-
-    <div class="offers-spark-grid">
-        <div class="offers-spark-card"><div class="small text-muted">{{ __('Top revenue coupon') }}</div><div class="fw-bold fs-5 mt-1">{{ $bestCoupon?->coupon_code ?? '—' }}</div></div>
-        <div class="offers-spark-card"><div class="small text-muted">{{ __('Highest discount burden') }}</div><div class="fw-bold fs-5 mt-1">{{ $heaviestDiscountCoupon?->coupon_code ?? '—' }}</div></div>
-        <div class="offers-spark-card"><div class="small text-muted">{{ __('Active promotions') }}</div><div class="fw-bold fs-5 mt-1">{{ number_format($activePromotions->count()) }}</div></div>
-    </div>
-
     <div class="offers-trend-grid">
-        <div class="offers-trend-card"><div class="offers-kicker">{{ __('Discounted orders') }}</div><div class="offers-value">{{ number_format($discountedOrdersCount) }}</div><div class="offers-help">{{ __('Orders influenced by coupon or discount logic in this window.') }}</div></div>
-        <div class="offers-trend-card"><div class="offers-kicker">{{ __('Discount value') }}</div><div class="offers-value">EGP {{ number_format($discountTotal, 2) }}</div><div class="offers-help">{{ __('Total promotional cost absorbed across discounted orders.') }}</div></div>
-        <div class="offers-trend-card"><div class="offers-kicker">{{ __('Discounted revenue') }}</div><div class="offers-value">EGP {{ number_format($discountRevenue, 2) }}</div><div class="offers-help">{{ __('Revenue created while a discount was present.') }}</div></div>
-        <div class="offers-trend-card"><div class="offers-kicker">{{ __('Effective discount rate') }}</div><div class="offers-value">{{ number_format($effectiveDiscountRate * 100, 1) }}%</div><div class="offers-help">{{ __('Discount total divided by discounted-order revenue.') }}</div></div>
+        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Discounted orders') }}</div><div class="offers-value">{{ number_format($discountedOrdersCount) }}</div><div class="offers-help">{{ __('Orders influenced by coupon or discount logic in this window.') }}</div></div>
+        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Discount value') }}</div><div class="offers-value">EGP {{ number_format($discountTotal, 2) }}</div><div class="offers-help">{{ __('Total promotional cost absorbed across discounted orders.') }}</div></div>
+        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Discounted revenue') }}</div><div class="offers-value">EGP {{ number_format($discountRevenue, 2) }}</div><div class="offers-help">{{ __('Revenue created while a discount was present.') }}</div></div>
+        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Effective discount rate') }}</div><div class="offers-value">{{ number_format($effectiveDiscountRate * 100, 1) }}%</div><div class="offers-help">{{ __('Discount total divided by discounted-order revenue.') }}</div></div>
     </div>
 
     <div class="offers-chart-grid" id="offers-chart-suite">
@@ -209,8 +181,8 @@
                         $revenueHeight = min(140, (((float) $row->revenue_gross) / $couponMaxRevenue) * 140);
                         $ordersHeight = min(140, (((int) $row->orders_count) / $couponMaxOrders) * 140);
                     @endphp
-                    <rect x="{{ $x }}" y="{{ 180 - $revenueHeight }}" width="28" height="{{ $revenueHeight }}" rx="8" fill="#f97316"></rect>
-                    <rect x="{{ $x + 34 }}" y="{{ 180 - $ordersHeight }}" width="18" height="{{ $ordersHeight }}" rx="8" fill="#94a3b8"></rect>
+                    <rect x="{{ $x }}" y="{{ 180 - $revenueHeight }}" width="28" height="{{ $revenueHeight }}" rx="8" fill="var(--admin-primary)"></rect>
+                    <rect x="{{ $x + 34 }}" y="{{ 180 - $ordersHeight }}" width="18" height="{{ $ordersHeight }}" rx="8" fill="var(--admin-muted)"></rect>
                 @endforeach
             </svg></div></div>
             <div class="offers-axis">
