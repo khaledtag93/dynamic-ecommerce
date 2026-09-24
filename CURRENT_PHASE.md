@@ -513,6 +513,14 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - Two focused feature tests passed locally (29 assertions) in the separate SQLite compatibility test worktree. All compiled Blade templates passed PHP lint, along with changed PHP files, JavaScript syntax and `git diff --check` in the application checkout. Integrated MySQL CI passed at `19a4b8c` in run `36059356857` (197 tests / 1248 assertions).
 - Explicit owner approval superseded the earlier automatic publication block. The GitHub connection recreated the two local source trees exactly as `bb10f96` and `19a4b8c`; the final source tree is identical to local `f69d5cb`. QAS was last confirmed at `0a08253`; `main` and Production are unchanged, and consolidated manual QAS review stays deferred.
 
+### QAS Workforce migration recovery — 2026-09-25
+- QAS deployment from prior server head `b2053634` toward branch head `f699e7be` reached Laravel migrations and failed on `2026_09_25_000200_create_employee_attendance_sessions_table`.
+- Root cause: MySQL's 64-character identifier limit rejected Laravel's generated composite index name `employee_attendance_sessions_employee_profile_id_clock_out_at_index`.
+- The migration source now uses explicit short index names: `emp_attendance_open_idx` and `emp_attendance_clock_in_idx` in commit `f4dcf32e`.
+- `deploy-qas.sh` is now tracked executable in commit `8272f14c`, so normal `./deploy-qas.sh` invocation will work after reset/fetch.
+- Because MySQL DDL can leave a newly created table behind when a later index statement fails, QAS must verify whether `employee_attendance_sessions` exists and is empty before dropping only that partial table and rerunning migrations.
+- Production is unchanged. This was a QAS-only deployment interruption.
+
 ### Workforce Shift Scheduling V1 — 2026-09-25
 - Application source checkpoint `ff423286` adds real employee work shifts through `employee_work_shifts`; work scheduling remains separate from attendance sessions and POS cash drawer shifts.
 - Shift lifecycle: Draft / Published / Cancelled. Cancelled shifts are retained historically instead of deleted.
