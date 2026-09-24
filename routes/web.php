@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\AttendanceCorrectionController;
 use App\Http\Controllers\Admin\LeaveController;
 use App\Http\Controllers\Admin\LeaveTypeController;
+use App\Http\Controllers\Admin\CompensationController;
+use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\WorkShiftController;
 use App\Http\Controllers\Admin\DeployCenterController;
 use App\Http\Controllers\Admin\AnalyticsController;
@@ -437,6 +439,11 @@ Route::prefix('admin')
             Route::patch('/workforce/my-leave/{employeeLeaveRequest}/cancel', 'cancelLeave')->name('workforce.leave.cancel');
         });
 
+        Route::middleware('permission:workforce.payroll.self')->controller(PayrollController::class)->group(function () {
+            Route::get('/workforce/my-payslips', 'myPayslips')->name('workforce.payroll.my-payslips');
+            Route::get('/workforce/my-payslips/{payrollEntry}', 'myPayslip')->name('workforce.payroll.my-payslip');
+        });
+
         Route::middleware('permission:workforce.view')->group(function () {
             Route::get('/workforce/employees', [EmployeeController::class, 'index'])->name('workforce.employees.index');
             Route::get('/workforce/attendance', [AttendanceController::class, 'index'])->name('workforce.attendance.index');
@@ -444,6 +451,13 @@ Route::prefix('admin')
             Route::get('/workforce/corrections', [AttendanceCorrectionController::class, 'index'])->name('workforce.corrections.index');
             Route::get('/workforce/leave', [LeaveController::class, 'index'])->name('workforce.leave.index');
             Route::get('/workforce/leave-types', [LeaveTypeController::class, 'index'])->name('workforce.leave-types.index');
+        });
+
+        Route::middleware('permission:workforce.payroll.view')->group(function () {
+            Route::get('/workforce/payroll', [PayrollController::class, 'index'])->name('workforce.payroll.index');
+            Route::get('/workforce/payroll/runs/{payrollRun}', [PayrollController::class, 'showRun'])->name('workforce.payroll.runs.show');
+            Route::get('/workforce/payroll/entries/{payrollEntry}', [PayrollController::class, 'showEntry'])->name('workforce.payroll.entries.show');
+            Route::get('/workforce/payroll/compensation', [CompensationController::class, 'index'])->name('workforce.payroll.compensation.index');
         });
 
         Route::middleware('permission:workforce.manage')->controller(EmployeeController::class)->group(function () {
@@ -478,6 +492,18 @@ Route::prefix('admin')
             Route::post('/workforce/leave-types', 'store')->name('workforce.leave-types.store');
             Route::get('/workforce/leave-types/{employeeLeaveType}/edit', 'edit')->name('workforce.leave-types.edit');
             Route::put('/workforce/leave-types/{employeeLeaveType}', 'update')->name('workforce.leave-types.update');
+        });
+
+        Route::middleware('permission:workforce.payroll.manage')->group(function () {
+            Route::post('/workforce/payroll/periods', [PayrollController::class, 'storePeriod'])->name('workforce.payroll.periods.store');
+            Route::post('/workforce/payroll/periods/{payrollPeriod}/generate', [PayrollController::class, 'generate'])->name('workforce.payroll.periods.generate');
+            Route::post('/workforce/payroll/entries/{payrollEntry}/adjustments', [PayrollController::class, 'addAdjustment'])->name('workforce.payroll.adjustments.store');
+            Route::delete('/workforce/payroll/adjustments/{payrollAdjustment}', [PayrollController::class, 'removeAdjustment'])->name('workforce.payroll.adjustments.destroy');
+            Route::patch('/workforce/payroll/runs/{payrollRun}/approve', [PayrollController::class, 'approve'])->name('workforce.payroll.runs.approve');
+            Route::patch('/workforce/payroll/runs/{payrollRun}/paid', [PayrollController::class, 'markPaid'])->name('workforce.payroll.runs.paid');
+
+            Route::get('/workforce/payroll/compensation/{employeeProfile}/edit', [CompensationController::class, 'edit'])->name('workforce.payroll.compensation.edit');
+            Route::put('/workforce/payroll/compensation/{employeeProfile}', [CompensationController::class, 'update'])->name('workforce.payroll.compensation.update');
         });
 
         Route::middleware('permission:notifications.view')->group(function () {
