@@ -24,6 +24,17 @@ class PosCashierTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_arabic_pos_validation_does_not_leak_default_english_required_message(): void
+    {
+        app()->setLocale('ar');
+        $admin = User::factory()->create(['role_as' => 1]);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => ''])
+            ->assertSessionHasErrors(['barcode' => 'حقل الباركود مطلوب.']);
+    }
+
     public function test_cashier_role_can_use_pos_without_broader_order_management_access(): void
     {
         app(AuthorizationService::class)->syncDefaults();
