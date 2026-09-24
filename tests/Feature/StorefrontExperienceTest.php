@@ -303,7 +303,10 @@ class StorefrontExperienceTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('.quick-view-image{object-fit:contain;', false)
-            ->assertDontSee('.quick-view-image{object-fit:cover;', false);
+            ->assertDontSee('.quick-view-image{object-fit:cover;', false)
+            ->assertSee('<strong>0</strong>', false)
+            ->assertSee('Products found')
+            ->assertDontSee('0 products found');
     }
 
     public function test_notifications_hide_mark_all_when_inbox_has_no_unread_items(): void
@@ -378,6 +381,40 @@ class StorefrontExperienceTest extends TestCase
         $this->assertSame('', $settings['legal_terms_body']);
         $this->assertSame('', $settings['legal_refund_body']);
         $this->assertSame('', $settings['legal_shipping_body']);
+    }
+
+    public function test_shared_product_card_uses_defined_storefront_theme_tokens(): void
+    {
+        $category = Category::query()->create([
+            'name' => 'Theme Card Category',
+            'slug' => 'theme-card-category-' . Str::lower(Str::random(6)),
+            'description' => 'Theme card category',
+            'meta_title' => 'Theme Card Category',
+            'meta_keyword' => 'theme',
+            'meta_description' => 'Theme card category',
+            'status' => 0,
+        ]);
+
+        Product::query()->create([
+            'name' => 'Theme Card Product',
+            'slug' => 'theme-card-product-' . Str::lower(Str::random(6)),
+            'category_id' => $category->id,
+            'description' => 'Theme-aware product card',
+            'base_price' => 250,
+            'quantity' => 3,
+            'status' => true,
+            'has_variants' => false,
+        ]);
+
+        $response = $this->get(route('category.products', $category->id));
+
+        $response
+            ->assertOk()
+            ->assertSee('var(--lc-surface)', false)
+            ->assertSee('var(--lc-btn-text)', false)
+            ->assertDontSee('--lc-success-bg', false)
+            ->assertDontSee('--lc-success-text', false)
+            ->assertDontSee('--lc-button-text', false);
     }
 
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
