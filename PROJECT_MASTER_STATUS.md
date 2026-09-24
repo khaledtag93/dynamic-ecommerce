@@ -121,7 +121,7 @@
 - A dependency-free Code 128B service generates checksum-correct inline SVG barcodes from existing printable-ASCII identifiers; missing/unsupported identifiers remain non-printable instead of being rewritten.
 - Label controls support 1–100 copies, 50 × 30 / 60 × 40 / 70 × 40 mm sizes, optional price display and browser print CSS that hides admin chrome.
 - Unit/feature coverage validates encoding, checksum, SVG geometry, variant ownership, copy count and safe error states. See `docs/BARCODE_LABEL_PRINTING_V1_2026-09-24.md`.
-- No catalog or stock mutation is introduced by label printing. Branch-head CI is pending. QAS remains on `0a08253`; Production and `main` are unchanged.
+- No catalog or stock mutation is introduced by label printing. [Hardening CI 36037456794](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36037456794) passed at application head `83d5ee6` with 156 tests (826 assertions) and the frontend production build. QAS remains on `0a08253`; Production and `main` are unchanged.
 
 ## Barcode Scan-to-Find V1 checkpoint — 2026-09-24
 - Inventory now has a dedicated scanner workspace that accepts HID keyboard-mode barcode input and uses the shared exact barcode resolver rather than fuzzy search.

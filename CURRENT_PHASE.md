@@ -382,7 +382,7 @@ Source implementation on `v42-clean-baseline` now:
 - adds EN/AR copy, Code 128 unit tests, label workflow feature tests and implementation notes
 
 Verification state:
-- branch-head CI: pending
+- Hardening CI `36037456794`: passed at application head `83d5ee6` with 156 tests (826 assertions) plus frontend production build
 - physical print/rescan QAS review: deferred to consolidated owner review
 - QAS application HEAD: still `0a08253`
 - Production and `main`: unchanged

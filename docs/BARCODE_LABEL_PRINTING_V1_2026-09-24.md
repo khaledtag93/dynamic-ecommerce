@@ -42,6 +42,8 @@ Focused coverage verifies:
 8. Variant barcode/SKU/price output.
 9. Missing/unsupported barcode safe state.
 
+Hardening CI run `36037456794` passed at application head `83d5ee6`: PHP syntax, Bash syntax, clean MySQL migration, Laravel boot/routes, config + Blade compilation, **156 tests (826 assertions)**, and frontend production build. Both `Code128BarcodeServiceTest` and `InventoryBarcodeLabelTest` passed in the integrated suite.
+
 ## Consolidated QAS checks
 
 1. Print 50 × 30, 60 × 40 and 70 × 40 labels at 100% / Actual size.
