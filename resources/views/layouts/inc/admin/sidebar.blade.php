@@ -248,7 +248,7 @@
     </details>
     @endif
 
-    @if($can('workforce.view') || $can('workforce.clock') || $can('notifications.view') || $can('permissions.manage'))
+    @if($can('workforce.view') || $can('workforce.clock') || $can('workforce.payroll.self') || $can('workforce.payroll.view') || $can('notifications.view') || $can('permissions.manage'))
     <details class="sidebar-group sidebar-group-last" {{ $teamOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
@@ -278,6 +278,14 @@
                     <a class="nav-link" href="{{ route('admin.workforce.leave.index') }}"><i class="mdi mdi-calendar-check-outline menu-icon"></i><span class="menu-title">{{ __('Leave review') }}</span></a>
                 </li>
                 @endif
+                @if($can('workforce.payroll.view'))
+                <li class="nav-item {{ $isRoute('admin.workforce.payroll.index', 'admin.workforce.payroll.runs.*', 'admin.workforce.payroll.entries.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.payroll.index') }}"><i class="mdi mdi-cash-multiple menu-icon"></i><span class="menu-title">{{ __('Payroll') }}</span></a>
+                </li>
+                <li class="nav-item {{ $isRoute('admin.workforce.payroll.compensation.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.payroll.compensation.index') }}"><i class="mdi mdi-account-cash-outline menu-icon"></i><span class="menu-title">{{ __('Compensation') }}</span></a>
+                </li>
+                @endif
                 @if($can('workforce.clock'))
                 <li class="nav-item {{ $isRoute('admin.workforce.my-schedule') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.my-schedule') }}"><i class="mdi mdi-calendar-account-outline menu-icon"></i><span class="menu-title">{{ __('My schedule') }}</span></a>
@@ -287,6 +295,11 @@
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.time-clock', 'admin.workforce.clock-*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.time-clock') }}"><i class="mdi mdi-clock-check-outline menu-icon"></i><span class="menu-title">{{ __('My time clock') }}</span></a>
+                </li>
+                @endif
+                @if($can('workforce.payroll.self'))
+                <li class="nav-item {{ $isRoute('admin.workforce.payroll.my-payslip*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.payroll.my-payslips') }}"><i class="mdi mdi-receipt-text-outline menu-icon"></i><span class="menu-title">{{ __('My payslips') }}</span></a>
                 </li>
                 @endif
                 @if($can('notifications.view'))
