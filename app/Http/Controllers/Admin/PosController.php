@@ -26,7 +26,16 @@ class PosController extends Controller
             ->take(8)
             ->get();
 
-        return view('admin.pos.index', compact('cart', 'summary', 'recentSales'));
+        $cashPaymentMethod = Order::PAYMENT_METHOD_POS_CASH;
+        $cardPaymentMethod = Order::PAYMENT_METHOD_POS_CARD;
+
+        return view('admin.pos.index', compact(
+            'cart',
+            'summary',
+            'recentSales',
+            'cashPaymentMethod',
+            'cardPaymentMethod'
+        ));
     }
 
     public function scan(Request $request, PosCart $posCart)
