@@ -438,6 +438,21 @@ class PayrollService
         }
 
         $baseRate = (float) $compensation->base_rate;
+
+        if ($compensation->pay_basis === EmployeeCompensation::BASIS_SALARY) {
+            $partialCompensation = $compensation->effective_from->gt($period->starts_on)
+                || ($compensation->effective_to && $compensation->effective_to->lt($period->ends_on));
+
+            $partialEmployment = ($employee->hire_date && $employee->hire_date->gt($period->starts_on))
+                || ($employee->termination_date && $employee->termination_date->lt($period->ends_on));
+
+            if ($partialCompensation || $partialEmployment) {
+                throw ValidationException::withMessages([
+                    'payroll' => __('Salary compensation must cover the full payroll period in V1. Configure an explicit proration policy before processing partial-period salary.'),
+                ]);
+            }
+        }
+
         $basePay = $compensation->pay_basis === EmployeeCompensation::BASIS_HOURLY
             ? round(($netMinutes / 60) * $baseRate, 2)
             : round($baseRate, 2);
@@ -478,6 +493,7 @@ class PayrollService
                 'leave_requests' => $leaveSnapshots,
                 'policy' => [
                     'salary_basis' => 'fixed_amount_per_payroll_period',
+                    'salary_proration_auto_calculation' => false,
                     'hourly_basis' => 'effective_net_attendance_minutes',
                     'paid_leave_auto_pay' => false,
                     'unpaid_leave_auto_deduction' => false,
