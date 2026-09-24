@@ -42,19 +42,30 @@ class PaymentController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $stats = [
+        $queueStats = [
+            'failed' => Payment::where('status', Payment::STATUS_FAILED)->count(),
+            'attention' => Payment::whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_FAILED])->count(),
+        ];
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.payments._results', [
+                'payments' => $payments,
+                'filters' => $filters,
+                'queueStats' => $queueStats,
+            ]);
+        }
+
+        $stats = $queueStats + [
             'total' => Payment::count(),
             'pending' => Payment::where('status', Payment::STATUS_PENDING)->count(),
             'paid' => Payment::where('status', Payment::STATUS_PAID)->count(),
-            'failed' => Payment::where('status', Payment::STATUS_FAILED)->count(),
-            'amount_total' => (float) Payment::sum('amount'),
-            'attention' => Payment::whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_FAILED])->count(),
             'paid_amount' => (float) Payment::where('status', Payment::STATUS_PAID)->sum('amount'),
         ];
 
         return view('admin.payments.index', [
             'payments' => $payments,
             'stats' => $stats,
+            'queueStats' => $queueStats,
             'filters' => $filters,
             'statusOptions' => Payment::statusOptions(),
             'methodOptions' => \App\Models\Order::paymentMethodOptions(),
