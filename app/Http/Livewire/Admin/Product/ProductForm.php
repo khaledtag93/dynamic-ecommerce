@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductVariant;
 use App\Services\Admin\ProductService;
 use App\Services\Admin\ProductVariantService;
 use Illuminate\Support\Facades\DB;
@@ -109,6 +110,7 @@ class ProductForm extends Component
             return array_merge($rules, [
                 'variants' => ['required', 'array', 'min:1'],
                 'variants.*.sku' => ['nullable', 'string', 'max:255'],
+                'variants.*.barcode' => ['nullable', 'string', 'max:255'],
                 'variants.*.price' => ['required', 'numeric', 'min:0'],
                 'variants.*.sale_price' => ['nullable', 'numeric', 'min:0'],
                 'variants.*.stock' => ['nullable', 'integer', 'min:0'],
@@ -352,6 +354,7 @@ class ProductForm extends Component
                 return [
                     'id' => $variant->id,
                     'sku' => $variant->sku,
+                    'barcode' => $variant->barcode,
                     'price' => $variant->price,
                     'sale_price' => $variant->sale_price,
                     'stock' => $variant->stock,
@@ -670,6 +673,7 @@ class ProductForm extends Component
         $this->variants[] = [
             'id' => null,
             'sku' => '',
+            'barcode' => '',
             'price' => is_numeric($this->base_price) ? (float) $this->base_price : '',
             'sale_price' => is_numeric($this->sale_price) ? (float) $this->sale_price : '',
             'stock' => 0,
@@ -715,6 +719,7 @@ class ProductForm extends Component
         $this->variants[] = [
             'id' => null,
             'sku' => '',
+            'barcode' => '',
             'price' => $variant['price'] ?? '',
             'sale_price' => $variant['sale_price'] ?? '',
             'stock' => $variant['stock'] ?? 0,
@@ -1081,6 +1086,66 @@ class ProductForm extends Component
         }
     }
 
+    protected function ensureBarcodeUniqueness(array $validated, array $variants): void
+    {
+        $productBarcode = trim((string) ($validated['barcode'] ?? ''));
+        $seen = [];
+
+        if ($productBarcode !== '') {
+            $seen[mb_strtolower($productBarcode)] = 'barcode';
+
+            $productConflict = Product::query()
+                ->where('barcode', $productBarcode)
+                ->when($this->productId, fn ($query) => $query->whereKeyNot($this->productId))
+                ->exists();
+
+            $variantConflict = ProductVariant::query()
+                ->where('barcode', $productBarcode)
+                ->when($this->productId, fn ($query) => $query->where('product_id', '!=', $this->productId))
+                ->exists();
+
+            if ($productConflict || $variantConflict) {
+                throw ValidationException::withMessages([
+                    'barcode' => 'This barcode is already assigned to another product or variant.',
+                ]);
+            }
+        }
+
+        foreach ($variants as $index => $variant) {
+            $barcode = trim((string) ($variant['barcode'] ?? ''));
+
+            if ($barcode === '') {
+                continue;
+            }
+
+            $key = mb_strtolower($barcode);
+
+            if (isset($seen[$key])) {
+                throw ValidationException::withMessages([
+                    'variants.' . $index . '.barcode' => 'Each product and variant must have a unique barcode.',
+                ]);
+            }
+
+            $seen[$key] = 'variants.' . $index . '.barcode';
+
+            $productConflict = Product::query()
+                ->where('barcode', $barcode)
+                ->when($this->productId, fn ($query) => $query->whereKeyNot($this->productId))
+                ->exists();
+
+            $variantConflict = ProductVariant::query()
+                ->where('barcode', $barcode)
+                ->when($this->productId, fn ($query) => $query->where('product_id', '!=', $this->productId))
+                ->exists();
+
+            if ($productConflict || $variantConflict) {
+                throw ValidationException::withMessages([
+                    'variants.' . $index . '.barcode' => 'This barcode is already assigned to another product or variant.',
+                ]);
+            }
+        }
+    }
+
     protected function ensureSimpleProductBusinessRules(array $validated): void
     {
         if ($this->hasVariants) {
@@ -1151,6 +1216,7 @@ class ProductForm extends Component
                 return [
                     'id' => $variant['id'] ?? null,
                     'sku' => filled($variant['sku'] ?? null) ? trim((string) $variant['sku']) : null,
+                    'barcode' => filled($variant['barcode'] ?? null) ? trim((string) $variant['barcode']) : null,
                     'price' => (float) ($variant['price'] ?? 0),
                     'sale_price' => ($variant['sale_price'] ?? '') !== '' ? (float) $variant['sale_price'] : null,
                     'stock' => ($variant['stock'] ?? '') !== '' ? (int) $variant['stock'] : 0,
@@ -1349,6 +1415,7 @@ class ProductForm extends Component
                 $this->ensureSimpleProductBusinessRules($validated);
             }
 
+            $this->ensureBarcodeUniqueness($validated, $normalizedVariants);
             $this->markPerformance($trace, 'normalized');
 
             $product = $productService->save(
