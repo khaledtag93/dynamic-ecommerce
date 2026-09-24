@@ -513,6 +513,14 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - Two focused feature tests passed locally (29 assertions) in the separate SQLite compatibility test worktree. All compiled Blade templates passed PHP lint, along with changed PHP files, JavaScript syntax and `git diff --check` in the application checkout. Integrated MySQL CI passed at `19a4b8c` in run `36059356857` (197 tests / 1248 assertions).
 - Explicit owner approval superseded the earlier automatic publication block. The GitHub connection recreated the two local source trees exactly as `bb10f96` and `19a4b8c`; the final source tree is identical to local `f69d5cb`. QAS was last confirmed at `0a08253`; `main` and Production are unchanged, and consolidated manual QAS review stays deferred.
 
+### Finance & promotions live lists — 2026-09-25
+- Payments now use the shared live-list helper for debounced reference/order/provider search, status/method/per-page filters, payment-attention/failed queues and pagination. Live reads stay behind `payments.view`; payment status changes remain on the existing `payments.manage` detail action and PaymentService.
+- Payment list navigation is now permission-aware: Orders and Payment Settings links render only when the signed-in admin holds the matching permission.
+- Coupons now use live search, type/status/usage/per-page filters, expired/limit-reached queues, sorting and pagination. A pre-existing UI/controller mismatch was fixed so the visible Type sort now actually sorts by coupon type instead of silently falling back to ID.
+- Promotion Rules now use live search, type/status/schedule/per-page filters, running/upcoming/expired queues and pagination. Name, Type, Discount and Priority sorting are exposed through the same URL/history-aware live navigation.
+- Coupon/promotion create, edit and delete operations remain explicit backend mutations with the existing confirmation behavior; no optimistic pricing mutation was introduced.
+- Focused regression coverage was added in `AdminPaymentLiveListTest`, `AdminCouponLiveListTest` and `AdminPromotionLiveListTest`. Current application source revision: `b79177a`. Branch-head CI is still pending independent verification; QAS remains at `0a08253`, and `main` / Production are unchanged.
+
 ### Procurement & inventory live lists — 2026-09-25
 - Suppliers now use the shared live-list helper for debounced supplier search, status/usage/per-page filters, unused/inactive queues, column sorting and pagination. The normal GET route remains the no-JavaScript/error fallback and supplier deletion rules are unchanged.
 - Purchases now use live search, status, supplier and per-page filters plus the Awaiting receipt queue and pagination. Purchase receipt remains an explicit confirmed POST through the existing inventory-safe receiving service; no optimistic inventory mutation was introduced.
