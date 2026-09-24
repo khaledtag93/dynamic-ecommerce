@@ -271,6 +271,9 @@
                 <li class="nav-item {{ $isRoute('admin.workforce.attendance.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.attendance.index') }}"><i class="mdi mdi-calendar-clock-outline menu-icon"></i><span class="menu-title">{{ __('Attendance') }}</span></a>
                 </li>
+                <li class="nav-item {{ $isRoute('admin.workforce.corrections.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.corrections.index') }}"><i class="mdi mdi-file-document-edit-outline menu-icon"></i><span class="menu-title">{{ __('Attendance corrections') }}</span></a>
+                </li>
                 @endif
                 @if($can('workforce.clock'))
                 <li class="nav-item {{ $isRoute('admin.workforce.my-schedule') ? 'sidebar-current active' : '' }}">
