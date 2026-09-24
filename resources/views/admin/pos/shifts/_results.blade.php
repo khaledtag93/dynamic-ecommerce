@@ -21,7 +21,13 @@
                     $varianceClass = abs($variance) < 0.005 ? 'text-success' : ($variance > 0 ? 'text-primary' : 'text-danger');
                 @endphp
                 <tr>
-                    <td><div class="fw-semibold">{{ $shift->cashier?->name ?: __('Unknown cashier') }}</div><div class="text-muted small">{{ $shift->cashier?->email }}</div></td>
+                    <td>
+                        <div class="fw-semibold">{{ $shift->cashier?->name ?: __('Unknown cashier') }}</div>
+                        <div class="text-muted small">{{ $shift->cashier?->email }}</div>
+                        @if($shift->cashier?->employeeProfile)
+                            <div class="text-muted small">{{ $shift->cashier->employeeProfile->employee_code }}@if($shift->cashier->employeeProfile->department) · {{ $shift->cashier->employeeProfile->department }}@endif</div>
+                        @endif
+                    </td>
                     <td>{{ optional($shift->opened_at)->format('M d, Y H:i') }}</td>
                     <td>@if($shift->closed_at){{ $shift->closed_at->format('M d, Y H:i') }}@else<span class="badge badge-soft-success">{{ __('Open') }}</span>@endif</td>
                     <td class="text-end">EGP {{ number_format((float) $shift->opening_cash, 2) }}</td>
