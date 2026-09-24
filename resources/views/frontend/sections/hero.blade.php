@@ -84,10 +84,10 @@
 
             @if($slides->count() > 1)
                 <button type="button" class="retail-hero-slider__nav retail-hero-slider__nav--prev" data-hero-prev aria-label="{{ __('Previous slide') }}">
-                    <i class="bi bi-chevron-right"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <button type="button" class="retail-hero-slider__nav retail-hero-slider__nav--next" data-hero-next aria-label="{{ __('Next slide') }}">
-                    <i class="bi bi-chevron-left"></i>
+                    <i class="bi bi-chevron-right"></i>
                 </button>
 
                 <div class="retail-hero-slider__dots" data-hero-dots aria-label="{{ __('Hero slide navigation') }}">
