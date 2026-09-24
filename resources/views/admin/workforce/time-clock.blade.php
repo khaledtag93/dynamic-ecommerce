@@ -5,6 +5,7 @@
 @section('content')
 <div class="admin-page-shell">
     <x-admin.page-header :kicker="__('Workforce')" :title="__('My time clock')" :description="__('Clock your attendance separately from POS cash drawer shifts.')">
+        <a href="{{ route('admin.workforce.my-schedule') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-calendar-account-outline"></i><span>{{ __('My schedule') }}</span></a>
         @if(auth()->user()?->hasPermission('workforce.view'))
             <a href="{{ route('admin.workforce.attendance.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-calendar-clock-outline"></i><span>{{ __('Attendance review') }}</span></a>
         @endif
