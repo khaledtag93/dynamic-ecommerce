@@ -43,8 +43,8 @@
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">{{ __('Adjustment type') }}</label>
                         <select name="type" class="form-select @error('type') is-invalid @enderror" required>
-                            @foreach(AppModelsEmployeeLeaveAdjustment::typeOptions() as $value => $label)
-                                <option value="{{ $value }}" @selected(old('type', AppModelsEmployeeLeaveAdjustment::TYPE_ADJUSTMENT) === $value)>{{ $label }}</option>
+                            @foreach(\App\Models\EmployeeLeaveAdjustment::typeOptions() as $value => $label)
+                                <option value="{{ $value }}" @selected(old('type', \App\Models\EmployeeLeaveAdjustment::TYPE_ADJUSTMENT) === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
                         @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -86,7 +86,7 @@
                                 <td><div class="fw-semibold">{{ $adjustment->employee?->user?->name }}</div><div class="text-muted small">{{ $adjustment->employee?->employee_code }}</div></td>
                                 <td>{{ $adjustment->leaveType?->displayName() }}</td>
                                 <td>{{ $adjustment->year }}</td>
-                                <td>{{ AppModelsEmployeeLeaveAdjustment::typeOptions()[$adjustment->type] ?? IlluminateSupportStr::headline($adjustment->type) }}</td>
+                                <td>{{ \App\Models\EmployeeLeaveAdjustment::typeOptions()[$adjustment->type] ?? \Illuminate\Support\Str::headline($adjustment->type) }}</td>
                                 <td class="fw-semibold {{ (float)$adjustment->days < 0 ? 'text-danger' : 'text-success' }}">{{ (float)$adjustment->days > 0 ? '+' : '' }}{{ number_format((float)$adjustment->days, 2) }}</td>
                                 <td>{{ $adjustment->reason }}</td>
                                 <td><div>{{ $adjustment->createdBy?->name ?: '—' }}</div><div class="text-muted small">{{ $adjustment->created_at?->format('d M Y H:i') }}</div></td>
