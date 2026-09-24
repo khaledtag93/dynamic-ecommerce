@@ -296,3 +296,21 @@ Security/release note:
 - This is not a production deploy blocker for the current V42 flow because frontend assets are built in CI and `public/build` is committed/deployed with the application.
 - The hardened `deploy.sh` does not require Node/npm on production.
 - Do not install Node on the live server solely for deployment unless the deployment strategy changes.
+
+### Deliveries V2 hardening — 2026-09-24
+Source implementation on `v42-clean-baseline` now:
+- serializes delivery mutations with a row lock inside a transaction
+- enforces valid delivery-status transitions, with a separate store-pickup path
+- records `shipped_at` / `delivered_at` once according to lifecycle state
+- requires shipment evidence before Out for delivery
+- avoids duplicate database/WhatsApp status notifications on metadata-only saves and repeated requests
+- disables invalid status choices in the admin order view and confirms real status changes in-app
+- adds focused delivery regression tests and Arabic/English copy
+
+Verification state:
+- branch-head CI: pending
+- authenticated QAS visual/behavior review: pending
+- Production: unchanged
+
+See `docs/DELIVERIES_V2_2026-09-24.md` for acceptance checks.
+
