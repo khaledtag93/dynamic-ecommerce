@@ -36,7 +36,14 @@
                 <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Business hours (EN)') }}</label><input class="form-control" name="store_contact_hours_en" value="{{ old('store_contact_hours_en', $settings['store_contact_hours_en'] ?? '') }}"></div>
                 <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Business hours (AR)') }}</label><input class="form-control" name="store_contact_hours_ar" value="{{ old('store_contact_hours_ar', $settings['store_contact_hours_ar'] ?? '') }}"></div>
                 @foreach(['contact_show_email' => __('Show email'),'contact_show_phone' => __('Show phone'),'contact_show_whatsapp' => __('Show WhatsApp'),'contact_show_address' => __('Show address'),'contact_show_hours' => __('Show business hours'),'contact_show_map' => __('Show map')] as $key => $label)
-                    <div class="col-md-4"><label class="form-check admin-switch-card h-100 d-block p-3 rounded-4 border"><input type="checkbox" class="form-check-input me-2" name="{{ $key }}" value="1" @checked(($settings[$key] ?? '0') === '1')><span class="fw-bold">{{ $label }}</span></label></div>
+                    <div class="col-md-4">
+                        <div class="admin-switch-card h-100 p-3 rounded-4 border d-flex align-items-center justify-content-between gap-3">
+                            <label class="fw-bold mb-0" for="{{ $key }}">{{ $label }}</label>
+                            <div class="form-check form-switch m-0 flex-nowrap">
+                                <input type="checkbox" role="switch" id="{{ $key }}" class="form-check-input" name="{{ $key }}" value="1" @checked(($settings[$key] ?? '0') === '1')>
+                            </div>
+                        </div>
+                    </div>
                 @endforeach
             </div>
 
@@ -51,7 +58,14 @@
 
             <div class="row g-4 mb-4 admin-settings-section" id="content-panel-cancellation" role="tabpanel" aria-labelledby="content-tab-cancellation" data-admin-section-panel="cancellation">
                 <div class="col-12"><h4 class="mb-0">{{ __('Customer cancellation') }}</h4></div>
-                <div class="col-md-4"><label class="form-check admin-switch-card h-100 d-block p-3 rounded-4 border"><input type="checkbox" class="form-check-input me-2" name="orders_allow_customer_cancellation" value="1" @checked(($settings['orders_allow_customer_cancellation'] ?? '1') === '1')><span class="fw-bold">{{ __('Allow customer cancellation') }}</span></label></div>
+                <div class="col-md-4">
+                    <div class="admin-switch-card h-100 p-3 rounded-4 border d-flex align-items-center justify-content-between gap-3">
+                        <label class="fw-bold mb-0" for="orders_allow_customer_cancellation">{{ __('Allow customer cancellation') }}</label>
+                        <div class="form-check form-switch m-0 flex-nowrap">
+                            <input type="checkbox" role="switch" id="orders_allow_customer_cancellation" class="form-check-input" name="orders_allow_customer_cancellation" value="1" @checked(($settings['orders_allow_customer_cancellation'] ?? '1') === '1')>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-md-8"><label class="form-label fw-semibold">{{ __('Cancellation note') }}</label><textarea class="form-control" rows="3" name="orders_customer_cancellation_note">{{ old('orders_customer_cancellation_note', $settings['orders_customer_cancellation_note'] ?? '') }}</textarea></div>
             </div>
 
