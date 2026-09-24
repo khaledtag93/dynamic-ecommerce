@@ -84,6 +84,13 @@
 - Regression coverage was expanded across these flows. Shared product cards are now theme-aware, Category result count duplication is fixed, and Contact hides empty business detail panels while linking configured WhatsApp numbers directly. Detailed scope/QAS checks: `docs/STOREFRONT_FOUNDATION_UX_2026-09-24.md`.
 - Hardening CI run `36011846373` passed at `473a119e`. Production remains unchanged; authenticated English/Arabic desktop/mobile QAS is still required before promotion.
 
+## Storefront customer UX checkpoint — 2026-09-24
+- Customer-facing Product Detail copy was cleaned up: internal stock/settings wording and the technical gallery count were removed, and empty descriptions no longer show placeholder `coming soon` copy.
+- Checkout keeps its already-correct aligned billing switch, while customer reassurance/offer labels were simplified to clearer production wording without changing payment/order logic.
+- The Home hero now follows configurable storefront brand tokens instead of hard-coded dark-blue/orange campaign colors, and previous/next/CTA arrow direction is correct for both LTR and RTL.
+- English/Arabic copy and focused storefront regression coverage were updated. See `docs/STOREFRONT_CUSTOMER_UX_2026-09-24.md`.
+- Source implementation is complete for this iteration; branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
+
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
 - Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.
