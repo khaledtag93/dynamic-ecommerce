@@ -16,6 +16,7 @@ class PosCart extends Model
 
     protected $fillable = [
         'cashier_user_id',
+        'customer_user_id',
         'order_id',
         'status',
         'open_token',
@@ -32,6 +33,11 @@ class PosCart extends Model
     public function cashier()
     {
         return $this->belongsTo(User::class, 'cashier_user_id');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'customer_user_id');
     }
 
     public function order()
