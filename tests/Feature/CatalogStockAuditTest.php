@@ -104,14 +104,14 @@ class CatalogStockAuditTest extends TestCase
         Livewire::test(Index::class)
             ->call('startEditQty', $product->id, 5)
             ->set('inlineQty.' . $product->id, 8)
-            ->call('saveInlineQty')->assertHasNoErrors();
+            ->call('saveInlineQty', $product->id)->assertHasNoErrors();
 
         $this->assertMovement($product->id, null, 3, 8, 'catalog_inline', $admin->id);
 
         $editor = Livewire::test(Index::class)->call('startEditQty', $product->id, 8);
         $product->update(['quantity' => 7]);
         $editor->set('inlineQty.' . $product->id, 9)
-            ->call('saveInlineQty')->assertHasErrors(['inlineQty.' . $product->id]);
+            ->call('saveInlineQty', $product->id)->assertHasErrors(['inlineQty.' . $product->id]);
         $this->assertSame(7, $product->fresh()->quantity);
         $this->assertDatabaseCount('inventory_movements', 1);
     }
