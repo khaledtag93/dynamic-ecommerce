@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\EmployeeAttendanceSession;
 use App\Models\EmployeeProfile;
+use App\Models\PosCashShift;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
@@ -235,6 +236,29 @@ class WorkforceFoundationTest extends TestCase
 
         $this->get(route('admin.workforce.attendance.index'))
             ->assertForbidden();
+    }
+
+    public function test_cash_shift_review_exposes_linked_employee_identity_and_searches_employee_code(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $manager = $this->staffWithRole('operations_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-POS-7');
+        $employee->update(['department' => 'Front Store']);
+
+        PosCashShift::query()->create([
+            'cashier_user_id' => $cashier->id,
+            'opening_cash' => 100,
+            'opened_at' => now()->subHour(),
+        ]);
+
+        $this->actingAs($manager)
+            ->get(route('admin.pos.shifts.index', ['cashier' => 'EMP-POS-7']))
+            ->assertOk()
+            ->assertSee('EMP-POS-7')
+            ->assertSee('Front Store')
+            ->assertSee($cashier->name);
     }
 
     public function test_time_clock_without_employee_profile_is_safe_and_explains_missing_setup(): void
