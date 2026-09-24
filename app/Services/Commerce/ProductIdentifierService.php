@@ -15,30 +15,55 @@ class ProductIdentifierService
      *     product: Product,
      *     variant: ProductVariant|null,
      *     match_type: 'product'|'variant',
+     *     matched_by: 'barcode',
      *     requires_variant_selection: bool
      * }|null
      */
     public function resolveBarcode(string $barcode): ?array
     {
-        $barcode = trim($barcode);
+        return $this->resolveByColumn('barcode', $barcode);
+    }
 
-        if ($barcode === '') {
+    /**
+     * Resolve one exact SKU across products and variants.
+     *
+     * @return array{
+     *     product: Product,
+     *     variant: ProductVariant|null,
+     *     match_type: 'product'|'variant',
+     *     matched_by: 'sku',
+     *     requires_variant_selection: bool
+     * }|null
+     */
+    public function resolveSku(string $sku): ?array
+    {
+        return $this->resolveByColumn('sku', $sku);
+    }
+
+    /**
+     * @param 'barcode'|'sku' $column
+     */
+    protected function resolveByColumn(string $column, string $identifier): ?array
+    {
+        $identifier = trim($identifier);
+
+        if ($identifier === '') {
             return null;
         }
 
         $products = Product::query()
-            ->where('barcode', $barcode)
+            ->where($column, $identifier)
             ->limit(2)
             ->get();
 
         $variants = ProductVariant::query()
             ->with('product')
-            ->where('barcode', $barcode)
+            ->where($column, $identifier)
             ->limit(2)
             ->get();
 
         if (($products->count() + $variants->count()) > 1) {
-            throw new ProductIdentifierAmbiguityException($barcode);
+            throw new ProductIdentifierAmbiguityException($identifier);
         }
 
         if ($variant = $variants->first()) {
@@ -46,6 +71,7 @@ class ProductIdentifierService
                 'product' => $variant->product,
                 'variant' => $variant,
                 'match_type' => 'variant',
+                'matched_by' => $column,
                 'requires_variant_selection' => false,
             ];
         }
@@ -55,6 +81,7 @@ class ProductIdentifierService
                 'product' => $product,
                 'variant' => null,
                 'match_type' => 'product',
+                'matched_by' => $column,
                 'requires_variant_selection' => (bool) $product->has_variants,
             ];
         }

@@ -8,8 +8,8 @@ class ProductIdentifierAmbiguityException extends RuntimeException
 {
     public function __construct(public readonly string $identifier)
     {
-        parent::__construct(__('Barcode :barcode matches multiple catalog records.', [
-            'barcode' => $identifier,
+        parent::__construct(__('Identifier :identifier matches multiple catalog records.', [
+            'identifier' => $identifier,
         ]));
     }
 }

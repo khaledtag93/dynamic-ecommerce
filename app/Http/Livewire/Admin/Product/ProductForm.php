@@ -1094,64 +1094,86 @@ class ProductForm extends Component
         }
     }
 
-    protected function ensureBarcodeUniqueness(array $validated, array $variants): void
+    protected function ensureRetailIdentifierUniqueness(array $validated, array $variants): void
     {
-        $productBarcode = trim((string) ($validated['barcode'] ?? ''));
+        $this->ensureIdentifierTypeUniqueness(
+            'sku',
+            $validated,
+            $variants,
+            __('This SKU is already assigned to another product or variant.'),
+            __('Each product and variant must have a unique SKU.')
+        );
+
+        $this->ensureIdentifierTypeUniqueness(
+            'barcode',
+            $validated,
+            $variants,
+            __('This barcode is already assigned to another product or variant.'),
+            __('Each product and variant must have a unique barcode.')
+        );
+    }
+
+    protected function ensureIdentifierTypeUniqueness(
+        string $field,
+        array $validated,
+        array $variants,
+        string $conflictMessage,
+        string $duplicateMessage
+    ): void {
+        $productValue = trim((string) ($validated[$field] ?? ''));
         $seen = [];
 
-        if ($productBarcode !== '') {
-            $seen[mb_strtolower($productBarcode)] = 'barcode';
+        if ($productValue !== '') {
+            $seen[mb_strtolower($productValue)] = $field;
 
-            $productConflict = Product::query()
-                ->where('barcode', $productBarcode)
-                ->when($this->productId, fn ($query) => $query->where('id', '!=', $this->productId))
-                ->exists();
-
-            $variantConflict = ProductVariant::query()
-                ->where('barcode', $productBarcode)
-                ->when($this->productId, fn ($query) => $query->where('product_id', '!=', $this->productId))
-                ->exists();
-
-            if ($productConflict || $variantConflict) {
+            if ($this->identifierExistsOutsideCurrentProduct($field, $productValue)) {
                 throw ValidationException::withMessages([
-                    'barcode' => __('This barcode is already assigned to another product or variant.'),
+                    $field => $conflictMessage,
                 ]);
             }
         }
 
         foreach ($variants as $index => $variant) {
-            $barcode = trim((string) ($variant['barcode'] ?? ''));
+            $value = trim((string) ($variant[$field] ?? ''));
 
-            if ($barcode === '') {
+            if ($value === '') {
                 continue;
             }
 
-            $key = mb_strtolower($barcode);
+            $key = mb_strtolower($value);
+            $errorKey = 'variants.' . $index . '.' . $field;
 
             if (isset($seen[$key])) {
                 throw ValidationException::withMessages([
-                    'variants.' . $index . '.barcode' => __('Each product and variant must have a unique barcode.'),
+                    $errorKey => $duplicateMessage,
                 ]);
             }
 
-            $seen[$key] = 'variants.' . $index . '.barcode';
+            $seen[$key] = $errorKey;
 
-            $productConflict = Product::query()
-                ->where('barcode', $barcode)
-                ->when($this->productId, fn ($query) => $query->where('id', '!=', $this->productId))
-                ->exists();
-
-            $variantConflict = ProductVariant::query()
-                ->where('barcode', $barcode)
-                ->when($this->productId, fn ($query) => $query->where('product_id', '!=', $this->productId))
-                ->exists();
-
-            if ($productConflict || $variantConflict) {
+            if ($this->identifierExistsOutsideCurrentProduct($field, $value)) {
                 throw ValidationException::withMessages([
-                    'variants.' . $index . '.barcode' => __('This barcode is already assigned to another product or variant.'),
+                    $errorKey => $conflictMessage,
                 ]);
             }
         }
+    }
+
+    protected function identifierExistsOutsideCurrentProduct(string $field, string $value): bool
+    {
+        $productConflict = Product::query()
+            ->where($field, $value)
+            ->when($this->productId, fn ($query) => $query->where('id', '!=', $this->productId))
+            ->exists();
+
+        if ($productConflict) {
+            return true;
+        }
+
+        return ProductVariant::query()
+            ->where($field, $value)
+            ->when($this->productId, fn ($query) => $query->where('product_id', '!=', $this->productId))
+            ->exists();
     }
 
     protected function ensureSimpleProductBusinessRules(array $validated): void
@@ -1425,7 +1447,7 @@ class ProductForm extends Component
                 $this->ensureSimpleProductBusinessRules($validated);
             }
 
-            $this->ensureBarcodeUniqueness($validated, $normalizedVariants);
+            $this->ensureRetailIdentifierUniqueness($validated, $normalizedVariants);
             $this->markPerformance($trace, 'normalized');
 
             $product = DB::transaction(function () use ($productService, $productVariantService, $stockAudit, $validated, $normalizedVariants, $isVariantMode, &$trace) {

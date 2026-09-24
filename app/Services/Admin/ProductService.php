@@ -108,6 +108,8 @@ class ProductService
 
             $newProduct->name = ($product->name ?: 'Product') . ' (Copy)';
             $newProduct->slug = $this->generateUniqueSlug($baseName . '-copy');
+            $newProduct->sku = null;
+            $newProduct->barcode = null;
             $newProduct->quantity = 0;
             $newProduct->save();
 

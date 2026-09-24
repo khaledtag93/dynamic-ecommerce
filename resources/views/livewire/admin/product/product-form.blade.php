@@ -408,14 +408,14 @@
                             <div class="col-md-4">
                                 <label class="form-label">{{ __('SKU') }}</label>
                                 <input type="text" class="form-control @error('sku') is-invalid product-error-field @enderror" wire:model.defer="sku" autocomplete="off">
-                                <div class="form-text">{{ __('Internal stock identifier used by inventory and future POS workflows.') }}</div>
+                                <div class="form-text">{{ __('SKU must be unique across products and variants so inventory and POS lookup stays deterministic.') }}</div>
                                 @error('sku') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">{{ __('Barcode') }}</label>
                                 <input type="text" class="form-control @error('barcode') is-invalid product-error-field @enderror" wire:model.defer="barcode" inputmode="numeric" autocomplete="off">
-                                <div class="form-text">{{ __('Optional scannable identifier for retail and stock operations.') }}</div>
+                                <div class="form-text">{{ __('Optional scannable identifier for retail and stock operations. It must be unique across products and variants.') }}</div>
                                 @error('barcode') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
@@ -576,7 +576,7 @@
                             <div class="alert alert-info border-0 mb-4">
                                 <div class="fw-semibold mb-1">{{ __('Variants mode is enabled') }}</div>
                                 <div class="small mb-0">
-                                    {{ __('Each variant can have its own SKU, price, sale price, stock, and attribute values.') }}
+                                    {{ __('Each variant can have its own unique SKU and barcode, plus price, sale price, stock, and attribute values.') }}
                                 </div>
                             </div>
 

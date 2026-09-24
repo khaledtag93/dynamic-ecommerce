@@ -898,7 +898,7 @@ class Index extends Component
 
         $newProduct = $productService->duplicateProduct($product);
 
-        session()->flash('message', __('Product duplicated with zero stock. You can now edit the copied product.'));
+        session()->flash('message', __('Product duplicated with zero stock and cleared retail identifiers. You can now edit the copied product.'));
 
         return redirect()->route('admin.products.edit', $newProduct->id);
     }
@@ -927,6 +927,11 @@ class Index extends Component
             if ($this->hasProductColumn('barcode')) {
                 $innerQuery->orWhere('barcode', 'like', "%{$search}%");
             }
+
+            $innerQuery->orWhereHas('variants', function ($variantQuery) use ($search) {
+                $variantQuery->where('sku', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
+            });
         });
     }
 
