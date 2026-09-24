@@ -4063,5 +4063,9 @@
     "Leave request submitted.": "تم إرسال طلب الإجازة.",
     "Leave balance adjustment recorded.": "تم تسجيل تعديل رصيد الإجازة.",
     "Leave type created.": "تم إنشاء نوع الإجازة.",
-    "Leave type updated.": "تم تحديث نوع الإجازة."
+    "Leave type updated.": "تم تحديث نوع الإجازة.",
+    "Recent balance adjustments": "أحدث تعديلات الرصيد",
+    "Append-only history for opening balances, carryovers, credits, and debits.": "سجل إضافي غير قابل لإعادة الكتابة للأرصدة الافتتاحية والترحيل والإضافات والخصومات.",
+    "Actor": "المنفذ",
+    "No balance adjustments yet.": "لا توجد تعديلات رصيد بعد."
 }
