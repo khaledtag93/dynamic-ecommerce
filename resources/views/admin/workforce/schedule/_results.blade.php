@@ -36,8 +36,8 @@
                             $scheduledRemainder = $scheduledMinutes % 60;
 
                             $statusClass = match($shift->status) {
-                                AppModelsEmployeeWorkShift::STATUS_PUBLISHED => 'badge-soft-success',
-                                AppModelsEmployeeWorkShift::STATUS_CANCELLED => 'badge-soft-danger',
+                                \App\Models\EmployeeWorkShift::STATUS_PUBLISHED => 'badge-soft-success',
+                                \App\Models\EmployeeWorkShift::STATUS_CANCELLED => 'badge-soft-danger',
                                 default => 'badge-soft-secondary',
                             };
 
@@ -58,7 +58,7 @@
                             </td>
                             <td>{{ $shift->location ?: '—' }}</td>
                             <td>
-                                <span class="badge admin-status-badge {{ $statusClass }}">{{ AppModelsEmployeeWorkShift::statusOptions()[$shift->status] ?? IlluminateSupportStr::headline($shift->status) }}</span>
+                                <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeWorkShift::statusOptions()[$shift->status] ?? \Illuminate\Support\Str::headline($shift->status) }}</span>
                             </td>
                             <td>
                                 @if($attendance)
