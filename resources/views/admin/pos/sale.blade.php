@@ -18,6 +18,12 @@
                 <div class="admin-stat-label">{{ __('Sale total') }}</div>
                 <div class="admin-stat-value">EGP {{ number_format((float) $order->grand_total, 2) }}</div>
                 <div class="text-muted small mt-2">{{ $order->customer_name }}</div>
+                @if($order->user_id && $order->customer_email)
+                    <div class="small mt-1">
+                        <span class="badge badge-soft-success">{{ __('Customer account') }}</span>
+                        <span class="text-muted ms-1">{{ $order->customer_email }}</span>
+                    </div>
+                @endif
             </div>
         </div>
         <div class="col-md-4">
