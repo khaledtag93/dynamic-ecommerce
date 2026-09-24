@@ -45,7 +45,7 @@
                     <label class="form-label fw-semibold">{{ __('Shift status') }}</label>
                     <select name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All shifts') }}</option>
-                        @foreach(AppModelsEmployeeWorkShift::statusOptions() as $value => $label)
+                        @foreach(\App\Models\EmployeeWorkShift::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
