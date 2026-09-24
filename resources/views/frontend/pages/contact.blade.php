@@ -61,10 +61,10 @@
                             <a href="{{ $settings['store_business_website'] }}" target="_blank" rel="noopener">{{ $settings['store_business_website'] }}</a>
                         </div>
                     @endif
-                    @if(($settings['contact_show_hours'] ?? '1') === '1')
+                    @if(($settings['contact_show_hours'] ?? '1') === '1' && !empty($settings['store_contact_hours']))
                         <div class="d-flex justify-content-between gap-3 flex-wrap">
                             <span class="text-muted">{{ __('Business hours') }}</span>
-                            <strong>{{ app()->getLocale() === 'ar' ? ($settings['store_contact_hours_ar'] ?? '') : ($settings['store_contact_hours_en'] ?? '') }}</strong>
+                            <strong>{{ $settings['store_contact_hours'] }}</strong>
                         </div>
                     @endif
                 </div>
