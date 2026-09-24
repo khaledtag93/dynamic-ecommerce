@@ -123,14 +123,9 @@ This integration is informational only. POS checkout is not blocked by attendanc
 - Production: unchanged.
 - Manual authenticated EN/AR desktop/mobile review is deferred to the consolidated QAS phase.
 
-## Next slice
+## Follow-on status
 
-**Shift Scheduling V1**
-- scheduled work shifts separate from POS cash shifts;
-- employee/date/start/end assignment;
-- manager schedule workspace;
-- employee upcoming-shifts view;
-- overlap protection;
-- attendance-vs-schedule comparison foundation.
+**Shift Scheduling V1 is now implemented in source** at `ff423286`; see `WORKFORCE_SHIFT_SCHEDULING_V1_2026-09-25.md`.
 
-After schedules: leave balances/requests, then payroll/deductions.
+Next:
+**Attendance Rules & Corrections V1 → leave balances/requests → payroll/deductions.**
