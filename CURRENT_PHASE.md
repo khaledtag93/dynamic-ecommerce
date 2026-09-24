@@ -513,6 +513,14 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - Two focused feature tests passed locally (29 assertions) in the separate SQLite compatibility test worktree. All compiled Blade templates passed PHP lint, along with changed PHP files, JavaScript syntax and `git diff --check` in the application checkout. Integrated MySQL CI passed at `19a4b8c` in run `36059356857` (197 tests / 1248 assertions).
 - Explicit owner approval superseded the earlier automatic publication block. The GitHub connection recreated the two local source trees exactly as `bb10f96` and `19a4b8c`; the final source tree is identical to local `f69d5cb`. QAS was last confirmed at `0a08253`; `main` and Production are unchanged, and consolidated manual QAS review stays deferred.
 
+### Live / no-reload phase closure — 2026-09-25
+- The cross-product live/read-navigation migration is now closed in source at application revision `eedd109`. Detailed coverage and intentional boundaries: `docs/LIVE_NO_RELOAD_CLOSURE_2026-09-25.md`.
+- Final Admin additions: Deliveries and Categories now use live search/filter/queue/sort/pagination; Import Jobs uses live pagination and global KPI counts. Admin Products remains Livewire rather than duplicating the fragment helper.
+- Final storefront/customer additions: Catalog Search and Category browsing are live with URL/history/no-JS fallback; Category Quick View now uses delegated events so replaced cards remain interactive. My Orders and Customer Notifications now paginate live.
+- The closure deliberately does **not** convert financial, stock, delivery, cancellation, notification-write, destructive, permission or settings mutations to optimistic client state. Those actions remain explicit authenticated backend requests.
+- Focused closure coverage adds `AdminDeliveryLiveListTest`, `AdminCategoryLiveListTest`, `StorefrontLiveCatalogTest` and `LiveListClosureTest`, in addition to the earlier live-list suites.
+- Branch-head CI is still pending independent verification. QAS remains recorded at `0a08253`; `main` and Production are unchanged. The next development cycle should move to the next product priority rather than continuing a broad reload sweep.
+
 ### Finance & promotions live lists — 2026-09-25
 - Payments now use the shared live-list helper for debounced reference/order/provider search, status/method/per-page filters, payment-attention/failed queues and pagination. Live reads stay behind `payments.view`; payment status changes remain on the existing `payments.manage` detail action and PaymentService.
 - Payment list navigation is now permission-aware: Orders and Payment Settings links render only when the signed-in admin holds the matching permission.
