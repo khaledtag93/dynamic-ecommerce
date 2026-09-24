@@ -14,6 +14,27 @@ class CostCalculatorSemanticsTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_cost_calculator_uses_theme_aware_sections_and_in_app_delete_confirmation(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.cost-calculator.index'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Cost calculator sections')
+            ->assertSee('Raw Materials')
+            ->assertSee('Product Recipe')
+            ->assertDontSee('return confirm(', false);
+
+        $html = $response->getContent();
+
+        $this->assertSame(1, substr_count($html, 'id="cost-materials"'));
+        $this->assertSame(1, substr_count($html, 'id="cost-recipe"'));
+        $this->assertStringContainsString('data-confirm-title="Delete material"', $html);
+    }
+
     public function test_profit_margin_uses_selling_price_not_cost_as_denominator(): void
     {
         $admin = User::factory()->create(['role_as' => 1]);
