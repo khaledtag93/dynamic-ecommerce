@@ -167,8 +167,8 @@
                                                     <div>
                                                         <label class="form-label small fw-semibold">{{ __('Discount type') }}</label>
                                                         <select name="discount_type" class="form-select form-select-sm" required>
-                                                            <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_FIXED }}" @selected($item->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
-                                                            <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT }}" @selected($item->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
+                                                            <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED }}" @selected($item->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
+                                                            <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT }}" @selected($item->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
                                                         </select>
                                                     </div>
                                                     <div>
@@ -397,8 +397,8 @@
                                             <div class="col-sm-5">
                                                 <label class="form-label small fw-semibold">{{ __('Discount type') }}</label>
                                                 <select name="discount_type" class="form-select form-select-sm" required>
-                                                    <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_FIXED }}" @selected($cart->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
-                                                    <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT }}" @selected($cart->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
+                                                    <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED }}" @selected($cart->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
+                                                    <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT }}" @selected($cart->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
                                                 </select>
                                             </div>
                                             <div class="col-sm-7">
