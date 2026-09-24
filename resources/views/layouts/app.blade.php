@@ -760,7 +760,7 @@
                 <div class="storefront-footer__trust">
                     <span><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
                     <span><i class="bi bi-truck"></i>{{ __('Fast delivery') }}</span>
-                    <span><i class="bi bi-patch-check"></i>{{ __('Original products') }}</span>
+                    <span><i class="bi bi-card-checklist"></i>{{ __('Clear product details') }}</span>
                 </div>
             </div>
 
