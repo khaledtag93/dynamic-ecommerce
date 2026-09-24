@@ -119,7 +119,9 @@ Core:
 
 **Leave Management V1 implemented in source — 2026-09-25:** `c6df3fc2` adds configurable leave types, employee requests, append-only balance adjustments, Available/Projected balances and bidirectional Schedule↔Approved-Leave conflict protection. See `WORKFORCE_LEAVE_MANAGEMENT_V1_2026-09-25.md`. CI verification is pending; this slice is not yet claimed on QAS.
 
-**Next implementation order:** Payroll Foundation V1.
+**Payroll Foundation V1 implemented in source — 2026-09-25:** `b51a93e6` adds scoped payroll permissions, compensation profiles, payroll periods/runs, immutable employee payroll snapshots, explicit overtime/allowance/bonus/deduction components, currency-separated totals and self-owned printable payslips. Salary partial-period processing is blocked until an explicit proration policy exists; tax/social insurance/leave monetization remain configurable future policy. See `WORKFORCE_PAYROLL_FOUNDATION_V1_2026-09-25.md`. CI verification is pending and this slice is not claimed on QAS.
+
+**Next implementation order:** Workforce QAS recovery + consolidated validation → critical commerce gaps (shipping/tax decision, unpaid-order stock reservation, Returns/RMA, online invoice) → Payroll V2 only after actual operating policy is defined.
 
 
 Keep workforce identity related to, but not overloaded into, the customer account model.
