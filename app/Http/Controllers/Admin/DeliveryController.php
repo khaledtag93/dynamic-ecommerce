@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Contracts\Services\WhatsAppServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\User;
-use App\Notifications\DeliveryStatusUpdatedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Services\Commerce\DeliveryService;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class DeliveryController extends Controller
 {
     public function __construct(
-        protected WhatsAppServiceInterface $whatsAppService,
+        protected DeliveryService $deliveryService,
     ) {
     }
 
@@ -74,31 +73,17 @@ class DeliveryController extends Controller
             'delivery_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $updates = $validated;
-        if ($validated['delivery_status'] === Order::DELIVERY_STATUS_SHIPPED && ! $order->shipped_at) {
-            $updates['shipped_at'] = now();
-        }
-        if ($validated['delivery_status'] === Order::DELIVERY_STATUS_DELIVERED) {
-            $updates['delivered_at'] = now();
-        }
-        if ($validated['delivery_status'] === Order::DELIVERY_STATUS_CANCELLED) {
-            $updates['delivered_at'] = null;
+        try {
+            $result = $this->deliveryService->update($order, $validated);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
 
-        $order->update($updates);
-
-        $freshOrder = $order->fresh();
-
-        if ($freshOrder->user) {
-            $freshOrder->user->notify(new DeliveryStatusUpdatedNotification($freshOrder));
-        }
-
-        User::query()->where('role_as', 1)->get()->each(function (User $admin) use ($freshOrder) {
-            $admin->notify(new DeliveryStatusUpdatedNotification($freshOrder));
-        });
-
-        $this->whatsAppService->queueDeliveryUpdate($freshOrder);
-
-        return back()->with('success', __('Delivery details updated successfully.'));
+        return back()->with(
+            'success',
+            $result['status_changed']
+                ? __('Delivery status updated successfully.')
+                : __('Delivery details updated successfully.')
+        );
     }
 }
