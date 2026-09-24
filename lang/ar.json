@@ -3710,5 +3710,10 @@
     "Updating results...": "جارٍ تحديث النتائج...",
     "Results updated.": "تم تحديث النتائج.",
     "Could not update results. Open the full page to retry.": "تعذر تحديث النتائج. افتح الصفحة كاملة للمحاولة مجددًا.",
-    "Open full page": "فتح الصفحة كاملة"
+    "Open full page": "فتح الصفحة كاملة",
+    "Movement types": "أنواع حركات المخزون",
+    "Movement categories currently recorded in the inventory ledger.": "أنواع الحركات المسجلة حاليًا في سجل المخزون.",
+    ":count total matching movement(s)": "إجمالي الحركات المطابقة: :count",
+    "No inventory movements found": "لم يتم العثور على حركات مخزون",
+    "Try clearing the filters or wait for new stock activity.": "جرّب مسح عوامل التصفية أو انتظر نشاط مخزون جديد."
 }
