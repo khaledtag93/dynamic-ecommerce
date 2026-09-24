@@ -101,12 +101,19 @@
 
             <div class="col-lg-4">
                 <div class="lc-card p-4 mb-4">
-                    <h4 class="fw-bold mb-3">{{ __('Shipping address') }}</h4>
-                    <div class="text-muted small">{{ $order->shipping_address_line_1 }}<br>@if($order->shipping_address_line_2){{ $order->shipping_address_line_2 }}<br>@endif{{ $order->shipping_city }} {{ $order->shipping_state }}<br>{{ $order->shipping_country }}</div>
-                    @if($order->tracking_number || $order->shipping_provider)
+                    @if($order->sales_channel === AppModelsOrder::SALES_CHANNEL_POS)
+                        <h4 class="fw-bold mb-3">{{ __('In-store purchase') }}</h4>
+                        <div class="text-muted small">{{ __('This purchase was completed at the store counter. No shipping address is required.') }}</div>
                         <hr>
-                        <div class="d-flex justify-content-between flex-wrap gap-2"><span class="text-muted">{{ __('Courier') }}</span><strong>{{ $order->shipping_provider ?: '—' }}</strong></div>
-                        <div class="d-flex justify-content-between flex-wrap gap-2"><span class="text-muted">{{ __('Tracking number') }}</span><strong>{{ $order->tracking_number ?: '—' }}</strong></div>
+                        <div class="d-flex justify-content-between flex-wrap gap-2"><span class="text-muted">{{ __('Fulfillment') }}</span><strong>{{ __('Store pickup') }}</strong></div>
+                    @else
+                        <h4 class="fw-bold mb-3">{{ __('Shipping address') }}</h4>
+                        <div class="text-muted small">{{ $order->shipping_address_line_1 }}<br>@if($order->shipping_address_line_2){{ $order->shipping_address_line_2 }}<br>@endif{{ $order->shipping_city }} {{ $order->shipping_state }}<br>{{ $order->shipping_country }}</div>
+                        @if($order->tracking_number || $order->shipping_provider)
+                            <hr>
+                            <div class="d-flex justify-content-between flex-wrap gap-2"><span class="text-muted">{{ __('Courier') }}</span><strong>{{ $order->shipping_provider ?: '—' }}</strong></div>
+                            <div class="d-flex justify-content-between flex-wrap gap-2"><span class="text-muted">{{ __('Tracking number') }}</span><strong>{{ $order->tracking_number ?: '—' }}</strong></div>
+                        @endif
                     @endif
                 </div>
 
