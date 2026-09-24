@@ -39,6 +39,56 @@
 </x-admin.page-header>
 
 <div class="admin-page-shell">
+    <div class="admin-card mb-4">
+        <div class="admin-card-body">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h4 class="mb-0">{{ __('Cash shift') }}</h4>
+                        @if($cashShift)
+                            <span class="badge badge-soft-success">{{ __('Open') }}</span>
+                        @else
+                            <span class="badge badge-soft-secondary">{{ __('Not opened') }}</span>
+                        @endif
+                    </div>
+                    <p class="text-muted small mb-0 mt-1">{{ __('Track opening cash, cash sales, refunds, counted cash, and drawer variance for this cashier.') }}</p>
+                </div>
+                @if($cashShift)
+                    <div class="text-end">
+                        <div class="text-muted small">{{ __('Opened') }}</div>
+                        <div class="fw-semibold">{{ optional($cashShift->opened_at)->format('M d, Y H:i') }}</div>
+                    </div>
+                @endif
+            </div>
+
+            @if($cashShift)
+                <div class="row g-3 mt-1">
+                    <div class="col-6 col-lg-3"><div class="border rounded-4 p-3 h-100"><div class="text-muted small">{{ __('Opening cash') }}</div><div class="fw-bold fs-5">EGP {{ number_format($cashShiftSummary['opening_cash'], 2) }}</div></div></div>
+                    <div class="col-6 col-lg-3"><div class="border rounded-4 p-3 h-100"><div class="text-muted small">{{ __('Cash sales') }}</div><div class="fw-bold fs-5">EGP {{ number_format($cashShiftSummary['cash_sales'], 2) }}</div></div></div>
+                    <div class="col-6 col-lg-3"><div class="border rounded-4 p-3 h-100"><div class="text-muted small">{{ __('Cash refunds') }}</div><div class="fw-bold fs-5">EGP {{ number_format($cashShiftSummary['cash_refunds'], 2) }}</div></div></div>
+                    <div class="col-6 col-lg-3"><div class="border rounded-4 p-3 h-100"><div class="text-muted small">{{ __('Expected cash') }}</div><div class="fw-bold fs-5">EGP {{ number_format($cashShiftSummary['expected_cash'], 2) }}</div></div></div>
+                </div>
+                <details class="mt-3">
+                    <summary class="fw-semibold" style="cursor:pointer"><i class="mdi mdi-cash-check me-1"></i>{{ __('Close and reconcile shift') }}</summary>
+                    <form method="POST" action="{{ route('admin.pos.shifts.close', $cashShift) }}" class="row g-3 mt-1" data-submit-loading data-confirm-title="{{ __('Close cash shift?') }}" data-confirm-message="{{ __('The counted cash will be compared with the expected drawer amount and the variance will be recorded.') }}" data-confirm-ok="{{ __('Close shift') }}">
+                        @csrf
+                        <div class="col-md-4"><label class="form-label">{{ __('Counted cash') }}</label><input name="closing_cash_counted" type="number" min="0" step="0.01" required class="form-control" placeholder="0.00"></div>
+                        <div class="col-md-6"><label class="form-label">{{ __('Closing notes') }} <span class="text-muted">({{ __('optional') }})</span></label><input name="closing_notes" maxlength="1000" class="form-control" placeholder="{{ __('Explain any variance or handover note') }}"></div>
+                        <div class="col-md-2 d-flex align-items-end"><button class="btn btn-outline-danger w-100">{{ __('Close shift') }}</button></div>
+                    </form>
+                </details>
+            @else
+                <form method="POST" action="{{ route('admin.pos.shifts.open') }}" class="row g-3 mt-1" data-submit-loading>
+                    @csrf
+                    <div class="col-md-4"><label class="form-label">{{ __('Opening cash') }}</label><input name="opening_cash" type="number" min="0" step="0.01" value="{{ old('opening_cash', '0.00') }}" required class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label">{{ __('Opening notes') }} <span class="text-muted">({{ __('optional') }})</span></label><input name="opening_notes" maxlength="1000" class="form-control" placeholder="{{ __('Drawer handover or opening note') }}"></div>
+                    <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100"><i class="mdi mdi-cash-register me-1"></i>{{ __('Open shift') }}</button></div>
+                </form>
+            @endif
+            @error('shift')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+        </div>
+    </div>
+
     <div class="pos-shell">
         <div>
             <div class="admin-card mb-4">
