@@ -311,6 +311,9 @@
         @if(!blank($order->customer_name))
             <div class="receipt-meta-row"><span>{{ __('Customer name') }}</span><strong>{{ $order->customer_name }}</strong></div>
         @endif
+        @if($order->user_id && !blank($order->customer_email))
+            <div class="receipt-meta-row"><span>{{ __('Customer account') }}</span><strong>{{ $order->customer_email }}</strong></div>
+        @endif
         @if($payment?->transaction_reference)
             <div class="receipt-meta-row"><span>{{ __('Payment reference') }}</span><strong>{{ $payment->transaction_reference }}</strong></div>
         @endif
