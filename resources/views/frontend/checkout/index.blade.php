@@ -153,7 +153,7 @@
                                     <h4 class="fw-bold mb-1">{{ __('Shipping address') }}</h4>
                                     <div class="text-muted small">{{ __('Make sure the shipping destination is complete and easy for the courier to confirm.') }}</div>
                                 </div>
-                                <span class="lc-badge"><i class="bi bi-geo-alt"></i>{{ __('Delivery ready') }}</span>
+                                <span class="lc-badge"><i class="bi bi-geo-alt"></i>{{ __('Shipping details') }}</span>
                             </div>
                             <div class="row g-3">
                                 <div class="col-12">
@@ -284,7 +284,7 @@
 
                             @if(($upsellProducts ?? collect())->isNotEmpty())
                                 <div class="checkout-upsell-stack mb-3">
-                                    <div class="small text-uppercase fw-bold text-muted mb-2">{{ __('Last-minute boost') }}</div>
+                                    <div class="small text-uppercase fw-bold text-muted mb-2">{{ __('You may also like') }}</div>
                                     @foreach($upsellProducts as $upsellProduct)
                                         <div class="checkout-upsell-item">
                                             <div class="d-flex align-items-center gap-3">
@@ -305,7 +305,7 @@
 
                             @if(($offerSignals ?? collect())->isNotEmpty())
                                 <div class="checkout-personalized-offers mb-3">
-                                    <div class="small text-uppercase fw-bold text-muted mb-2">{{ __('Personalized offers') }}</div>
+                                    <div class="small text-uppercase fw-bold text-muted mb-2">{{ __('Available offers') }}</div>
                                     @foreach($offerSignals as $signal)
                                         <article class="checkout-personalized-offer-card">
                                             <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
@@ -325,9 +325,9 @@
                                     <div class="small text-muted">{{ $storeSettings['checkout_secure_notice'] ?? __('Review your summary, choose the right payment method, and place the order when everything looks correct.') }}</div>
                                 </div>
                                 <div class="checkout-assurance-list">
-                                    <div><i class="bi bi-lock"></i>{{ __('Encrypted checkout messaging') }}</div>
-                                    <div><i class="bi bi-credit-card"></i>{{ __('Clear payment choice') }}</div>
-                                    <div><i class="bi bi-geo-alt"></i>{{ __('Shipping reviewed before payment') }}</div>
+                                    <div><i class="bi bi-lock"></i>{{ __('Order details reviewed before submission') }}</div>
+                                    <div><i class="bi bi-credit-card"></i>{{ __('Payment method shown clearly') }}</div>
+                                    <div><i class="bi bi-geo-alt"></i>{{ __('Delivery address confirmed before order') }}</div>
                                 </div>
                             </div>
 
