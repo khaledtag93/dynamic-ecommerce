@@ -111,16 +111,16 @@
                                 <td>{{ $period->starts_on->format('d M Y') }} → {{ $period->ends_on->format('d M Y') }}</td>
                                 <td>{{ $period->pay_date?->format('d M Y') ?: '—' }}</td>
                                 <td>
-                                    <span class="badge admin-status-badge {{ $period->isOpen() ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ AppModelsPayrollPeriod::statusOptions()[$period->status] ?? IlluminateSupportStr::headline($period->status) }}</span>
+                                    <span class="badge admin-status-badge {{ $period->isOpen() ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ \App\Models\PayrollPeriod::statusOptions()[$period->status] ?? \Illuminate\Support\Str::headline($period->status) }}</span>
                                 </td>
                                 <td>
                                     @if($run)
                                         @php($runClass = match($run->status) {
-                                            AppModelsPayrollRun::STATUS_PAID => 'badge-soft-success',
-                                            AppModelsPayrollRun::STATUS_APPROVED => 'badge-soft-info',
+                                            \App\Models\PayrollRun::STATUS_PAID => 'badge-soft-success',
+                                            \App\Models\PayrollRun::STATUS_APPROVED => 'badge-soft-info',
                                             default => 'badge-soft-warning',
                                         })
-                                        <span class="badge admin-status-badge {{ $runClass }}">{{ AppModelsPayrollRun::statusOptions()[$run->status] ?? IlluminateSupportStr::headline($run->status) }}</span>
+                                        <span class="badge admin-status-badge {{ $runClass }}">{{ \App\Models\PayrollRun::statusOptions()[$run->status] ?? \Illuminate\Support\Str::headline($run->status) }}</span>
                                     @else
                                         <span class="text-muted">{{ __('Not generated') }}</span>
                                     @endif
