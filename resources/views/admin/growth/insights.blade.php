@@ -2,10 +2,10 @@
 
 @section('growth-module-content')
 <div class="gm-grid">
-    <div class="gm-card"><div class="gm-mini">{{ __('Attributed revenue') }}</div><div class="gm-value">{{ number_format((float) ($attributionSummary['attributed_revenue'] ?? 0), 2) }}</div><div class="gm-help">{{ __('Revenue matched to growth touches.') }}</div></div>
-    <div class="gm-card"><div class="gm-mini">{{ __('30d revenue lift') }}</div><div class="gm-value">{{ number_format((float) ($attributionSummary['lift_revenue_30d'] ?? 0), 2) }}</div><div class="gm-help">{{ __('Recent attributed lift from growth actions.') }}</div></div>
-    <div class="gm-card"><div class="gm-mini">{{ __('Average churn risk') }}</div><div class="gm-value">{{ number_format((float) ($predictiveSummary['avg_churn_risk'] ?? 0), 2) }}</div><div class="gm-help">{{ __('Average predicted churn score.') }}</div></div>
-    <div class="gm-card"><div class="gm-mini">{{ __('Average 90d retention') }}</div><div class="gm-value">{{ number_format((float) ($cohortSummary['average_retention_90d'] ?? 0), 2) }}%</div><div class="gm-help">{{ __('Average repeat retention across recent cohorts.') }}</div></div>
+    <div class="admin-card admin-stat-card gm-card"><div class="gm-mini">{{ __('Attributed revenue') }}</div><div class="gm-value">{{ number_format((float) ($attributionSummary['attributed_revenue'] ?? 0), 2) }}</div><div class="gm-help">{{ __('Revenue matched to growth touches.') }}</div></div>
+    <div class="admin-card admin-stat-card gm-card"><div class="gm-mini">{{ __('30d revenue lift') }}</div><div class="gm-value">{{ number_format((float) ($attributionSummary['lift_revenue_30d'] ?? 0), 2) }}</div><div class="gm-help">{{ __('Recent attributed lift from growth actions.') }}</div></div>
+    <div class="admin-card admin-stat-card gm-card"><div class="gm-mini">{{ __('Average churn risk') }}</div><div class="gm-value">{{ number_format((float) ($predictiveSummary['avg_churn_risk'] ?? 0), 2) }}</div><div class="gm-help">{{ __('Average predicted churn score.') }}</div></div>
+    <div class="admin-card admin-stat-card gm-card"><div class="gm-mini">{{ __('Average 90d retention') }}</div><div class="gm-value">{{ number_format((float) ($cohortSummary['average_retention_90d'] ?? 0), 2) }}%</div><div class="gm-help">{{ __('Average repeat retention across recent cohorts.') }}</div></div>
 </div>
 
 <div class="gm-two">
