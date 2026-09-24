@@ -34,7 +34,7 @@
                     <div class="col-md-6 col-xl-3">
                         <label class="form-label fw-semibold">{{ __('Pay basis') }}</label>
                         <select name="pay_basis" class="form-select @error('pay_basis') is-invalid @enderror" required>
-                            @foreach(AppModelsEmployeeCompensation::payBasisOptions() as $value => $label)
+                            @foreach(\App\Models\EmployeeCompensation::payBasisOptions() as $value => $label)
                                 <option value="{{ $value }}" @selected(old('pay_basis', $compensation->pay_basis) === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
