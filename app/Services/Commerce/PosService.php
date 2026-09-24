@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
+use App\Models\PosCashShift;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
@@ -785,6 +786,22 @@ class PosService
                 ]);
             }
 
+            $cashShift = null;
+            if ($paymentMethod === Order::PAYMENT_METHOD_POS_CASH) {
+                $cashShift = PosCashShift::query()
+                    ->where('cashier_user_id', $cashierUserId)
+                    ->whereNull('closed_at')
+                    ->latest('id')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $cashShift) {
+                    throw ValidationException::withMessages([
+                        'cash_shift' => __('Open a cash shift before completing a cash sale.'),
+                    ]);
+                }
+            }
+
             $items = PosCartItem::query()
                 ->where('pos_cart_id', $lockedCart->id)
                 ->orderBy('id')
@@ -1011,6 +1028,7 @@ class PosService
                     'sales_channel' => Order::SALES_CHANNEL_POS,
                     'cashier_user_id' => $cashierUserId,
                     'pos_cart_id' => $lockedCart->id,
+                    'pos_cash_shift_id' => $cashShift?->id,
                     'customer_user_id' => $customer?->id,
                     'pos' => [
                         'cash_received' => $cashReceived,
