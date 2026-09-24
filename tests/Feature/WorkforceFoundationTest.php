@@ -128,6 +128,34 @@ class WorkforceFoundationTest extends TestCase
         ]);
     }
 
+    public function test_manager_cannot_deactivate_employee_with_an_open_attendance_session(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $manager = $this->staffWithRole('operations_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-OPEN-1');
+
+        EmployeeAttendanceSession::query()->create([
+            'employee_profile_id' => $employee->id,
+            'clock_in_at' => now()->subMinutes(20),
+            'source' => 'admin',
+        ]);
+
+        $this->actingAs($manager)
+            ->put(route('admin.workforce.employees.update', $employee), [
+                'employee_code' => $employee->employee_code,
+                'job_title' => $employee->job_title,
+                'department' => $employee->department,
+                'employment_type' => $employee->employment_type,
+                'status' => EmployeeProfile::STATUS_ON_LEAVE,
+                'hire_date' => optional($employee->hire_date)->format('Y-m-d'),
+            ])
+            ->assertSessionHasErrors('status');
+
+        $this->assertSame(EmployeeProfile::STATUS_ACTIVE, $employee->fresh()->status);
+    }
+
     public function test_non_active_employee_cannot_start_attendance_session(): void
     {
         app(AuthorizationService::class)->syncDefaults();
