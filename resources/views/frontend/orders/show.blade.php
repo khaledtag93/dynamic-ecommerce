@@ -53,7 +53,7 @@
                     @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $latestPayment && !empty(data_get($latestPayment->meta, 'checkout_error')))
                         <div class="alert alert-warning rounded-4 mb-4">
                             <div class="fw-semibold mb-1">{{ __('Secure payment session could not be opened.') }}</div>
-                            <div class="small mb-0">{{ data_get($latestPayment->meta, 'checkout_error') }}</div>
+                            <div class="small mb-0">{{ __('You can try opening the secure payment page again. If the problem continues, contact support with your order number.') }}</div>
                         </div>
                     @endif
 
@@ -115,8 +115,8 @@
                     <div class="text-muted small">{{ $paymentInstructions }}</div>
                     @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $latestPayment)
                         <hr>
-                        <div class="small text-muted mb-2">{{ __('Gateway status') }}</div>
-                        <div class="fw-semibold mb-2">{{ $latestPayment->provider_status ?: __('Waiting for secure payment session') }}</div>
+                        <div class="small text-muted mb-2">{{ __('Payment status') }}</div>
+                        <div class="fw-semibold mb-2">{{ $order->payment_status_label }}</div>
                         @if(!empty(data_get($latestPayment->meta, 'paymob_payment_key_created_at')))
                             <div class="small text-muted mb-2">{{ __('Last secure payment session created at') }}: {{ data_get($latestPayment->meta, 'paymob_payment_key_created_at') }}</div>
                         @endif
