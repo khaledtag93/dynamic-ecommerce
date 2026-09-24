@@ -541,6 +541,13 @@ class StorefrontExperienceTest extends TestCase
 
     public function test_small_screen_navigation_exposes_account_and_login_paths(): void
     {
+        $guest = $this->get(route('frontend.home'));
+
+        $guest
+            ->assertOk()
+            ->assertSee('class="d-md-none" href="'.route('login').'"', false)
+            ->assertSee(route('register'));
+
         $user = User::factory()->create();
 
         $authenticated = $this->actingAs($user)->get(route('frontend.home'));
@@ -549,15 +556,6 @@ class StorefrontExperienceTest extends TestCase
             ->assertOk()
             ->assertSee('class="d-md-none" href="'.route('orders.index').'"', false)
             ->assertSee('class="d-md-none" href="'.route('notifications.index').'"', false);
-
-        auth()->logout();
-
-        $guest = $this->get(route('frontend.home'));
-
-        $guest
-            ->assertOk()
-            ->assertSee('class="d-md-none" href="'.route('login').'"', false)
-            ->assertSee(route('register'));
     }
 
 }

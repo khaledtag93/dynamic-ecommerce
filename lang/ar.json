@@ -80,7 +80,7 @@
     "Access Control": "التحكم في الوصول",
     "Access role": "صلاحية الوصول",
     "Account": "الحساب",
-    "Account access": "الوصول إلى الحساب",
+    "Account access": "صلاحيات الحساب",
     "Account access updated successfully.": "تم تحديث صلاحيات الحساب بنجاح.",
     "Account summary": "ملخص الحساب",
     "Accounts that have at least one order.": "حسابات لديها طلب واحد على الأقل.",
@@ -3261,5 +3261,6 @@
     "Confirm your password": "أكد كلمة المرور",
     "For your security, enter your password again before continuing.": "لحماية حسابك، أدخل كلمة المرور مرة أخرى قبل المتابعة.",
     "Continue securely": "متابعة بأمان",
-    "View update": "عرض التحديث"
+    "View update": "عرض التحديث",
+    "Customer account access": "الوصول إلى حساب العميل"
 }

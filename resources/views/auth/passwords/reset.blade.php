@@ -9,7 +9,7 @@
             <div class="col-xl-5 col-lg-6">
                 <div class="lc-card p-4 p-lg-5">
                     <div class="text-center mb-4">
-                        <div class="text-uppercase small text-muted fw-bold">{{ __('Account access') }}</div>
+                        <div class="text-uppercase small text-muted fw-bold">{{ __('Customer account access') }}</div>
                         <h1 class="fw-bold mb-2">{{ __('Create a new password') }}</h1>
                         <p class="text-muted mb-0">{{ __('Choose a new password for your account, then sign in with your updated credentials.') }}</p>
                     </div>

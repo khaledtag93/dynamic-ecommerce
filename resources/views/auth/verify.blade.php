@@ -9,7 +9,7 @@
             <div class="col-xl-5 col-lg-6">
                 <div class="lc-card p-4 p-lg-5">
                     <div class="text-center mb-4">
-                        <div class="text-uppercase small text-muted fw-bold">{{ __('Account access') }}</div>
+                        <div class="text-uppercase small text-muted fw-bold">{{ __('Customer account access') }}</div>
                         <h1 class="fw-bold mb-2">{{ __('Verify your email') }}</h1>
                         <p class="text-muted mb-0">{{ __('Check your inbox and use the verification link to continue to your account.') }}</p>
                     </div>
