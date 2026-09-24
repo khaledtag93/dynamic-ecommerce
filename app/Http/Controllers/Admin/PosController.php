@@ -143,6 +143,33 @@ class PosController extends Controller
         ));
     }
 
+    public function shifts(Request $request)
+    {
+        $status = (string) $request->string('status');
+        $cashierSearch = trim((string) $request->string('cashier'));
+
+        $query = PosCashShift::query()->with('cashier')->latest('opened_at');
+
+        if ($status === 'open') {
+            $query->whereNull('closed_at');
+        } elseif ($status === 'closed') {
+            $query->whereNotNull('closed_at');
+        } elseif ($status === 'variance') {
+            $query->whereNotNull('closed_at')->where('cash_variance', '!=', 0);
+        }
+
+        if ($cashierSearch !== '') {
+            $query->whereHas('cashier', function ($cashierQuery) use ($cashierSearch) {
+                $cashierQuery->where('name', 'like', "%{$cashierSearch}%")
+                    ->orWhere('email', 'like', "%{$cashierSearch}%");
+            });
+        }
+
+        $cashShifts = $query->paginate(25)->withQueryString();
+
+        return view('admin.pos.shifts.index', compact('cashShifts', 'status', 'cashierSearch'));
+    }
+
     public function openShift(Request $request)
     {
         $data = $request->validate([
