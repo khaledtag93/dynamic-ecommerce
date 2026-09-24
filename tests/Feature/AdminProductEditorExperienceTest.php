@@ -53,6 +53,110 @@ class AdminProductEditorExperienceTest extends TestCase
         ]);
     }
 
+    public function test_variant_barcode_is_saved_from_livewire_editor(): void
+    {
+        $category = $this->createCategory('Variant Barcode', 'variant-barcode');
+
+        Livewire::test(ProductForm::class)
+            ->set('name', 'Variant Barcode Product')
+            ->set('category_id', $category->id)
+            ->set('hasVariants', true)
+            ->set('status', 0)
+            ->set('is_featured', 0)
+            ->set('variants', [[
+                'id' => null,
+                'sku' => 'VAR-BAR-001',
+                'barcode' => '6221234567001',
+                'price' => 125,
+                'sale_price' => '',
+                'stock' => 4,
+                'is_default' => true,
+                'status' => true,
+                'attributes' => [],
+            ]])
+            ->call('save')
+            ->assertSet('saveErrorMessage', '')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('product_variants', [
+            'sku' => 'VAR-BAR-001',
+            'barcode' => '6221234567001',
+            'stock' => 4,
+        ]);
+    }
+
+    public function test_product_barcode_cannot_duplicate_another_product_barcode(): void
+    {
+        $category = $this->createCategory('Barcode Collision', 'barcode-collision');
+
+        Product::create([
+            'name' => 'Existing Barcode Product',
+            'slug' => 'existing-barcode-product',
+            'barcode' => '6221234567002',
+            'category_id' => $category->id,
+            'base_price' => 100,
+            'quantity' => 2,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+
+        Livewire::test(ProductForm::class)
+            ->set('name', 'Conflicting Barcode Product')
+            ->set('barcode', '6221234567002')
+            ->set('category_id', $category->id)
+            ->set('base_price', 110)
+            ->set('quantity', 2)
+            ->set('stock_status', 'in_stock')
+            ->set('status', 0)
+            ->set('is_featured', 0)
+            ->call('save')
+            ->assertHasErrors(['barcode']);
+
+        $this->assertDatabaseMissing('products', [
+            'name' => 'Conflicting Barcode Product',
+        ]);
+    }
+
+    public function test_variant_barcode_cannot_duplicate_product_barcode(): void
+    {
+        $category = $this->createCategory('Variant Collision', 'variant-collision');
+
+        Product::create([
+            'name' => 'Barcode Owner Product',
+            'slug' => 'barcode-owner-product',
+            'barcode' => '6221234567003',
+            'category_id' => $category->id,
+            'base_price' => 90,
+            'quantity' => 2,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+
+        Livewire::test(ProductForm::class)
+            ->set('name', 'Variant Collision Product')
+            ->set('category_id', $category->id)
+            ->set('hasVariants', true)
+            ->set('status', 0)
+            ->set('is_featured', 0)
+            ->set('variants', [[
+                'id' => null,
+                'sku' => 'VAR-CONFLICT-001',
+                'barcode' => '6221234567003',
+                'price' => 130,
+                'sale_price' => '',
+                'stock' => 3,
+                'is_default' => true,
+                'status' => true,
+                'attributes' => [],
+            ]])
+            ->call('save')
+            ->assertHasErrors(['variants.0.barcode']);
+
+        $this->assertDatabaseMissing('products', [
+            'name' => 'Variant Collision Product',
+        ]);
+    }
+
     public function test_publish_readiness_is_advisory_and_does_not_change_current_activation_rules(): void
     {
         $category = $this->createCategory('Advisory Readiness', 'advisory-readiness');
