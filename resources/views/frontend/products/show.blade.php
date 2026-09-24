@@ -220,7 +220,7 @@
                         <div><span>{{ __('Stock') }}</span><strong id="quickFactAvailability">{{ $product->in_stock ? __('Available') : __('Unavailable') }}</strong></div>
                         <div><span>{{ __('Quantity left') }}</span><strong id="quickFactQty">{{ $selectedVariantStock > 0 ? $selectedVariantStock : ($stockQty > 0 ? $stockQty : __('N/A')) }}</strong></div>
                         <div><span>{{ __('Variants') }}</span><strong>{{ $activeVariants->count() ?: __('Standard') }}</strong></div>
-                        <div><span>{{ __('Gallery images') }}</span><strong>{{ $galleryImages->count() }}</strong></div>
+                        <div><span>{{ __('Gallery images') }}</span><strong>{{ $gallery->count() }}</strong></div>
                     </div>
                 </div>
             </div>
@@ -426,8 +426,8 @@
 .lc-breadcrumb a{text-decoration:none;color:var(--lc-primary-dark)}
 .product-gallery-card,.product-buy-card{overflow:hidden}
 .product-gallery-main{border-radius:1.5rem;background:linear-gradient(180deg,color-mix(in srgb,var(--lc-surface) 98%, transparent),color-mix(in srgb,var(--lc-soft) 88%, white));padding:.65rem;border:1px solid color-mix(in srgb,var(--lc-border) 80%, white)}
-.product-gallery-main__image{width:100%;aspect-ratio:1/1;object-fit:cover}
-.product-thumb-button{transition:transform .2s ease,opacity .2s ease,box-shadow .2s ease}.product-thumb-button:hover{transform:translateY(-2px);opacity:.96}.product-thumb-button.is-active .product-thumb-button__image{box-shadow:0 0 0 2px color-mix(in srgb,var(--lc-primary) 48%, white)}.product-thumb-button__image{aspect-ratio:1/1;object-fit:cover;border:1px solid color-mix(in srgb,var(--lc-border) 75%, white)}
+.product-gallery-main__image{width:100%;aspect-ratio:1/1;object-fit:contain}
+.product-thumb-button{transition:transform .2s ease,opacity .2s ease,box-shadow .2s ease}.product-thumb-button:hover{transform:translateY(-2px);opacity:.96}.product-thumb-button.is-active .product-thumb-button__image{box-shadow:0 0 0 2px color-mix(in srgb,var(--lc-primary) 48%, white)}.product-thumb-button__image{aspect-ratio:1/1;object-fit:contain;border:1px solid color-mix(in srgb,var(--lc-border) 75%, white)}
 .lc-product-badge--large{position:absolute;top:1rem;left:1rem;z-index:2}
 body[dir="rtl"] .lc-product-badge--large{left:auto;right:1rem}
 .product-floating-note{position:absolute;right:1rem;bottom:1rem;display:inline-flex;align-items:center;gap:.5rem;padding:.65rem .9rem;border-radius:999px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);font-weight:800;color:#9a3412;box-shadow:0 16px 34px rgba(15,23,42,.12)}
