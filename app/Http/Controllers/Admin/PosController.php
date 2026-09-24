@@ -143,6 +143,61 @@ class PosController extends Controller
         ));
     }
 
+    public function productLookup(Request $request)
+    {
+        $term = trim((string) $request->string('q'));
+        if (mb_strlen($term) < 2) {
+            return response()->json(['results' => []]);
+        }
+
+        $products = Product::query()->where('status', true)
+            ->where(function ($query) use ($term) {
+                $query->where('name', 'like', "%{$term}%")
+                    ->orWhere('sku', 'like', "%{$term}%")
+                    ->orWhere('barcode', 'like', "%{$term}%");
+            })->orderBy('name')->limit(8)->get();
+        $variants = ProductVariant::query()->where('status', true)
+            ->whereHas('product', fn ($query) => $query->where('status', true))
+            ->where(function ($query) use ($term) {
+                $query->where('sku', 'like', "%{$term}%")->orWhere('barcode', 'like', "%{$term}%");
+            })->with('product')->limit(8)->get();
+
+        $results = $products->map(fn ($product) => [
+            'product_id' => $product->id, 'variant_id' => null, 'label' => $product->name,
+            'sku' => $product->sku, 'barcode' => $product->barcode, 'stock' => (int) $product->quantity_value,
+            'price' => (float) $product->current_price, 'selectable' => ! $product->has_variants,
+        ])->concat($variants->map(fn ($variant) => [
+            'product_id' => $variant->product_id, 'variant_id' => $variant->id,
+            'label' => $variant->product->name . ' · ' . $variant->variant_name,
+            'sku' => $variant->sku, 'barcode' => $variant->barcode, 'stock' => (int) $variant->stock,
+            'price' => (float) $variant->current_price, 'selectable' => true,
+        ]))->take(10)->values();
+
+        return response()->json(['results' => $results]);
+    }
+
+    public function customerLookup(Request $request)
+    {
+        $term = trim((string) $request->string('q'));
+        if (mb_strlen($term) < 2) {
+            return response()->json(['results' => []]);
+        }
+
+        $customers = User::query()->select(['users.id', 'users.name', 'users.email'])
+            ->where('role_as', 0)
+            ->where(function ($query) use ($term) {
+                $query->where('users.name', 'like', "%{$term}%")
+                    ->orWhere('users.email', 'like', "%{$term}%")
+                    ->orWhereHas('addresses', fn ($addressQuery) => $addressQuery->where('phone', 'like', "%{$term}%"));
+            })->with(['addresses:id,user_id,phone,is_default_shipping'])
+            ->orderBy('users.name')->limit(8)->get();
+
+        return response()->json(['results' => $customers->map(function ($customer) {
+            $phone = optional($customer->addresses->sortByDesc('is_default_shipping')->first())->phone;
+            return ['id' => $customer->id, 'name' => $customer->name, 'email' => $customer->email, 'phone' => $phone];
+        })->values()]);
+    }
+
     public function shifts(Request $request)
     {
         $status = (string) $request->string('status');
