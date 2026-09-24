@@ -2,6 +2,7 @@
 
 namespace App\Services\Workforce;
 
+use App\Models\EmployeeLeaveRequest;
 use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
 use App\Models\User;
@@ -21,6 +22,7 @@ class WorkShiftService
         return DB::transaction(function () use ($employee, $data, $actor) {
             $lockedEmployee = EmployeeProfile::query()->whereKey($employee->id)->lockForUpdate()->firstOrFail();
             $this->guardSchedulable($lockedEmployee);
+            $this->guardNoApprovedLeave($lockedEmployee, $data['starts_at'], $data['ends_at']);
             $this->guardNoOverlap($lockedEmployee, $data['starts_at'], $data['ends_at']);
 
             $status = $data['status'] ?? EmployeeWorkShift::STATUS_DRAFT;
@@ -69,6 +71,7 @@ class WorkShiftService
 
             $startsAt = $data['starts_at'] ?? $lockedShift->starts_at;
             $endsAt = $data['ends_at'] ?? $lockedShift->ends_at;
+            $this->guardNoApprovedLeave($employee, $startsAt, $endsAt);
             $this->guardNoOverlap($employee, $startsAt, $endsAt, $lockedShift->id);
 
             $status = $data['status'] ?? $lockedShift->status;
@@ -137,6 +140,29 @@ class WorkShiftService
         if ($employee->status !== EmployeeProfile::STATUS_ACTIVE) {
             throw ValidationException::withMessages([
                 'employee_profile_id' => __('Only active employees can be assigned new work shifts.'),
+            ]);
+        }
+    }
+
+    private function guardNoApprovedLeave(
+        EmployeeProfile $employee,
+        CarbonInterface|string $startsAt,
+        CarbonInterface|string $endsAt,
+    ): void {
+        $startDate = $startsAt instanceof CarbonInterface ? $startsAt->toDateString() : date('Y-m-d', strtotime($startsAt));
+        $endDate = $endsAt instanceof CarbonInterface ? $endsAt->toDateString() : date('Y-m-d', strtotime($endsAt));
+
+        $approvedLeave = EmployeeLeaveRequest::query()
+            ->where('employee_profile_id', $employee->id)
+            ->where('status', EmployeeLeaveRequest::STATUS_APPROVED)
+            ->where('starts_on', '<=', $endDate)
+            ->where('ends_on', '>=', $startDate)
+            ->lockForUpdate()
+            ->exists();
+
+        if ($approvedLeave) {
+            throw ValidationException::withMessages([
+                'starts_at' => __('This employee has approved leave overlapping the requested work shift.'),
             ]);
         }
     }
