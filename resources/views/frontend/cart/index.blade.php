@@ -125,7 +125,12 @@
                                                         <div class="small text-muted">{{ __('Line total') }}</div>
                                                         <div class="fw-bold fs-5">EGP {{ number_format($item->line_total, 2) }}</div>
                                                     </div>
-                                                    <form method="POST" action="{{ route('cart.destroy', $item) }}" data-submit-loading>
+                                                    <form method="POST" action="{{ route('cart.destroy', $item) }}" data-submit-loading
+                                                          data-confirm-title="{{ __('Remove item') }}"
+                                                          data-confirm-message="{{ __('Remove this item from your cart?') }}"
+                                                          data-confirm-subtitle="{{ __('You can add the product again later if you change your mind.') }}"
+                                                          data-confirm-ok="{{ __('Remove item') }}"
+                                                          data-confirm-cancel="{{ __('Keep item') }}">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button class="btn lc-btn-danger-soft" type="submit" data-loading-text="{{ __('Removing...') }}">{{ __('Remove') }}</button>
@@ -293,8 +298,8 @@
 
 @push('styles')
 <style>
-.cart-offers-card{background:linear-gradient(180deg,#ffffff 0%,color-mix(in srgb,var(--lc-soft) 76%, white) 100%)}.cart-offer-signal{padding:.95rem;border-radius:1rem;background:rgba(255,255,255,.84);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 12px 30px color-mix(in srgb,var(--lc-primary) 7%, transparent)}.cart-offer-signal__chip{display:inline-flex;align-items:center;padding:.35rem .6rem;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:.75rem;font-weight:800}
-.cart-aov-progress__bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--lc-border) 70%, white);overflow:hidden}.cart-aov-progress__bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--lc-primary),var(--lc-secondary))}.cart-aov-progress{background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--lc-soft) 72%, white) 100%)}
+.cart-offers-card{background:linear-gradient(180deg,var(--lc-surface) 0%,color-mix(in srgb,var(--lc-soft) 76%, white) 100%)}.cart-offer-signal{padding:.95rem;border-radius:1rem;background:color-mix(in srgb,var(--lc-surface) 92%,transparent);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 12px 30px color-mix(in srgb,var(--lc-primary) 7%, transparent)}.cart-offer-signal__chip{display:inline-flex;align-items:center;padding:.35rem .6rem;border-radius:999px;background:color-mix(in srgb,var(--lc-soft) 82%,var(--lc-surface));border:1px solid color-mix(in srgb,var(--lc-primary) 18%,var(--lc-border));color:var(--lc-primary-dark);font-size:.75rem;font-weight:800}
+.cart-aov-progress__bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--lc-border) 70%, white);overflow:hidden}.cart-aov-progress__bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--lc-primary),var(--lc-secondary))}.cart-aov-progress{background:linear-gradient(180deg,var(--lc-surface) 0%,color-mix(in srgb,var(--lc-soft) 72%, white) 100%)}
 .cart-qty-update-fallback{display:none}.cart-remove-btn{font-weight:900}
 </style>
 @endpush
