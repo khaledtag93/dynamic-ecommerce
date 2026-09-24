@@ -56,6 +56,13 @@
 - All new Attendance/Leave foreign keys in the affected pending migrations now use explicit short constraint names; source fix head `5d03a205`.
 - The failed deploy's error handler restores QAS from maintenance mode. Before rerun, remove only an empty partial `employee_attendance_breaks` table if it exists. Production unchanged.
 
+## QAS Workforce integration checkpoint — 2026-09-25
+- Operator confirmed the latest Workforce build deployed successfully to QAS and the previously failing Workforce pages now open.
+- Confirmed page-load recovery includes Employees, Work Schedule, Attendance Corrections and Leave.
+- This closes the prior QAS blocker category caused by interrupted migrations, oversized MySQL FK names and corrupted Workforce Blade class references.
+- Treat this as integration/page-load success only; full functional acceptance still requires consolidated EN/AR, responsive, permission and workflow validation.
+- Production unchanged.
+
 ## Workforce Payroll Foundation V1 — 2026-09-25
 - Added `employee_compensations`, `payroll_periods`, `payroll_runs`, `payroll_entries` and `payroll_adjustments` with explicit short MySQL constraint/index names.
 - Added scoped payroll permissions: `workforce.payroll.self`, `workforce.payroll.view`, `workforce.payroll.manage`. Finance Manager gets view/manage/self; Operations Manager/Cashier/Support get self only; Super Admin gets all.
