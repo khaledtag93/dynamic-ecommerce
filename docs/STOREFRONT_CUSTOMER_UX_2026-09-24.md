@@ -32,6 +32,10 @@ Improve the customer-facing storefront without disturbing checkout, cart, pricin
 - Corrected hero navigation direction: LTR uses normal previous-left / next-right chevrons; RTL flips the direction automatically.
 - Corrected the primary CTA arrow to point forward in LTR and flip in RTL.
 
+### Cart
+- Replaced customer-visible internal recommendation labels `Personalized offers`, `Smart offers`, and `Return path` with `Available offers`, `Suggested offers`, and `Recently viewed`.
+- Recommendation/upsell selection logic is unchanged.
+
 ### Payment/account safety
 - Order Details and Order Success no longer render raw payment-provider `checkout_error` values to customers.
 - Customer pages now show safe retry/support guidance instead of technical provider responses.
@@ -60,3 +64,4 @@ Improve the customer-facing storefront without disturbing checkout, cart, pricin
 5. Checkout: billing toggle alignment, payment options, addresses, totals, offers, and Place order.
 6. English/Arabic wording and RTL spacing at mobile widths.
 7. Simulate a QAS online-payment initiation failure and confirm no raw provider error/status is exposed on Paymob Result, Order Details, or Order Success.
+8. Review Cart offer/recommendation labels in English and Arabic and confirm recommendation contents are unchanged.
