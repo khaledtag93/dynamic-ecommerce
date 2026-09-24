@@ -12,7 +12,7 @@
 
     $overviewOpen = $isRoute('admin.dashboard', 'admin.analytics.*', 'admin.growth.*');
     $catalogOpen = $isRoute('admin.categories.*', 'admin.products.*', 'admin.attributes.*', 'admin.brands.*');
-    $operationsOpen = $isRoute('admin.orders.*', 'admin.customers.*', 'admin.deliveries.*', 'admin.payments.*');
+    $operationsOpen = $isRoute('admin.pos.*', 'admin.orders.*', 'admin.customers.*', 'admin.deliveries.*', 'admin.payments.*');
     $inventoryOpen = $isRoute('admin.purchases.*', 'admin.inventory.*', 'admin.suppliers.*', 'admin.cost-calculator.*');
     $marketingOpen = $isRoute('admin.coupons.*', 'admin.promotions.*');
     $channelsOpen = $isRoute('admin.settings.branding', 'admin.settings.content*', 'admin.settings.whatsapp*', 'admin.settings.notifications*', 'admin.settings.payments*', 'admin.settings.deploy-center*', 'admin.imports.*');
@@ -99,7 +99,7 @@
     </details>
     @endif
 
-    @if($can('orders.view') || $can('customers.manage') || $can('payments.view') || $can('delivery.view'))
+    @if($can('pos.manage') || $can('orders.view') || $can('customers.manage') || $can('payments.view') || $can('delivery.view'))
     <details class="sidebar-group" {{ $operationsOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
@@ -112,6 +112,11 @@
         </summary>
         <div class="sidebar-group-body">
             <ul class="nav flex-column">
+                @if($can('pos.manage'))
+                <li class="nav-item {{ $isRoute('admin.pos.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.pos.index') }}"><i class="mdi mdi-cash-register menu-icon"></i><span class="menu-title">{{ __('Point of Sale') }}</span></a>
+                </li>
+                @endif
                 @if($can('orders.view'))
                 <li class="nav-item {{ $isRoute('admin.orders.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline menu-icon"></i><span class="menu-title">{{ __('Orders') }}</span></a>

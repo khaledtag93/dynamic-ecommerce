@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\NotificationController as AdminNotificationContro
 use App\Http\Controllers\Admin\NotificationCenterController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\SettingController;
@@ -258,6 +259,16 @@ Route::prefix('admin')
                 Route::post('/orders/{order}/refund', 'refund')->name('orders.refund');
                 Route::delete('/orders/{order}', 'destroy')->name('orders.destroy');
             });
+        });
+
+        Route::middleware('permission:pos.manage')->controller(PosController::class)->group(function () {
+            Route::get('/pos', 'index')->name('pos.index');
+            Route::post('/pos/carts/{posCart}/scan', 'scan')->name('pos.scan');
+            Route::patch('/pos/carts/{posCart}/items/{posCartItem}', 'updateQuantity')->name('pos.items.update');
+            Route::delete('/pos/carts/{posCart}/items/{posCartItem}', 'removeItem')->name('pos.items.destroy');
+            Route::delete('/pos/carts/{posCart}', 'clear')->name('pos.clear');
+            Route::post('/pos/carts/{posCart}/checkout', 'checkout')->name('pos.checkout');
+            Route::get('/pos/sales/{order}', 'sale')->name('pos.sales.show');
         });
 
         Route::middleware('permission:customers.manage')->group(function () {
