@@ -12,9 +12,9 @@
     $gallery = ($product->productImages ?? collect())->values();
     $galleryImages = $gallery->isNotEmpty()
         ? $gallery
-        : collect([(object) ['image_url' => $product->main_image_url ?: 'https://via.placeholder.com/900x900?text=No+Image']]);
+        : collect([(object) ['image_url' => $product->main_image_url ?: asset('images/storefront-placeholder.svg')]]);
     $stockQty = (int) ($product->quantity_value ?? 0);
-    $defaultImage = optional($galleryImages->first())->image_url ?: 'https://via.placeholder.com/900x900?text=No+Image';
+    $defaultImage = optional($galleryImages->first())->image_url ?: asset('images/storefront-placeholder.svg');
     $activeVariants = ($product->activeVariants ?? collect())->values();
     $defaultVariant = $activeVariants->firstWhere('is_default', true) ?: $activeVariants->first();
     $selectedVariantStock = (int) ($defaultVariant->stock ?? $stockQty);
@@ -250,7 +250,7 @@
                                         <span class="aov-bundle-check">
                                             <input type="checkbox" checked disabled>
                                         </span>
-                                        <img src="{{ $product->main_image_url ?: 'https://via.placeholder.com/120x120?text=No+Image' }}" alt="{{ $product->name }}">
+                                        <img src="{{ $product->main_image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $product->name }}">
                                         <div>
                                             <div class="fw-bold">{{ $product->name }}</div>
                                             <div class="text-muted small" id="bundleMainVariantLabel">{{ $defaultVariant?->variant_name ?: __('Selected main option') }}</div>
@@ -263,7 +263,7 @@
                                             <span class="aov-bundle-check">
                                                 <input type="checkbox" name="bundle_product_ids[]" value="{{ $bundleItem->id }}" data-bundle-checkbox data-price="{{ number_format((float) ($bundleItem->current_price ?? 0), 2, '.', '') }}" checked>
                                             </span>
-                                            <img src="{{ $bundleItem->main_image_url ?: 'https://via.placeholder.com/120x120?text=No+Image' }}" alt="{{ $bundleItem->name }}">
+                                            <img src="{{ $bundleItem->main_image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $bundleItem->name }}">
                                             <div>
                                                 <div class="fw-bold">{{ $bundleItem->name }}</div>
                                                 <div class="text-muted small">{{ $bundleItem->category->name ?? __('Recommended add-on') }}</div>
@@ -304,7 +304,7 @@
                                             <label class="aov-addon-card h-100">
                                                 <input type="checkbox" name="bundle_product_ids[]" value="{{ $addonItem->id }}" data-bundle-checkbox data-price="{{ number_format((float) ($addonItem->current_price ?? 0), 2, '.', '') }}">
                                                 <div class="aov-addon-card__media mb-3">
-                                                    <img src="{{ $addonItem->main_image_url ?: 'https://via.placeholder.com/200x200?text=No+Image' }}" alt="{{ $addonItem->name }}">
+                                                    <img src="{{ $addonItem->main_image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $addonItem->name }}">
                                                 </div>
                                                 <div class="fw-bold mb-1">{{ $addonItem->name }}</div>
                                                 <div class="text-muted small mb-2">{{ $addonItem->category->name ?? __('Accessory') }}</div>
