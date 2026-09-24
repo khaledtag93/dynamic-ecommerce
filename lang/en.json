@@ -2223,5 +2223,16 @@
     "This manual payment status transition is not allowed. Verify the payment evidence and use the appropriate order or gateway flow.": "This manual payment status transition is not allowed. Verify the payment evidence and use the appropriate order or gateway flow.",
     "A paid payment cannot be downgraded manually. Use the order refund action when money is returned.": "A paid payment cannot be downgraded manually. Use the order refund action when money is returned.",
     "Last gateway transition": "Last gateway transition",
-    "Gateway transaction reference": "Gateway transaction reference"
+    "Gateway transaction reference": "Gateway transaction reference",
+    "This delivery status transition is not allowed.": "This delivery status transition is not allowed.",
+    "A delivery must be marked as shipped before it can move out for delivery.": "A delivery must be marked as shipped before it can move out for delivery.",
+    "Delivery status updated successfully.": "Delivery status updated successfully.",
+    "Shipped at": "Shipped at",
+    "Delivered at": "Delivered at",
+    "Only valid next delivery statuses are enabled. Customer notifications and WhatsApp updates are sent only when the status actually changes.": "Only valid next delivery statuses are enabled. Customer notifications and WhatsApp updates are sent only when the status actually changes.",
+    "Confirm delivery status change": "Confirm delivery status change",
+    "You are changing the delivery status to :status.": "You are changing the delivery status to :status.",
+    "This status change may notify the customer and queue a WhatsApp delivery update when that channel is enabled.": "This status change may notify the customer and queue a WhatsApp delivery update when that channel is enabled.",
+    "Keep current status": "Keep current status",
+    "Confirm status change": "Confirm status change"
 }
