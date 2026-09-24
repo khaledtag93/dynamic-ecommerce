@@ -36,7 +36,7 @@ class PosService
             ]
         );
 
-        return $cart->load(['items.product', 'items.variant']);
+        return $cart->load(['items.product', 'items.variant', 'customer']);
     }
 
     public function summary(PosCart $cart): array
@@ -60,10 +60,68 @@ class PosService
         return PosCart::query()
             ->where('cashier_user_id', $cashier->id)
             ->where('status', PosCart::STATUS_HELD)
-            ->with(['items.product', 'items.variant'])
+            ->with(['items.product', 'items.variant', 'customer'])
             ->orderByDesc('held_at')
             ->orderByDesc('id')
             ->get();
+    }
+
+    public function attachCustomer(PosCart $cart, User $customer, int $cashierUserId): PosCart
+    {
+        return DB::transaction(function () use ($cart, $customer, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $lockedCustomer = User::query()->whereKey($customer->id)->lockForUpdate()->firstOrFail();
+
+            if ((int) $lockedCustomer->role_as !== 0) {
+                throw ValidationException::withMessages([
+                    'customer' => __('Only customer accounts can be attached to a POS sale.'),
+                ]);
+            }
+
+            $lockedCart->update([
+                'customer_user_id' => $lockedCustomer->id,
+                'customer_name' => $lockedCustomer->name,
+            ]);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_customer_attached',
+                __('Customer attached to POS sale.'),
+                $cashierUserId,
+                $lockedCart,
+                [
+                    'customer_user_id' => $lockedCustomer->id,
+                ]
+            );
+
+            return $lockedCart->fresh(['items.product', 'items.variant', 'customer']);
+        });
+    }
+
+    public function detachCustomer(PosCart $cart, int $cashierUserId): PosCart
+    {
+        return DB::transaction(function () use ($cart, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $customerUserId = $lockedCart->customer_user_id;
+
+            $lockedCart->update([
+                'customer_user_id' => null,
+                'customer_name' => null,
+            ]);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_customer_detached',
+                __('Customer detached from POS sale.'),
+                $cashierUserId,
+                $lockedCart,
+                [
+                    'customer_user_id' => $customerUserId,
+                ]
+            );
+
+            return $lockedCart->fresh(['items.product', 'items.variant', 'customer']);
+        });
     }
 
     public function scan(PosCart $cart, string $barcode, int $cashierUserId): PosCartItem
@@ -276,6 +334,7 @@ class PosService
             $lockedCart->items()->delete();
             $lockedCart->update([
                 'hold_label' => null,
+                'customer_user_id' => null,
                 'customer_name' => null,
                 'notes' => null,
             ]);
@@ -300,6 +359,21 @@ class PosService
             $holdLabel = trim((string) ($data['hold_label'] ?? ''));
             $customerName = trim((string) ($data['customer_name'] ?? ''));
             $notes = trim((string) ($data['notes'] ?? ''));
+
+            if ($lockedCart->customer_user_id) {
+                $attachedCustomer = User::query()
+                    ->whereKey($lockedCart->customer_user_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $attachedCustomer || (int) $attachedCustomer->role_as !== 0) {
+                    throw ValidationException::withMessages([
+                        'customer' => __('The attached customer account is no longer available for POS.'),
+                    ]);
+                }
+
+                $customerName = $attachedCustomer->name;
+            }
 
             $lockedCart->update([
                 'status' => PosCart::STATUS_HELD,
@@ -397,7 +471,7 @@ class PosService
                 ]
             );
 
-            return $heldCart->fresh(['items.product', 'items.variant']);
+            return $heldCart->fresh(['items.product', 'items.variant', 'customer']);
         });
     }
 
@@ -574,10 +648,27 @@ class PosService
             }
 
             $orderNumber = 'POS-' . now()->format('Ymd-His') . '-' . Str::upper(Str::random(4));
-            $customerName = trim((string) ($data['customer_name'] ?? '')) ?: 'Walk-in customer';
+            $customer = null;
+
+            if ($lockedCart->customer_user_id) {
+                $customer = User::query()
+                    ->whereKey($lockedCart->customer_user_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $customer || (int) $customer->role_as !== 0) {
+                    throw ValidationException::withMessages([
+                        'customer' => __('The attached customer account is no longer available for POS.'),
+                    ]);
+                }
+            }
+
+            $customerName = $customer?->name
+                ?: (trim((string) ($data['customer_name'] ?? '')) ?: 'Walk-in customer');
+            $customerEmail = $customer?->email;
 
             $order = Order::query()->create([
-                'user_id' => null,
+                'user_id' => $customer?->id,
                 'sales_channel' => Order::SALES_CHANNEL_POS,
                 'order_number' => $orderNumber,
                 'status' => Order::STATUS_COMPLETED,
@@ -596,7 +687,7 @@ class PosService
                 'profit_total' => round($subtotal - $costTotal, 2),
                 'notes' => $data['notes'] ?? null,
                 'customer_name' => $customerName,
-                'customer_email' => null,
+                'customer_email' => $customerEmail,
                 'customer_phone' => null,
                 'shipping_address_line_1' => null,
                 'shipping_address_line_2' => null,
@@ -615,6 +706,7 @@ class PosService
                     'sales_channel' => Order::SALES_CHANNEL_POS,
                     'cashier_user_id' => $cashierUserId,
                     'pos_cart_id' => $lockedCart->id,
+                    'customer_user_id' => $customer?->id,
                     'pos' => [
                         'cash_received' => $cashReceived,
                         'change_due' => $changeDue,
