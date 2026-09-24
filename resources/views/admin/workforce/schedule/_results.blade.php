@@ -20,25 +20,30 @@
                         <th>{{ __('Location') }}</th>
                         <th>{{ __('Status') }}</th>
                         <th>{{ __('Actual attendance') }}</th>
-                        <th>{{ __('Start variance') }}</th>
+                        <th>{{ __('Attendance rules') }}</th>
+                        <th>{{ __('Net worked') }}</th>
                         <th class="text-end">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($shifts as $shift)
                         @php
-                            $attendance = $attendanceByShift->get($shift->id);
+                            $attendanceData = $attendanceDataByShift->get($shift->id, []);
+                            $attendance = $attendanceData['session'] ?? null;
+                            $assessment = $attendanceData['assessment'] ?? [];
                             $scheduledMinutes = $shift->durationMinutes();
                             $scheduledHours = intdiv($scheduledMinutes, 60);
                             $scheduledRemainder = $scheduledMinutes % 60;
-                            $startDelta = $attendance ? $shift->starts_at->diffInMinutes($attendance->clock_in_at, false) : null;
-                            $shiftEnded = $shift->ends_at->isPast();
 
                             $statusClass = match($shift->status) {
                                 AppModelsEmployeeWorkShift::STATUS_PUBLISHED => 'badge-soft-success',
                                 AppModelsEmployeeWorkShift::STATUS_CANCELLED => 'badge-soft-danger',
                                 default => 'badge-soft-secondary',
                             };
+
+                            $startStatus = $assessment['start_status'] ?? null;
+                            $endStatus = $assessment['end_status'] ?? null;
+                            $state = $assessment['state'] ?? null;
                         @endphp
                         <tr>
                             <td>
@@ -52,30 +57,62 @@
                                 <div class="text-muted small">{{ __(':hours h :minutes m', ['hours' => $scheduledHours, 'minutes' => $scheduledRemainder]) }}</div>
                             </td>
                             <td>{{ $shift->location ?: '—' }}</td>
-                            <td><span class="badge admin-status-badge {{ $statusClass }}">{{ AppModelsEmployeeWorkShift::statusOptions()[$shift->status] ?? IlluminateSupportStr::headline($shift->status) }}</span></td>
                             <td>
-                                @if($shift->isCancelled())
-                                    <span class="text-muted">—</span>
-                                @elseif($attendance)
-                                    <div class="fw-semibold">{{ $attendance->clock_in_at->format('H:i') }} → {{ $attendance->clock_out_at?->format('H:i') ?: __('Open now') }}</div>
-                                    <div class="text-muted small">{{ $attendance->clock_in_at->format('d M Y') }}</div>
-                                @elseif($shiftEnded && $shift->isPublished())
-                                    <span class="badge admin-status-badge badge-soft-danger">{{ __('No attendance recorded') }}</span>
-                                @elseif($shift->isPublished())
-                                    <span class="badge admin-status-badge badge-soft-secondary">{{ __('Not started') }}</span>
-                                @else
+                                <span class="badge admin-status-badge {{ $statusClass }}">{{ AppModelsEmployeeWorkShift::statusOptions()[$shift->status] ?? IlluminateSupportStr::headline($shift->status) }}</span>
+                            </td>
+                            <td>
+                                @if($attendance)
+                                    <div class="fw-semibold">{{ $attendance->effectiveClockInAt()->format('H:i') }} → {{ $attendance->effectiveClockOutAt()?->format('H:i') ?: __('Open now') }}</div>
+                                    <div class="text-muted small">{{ $attendance->effectiveClockInAt()->format('d M Y') }}</div>
+                                    @if($attendance->hasApprovedCorrection())
+                                        <span class="badge admin-status-badge badge-soft-success mt-1">{{ __('Corrected') }}</span>
+                                    @endif
+                                @elseif($state === 'absent')
+                                    <span class="badge admin-status-badge badge-soft-danger">{{ __('Absent') }}</span>
+                                @elseif($state === 'not_clocked_in')
+                                    <span class="badge admin-status-badge badge-soft-warning">{{ __('Not clocked in') }}</span>
+                                @elseif($state === 'upcoming')
+                                    <span class="badge admin-status-badge badge-soft-secondary">{{ __('Upcoming') }}</span>
+                                @elseif($state === 'draft')
                                     <span class="text-muted">{{ __('Draft schedule') }}</span>
+                                @else
+                                    <span class="text-muted">—</span>
                                 @endif
                             </td>
                             <td>
-                                @if($attendance && !$shift->isCancelled())
-                                    @if(abs($startDelta) <= 5)
-                                        <span class="badge admin-status-badge badge-soft-success">{{ __('On time') }}</span>
-                                    @elseif($startDelta > 5)
-                                        <span class="badge admin-status-badge badge-soft-warning">{{ __(':minutes min late', ['minutes' => abs($startDelta)]) }}</span>
-                                    @else
-                                        <span class="badge admin-status-badge badge-soft-secondary">{{ __(':minutes min early', ['minutes' => abs($startDelta)]) }}</span>
-                                    @endif
+                                @if($attendance)
+                                    <div class="d-flex flex-column gap-1 align-items-start">
+                                        @if($startStatus === 'on_time')
+                                            <span class="badge admin-status-badge badge-soft-success">{{ __('On time') }}</span>
+                                        @elseif($startStatus === 'late')
+                                            <span class="badge admin-status-badge badge-soft-warning">{{ __(':minutes min late', ['minutes' => abs((int)($assessment['start_delta_minutes'] ?? 0))]) }}</span>
+                                        @elseif($startStatus === 'early')
+                                            <span class="badge admin-status-badge badge-soft-secondary">{{ __(':minutes min early', ['minutes' => abs((int)($assessment['start_delta_minutes'] ?? 0))]) }}</span>
+                                        @endif
+
+                                        @if($endStatus === 'early_departure')
+                                            <span class="badge admin-status-badge badge-soft-warning">{{ __('Left :minutes min early', ['minutes' => abs((int)($assessment['end_delta_minutes'] ?? 0))]) }}</span>
+                                        @elseif($endStatus === 'after_shift')
+                                            <span class="badge admin-status-badge badge-soft-secondary">{{ __('Stayed :minutes min after shift', ['minutes' => abs((int)($assessment['end_delta_minutes'] ?? 0))]) }}</span>
+                                        @elseif($endStatus === 'open')
+                                            <span class="badge admin-status-badge badge-soft-success">{{ __('Session open') }}</span>
+                                        @endif
+                                    </div>
+                                @elseif($state === 'absent')
+                                    <span class="badge admin-status-badge badge-soft-danger">{{ __('Absence') }}</span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($attendance)
+                                    @php
+                                        $net = (int)($assessment['net_minutes'] ?? 0);
+                                        $netHours = intdiv($net, 60);
+                                        $netMinutes = $net % 60;
+                                    @endphp
+                                    <div class="fw-semibold">{{ __(':hours h :minutes m', ['hours' => $netHours, 'minutes' => $netMinutes]) }}</div>
+                                    <div class="text-muted small">{{ __('Breaks: :minutes min', ['minutes' => (int)($assessment['break_minutes'] ?? 0)]) }}</div>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
@@ -97,14 +134,14 @@
                         </tr>
                         @if($shift->notes)
                             <tr>
-                                <td colspan="7" class="pt-0 border-top-0">
+                                <td colspan="8" class="pt-0 border-top-0">
                                     <div class="small text-muted"><strong>{{ __('Shift note') }}:</strong> {{ $shift->notes }}</div>
                                 </td>
                             </tr>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="7" class="py-5">
+                            <td colspan="8" class="py-5">
                                 <div class="admin-empty-state py-4">
                                     <div class="empty-icon"><i class="mdi mdi-calendar-blank-outline"></i></div>
                                     <h5 class="mb-2">{{ __('No work shifts found') }}</h5>
