@@ -100,6 +100,30 @@ class PosCashierTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 0);
     }
 
+    public function test_pos_live_product_lookup_supports_name_and_barcode_free_products(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('Live Search Jacket', '', 4, false, 55);
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.pos.lookups.products', ['q' => 'Jacket']))
+            ->assertOk()
+            ->assertJsonPath('results.0.product_id', $product->id)
+            ->assertJsonPath('results.0.selectable', true);
+    }
+
+    public function test_pos_live_customer_lookup_supports_contains_email_search(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $customer = User::factory()->create(['role_as' => 0, 'name' => 'Lookup Customer', 'email' => 'lookup.customer@example.test']);
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.pos.lookups.customers', ['q' => 'customer@example']))
+            ->assertOk()
+            ->assertJsonPath('results.0.id', $customer->id)
+            ->assertJsonPath('results.0.email', $customer->email);
+    }
+
     public function test_manual_catalog_add_does_not_require_a_barcode(): void
     {
         $admin = User::factory()->create(['role_as' => 1]);
