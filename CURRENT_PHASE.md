@@ -519,7 +519,19 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - The migration source now uses explicit short index names: `emp_attendance_open_idx` and `emp_attendance_clock_in_idx` in commit `f4dcf32e`.
 - `deploy-qas.sh` is now tracked executable in commit `8272f14c`, so normal `./deploy-qas.sh` invocation will work after reset/fetch.
 - Because MySQL DDL can leave a newly created table behind when a later index statement fails, QAS must verify whether `employee_attendance_sessions` exists and is empty before dropping only that partial table and rerunning migrations.
-- Production is unchanged. This was a QAS-only deployment interruption.
+- The operator later confirmed the QAS upload completed after the recovery procedure. Exact authenticated EN/AR feature acceptance remains deferred; Production is unchanged.
+
+### Workforce Attendance Rules & Corrections V1 — 2026-09-25
+- Application source checkpoint `b7fe238d` adds audited break tracking, immutable Recorded vs Effective attendance, correction requests/review, centralized attendance rules and net-work calculations.
+- Open breaks block clock-out. Break start/end are audited and included in Net worked time.
+- Approved corrections do not overwrite `employee_attendance_sessions.clock_in_at/clock_out_at`; they act as an approved effective-time overlay. Rejected requests do not change effective attendance.
+- Correction workflow enforces employee ownership, closed-session-only requests, one pending request per session, valid corrected time ranges and one-time manager review.
+- Manager correction review uses the shared live/no-reload pattern. My Time Clock exposes break controls, correction states and request entry points.
+- `AttendanceRulesService` centralizes the current 5-minute start/end grace policy and derives late, early, early-departure, after-shift, absence, not-clocked-in and upcoming states.
+- Work Schedule now consumes the same rules service and displays corrected actual time, exception state, breaks and net worked time.
+- Regression coverage: `WorkforceAttendanceRulesTest`.
+- Detailed checkpoint: `docs/WORKFORCE_ATTENDANCE_RULES_CORRECTIONS_V1_2026-09-25.md`. CI pending; this slice is not yet claimed on QAS; Production unchanged.
+- Next workforce slice: **Leave Management V1**, then Payroll Foundation.
 
 ### Workforce Shift Scheduling V1 — 2026-09-25
 - Application source checkpoint `ff423286` adds real employee work shifts through `employee_work_shifts`; work scheduling remains separate from attendance sessions and POS cash drawer shifts.
