@@ -10,11 +10,11 @@
     $sectionType = $section['type'] ?? '';
 
     $sectionMeta = match($sectionType) {
-        'featured_products' => [__('Featured picks'), __('Selected electronics worth checking today.'), 'bi-stars', 'retail-products-v5--featured'],
+        'featured_products' => [__('Featured picks'), __('Selected products worth checking today.'), 'bi-stars', 'retail-products-v5--featured'],
         'manual_featured_products' => [__('Recommended now'), __('Store-team picks for faster shopping.'), 'bi-patch-check', 'retail-products-v5--featured'],
-        'latest_products' => [__('New in store'), __('Fresh devices and accessories just added.'), 'bi-lightning-charge', 'retail-products-v5--fresh'],
+        'latest_products' => [__('New in store'), __('Fresh products just added to the store.'), 'bi-lightning-charge', 'retail-products-v5--fresh'],
         'best_sellers' => [__('Best sellers'), __('Popular choices customers keep ordering.'), 'bi-fire', 'retail-products-v5--hot'],
-        'on_sale_products' => [__('Today deals'), __('Clear price drops and limited offers.'), 'bi-tags', 'retail-products-v5--deals'],
+        'on_sale_products' => [__('Today deals'), __('Clear price drops and current offers.'), 'bi-tags', 'retail-products-v5--deals'],
         default => [__('Shop now'), __('Browse products with clear prices and fast actions.'), 'bi-grid', 'retail-products-v5--default'],
     };
 
