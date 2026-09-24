@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeLeaveType;
+use App\Services\Commerce\AdminActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class LeaveTypeController extends Controller
 {
+    public function __construct(protected AdminActivityLogService $activityLogService)
+    {
+    }
+
     public function index()
     {
         $types = EmployeeLeaveType::query()
@@ -31,7 +36,16 @@ class LeaveTypeController extends Controller
     {
         $data = $this->validated($request);
 
-        EmployeeLeaveType::query()->create($data);
+        $leaveType = EmployeeLeaveType::query()->create($data);
+
+        $this->activityLogService->log(
+            'workforce',
+            'leave_type_created',
+            __('Leave type created.'),
+            $request->user()?->id,
+            $leaveType,
+            ['code' => $leaveType->code]
+        );
 
         return redirect()
             ->route('admin.workforce.leave-types.index')
@@ -50,6 +64,15 @@ class LeaveTypeController extends Controller
         $data = $this->validated($request, $employeeLeaveType);
 
         $employeeLeaveType->update($data);
+
+        $this->activityLogService->log(
+            'workforce',
+            'leave_type_updated',
+            __('Leave type updated.'),
+            $request->user()?->id,
+            $employeeLeaveType,
+            ['code' => $employeeLeaveType->code]
+        );
 
         return redirect()
             ->route('admin.workforce.leave-types.index')
