@@ -25,6 +25,11 @@ class Order extends Model
     public const PAYMENT_METHOD_COD = 'cash_on_delivery';
     public const PAYMENT_METHOD_BANK_TRANSFER = 'bank_transfer';
     public const PAYMENT_METHOD_ONLINE = 'online_payment';
+    public const PAYMENT_METHOD_POS_CASH = 'pos_cash';
+    public const PAYMENT_METHOD_POS_CARD = 'pos_card_terminal';
+
+    public const SALES_CHANNEL_STOREFRONT = 'storefront';
+    public const SALES_CHANNEL_POS = 'pos';
 
     public const DELIVERY_STATUS_PENDING = 'pending';
     public const DELIVERY_STATUS_PREPARING = 'preparing';
@@ -40,6 +45,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'sales_channel',
         'order_number',
         'status',
         'payment_status',
@@ -148,6 +154,8 @@ class Order extends Model
             self::PAYMENT_METHOD_COD => __('Cash on Delivery'),
             self::PAYMENT_METHOD_BANK_TRANSFER => __('Bank Transfer'),
             self::PAYMENT_METHOD_ONLINE => __('Online Payment'),
+            self::PAYMENT_METHOD_POS_CASH => __('POS Cash'),
+            self::PAYMENT_METHOD_POS_CARD => __('POS Card Terminal'),
         ];
     }
 

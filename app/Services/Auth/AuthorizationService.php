@@ -18,6 +18,7 @@ class AuthorizationService
             ['group' => 'catalog', 'slug' => 'catalog.manage', 'name' => 'Manage catalog', 'description' => 'Create and edit categories, products, brands, and attributes.'],
             ['group' => 'orders', 'slug' => 'orders.view', 'name' => 'View orders', 'description' => 'Review customer orders and order details.'],
             ['group' => 'orders', 'slug' => 'orders.manage', 'name' => 'Manage orders', 'description' => 'Update order statuses and perform order operations.'],
+            ['group' => 'pos', 'slug' => 'pos.manage', 'name' => 'Use POS', 'description' => 'Open the cashier workspace, scan items, manage the active register cart, and complete POS sales.'],
             ['group' => 'payments', 'slug' => 'payments.view', 'name' => 'View payments', 'description' => 'Access payment records and payment detail pages.'],
             ['group' => 'payments', 'slug' => 'payments.manage', 'name' => 'Manage payments', 'description' => 'Authorize, mark paid, fail, or refund payment records.'],
             ['group' => 'payments', 'slug' => 'payments.settings', 'name' => 'Manage payment settings', 'description' => 'Configure enabled payment methods and gateway placeholders.'],
@@ -50,6 +51,7 @@ class AuthorizationService
                     'catalog.manage',
                     'orders.view',
                     'orders.manage',
+                    'pos.manage',
                     'payments.view',
                     'delivery.view',
                     'delivery.manage',
@@ -59,6 +61,14 @@ class AuthorizationService
                     'notifications.view',
                     'settings.manage',
                     'imports.manage',
+                ],
+            ],
+            'cashier' => [
+                'name' => 'Cashier',
+                'description' => 'Runs the point of sale without broader order, catalog, or settings access.',
+                'permissions' => [
+                    'dashboard.view',
+                    'pos.manage',
                 ],
             ],
             'support_agent' => [
