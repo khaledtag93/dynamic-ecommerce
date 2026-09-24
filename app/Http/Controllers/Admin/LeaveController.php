@@ -138,7 +138,6 @@ class LeaveController extends Controller
         ];
 
         $leaveTypes = EmployeeLeaveType::query()->orderBy('name')->get();
-        $employees = EmployeeProfile::query()->with('user')->orderBy('employee_code')->get();
 
         return view('admin.workforce.leave.index', compact(
             'requests',
@@ -146,7 +145,6 @@ class LeaveController extends Controller
             'scheduleConflicts',
             'stats',
             'leaveTypes',
-            'employees',
         ));
     }
 
