@@ -116,6 +116,8 @@ Execution order:
 - final Branding/theme polish;
 - remove remaining demo/internal copy;
 - consolidated mobile + RTL pass.
+- **Roles & Permissions redesign backlog:** the current page is excessively long, mixes English and Arabic in the same experience, and has weak information hierarchy/UI consistency. When its turn comes, split it into focused role management, staff assignment, custom-permission and permission-matrix workspaces/tabs; complete EN/AR parity and RTL; reduce repetitive permission cards; improve search/filtering and responsive behavior.
+- **Global preserve-context interaction backlog:** suitable Admin and Customer actions must not cause avoidable full-page reloads or jump the user back to the top. POS add-product / quantity increment is a confirmed example. Extend the existing live/no-reload standard from read-side lists to safe server-confirmed inline mutations where appropriate, preserving scroll/focus/cart context and showing explicit loading/success/error feedback. Financial, destructive, permission and inventory-sensitive actions remain backend-authoritative and must never fake success.
 
 ### Engineering modernization
 - Laravel upgrade on a dedicated branch;
