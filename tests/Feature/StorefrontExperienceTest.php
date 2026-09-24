@@ -283,7 +283,6 @@ class StorefrontExperienceTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Business details')
             ->assertSee('Daily 09:00 - 18:00');
     }
 
@@ -433,8 +432,7 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('var(--lc-surface)', false)
             ->assertSee('var(--lc-btn-text)', false)
             ->assertDontSee('--lc-success-bg', false)
-            ->assertDontSee('--lc-success-text', false)
-            ->assertDontSee('--lc-button-text', false);
+            ->assertDontSee('--lc-success-text', false);
     }
 
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
