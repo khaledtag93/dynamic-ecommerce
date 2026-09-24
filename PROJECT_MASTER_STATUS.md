@@ -41,6 +41,20 @@
 - Before rerun, inspect the failed `employee_attendance_sessions` migration state and only remove the partial table if it exists and has zero rows.
 - The operator subsequently confirmed the QAS upload completed after this recovery procedure. Exact authenticated feature acceptance is still deferred; Production unchanged.
 
+## Workforce Leave Management V1 — 2026-09-25
+- Added `employee_leave_types` for configurable English/Arabic paid/unpaid leave policy and default annual entitlement.
+- Added `employee_leave_requests` with Pending / Approved / Rejected / Cancelled lifecycle and reviewer audit fields.
+- Added append-only `employee_leave_adjustments` for opening balance, carryover and documented signed credits/debits.
+- `LeaveBalanceService` calculates Entitlement, Adjustments, Used, Pending, Available and Projected balances by employee/type/year.
+- Employee requests use inclusive calendar days, cannot cross calendar years in V1 and reject overlapping Pending/Approved requests.
+- Approval requires enough available balance and no unresolved work-shift conflict. Work Shift create/update rejects Approved leave overlap in the opposite direction.
+- Leave approval lock order was hardened to Employee → Leave Request → related records to reduce lock inversion with scheduling.
+- My Leave, live manager Leave Review, Leave Types and focused Balance Adjustment/history workspaces were added with EN/AR copy.
+- Leave request/cancel/review, leave policy changes and balance adjustments are audited.
+- Regression coverage: `WorkforceLeaveManagementTest`.
+- Application source: `c6df3fc2`. CI pending; not yet claimed on QAS. Production unchanged.
+- Next: **Payroll Foundation V1**.
+
 ## Workforce Attendance Rules & Corrections V1 — 2026-09-25
 - Added `employee_attendance_breaks` and transaction-safe Start/End Break actions. Open breaks block clock-out and all break changes are audited.
 - Attendance sessions now preserve Recorded time while exposing Effective time through the latest approved correction; raw clock-in/out history is never silently overwritten.
