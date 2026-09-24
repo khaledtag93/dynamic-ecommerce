@@ -13,7 +13,7 @@
                 <div class="lc-section-head__copy">
                     <span class="lc-section-kicker justify-content-center">{{ $subtitle }}</span>
                     <h2 class="lc-section-title">{{ $title }}</h2>
-                    <p class="lc-section-description mx-auto">{{ __('Clear delivery, secure payments, original products, and helpful support for every order.') }}</p>
+                    <p class="lc-section-description mx-auto">{{ __('Clear delivery, secure payments, product transparency, and helpful support for every order.') }}</p>
                 </div>
             </div>
 
@@ -21,8 +21,8 @@
                 <div class="col-lg-4">
                     <div class="lc-card trust-block-feature h-100 p-4 p-lg-5">
                         <span class="lc-badge mb-3"><i class="bi bi-patch-check"></i> {{ __('Why shoppers trust us') }}</span>
-                        <h3 class="h3 fw-bold mb-3">{{ __('A strong electronics store answers the final questions before checkout.') }}</h3>
-                        <p class="text-muted mb-4">{{ __('When delivery, support, warranty, and payment are clear, shoppers can focus on choosing the right device instead of doubting the store.') }}</p>
+                        <h3 class="h3 fw-bold mb-3">{{ __('A strong store answers the final questions before checkout.') }}</h3>
+                        <p class="text-muted mb-4">{{ __('When delivery, support, returns, and payment are clear, shoppers can focus on choosing the right product with confidence.') }}</p>
                         <div class="trust-block-feature__stack">
                             <div><i class="bi bi-check2-circle"></i>{{ __('Warranty and delivery details stay visible') }}</div>
                             <div><i class="bi bi-check2-circle"></i>{{ __('Clearer wording reduces hesitation') }}</div>
