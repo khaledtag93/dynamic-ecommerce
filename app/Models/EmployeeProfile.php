@@ -98,6 +98,16 @@ class EmployeeProfile extends Model
         return $this->hasMany(EmployeeLeaveAdjustment::class);
     }
 
+    public function compensation()
+    {
+        return $this->hasOne(EmployeeCompensation::class);
+    }
+
+    public function payrollEntries()
+    {
+        return $this->hasMany(PayrollEntry::class);
+    }
+
     public function posCashShifts()
     {
         return $this->hasMany(PosCashShift::class, 'cashier_user_id', 'user_id');
