@@ -1,0 +1,1 @@
+@include('errors._page', ['code' => 429, 'title' => __('Too many requests'), 'copy' => __('Too many requests were received in a short time. Please wait a moment and try again.'), 'action' => __('Back to home')])
