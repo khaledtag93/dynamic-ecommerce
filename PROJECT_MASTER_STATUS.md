@@ -123,6 +123,15 @@
 - This V1 is intentionally a sales receipt, not a fiscal/tax invoice; no jurisdiction-specific tax identity, legal invoice numbering or fiscal claims were invented.
 - QAS remains on `0a08253`; physical-printer and bilingual visual review stay queued for the consolidated phase. Production and `main` are unchanged. See `docs/POS_RECEIPT_PRINTING_V1_2026-09-24.md`.
 
+## POS Hold / Resume V1 checkpoint — 2026-09-24
+- Cashiers can now pause a non-empty POS cart into a persistent held queue and immediately continue with a fresh active cart.
+- Hold preserves cart items, quantities, optional customer name, notes, a hold label and held timestamp without creating an Order/Payment or mutating inventory.
+- Resume is owner-only and transaction-protected. A cashier-row lock serializes competing resumes; a non-empty current sale cannot be overwritten, while an empty active cart is safely abandoned before the held cart becomes active.
+- Held sales can be discarded into the existing abandoned state without inventory impact; hold/resume/discard actions are audit logged.
+- The held queue is integrated into the POS workspace with EN/AR copy. Stored held totals are informational only; checkout still rechecks current product/variant validity, prices and stock.
+- [Hardening CI 36044608065](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36044608065) passed at application head `8bf77cc` with **177 tests (1047 assertions)** plus frontend production build.
+- QAS remains on `0a08253`; consolidated authenticated review is still deferred. Production and `main` are unchanged. See `docs/POS_HOLD_RESUME_V1_2026-09-24.md`.
+
 ## Purchase Barcode Receiving V1 checkpoint — 2026-09-24
 - Ordered purchases now support persistent per-line barcode verification. Each accepted scan counts one physical unit without changing inventory.
 - Exact simple/variant identity uses the shared barcode resolver; parent variant-product barcodes, unknown/out-of-purchase items, and ambiguous identifiers are rejected.
