@@ -35,8 +35,8 @@
     <div class="col-md-4">
         <label class="form-label fw-semibold">{{ __('Shift status') }}</label>
         <select name="status" class="form-select @error('status') is-invalid @enderror" required @disabled($shift->isCancelled())>
-            <option value="{{ AppModelsEmployeeWorkShift::STATUS_DRAFT }}" @selected(old('status', $shift->status ?: AppModelsEmployeeWorkShift::STATUS_DRAFT) === AppModelsEmployeeWorkShift::STATUS_DRAFT)>{{ __('Draft') }}</option>
-            <option value="{{ AppModelsEmployeeWorkShift::STATUS_PUBLISHED }}" @selected(old('status', $shift->status) === AppModelsEmployeeWorkShift::STATUS_PUBLISHED)>{{ __('Published') }}</option>
+            <option value="{{ \App\Models\EmployeeWorkShift::STATUS_DRAFT }}" @selected(old('status', $shift->status ?: \App\Models\EmployeeWorkShift::STATUS_DRAFT) === \App\Models\EmployeeWorkShift::STATUS_DRAFT)>{{ __('Draft') }}</option>
+            <option value="{{ \App\Models\EmployeeWorkShift::STATUS_PUBLISHED }}" @selected(old('status', $shift->status) === \App\Models\EmployeeWorkShift::STATUS_PUBLISHED)>{{ __('Published') }}</option>
         </select>
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
         <div class="section-note">{{ __('Draft shifts stay hidden from My Schedule until published.') }}</div>
