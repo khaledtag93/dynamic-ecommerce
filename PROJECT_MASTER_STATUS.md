@@ -102,6 +102,16 @@
 - English/Arabic account and address-book copy, compact navigation, in-app deletion confirmation, and focused ownership/profile/default/checkout regression tests were added. See `docs/CUSTOMER_ACCOUNT_ADDRESS_BOOK_2026-09-24.md`.
 - Hardening CI run `36019574401` passed at application commit `05c2c51`: PHP syntax, clean MySQL migration, Blade compile, 115 tests (579 assertions), and frontend build. Authenticated English/Arabic desktop/mobile QAS remains pending. `main` and Production are unchanged.
 
+## Purchase Barcode Receiving V1 checkpoint — 2026-09-24
+- Ordered purchases now support persistent per-line barcode verification. Each accepted scan counts one physical unit without changing inventory.
+- Exact simple/variant identity uses the shared barcode resolver; parent variant-product barcodes, unknown/out-of-purchase items, and ambiguous identifiers are rejected.
+- Duplicate purchase lines require explicit line choice instead of automatic allocation across potentially different cost/expiry rows.
+- Undo-one correction and over-scan caps are enforced before receipt.
+- Barcode-verified final receipt requires every locked line's verified quantity to equal its ordered quantity before the existing all-or-nothing, replay-safe purchase receipt writes stock.
+- Existing manual receive remains available as a protected operational fallback.
+- [Hardening CI 36038635115](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36038635115) passed at application head `0a2ceb9` with 163 tests (889 assertions) and frontend production build.
+- QAS remains on `0a08253`; Production and `main` are unchanged. See `docs/PURCHASE_BARCODE_RECEIVING_V1_2026-09-24.md`.
+
 ## Purchases V2 receipt hardening checkpoint — 2026-09-24
 - The next working-line batch serializes receipt under a purchase row lock and transaction, permits only ordered nonempty purchases, validates every product/variant line before stock changes, and treats repeated receipt as an informational replay.
 - Admin purchase creation validates product–variant ownership under lock; awaiting count and receive buttons only reflect ordered purchases. The form now requires variants where appropriate and escapes dynamic content. EN/AR confirmations, errors and regression coverage are included. See [`docs/PURCHASES_V2_HARDENING_2026-09-24.md`](docs/PURCHASES_V2_HARDENING_2026-09-24.md).
