@@ -121,7 +121,7 @@
 - Exact simple-product and variant matches link into the existing counted-stock adjustment workflow; scanner lookup itself does not mutate inventory.
 - Parent product barcodes on variant products require explicit variant selection, while unknown and legacy ambiguous barcodes cannot reach stock actions.
 - Inventory/Adjust Stock navigation, English/Arabic copy and focused regression coverage are included. See `docs/BARCODE_SCAN_TO_FIND_V1_2026-09-24.md`.
-- Camera scanning, barcode label printing and POS cart behavior remain future slices. Branch-head CI is pending. QAS remains on `0a08253`; Production and `main` are unchanged.
+- Camera scanning, barcode label printing and POS cart behavior remain future slices. [Hardening CI 36036425394](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36036425394) passed at application head `fea30ea` with 147 tests (794 assertions) and the frontend production build. QAS remains on `0a08253`; Production and `main` are unchanged.
 
 ## Barcode / SKU Foundation V1 checkpoint — 2026-09-24
 - The active product editor now applies SKU uniqueness across products and variants, matching the existing cross-catalog barcode safety rule. Duplicate identifiers inside the same pending product/variant payload are rejected before save.

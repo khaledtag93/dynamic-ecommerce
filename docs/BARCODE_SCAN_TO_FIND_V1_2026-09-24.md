@@ -38,6 +38,8 @@ Focused tests cover:
 5. Unknown barcode no-match behavior.
 6. Legacy cross-table duplicate barcode safety.
 
+Hardening CI run `36036425394` passed at application head `fea30ea`: PHP syntax, Bash syntax, clean MySQL migration, Laravel boot/routes, config + Blade compilation, **147 tests (794 assertions)**, and frontend production build. `InventoryBarcodeScanTest` passed in the integrated suite.
+
 ## Consolidated QAS checks
 
 1. Connect/use a common HID scanner or type a barcode and press Enter.

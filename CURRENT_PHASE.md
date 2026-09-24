@@ -363,7 +363,7 @@ Source implementation on `v42-clean-baseline` now:
 - adds Inventory/Adjust Stock navigation, EN/AR copy, regression tests and implementation notes
 
 Verification state:
-- branch-head CI: pending
+- Hardening CI `36036425394`: passed at application head `fea30ea` with 147 tests (794 assertions) plus frontend production build
 - consolidated authenticated QAS review: deferred by owner
 - QAS application HEAD: still `0a08253`
 - Production and `main`: unchanged
