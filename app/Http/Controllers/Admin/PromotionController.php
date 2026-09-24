@@ -36,17 +36,23 @@ class PromotionController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $stats = [
-            'total' => PromotionRule::count(),
-            'active' => PromotionRule::where('is_active', true)->count(),
-            'inactive' => PromotionRule::where('is_active', false)->count(),
-            'buy_x_get_y' => PromotionRule::where('type', 'buy_x_get_y')->count(),
+        $queueStats = [
             'running' => PromotionRule::where('is_active', true)->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))->count(),
             'upcoming' => PromotionRule::whereNotNull('starts_at')->where('starts_at', '>', now())->count(),
             'expired' => PromotionRule::whereNotNull('ends_at')->where('ends_at', '<', now())->count(),
         ];
 
-        return view('admin.promotions.index', compact('promotions', 'filters', 'stats'));
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.promotions._results', compact('promotions', 'filters', 'queueStats'));
+        }
+
+        $stats = $queueStats + [
+            'total' => PromotionRule::count(),
+            'active' => PromotionRule::where('is_active', true)->count(),
+            'inactive' => PromotionRule::where('is_active', false)->count(),
+        ];
+
+        return view('admin.promotions.index', compact('promotions', 'filters', 'stats', 'queueStats'));
     }
 
     public function create()
