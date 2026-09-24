@@ -764,13 +764,19 @@
                                     @if($expanded)
                                         <div class="card-body">
                                             <div class="row g-3">
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <label class="form-label">{{ __('SKU') }}</label>
                                                     <input type="text" class="form-control @error('variants.' . $i . '.sku') is-invalid product-error-field @enderror" placeholder="{{ __('Variant SKU') }}" wire:model.defer="variants.{{ $i }}.sku">
                                                     @error('variants.' . $i . '.sku') <small class="text-danger">{{ $message }}</small> @enderror
                                                 </div>
 
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
+                                                    <label class="form-label">{{ __('Barcode') }}</label>
+                                                    <input type="text" class="form-control @error('variants.' . $i . '.barcode') is-invalid product-error-field @enderror" placeholder="{{ __('Variant barcode') }}" wire:model.defer="variants.{{ $i }}.barcode" autocomplete="off">
+                                                    @error('variants.' . $i . '.barcode') <small class="text-danger">{{ $message }}</small> @enderror
+                                                </div>
+
+                                                <div class="col-md-2">
                                                     <label class="form-label">{{ __('Price') }}</label>
                                                     <input type="number" step="0.01" class="form-control @error('variants.' . $i . '.price') is-invalid product-error-field @enderror" placeholder="0.00" wire:model.defer="variants.{{ $i }}.price">
                                                     @error('variants.' . $i . '.price') <small class="text-danger">{{ $message }}</small> @enderror
