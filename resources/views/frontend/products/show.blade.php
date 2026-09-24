@@ -223,7 +223,7 @@
                         @if($displayStock > 0)
                             <div><span>{{ __('Quantity available') }}</span><strong id="quickFactQty">{{ $displayStock }}</strong></div>
                         @endif
-                        <div><span>{{ __('Purchase option') }}</span><strong>{{ $activeVariants->isNotEmpty() ? trans_choice(':count variants', $activeVariants->count(), ['count' => $activeVariants->count()]) : __('Standard') }}</strong></div>
+                        <div><span>{{ __('Purchase option') }}</span><strong>{{ $activeVariants->isNotEmpty() ? number_format($activeVariants->count()) . ' ' . __('variants') : __('Standard') }}</strong></div>
                     </div>
                 </div>
             </div>
