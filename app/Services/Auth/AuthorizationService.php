@@ -35,6 +35,9 @@ class AuthorizationService
             ['group' => 'settings', 'slug' => 'settings.manage', 'name' => 'Manage settings', 'description' => 'Access branding and delivery/payment related settings.'],
             ['group' => 'deploy', 'slug' => 'deploy.manage', 'name' => 'Manage deploy center', 'description' => 'Run deploy, rollback, dry-run safety checks, and review deploy logs.'],
             ['group' => 'imports', 'slug' => 'imports.manage', 'name' => 'Manage imports', 'description' => 'Run and review import jobs.'],
+            ['group' => 'workforce', 'slug' => 'workforce.view', 'name' => 'View workforce', 'description' => 'Review employee profiles and attendance history.'],
+            ['group' => 'workforce', 'slug' => 'workforce.manage', 'name' => 'Manage workforce', 'description' => 'Create and update employee profiles and employment status.'],
+            ['group' => 'workforce', 'slug' => 'workforce.clock', 'name' => 'Use time clock', 'description' => 'Clock personal attendance in and out.'],
         ];
     }
 
@@ -67,6 +70,9 @@ class AuthorizationService
                     'notifications.view',
                     'settings.manage',
                     'imports.manage',
+                    'workforce.view',
+                    'workforce.manage',
+                    'workforce.clock',
                 ],
             ],
             'cashier' => [
@@ -75,6 +81,7 @@ class AuthorizationService
                 'permissions' => [
                     'dashboard.view',
                     'pos.manage',
+                    'workforce.clock',
                 ],
             ],
             'support_agent' => [
@@ -86,6 +93,7 @@ class AuthorizationService
                     'customers.manage',
                     'delivery.view',
                     'notifications.view',
+                    'workforce.clock',
                 ],
             ],
             'finance_manager' => [
@@ -98,6 +106,7 @@ class AuthorizationService
                     'payments.manage',
                     'payments.settings',
                     'notifications.view',
+                    'workforce.clock',
                 ],
             ],
         ];
