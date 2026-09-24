@@ -171,6 +171,7 @@ class PosCashierTest extends TestCase
         $this->assertSame('40.00', $order->grand_total);
         $this->assertSame('16.00', $order->cost_total);
         $this->assertSame('24.00', $order->profit_total);
+        $this->assertNull($order->user_id);
         $this->assertNull($order->customer_email);
         $this->assertNull($order->shipping_address_line_1);
         $this->assertSame(10.0, (float) data_get($order->meta, 'pos.change_due'));
@@ -260,6 +261,140 @@ class PosCashierTest extends TestCase
             'provider' => 'card_terminal',
             'status' => Payment::STATUS_PAID,
         ]);
+    }
+
+    public function test_pos_customer_search_attach_and_checkout_links_customer_account(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $customer = User::factory()->create([
+            'role_as' => 0,
+            'name' => 'Mona POS Customer',
+            'email' => 'mona.pos@example.test',
+        ]);
+        $staff = User::factory()->create([
+            'role_as' => 1,
+            'name' => 'Mona Internal Staff',
+            'email' => 'mona.staff@example.test',
+        ]);
+        $product = $this->product('POS Customer Product', '6224000000014', 3, false, 25, 10);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->get(route('admin.pos.index', ['customer_search' => 'Mona']))
+            ->assertOk()
+            ->assertSee('Mona POS Customer')
+            ->assertSee('mona.pos@example.test')
+            ->assertDontSee('Mona Internal Staff')
+            ->assertDontSee('mona.staff@example.test');
+
+        $this->post(route('admin.pos.customer.attach', [
+            'posCart' => $cart->id,
+            'user' => $customer->id,
+        ]))->assertRedirect(route('admin.pos.index'))->assertSessionHas('success');
+
+        $attachedCart = $cart->fresh('customer');
+        $this->assertSame($customer->id, (int) $attachedCart->customer_user_id);
+        $this->assertSame($customer->name, $attachedCart->customer_name);
+        $this->assertSame($customer->email, $attachedCart->customer->email);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'pos_customer_attached',
+            'subject_id' => $cart->id,
+        ]);
+
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CARD,
+            'customer_name' => 'Ignored manual name',
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+
+        $this->assertSame($customer->id, (int) $order->user_id);
+        $this->assertSame($customer->name, $order->customer_name);
+        $this->assertSame($customer->email, $order->customer_email);
+        $this->assertSame($customer->id, (int) data_get($order->meta, 'customer_user_id'));
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+    }
+
+    public function test_pos_customer_attachment_is_owner_scoped_and_rejects_staff_accounts(): void
+    {
+        $firstCashier = User::factory()->create(['role_as' => 1]);
+        $secondCashier = User::factory()->create(['role_as' => 1]);
+        $customer = User::factory()->create(['role_as' => 0]);
+        $staff = User::factory()->create(['role_as' => 1]);
+        $cart = app(PosService::class)->cartFor($firstCashier);
+
+        $this->actingAs($secondCashier)
+            ->post(route('admin.pos.customer.attach', [
+                'posCart' => $cart->id,
+                'user' => $customer->id,
+            ]))
+            ->assertSessionHasErrors('cart');
+
+        $this->assertNull($cart->fresh()->customer_user_id);
+
+        $this->actingAs($firstCashier)
+            ->post(route('admin.pos.customer.attach', [
+                'posCart' => $cart->id,
+                'user' => $staff->id,
+            ]))
+            ->assertSessionHasErrors('customer');
+
+        $this->assertNull($cart->fresh()->customer_user_id);
+
+        $this->post(route('admin.pos.customer.attach', [
+            'posCart' => $cart->id,
+            'user' => $customer->id,
+        ]))->assertSessionHas('success');
+
+        $this->delete(route('admin.pos.customer.detach', $cart))
+            ->assertRedirect(route('admin.pos.index'))
+            ->assertSessionHas('success');
+
+        $this->assertNull($cart->fresh()->customer_user_id);
+        $this->assertNull($cart->fresh()->customer_name);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $firstCashier->id,
+            'action' => 'pos_customer_detached',
+            'subject_id' => $cart->id,
+        ]);
+    }
+
+    public function test_pos_checkout_rechecks_attached_customer_account_before_writing_sale(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $customer = User::factory()->create([
+            'role_as' => 0,
+            'name' => 'Customer Before Role Change',
+            'email' => 'before-change@example.test',
+        ]);
+        $product = $this->product('POS Customer Recheck Product', '6224000000015', 2, false, 30);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.customer.attach', [
+                'posCart' => $cart->id,
+                'user' => $customer->id,
+            ]))
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $customer->update(['role_as' => 1]);
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CARD,
+        ])->assertSessionHasErrors('customer');
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+        $this->assertSame(PosCart::STATUS_OPEN, $cart->fresh()->status);
     }
 
     public function test_cashier_can_hold_and_resume_sale_without_mutating_inventory(): void
