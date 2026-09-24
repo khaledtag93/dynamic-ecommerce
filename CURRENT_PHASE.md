@@ -521,6 +521,18 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - Because MySQL DDL can leave a newly created table behind when a later index statement fails, QAS must verify whether `employee_attendance_sessions` exists and is empty before dropping only that partial table and rerunning migrations.
 - The operator later confirmed the QAS upload completed after the recovery procedure. Exact authenticated EN/AR feature acceptance remains deferred; Production is unchanged.
 
+### Workforce Leave Management V1 — 2026-09-25
+- Application source checkpoint `c6df3fc2` adds merchant-configurable leave types, employee leave requests, append-only balance adjustments, balance calculation, live manager review and employee My Leave.
+- V1 balance formula: entitlement + signed adjustments - Approved usage; Projected also subtracts Pending requests.
+- Requests use inclusive calendar days, reject overlapping Pending/Approved leave and cannot cross calendar years in V1.
+- Approval requires enough available balance and is blocked until overlapping non-cancelled work shifts are moved or cancelled.
+- Work Shift create/update now also rejects dates covered by Approved leave, keeping Schedule and Leave consistent in both directions.
+- Balance adjustments are append-only, require a reason, cannot be zero and cannot drive Available below zero. Recent adjustment history is visible with actor/time.
+- Leave policy is configurable; no legal/jurisdiction entitlement was auto-seeded.
+- `WorkforceLeaveManagementTest` covers balance math, request overlap, schedule conflicts, insufficient balance, adjustments, cancellation, live review and permissions.
+- Detailed checkpoint: `docs/WORKFORCE_LEAVE_MANAGEMENT_V1_2026-09-25.md`. CI pending; Attendance/Leave slices are not yet claimed on QAS; Production unchanged.
+- Next workforce slice: **Payroll Foundation V1**.
+
 ### Workforce Attendance Rules & Corrections V1 — 2026-09-25
 - Application source checkpoint `b7fe238d` adds audited break tracking, immutable Recorded vs Effective attendance, correction requests/review, centralized attendance rules and net-work calculations.
 - Open breaks block clock-out. Break start/end are audited and included in Net worked time.
