@@ -250,7 +250,7 @@
                                     @php($productSlug = $item->meta['product_slug'] ?? optional($item->product)->slug)
                                     <div class="checkout-summary-product">
                                         <div class="checkout-summary-product__media">
-                                            <img src="{{ $item->image_url ?: 'https://via.placeholder.com/88x88?text=No+Image' }}" alt="{{ $item->product_name }}">
+                                            <img src="{{ $item->image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $item->product_name }}">
                                         </div>
                                         <div class="checkout-summary-product__body">
                                             @if($productSlug)
@@ -283,7 +283,7 @@
                                     @foreach($upsellProducts as $upsellProduct)
                                         <div class="checkout-upsell-item">
                                             <div class="d-flex align-items-center gap-3">
-                                                <img src="{{ $upsellProduct->main_image_url ?: 'https://via.placeholder.com/72x72?text=No+Image' }}" alt="{{ $upsellProduct->name }}">
+                                                <img src="{{ $upsellProduct->main_image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $upsellProduct->name }}">
                                                 <div>
                                                     <div class="fw-bold">{{ $upsellProduct->name }}</div>
                                                     <div class="small text-muted">{{ __('Quick add-on before placing the order') }}</div>
