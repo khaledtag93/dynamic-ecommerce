@@ -512,3 +512,10 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - The fragment skips the full-page revenue/refund aggregates. Both views retain Blade-escaped customer data and EN/AR status/error copy.
 - Two focused feature tests passed locally (29 assertions) in the separate SQLite compatibility test worktree. All compiled Blade templates passed PHP lint, along with changed PHP files, JavaScript syntax and `git diff --check` in the application checkout. Integrated MySQL CI passed at `19a4b8c` in run `36059356857` (197 tests / 1248 assertions).
 - Explicit owner approval superseded the earlier automatic publication block. The GitHub connection recreated the two local source trees exactly as `bb10f96` and `19a4b8c`; the final source tree is identical to local `f69d5cb`. QAS was last confirmed at `0a08253`; `main` and Production are unchanged, and consolidated manual QAS review stays deferred.
+
+### Admin Customers live list — 2026-09-25
+- Admin Customers now uses the shared live-list pattern for debounced name/email search, role/activity/value filters, per-page changes, quick customer queues and pagination without a full-page reload.
+- The same permission-protected route serves a small Blade results fragment for live requests while preserving the normal GET form, shareable URL, browser Back/Forward and full-page fallback when JavaScript is unavailable or a request fails.
+- Live fragment requests skip the global KPI/revenue block; linked-customer revenue on the full page now uses a direct order aggregate instead of loading every user aggregate into PHP.
+- Shared live-list link delegation now occurs at the stable workspace root so live queue shortcuts can sit outside the replaceable result container while pagination and sort links keep the existing behavior.
+- Focused regression coverage was added in `AdminCustomerLiveListTest` for authorization, filters, fragment/full-page parity and escaped customer data. Application source revision is `51a3418`; branch-head CI is still pending verification. QAS remains at the previously recorded `0a08253`, and Production is unchanged.
