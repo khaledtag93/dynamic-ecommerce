@@ -2,6 +2,7 @@
 
 namespace App\Services\Workforce;
 
+use App\Models\EmployeeAttendanceBreak;
 use App\Models\EmployeeAttendanceSession;
 use App\Models\EmployeeCompensation;
 use App\Models\EmployeeLeaveRequest;
@@ -80,6 +81,12 @@ class PayrollService
             if (! $lockedPeriod->isOpen()) {
                 throw ValidationException::withMessages([
                     'payroll' => __('Only open payroll periods can generate a payroll run.'),
+                ]);
+            }
+
+            if ($lockedPeriod->ends_on->copy()->endOfDay()->isFuture()) {
+                throw ValidationException::withMessages([
+                    'payroll' => __('Wait until the payroll period has ended before generating its payroll snapshot.'),
                 ]);
             }
 
@@ -316,6 +323,23 @@ class PayrollService
         if ($openAttendance) {
             throw ValidationException::withMessages([
                 'payroll' => __('Close all attendance sessions touching this payroll period before generating payroll.'),
+            ]);
+        }
+
+        $openBreak = EmployeeAttendanceBreak::query()
+            ->whereNull('ends_at')
+            ->where('starts_at', '<', $endExclusive)
+            ->whereHas('attendanceSession', function ($query) use ($start) {
+                $query->where(function ($session) use ($start) {
+                    $session->whereNull('clock_out_at')
+                        ->orWhere('clock_out_at', '>=', $start);
+                });
+            })
+            ->exists();
+
+        if ($openBreak) {
+            throw ValidationException::withMessages([
+                'payroll' => __('End all attendance breaks touching this payroll period before generating payroll.'),
             ]);
         }
 
