@@ -27,7 +27,7 @@ class AdminPaymentLiveListTest extends TestCase
 
         Payment::create([
             'order_id' => $matchOrder->id,
-            'method' => Order::PAYMENT_CASH,
+            'method' => Order::PAYMENT_METHOD_COD,
             'provider' => '<script>Cash Desk</script>',
             'status' => Payment::STATUS_FAILED,
             'transaction_reference' => 'TX-LIVE-MATCH',
@@ -36,7 +36,7 @@ class AdminPaymentLiveListTest extends TestCase
         ]);
         Payment::create([
             'order_id' => $otherOrder->id,
-            'method' => Order::PAYMENT_CASH,
+            'method' => Order::PAYMENT_METHOD_COD,
             'provider' => 'Other Provider',
             'status' => Payment::STATUS_PAID,
             'transaction_reference' => 'TX-LIVE-OTHER',
@@ -47,7 +47,7 @@ class AdminPaymentLiveListTest extends TestCase
         $url = route('admin.payments.index', [
             'search' => 'TX-LIVE-MATCH',
             'status' => Payment::STATUS_FAILED,
-            'method' => Order::PAYMENT_CASH,
+            'method' => Order::PAYMENT_METHOD_COD,
             'queue' => 'attention',
         ]);
 
