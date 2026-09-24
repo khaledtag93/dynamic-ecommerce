@@ -85,7 +85,7 @@
                     <option value="{{ $value }}" @selected($range === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <button class="btn btn-dark" type="submit">{{ __('Apply') }}</button>
+            <button class="btn btn-primary" type="submit">{{ __('Apply') }}</button>
         </form>
     </x-admin.page-header>
 
@@ -94,7 +94,7 @@
 
     @include('admin.analytics._report_toolbar', [
         'title' => __('Growth Automation'),
-        'subtitle' => __('Operator-friendly wording plus a compact summary block for reviews, exports, and stakeholder updates.'),
+        'subtitle' => __('A concise growth summary for reviews, exports, and stakeholder updates.'),
         'period' => $from->format('Y-m-d') . ' → ' . $to->format('Y-m-d'),
         'reportId' => 'growth-report',
         'exportRows' => $exportRows,
@@ -102,7 +102,7 @@
 
     <div class="growth-story-grid">
         <div class="growth-story-card">
-            <div class="eyebrow">{{ __('Growth storytelling') }}</div>
+            <div class="eyebrow">{{ __('Growth focus') }}</div>
             <div class="headline">{{ $focusHeadline }}</div>
             <div class="subcopy">{{ __('This view translates audience signals into a simple operating brief: where demand is warming, where friction is highest, and what the team should activate next.') }}</div>
             <div class="growth-story-bullets">
@@ -134,32 +134,10 @@
         </div>
     </div>
 
-    <div class="growth-focus">
-        <div>
-            <div class="fw-bold fs-5">{{ __('Executive focus') }}</div>
-            <div class="text-muted small mt-1">{{ __('The dashboard highlights the most actionable audience pressure inside the selected reporting window.') }}</div>
-        </div>
-        <div class="growth-focus-list">
-            <div class="growth-focus-item">{{ __('Primary pressure point: :label', ['label' => data_get($prioritySignal, 'label', __('No active signal'))]) }}</div>
-            <div class="growth-focus-item">{{ $recommendedFocus }}</div>
-            <div class="growth-focus-item">{{ __('Campaign blueprints available: :count · Active rules: :rules · Product signals: :signals', ['count' => number_format($campaigns->count()), 'rules' => number_format($activeRules->count()), 'signals' => number_format($productOpportunities->count())]) }}</div>
-        </div>
-    </div>
-
     @if (!($uiState['empty'] ?? false))
-    <div class="growth-grid">
-        @foreach ($signalCards as $signal)
-            <div class="growth-card">
-                <div class="growth-kicker">{{ $signal['label'] }}</div>
-                <div class="growth-value">{{ number_format($signal['value']) }}</div>
-                <div class="growth-help">{{ $signal['help'] }}</div>
-            </div>
-        @endforeach
-    </div>
-
     <div class="growth-signal-grid">
         @foreach ($signalCards as $signal)
-            <div class="growth-signal-card {{ $signal['theme'] }}">
+            <div class="admin-card admin-stat-card growth-signal-card {{ $signal['theme'] }}">
                 <div class="d-flex justify-content-between align-items-center gap-2">
                     <div class="fw-bold">{{ $signal['label'] }}</div>
                     <span class="pill {{ $signal['theme'] === 'success' ? 'pill-success' : ($signal['theme'] === 'danger' ? 'pill-danger' : ($signal['theme'] === 'warn' ? 'pill-warn' : '')) }}">{{ number_format($signal['value']) }}</span>
