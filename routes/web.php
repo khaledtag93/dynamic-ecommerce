@@ -278,6 +278,7 @@ Route::prefix('admin')
             Route::delete('/pos/carts/{posCart}/held', 'discardHeld')->name('pos.held.destroy');
             Route::post('/pos/carts/{posCart}/checkout', 'checkout')->name('pos.checkout');
             Route::get('/pos/sales/{order}', 'sale')->name('pos.sales.show');
+            Route::post('/pos/sales/{order}/return', 'processReturn')->middleware('permission:pos.return')->name('pos.sales.return');
         });
 
         Route::middleware('permission:customers.manage')->group(function () {
