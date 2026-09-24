@@ -10,6 +10,7 @@ class PosCart extends Model
     use HasFactory;
 
     public const STATUS_OPEN = 'open';
+    public const STATUS_HELD = 'held';
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_ABANDONED = 'abandoned';
 
@@ -18,8 +19,14 @@ class PosCart extends Model
         'order_id',
         'status',
         'open_token',
+        'hold_label',
+        'held_at',
         'customer_name',
         'notes',
+    ];
+
+    protected $casts = [
+        'held_at' => 'datetime',
     ];
 
     public function cashier()
