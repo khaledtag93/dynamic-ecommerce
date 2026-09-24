@@ -3129,5 +3129,16 @@
     "This manual payment status transition is not allowed. Verify the payment evidence and use the appropriate order or gateway flow.": "هذا الانتقال اليدوي لحالة الدفع غير مسموح. تحقق من دليل الدفع واستخدم مسار الطلب أو بوابة الدفع المناسب.",
     "A paid payment cannot be downgraded manually. Use the order refund action when money is returned.": "لا يمكن إرجاع حالة دفعة مدفوعة يدويًا. استخدم إجراء استرداد الطلب عند إعادة الأموال.",
     "Last gateway transition": "آخر انتقال من بوابة الدفع",
-    "Gateway transaction reference": "مرجع معاملة بوابة الدفع"
+    "Gateway transaction reference": "مرجع معاملة بوابة الدفع",
+    "This delivery status transition is not allowed.": "هذا الانتقال لحالة التوصيل غير مسموح.",
+    "A delivery must be marked as shipped before it can move out for delivery.": "يجب تسجيل الشحنة كـ تم الشحن قبل نقلها إلى خرج للتوصيل.",
+    "Delivery status updated successfully.": "تم تحديث حالة التوصيل بنجاح.",
+    "Shipped at": "وقت الشحن",
+    "Delivered at": "وقت التسليم",
+    "Only valid next delivery statuses are enabled. Customer notifications and WhatsApp updates are sent only when the status actually changes.": "تظهر فقط حالات التوصيل التالية المسموح بها. تُرسل إشعارات العميل وتحديثات واتساب فقط عند تغيّر الحالة فعليًا.",
+    "Confirm delivery status change": "تأكيد تغيير حالة التوصيل",
+    "You are changing the delivery status to :status.": "أنت على وشك تغيير حالة التوصيل إلى :status.",
+    "This status change may notify the customer and queue a WhatsApp delivery update when that channel is enabled.": "قد يؤدي تغيير الحالة إلى إشعار العميل وإضافة تحديث توصيل عبر واتساب إلى قائمة الإرسال عند تفعيل هذه القناة.",
+    "Keep current status": "الاحتفاظ بالحالة الحالية",
+    "Confirm status change": "تأكيد تغيير الحالة"
 }
