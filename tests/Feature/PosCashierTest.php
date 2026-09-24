@@ -386,8 +386,9 @@ class PosCashierTest extends TestCase
         $product = $this->product('POS Cash Guard Product', '6224000000006', 2, false, 30);
         $cart = app(PosService::class)->cartFor($admin);
 
-        $this->actingAs($admin)
-            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+        $this->actingAs($admin);
+        app(PosCashShiftService::class)->openShift($admin, 100);
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
             ->assertSessionHas('success');
 
         $this->post(route('admin.pos.checkout', $cart), [
@@ -757,6 +758,7 @@ class PosCashierTest extends TestCase
         $cart = app(PosService::class)->cartFor($admin);
 
         $this->actingAs($admin);
+        app(PosCashShiftService::class)->openShift($admin, 100);
         $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
         $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
 
@@ -862,6 +864,7 @@ class PosCashierTest extends TestCase
         $product = $this->product('POS Receipt Product', '6224000000009', 3, false, 18, 7);
         $cart = app(PosService::class)->cartFor($admin);
 
+        app(PosCashShiftService::class)->openShift($admin, 100);
         $this->actingAs($admin)
             ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
             ->assertSessionHas('success');
@@ -935,6 +938,7 @@ class PosCashierTest extends TestCase
         $cart = app(PosService::class)->cartFor($admin);
 
         $this->actingAs($admin);
+        app(PosCashShiftService::class)->openShift($admin, 100);
         $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
         $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
 
