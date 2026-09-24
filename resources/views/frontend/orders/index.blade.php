@@ -26,9 +26,9 @@
                                 <div class="fw-bold fs-4 mb-1">{{ $order->order_number }}</div>
                                 <div class="text-muted small mb-2">{{ __('Placed') }} {{ optional($order->placed_at)->format('d M Y, h:i A') ?: $order->created_at->format('d M Y, h:i A') }}</div>
                                 <div class="d-flex flex-wrap gap-2">
-                                    <span class="lc-status-badge lc-badge-processing">{{ $order->status_label }}</span>
-                                    <span class="lc-status-badge lc-badge-unpaid">{{ $order->payment_status_label }}</span>
-                                    <span class="lc-status-badge lc-badge-processing">{{ $order->delivery_status_label }}</span>
+                                    <span class="lc-status-badge {{ $order->status === \App\Models\Order::STATUS_COMPLETED ? 'lc-badge-success' : ($order->status === \App\Models\Order::STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->status_label }}</span>
+                                    <span class="lc-status-badge {{ $order->payment_status === \App\Models\Order::PAYMENT_STATUS_PAID ? 'lc-badge-success' : ($order->payment_status === \App\Models\Order::PAYMENT_STATUS_FAILED ? 'lc-badge-danger' : 'lc-badge-unpaid') }}">{{ $order->payment_status_label }}</span>
+                                    <span class="lc-status-badge {{ $order->delivery_status === \App\Models\Order::DELIVERY_STATUS_DELIVERED ? 'lc-badge-success' : ($order->delivery_status === \App\Models\Order::DELIVERY_STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->delivery_status_label }}</span>
                                 </div>
                             </div>
                             <div class="col-xl-2 col-lg-2 col-sm-4 col-6">
