@@ -18,8 +18,8 @@ return new class extends Migration
             $table->text('clock_out_notes')->nullable();
             $table->timestamps();
 
-            $table->index(['employee_profile_id', 'clock_out_at']);
-            $table->index('clock_in_at');
+            $table->index(['employee_profile_id', 'clock_out_at'], 'emp_attendance_open_idx');
+            $table->index('clock_in_at', 'emp_attendance_clock_in_idx');
         });
     }
 
