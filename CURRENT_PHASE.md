@@ -388,3 +388,15 @@ Verification state:
 - Production and `main`: unchanged
 
 See `docs/BARCODE_LABEL_PRINTING_V1_2026-09-24.md`.
+
+
+### Purchase Barcode Receiving V1 — 2026-09-24
+- Persists verified quantity per purchase line with last scanner metadata.
+- Each exact barcode scan verifies one unit without changing stock.
+- Parent variant-product barcodes, unknown/out-of-purchase items and ambiguous identifiers are rejected.
+- Duplicate purchase lines require explicit line selection instead of guessing.
+- Undo-one correction and ordered-quantity caps are enforced.
+- Barcode-verified final receipt rechecks progress under locks before the existing replay-safe stock receipt.
+- Manual receiving remains available as a protected fallback.
+- Hardening CI 36038635115 passed at application head 0a2ceb9 with 163 tests (889 assertions) plus frontend production build.
+- QAS remains on 0a08253; consolidated authenticated review is deferred. Production and main are unchanged.
