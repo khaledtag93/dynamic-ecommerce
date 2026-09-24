@@ -38,6 +38,9 @@ class AuthorizationService
             ['group' => 'workforce', 'slug' => 'workforce.view', 'name' => 'View workforce', 'description' => 'Review employee profiles and attendance history.'],
             ['group' => 'workforce', 'slug' => 'workforce.manage', 'name' => 'Manage workforce', 'description' => 'Create and update employee profiles and employment status.'],
             ['group' => 'workforce', 'slug' => 'workforce.clock', 'name' => 'Use time clock', 'description' => 'Clock personal attendance in and out.'],
+            ['group' => 'workforce_payroll', 'slug' => 'workforce.payroll.self', 'name' => 'View own payslips', 'description' => 'View personal finalized payroll entries and payslips.'],
+            ['group' => 'workforce_payroll', 'slug' => 'workforce.payroll.view', 'name' => 'View payroll', 'description' => 'Review compensation profiles, payroll periods, runs, and payslips.'],
+            ['group' => 'workforce_payroll', 'slug' => 'workforce.payroll.manage', 'name' => 'Manage payroll', 'description' => 'Configure compensation, generate payroll, add adjustments, approve runs, and mark payroll paid.'],
         ];
     }
 
@@ -82,6 +85,7 @@ class AuthorizationService
                     'dashboard.view',
                     'pos.manage',
                     'workforce.clock',
+                    'workforce.payroll.self',
                 ],
             ],
             'support_agent' => [
@@ -94,6 +98,7 @@ class AuthorizationService
                     'delivery.view',
                     'notifications.view',
                     'workforce.clock',
+                    'workforce.payroll.self',
                 ],
             ],
             'finance_manager' => [
@@ -107,6 +112,9 @@ class AuthorizationService
                     'payments.settings',
                     'notifications.view',
                     'workforce.clock',
+                    'workforce.payroll.self',
+                    'workforce.payroll.view',
+                    'workforce.payroll.manage',
                 ],
             ],
         ];
