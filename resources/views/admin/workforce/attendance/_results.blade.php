@@ -59,7 +59,7 @@
                                     <span class="text-muted">—</span>
                                 @endif
                             </td>
-                            <td>{{ IlluminateSupportStr::headline($session->source) }}</td>
+                            <td>{{ \Illuminate\Support\Str::headline($session->source) }}</td>
                         </tr>
                         @if($session->clock_in_notes || $session->clock_out_notes)
                             <tr>
