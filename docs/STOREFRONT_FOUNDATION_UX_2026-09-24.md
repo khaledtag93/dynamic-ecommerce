@@ -24,7 +24,10 @@ Make the customer storefront feel production-ready and marketplace-neutral befor
 - Removed the product-card fallback category label `Electronics`; missing categories no longer invent a category.
 - Aligned remaining product-card hover/stock accents with storefront theme tokens.
 - Added Arabic/English copy for the new generic storefront and search experience.
-- Added `StorefrontExperienceTest` covering the real search route, matching results, local image fallback, removal of the duplicate shortcut strip, and non-demo default contact settings.
+- Checkout payment signals now render from the actually enabled payment methods instead of hard-coded Visa / Mastercard / Cash labels.
+- The checkout billing-address switch now uses an aligned storefront toggle card with explanatory copy.
+- Product Detail now uses `object-fit: contain` for primary/thumbnails to avoid cropping merchandise imagery, and Quick Facts reports the real gallery-media count instead of counting the local placeholder.
+- Added `StorefrontExperienceTest` covering the real search route, matching results, local image fallback, removal of the duplicate shortcut strip, non-demo default contact settings, Checkout payment/toggle behavior, and Product Detail gallery semantics.
 
 ## Validation state
 
@@ -44,3 +47,6 @@ Make the customer storefront feel production-ready and marketplace-neutral befor
 6. Open products/categories/cart/checkout with missing images and confirm the local placeholder renders without third-party requests.
 7. Confirm contact/footer areas do not show fake email/phone/address/website values when settings are blank.
 8. Review responsive/RTL behavior for the new search page and header search fields.
+9. Open Checkout with different payment-method combinations and confirm only enabled methods are advertised above the selector.
+10. Check the billing-address toggle alignment on desktop/mobile and verify turning it off still reveals the existing billing fields.
+11. Open a product with no media and one with multiple images; confirm the local placeholder is not counted as gallery media and product imagery is not cropped.
