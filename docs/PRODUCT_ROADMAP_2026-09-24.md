@@ -79,6 +79,8 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 
 ## Phase 4 — POS / cashier
 
+**POS implementation update — 2026-09-24:** Source now includes the scan-first cashier foundation, Cash/Card Terminal checkout, canonical Order/Payment/Inventory ledgers, printable 58/80 mm + A4 sales receipts, and cashier-owned Hold / Resume / Discard carts. These source slices are CI-verified; consolidated authenticated/physical-device QAS remains deferred and Production is unchanged. Discounts, customer-account attachment, returns cashier UX, cash-drawer/shift reconciliation and fiscal/tax invoice requirements remain later controlled slices.
+
 Build POS as a focused operational application, not as another dense admin page.
 
 Core:
