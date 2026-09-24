@@ -117,7 +117,9 @@ Core:
 
 **Attendance Rules & Corrections V1 implemented in source — 2026-09-25:** `b7fe238d` adds break tracking, immutable recorded-vs-effective attendance, audited correction requests/approval, centralized late/early/absence rules and net worked time. Work Schedule now consumes the same rule output. See `WORKFORCE_ATTENDANCE_RULES_CORRECTIONS_V1_2026-09-25.md`. CI verification is pending; this slice is not yet claimed on QAS.
 
-**Next implementation order:** Leave Management V1 → payroll foundation.
+**Leave Management V1 implemented in source — 2026-09-25:** `c6df3fc2` adds configurable leave types, employee requests, append-only balance adjustments, Available/Projected balances and bidirectional Schedule↔Approved-Leave conflict protection. See `WORKFORCE_LEAVE_MANAGEMENT_V1_2026-09-25.md`. CI verification is pending; this slice is not yet claimed on QAS.
+
+**Next implementation order:** Payroll Foundation V1.
 
 
 Keep workforce identity related to, but not overloaded into, the customer account model.
