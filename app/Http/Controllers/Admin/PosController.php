@@ -24,6 +24,10 @@ class PosController extends Controller
         $cart = $this->posService->cartFor($request->user());
         $summary = $this->posService->summary($cart);
         $heldCarts = $this->posService->heldCartsFor($request->user());
+        $heldSummaries = $heldCarts->mapWithKeys(
+            fn (PosCart $heldCart) => [$heldCart->id => $this->posService->summary($heldCart)]
+        );
+        $canDiscount = $request->user()->hasPermission('pos.discount');
         $customerSearch = trim((string) $request->string('customer_search'));
         $customerResults = collect();
 
@@ -55,6 +59,8 @@ class PosController extends Controller
             'cart',
             'summary',
             'heldCarts',
+            'heldSummaries',
+            'canDiscount',
             'customerSearch',
             'customerResults',
             'recentSales',
@@ -138,6 +144,77 @@ class PosController extends Controller
         return redirect()
             ->route('admin.pos.index')
             ->with('success', __('Item removed from the POS cart.'));
+    }
+
+    public function updateItemDiscount(Request $request, PosCart $posCart, PosCartItem $posCartItem)
+    {
+        $data = $request->validate([
+            'discount_type' => ['required', Rule::in([
+                PosService::DISCOUNT_TYPE_FIXED,
+                PosService::DISCOUNT_TYPE_PERCENT,
+            ])],
+            'discount_value' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+            'discount_reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $this->posService->updateItemDiscount(
+            $posCart,
+            $posCartItem,
+            $data['discount_type'],
+            (float) $data['discount_value'],
+            $data['discount_reason'],
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('admin.pos.index')
+            ->with('success', __('POS line discount updated.'));
+    }
+
+    public function clearItemDiscount(Request $request, PosCart $posCart, PosCartItem $posCartItem)
+    {
+        $this->posService->clearItemDiscount(
+            $posCart,
+            $posCartItem,
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('admin.pos.index')
+            ->with('success', __('POS line discount removed.'));
+    }
+
+    public function updateCartDiscount(Request $request, PosCart $posCart)
+    {
+        $data = $request->validate([
+            'discount_type' => ['required', Rule::in([
+                PosService::DISCOUNT_TYPE_FIXED,
+                PosService::DISCOUNT_TYPE_PERCENT,
+            ])],
+            'discount_value' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+            'discount_reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $this->posService->updateCartDiscount(
+            $posCart,
+            $data['discount_type'],
+            (float) $data['discount_value'],
+            $data['discount_reason'],
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('admin.pos.index')
+            ->with('success', __('POS sale discount updated.'));
+    }
+
+    public function clearCartDiscount(Request $request, PosCart $posCart)
+    {
+        $this->posService->clearCartDiscount($posCart, (int) $request->user()->id);
+
+        return redirect()
+            ->route('admin.pos.index')
+            ->with('success', __('POS sale discount removed.'));
     }
 
     public function clear(Request $request, PosCart $posCart)

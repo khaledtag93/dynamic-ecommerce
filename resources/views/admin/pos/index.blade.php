@@ -9,6 +9,11 @@
     .pos-scan-field { min-height: 3.35rem; font-size: 1.05rem; }
     .pos-cart-line { display: grid; grid-template-columns: minmax(0, 1.5fr) 110px 120px 105px 44px; gap: .8rem; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--admin-border); }
     .pos-cart-line:last-child { border-bottom: 0; }
+    .pos-cart-line__discount { grid-column: 1 / -1; }
+    .pos-discount-panel { border: 1px dashed var(--admin-border); border-radius: .85rem; padding: .7rem .8rem; background: rgba(15, 23, 42, .018); }
+    .pos-discount-panel > summary { cursor: pointer; font-weight: 700; list-style: none; }
+    .pos-discount-panel > summary::-webkit-details-marker { display: none; }
+    .pos-discount-form { display: grid; grid-template-columns: minmax(130px, .7fr) minmax(110px, .55fr) minmax(180px, 1.5fr) auto; gap: .6rem; align-items: end; }
     .pos-line-name { font-weight: 800; }
     .pos-line-meta { color: var(--admin-muted); font-size: .82rem; }
     .pos-money { font-weight: 800; white-space: nowrap; }
@@ -19,6 +24,7 @@
         .pos-cart-line { grid-template-columns: 1fr 1fr; }
         .pos-cart-line__item { grid-column: 1 / -1; }
         .pos-cart-line__remove { justify-self: end; }
+        .pos-discount-form { grid-template-columns: 1fr; }
     }
 </style>
 
@@ -101,7 +107,10 @@
                     @forelse($cart->items as $item)
                         @php
                             $availableStock = (int) ($item->variant?->stock ?? $item->product?->quantity ?? 0);
-                            $lineTotal = (float) $item->unit_price * (int) $item->quantity;
+                            $lineSummary = $summary['lines'][$item->id] ?? ['gross_total' => 0, 'discount_total' => 0, 'net_total' => 0];
+                            $lineGrossTotal = (float) $lineSummary['gross_total'];
+                            $lineDiscount = (float) $lineSummary['discount_total'];
+                            $lineTotal = (float) $lineSummary['net_total'];
                         @endphp
                         <div class="pos-cart-line">
                             <div class="pos-cart-line__item">
@@ -130,6 +139,9 @@
                             <div>
                                 <div class="text-muted small">{{ __('Line total') }}</div>
                                 <div class="pos-money">EGP {{ number_format($lineTotal, 2) }}</div>
+                                @if($lineDiscount > 0)
+                                    <div class="text-muted small"><s>EGP {{ number_format($lineGrossTotal, 2) }}</s> · -EGP {{ number_format($lineDiscount, 2) }}</div>
+                                @endif
                             </div>
 
                             <form method="POST" action="{{ route('admin.pos.items.destroy', ['posCart' => $cart->id, 'posCartItem' => $item->id]) }}" class="pos-cart-line__remove" data-submit-loading>
@@ -137,6 +149,54 @@
                                 @method('DELETE')
                                 <button class="btn btn-sm btn-light border text-danger" title="{{ __('Remove item') }}"><i class="mdi mdi-delete-outline"></i></button>
                             </form>
+
+                            @if($canDiscount || $lineDiscount > 0)
+                                <div class="pos-cart-line__discount">
+                                    <details class="pos-discount-panel" @if($lineDiscount > 0) open @endif>
+                                        <summary class="d-flex justify-content-between align-items-center gap-2">
+                                            <span><i class="mdi mdi-sale-outline me-1"></i>{{ __('Line discount') }}</span>
+                                            @if($lineDiscount > 0)
+                                                <span class="badge badge-soft-success">-EGP {{ number_format($lineDiscount, 2) }}</span>
+                                            @endif
+                                        </summary>
+                                        <div class="mt-3">
+                                            @if($canDiscount)
+                                                <form method="POST" action="{{ route('admin.pos.items.discount.update', ['posCart' => $cart->id, 'posCartItem' => $item->id]) }}" class="pos-discount-form" data-submit-loading>
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <div>
+                                                        <label class="form-label small fw-semibold">{{ __('Discount type') }}</label>
+                                                        <select name="discount_type" class="form-select form-select-sm" required>
+                                                            <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_FIXED }}" @selected($item->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
+                                                            <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT }}" @selected($item->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label class="form-label small fw-semibold">{{ __('Discount value') }}</label>
+                                                        <input name="discount_value" type="number" min="0.01" step="0.01" max="999999999.99" value="{{ (float) ($item->discount_value ?? 0) ?: '' }}" class="form-control form-control-sm" required>
+                                                    </div>
+                                                    <div>
+                                                        <label class="form-label small fw-semibold">{{ __('Discount reason') }}</label>
+                                                        <input name="discount_reason" type="text" maxlength="255" value="{{ $item->discount_reason }}" class="form-control form-control-sm" placeholder="{{ __('Required for audit') }}" required>
+                                                    </div>
+                                                    <button class="btn btn-sm btn-light border" data-loading-text="{{ __('Applying...') }}">{{ __('Apply discount') }}</button>
+                                                </form>
+                                            @endif
+
+                                            @if($lineDiscount > 0)
+                                                <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mt-2">
+                                                    <div class="text-muted small">{{ $item->discount_reason }}</div>
+                                                    <form method="POST" action="{{ route('admin.pos.items.discount.destroy', ['posCart' => $cart->id, 'posCartItem' => $item->id]) }}" data-submit-loading>
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="btn btn-sm btn-link text-danger p-0">{{ __('Remove discount') }}</button>
+                                                    </form>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </details>
+                                </div>
+                            @endif
                         </div>
                     @empty
                         <div class="admin-empty-state py-5">
@@ -163,7 +223,8 @@
                             @foreach($heldCarts as $heldCart)
                                 @php
                                     $heldUnits = (int) $heldCart->items->sum('quantity');
-                                    $heldTotal = round((float) $heldCart->items->sum(fn ($item) => (float) $item->unit_price * (int) $item->quantity), 2);
+                                    $heldSummary = $heldSummaries[$heldCart->id] ?? ['grand_total' => 0, 'discount_total' => 0];
+                                    $heldTotal = (float) $heldSummary['grand_total'];
                                 @endphp
                                 <div class="col-lg-6">
                                     <div class="border rounded-4 p-3 h-100">
@@ -312,10 +373,78 @@
                         <span class="text-muted">{{ __('Subtotal') }}</span>
                         <strong>EGP {{ number_format($summary['subtotal'], 2) }}</strong>
                     </div>
+                    @if($summary['line_discount_total'] > 0)
+                        <div class="pos-total-row">
+                            <span class="text-muted">{{ __('Line discounts') }}</span>
+                            <strong>-EGP {{ number_format($summary['line_discount_total'], 2) }}</strong>
+                        </div>
+                    @endif
+
+                    @if($canDiscount || $summary['order_discount_total'] > 0)
+                        <details class="pos-discount-panel my-2" @if($summary['order_discount_total'] > 0) open @endif>
+                            <summary class="d-flex justify-content-between align-items-center gap-2">
+                                <span><i class="mdi mdi-sale-outline me-1"></i>{{ __('Sale discount') }}</span>
+                                @if($summary['order_discount_total'] > 0)
+                                    <span class="badge badge-soft-success">-EGP {{ number_format($summary['order_discount_total'], 2) }}</span>
+                                @endif
+                            </summary>
+                            <div class="mt-3">
+                                @if($canDiscount)
+                                    <form method="POST" action="{{ route('admin.pos.discount.update', $cart) }}" class="d-grid gap-2" data-submit-loading>
+                                        @csrf
+                                        @method('PATCH')
+                                        <div class="row g-2">
+                                            <div class="col-sm-5">
+                                                <label class="form-label small fw-semibold">{{ __('Discount type') }}</label>
+                                                <select name="discount_type" class="form-select form-select-sm" required>
+                                                    <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_FIXED }}" @selected($cart->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
+                                                    <option value="{{ AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT }}" @selected($cart->discount_type === AppServicesCommercePosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-7">
+                                                <label class="form-label small fw-semibold">{{ __('Discount value') }}</label>
+                                                <input name="discount_value" type="number" min="0.01" step="0.01" max="999999999.99" value="{{ (float) ($cart->discount_value ?? 0) ?: '' }}" class="form-control form-control-sm" required>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="form-label small fw-semibold">{{ __('Discount reason') }}</label>
+                                            <input name="discount_reason" type="text" maxlength="255" value="{{ $cart->discount_reason }}" class="form-control form-control-sm" placeholder="{{ __('Required for audit') }}" required>
+                                        </div>
+                                        <div class="small text-muted">{{ __('Fixed discounts are amounts in EGP; percentage discounts are calculated from current locked prices.') }}</div>
+                                        <button class="btn btn-sm btn-light border" data-loading-text="{{ __('Applying...') }}">{{ __('Apply discount') }}</button>
+                                    </form>
+                                @endif
+
+                                @if($summary['order_discount_total'] > 0)
+                                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mt-2">
+                                        <div class="text-muted small">{{ $cart->discount_reason }}</div>
+                                        <form method="POST" action="{{ route('admin.pos.discount.destroy', $cart) }}" data-submit-loading>
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-link text-danger p-0">{{ __('Remove discount') }}</button>
+                                        </form>
+                                    </div>
+                                @endif
+                                <div class="small text-muted mt-2">{{ __('The discount reason is kept in the admin audit trail and is not printed on the customer receipt.') }}</div>
+                            </div>
+                        </details>
+                    @endif
+
+                    @if($summary['discount_total'] > 0)
+                        <div class="pos-total-row">
+                            <span class="text-muted">{{ __('Discount total') }}</span>
+                            <strong>-EGP {{ number_format($summary['discount_total'], 2) }}</strong>
+                        </div>
+                    @endif
                     <div class="pos-total-row pos-total-row--grand">
                         <span>{{ __('Total') }}</span>
                         <strong>EGP {{ number_format($summary['grand_total'], 2) }}</strong>
                     </div>
+
+                    @error('discount_type')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                    @error('discount_value')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                    @error('discount_reason')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                    @error('discount')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
 
                     <form method="POST" action="{{ route('admin.pos.checkout', $cart) }}" class="mt-4" data-submit-loading data-confirm-title="{{ __('Complete POS sale?') }}" data-confirm-message="{{ __('Create the paid sale and deduct the exact quantities from inventory?') }}" data-confirm-subtitle="{{ __('The server will recheck stock, prices, products, variants, and this cashier cart before saving.') }}" data-confirm-ok="{{ __('Complete sale') }}">
                         @csrf

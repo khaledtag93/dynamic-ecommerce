@@ -337,6 +337,10 @@
                             <div class="receipt-item-meta">{{ $item->variant_name }}</div>
                         @endif
                         <div class="receipt-item-meta">{{ $currency }} {{ number_format((float) $item->unit_price, 2) }} × {{ $item->quantity }}</div>
+                        @php($itemDiscount = (float) data_get($item->meta, 'pos.discount.total_amount', 0))
+                        @if($itemDiscount > 0)
+                            <div class="receipt-item-meta">{{ __('Discount') }}: -{{ $currency }} {{ number_format($itemDiscount, 2) }}</div>
+                        @endif
                     </td>
                     <td>{{ $item->sku ?: '—' }}</td>
                     <td>{{ $item->quantity }}</td>

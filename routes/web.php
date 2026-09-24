@@ -267,7 +267,11 @@ Route::prefix('admin')
             Route::delete('/pos/carts/{posCart}/customer', 'detachCustomer')->name('pos.customer.detach');
             Route::post('/pos/carts/{posCart}/scan', 'scan')->name('pos.scan');
             Route::patch('/pos/carts/{posCart}/items/{posCartItem}', 'updateQuantity')->name('pos.items.update');
+            Route::patch('/pos/carts/{posCart}/items/{posCartItem}/discount', 'updateItemDiscount')->middleware('permission:pos.discount')->name('pos.items.discount.update');
+            Route::delete('/pos/carts/{posCart}/items/{posCartItem}/discount', 'clearItemDiscount')->name('pos.items.discount.destroy');
             Route::delete('/pos/carts/{posCart}/items/{posCartItem}', 'removeItem')->name('pos.items.destroy');
+            Route::patch('/pos/carts/{posCart}/discount', 'updateCartDiscount')->middleware('permission:pos.discount')->name('pos.discount.update');
+            Route::delete('/pos/carts/{posCart}/discount', 'clearCartDiscount')->name('pos.discount.destroy');
             Route::delete('/pos/carts/{posCart}', 'clear')->name('pos.clear');
             Route::post('/pos/carts/{posCart}/hold', 'hold')->name('pos.hold');
             Route::post('/pos/carts/{posCart}/resume', 'resume')->name('pos.resume');

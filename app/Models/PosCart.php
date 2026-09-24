@@ -23,11 +23,15 @@ class PosCart extends Model
         'hold_label',
         'held_at',
         'customer_name',
+        'discount_type',
+        'discount_value',
+        'discount_reason',
         'notes',
     ];
 
     protected $casts = [
         'held_at' => 'datetime',
+        'discount_value' => 'decimal:2',
     ];
 
     public function cashier()

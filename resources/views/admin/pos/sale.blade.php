@@ -60,6 +60,7 @@
                             <th>{{ __('SKU') }}</th>
                             <th>{{ __('Quantity') }}</th>
                             <th>{{ __('Unit price') }}</th>
+                            <th>{{ __('Discount') }}</th>
                             <th>{{ __('Line total') }}</th>
                         </tr>
                     </thead>
@@ -73,18 +74,39 @@
                                 <td>{{ $item->sku ?: '—' }}</td>
                                 <td>{{ $item->quantity }}</td>
                                 <td>EGP {{ number_format((float) $item->unit_price, 2) }}</td>
+                                <td>
+                                    @php($itemDiscount = (float) data_get($item->meta, 'pos.discount.total_amount', 0))
+                                    {{ $itemDiscount > 0 ? '-EGP ' . number_format($itemDiscount, 2) : '—' }}
+                                </td>
                                 <td class="fw-bold">EGP {{ number_format((float) $item->line_total, 2) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" class="text-end">{{ __('Total') }}</th>
+                            <th colspan="5" class="text-end">{{ __('Subtotal') }}</th>
+                            <th>EGP {{ number_format((float) $order->subtotal, 2) }}</th>
+                        </tr>
+                        @if((float) $order->discount_total > 0)
+                            <tr>
+                                <th colspan="5" class="text-end">{{ __('Discount') }}</th>
+                                <th>-EGP {{ number_format((float) $order->discount_total, 2) }}</th>
+                            </tr>
+                        @endif
+                        <tr>
+                            <th colspan="5" class="text-end">{{ __('Total') }}</th>
                             <th>EGP {{ number_format((float) $order->grand_total, 2) }}</th>
                         </tr>
                     </tfoot>
                 </table>
             </div>
+
+            @if((float) data_get($order->meta, 'pos.discounts.order_discount.amount', 0) > 0)
+                <div class="alert alert-light border mt-3 mb-0">
+                    <div class="fw-semibold">{{ __('Sale discount') }}</div>
+                    <div class="small text-muted">{{ data_get($order->meta, 'pos.discounts.order_discount.reason') }}</div>
+                </div>
+            @endif
         </div>
     </div>
 

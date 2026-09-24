@@ -20,11 +20,15 @@ class PosCartItem extends Model
         'barcode',
         'unit_price',
         'quantity',
+        'discount_type',
+        'discount_value',
+        'discount_reason',
     ];
 
     protected $casts = [
         'unit_price' => 'decimal:2',
         'quantity' => 'integer',
+        'discount_value' => 'decimal:2',
     ];
 
     public function cart()

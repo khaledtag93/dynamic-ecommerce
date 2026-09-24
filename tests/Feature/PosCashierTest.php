@@ -549,6 +549,146 @@ class PosCashierTest extends TestCase
         ]);
     }
 
+    public function test_cashier_role_cannot_apply_pos_discounts(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $cashier = User::factory()->create(['role_as' => 1]);
+        $cashierRole = Role::query()->where('slug', 'cashier')->firstOrFail();
+        $cashier->roles()->sync([$cashierRole->id]);
+
+        $product = $this->product('POS Discount Permission Product', '6224000000010', 2, false, 25);
+        $cart = app(PosService::class)->cartFor($cashier);
+
+        $this->actingAs($cashier)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $item = PosCartItem::query()->where('pos_cart_id', $cart->id)->firstOrFail();
+
+        $this->patch(route('admin.pos.items.discount.update', ['posCart' => $cart->id, 'posCartItem' => $item->id]), [
+            'discount_type' => PosService::DISCOUNT_TYPE_PERCENT,
+            'discount_value' => 10,
+            'discount_reason' => 'Not authorized',
+        ])->assertForbidden();
+
+        $this->patch(route('admin.pos.discount.update', $cart), [
+            'discount_type' => PosService::DISCOUNT_TYPE_FIXED,
+            'discount_value' => 5,
+            'discount_reason' => 'Not authorized',
+        ])->assertForbidden();
+
+        $this->assertFalse($cashier->fresh()->hasPermission('pos.discount'));
+        $this->assertNull($item->fresh()->discount_type);
+        $this->assertNull($cart->fresh()->discount_type);
+    }
+
+    public function test_pos_line_and_sale_discounts_flow_into_order_payment_profit_and_change(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('POS Discount Product', '6224000000011', 5, false, 100, 40);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin);
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+
+        $item = PosCartItem::query()->where('pos_cart_id', $cart->id)->firstOrFail();
+
+        $this->patch(route('admin.pos.items.discount.update', ['posCart' => $cart->id, 'posCartItem' => $item->id]), [
+            'discount_type' => PosService::DISCOUNT_TYPE_PERCENT,
+            'discount_value' => 10,
+            'discount_reason' => 'Loyalty adjustment',
+        ])->assertSessionHas('success');
+
+        $this->patch(route('admin.pos.discount.update', $cart), [
+            'discount_type' => PosService::DISCOUNT_TYPE_FIXED,
+            'discount_value' => 30,
+            'discount_reason' => 'Manager approved promotion',
+        ])->assertSessionHas('success');
+
+        $summary = app(PosService::class)->summary($cart->fresh(['items.product', 'items.variant']));
+        $this->assertSame(200.0, $summary['subtotal']);
+        $this->assertSame(20.0, $summary['line_discount_total']);
+        $this->assertSame(30.0, $summary['order_discount_total']);
+        $this->assertSame(50.0, $summary['discount_total']);
+        $this->assertSame(150.0, $summary['grand_total']);
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 160,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $orderItem = $order->items()->firstOrFail();
+
+        $this->assertSame('200.00', $order->subtotal);
+        $this->assertSame('50.00', $order->discount_total);
+        $this->assertSame('150.00', $order->grand_total);
+        $this->assertSame('80.00', $order->cost_total);
+        $this->assertSame('70.00', $order->profit_total);
+        $this->assertSame('150.00', $orderItem->line_total);
+        $this->assertSame('70.00', $orderItem->profit_amount);
+        $this->assertSame(20.0, (float) data_get($orderItem->meta, 'pos.discount.line_amount'));
+        $this->assertSame(30.0, (float) data_get($orderItem->meta, 'pos.discount.order_share'));
+        $this->assertSame(50.0, (float) data_get($orderItem->meta, 'pos.discount.total_amount'));
+        $this->assertSame('Manager approved promotion', data_get($order->meta, 'pos.discounts.order_discount.reason'));
+        $this->assertSame(10.0, (float) data_get($order->meta, 'pos.change_due'));
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => 150,
+            'status' => Payment::STATUS_PAID,
+        ]);
+        $this->assertSame(3, (int) $product->fresh()->quantity);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'pos_line_discount_updated',
+            'subject_id' => $cart->id,
+        ]);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'pos_sale_discount_updated',
+            'subject_id' => $cart->id,
+        ]);
+    }
+
+    public function test_pos_discount_requires_reason_and_cannot_exceed_eligible_total(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('POS Discount Guard Product', '6224000000012', 2, false, 20);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $item = PosCartItem::query()->where('pos_cart_id', $cart->id)->firstOrFail();
+
+        $this->patch(route('admin.pos.items.discount.update', ['posCart' => $cart->id, 'posCartItem' => $item->id]), [
+            'discount_type' => PosService::DISCOUNT_TYPE_FIXED,
+            'discount_value' => 5,
+            'discount_reason' => '',
+        ])->assertSessionHasErrors('discount_reason');
+
+        $this->patch(route('admin.pos.items.discount.update', ['posCart' => $cart->id, 'posCartItem' => $item->id]), [
+            'discount_type' => PosService::DISCOUNT_TYPE_FIXED,
+            'discount_value' => 25,
+            'discount_reason' => 'Too large',
+        ])->assertSessionHasErrors('discount_value');
+
+        $this->patch(route('admin.pos.discount.update', $cart), [
+            'discount_type' => PosService::DISCOUNT_TYPE_PERCENT,
+            'discount_value' => 101,
+            'discount_reason' => 'Too large',
+        ])->assertSessionHasErrors('discount_value');
+
+        $this->assertNull($item->fresh()->discount_type);
+        $this->assertNull($cart->fresh()->discount_type);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+    }
+
     public function test_pos_receipt_is_read_only_and_supports_print_paper_sizes(): void
     {
         $admin = User::factory()->create(['role_as' => 1]);

@@ -17,6 +17,9 @@ use Illuminate\Validation\ValidationException;
 
 class PosService
 {
+    public const DISCOUNT_TYPE_FIXED = 'fixed';
+    public const DISCOUNT_TYPE_PERCENT = 'percent';
+
     public function __construct(
         protected ProductIdentifierService $identifierService,
         protected InventoryService $inventoryService,
@@ -43,15 +46,48 @@ class PosService
     {
         $cart->loadMissing(['items.product', 'items.variant']);
 
-        $subtotal = round((float) $cart->items->sum(
-            fn (PosCartItem $item) => (float) $item->unit_price * (int) $item->quantity
-        ), 2);
+        $subtotal = 0.0;
+        $lineDiscountTotal = 0.0;
+        $lines = [];
+
+        foreach ($cart->items as $item) {
+            $gross = round((float) $item->unit_price * (int) $item->quantity, 2);
+            $discount = $this->discountAmount(
+                $item->discount_type,
+                $item->discount_value,
+                $gross
+            );
+            $net = round(max(0, $gross - $discount), 2);
+
+            $subtotal += $gross;
+            $lineDiscountTotal += $discount;
+            $lines[$item->id] = [
+                'gross_total' => $gross,
+                'discount_total' => $discount,
+                'net_total' => $net,
+            ];
+        }
+
+        $subtotal = round($subtotal, 2);
+        $lineDiscountTotal = round($lineDiscountTotal, 2);
+        $afterLineDiscounts = round(max(0, $subtotal - $lineDiscountTotal), 2);
+        $orderDiscountTotal = $this->discountAmount(
+            $cart->discount_type,
+            $cart->discount_value,
+            $afterLineDiscounts
+        );
+        $discountTotal = round($lineDiscountTotal + $orderDiscountTotal, 2);
+        $grandTotal = round(max(0, $subtotal - $discountTotal), 2);
 
         return [
             'subtotal' => $subtotal,
-            'grand_total' => $subtotal,
+            'line_discount_total' => $lineDiscountTotal,
+            'order_discount_total' => $orderDiscountTotal,
+            'discount_total' => $discountTotal,
+            'grand_total' => $grandTotal,
             'items_count' => (int) $cart->items->sum('quantity'),
             'lines_count' => $cart->items->count(),
+            'lines' => $lines,
         ];
     }
 
@@ -121,6 +157,193 @@ class PosService
             );
 
             return $lockedCart->fresh(['items.product', 'items.variant', 'customer']);
+        });
+    }
+
+    public function updateCartDiscount(
+        PosCart $cart,
+        string $type,
+        float $value,
+        string $reason,
+        int $cashierUserId
+    ): PosCart {
+        return DB::transaction(function () use ($cart, $type, $value, $reason, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $lockedCart->load(['items.product', 'items.variant']);
+            $summary = $this->summary($lockedCart);
+            $eligibleTotal = round(max(0, $summary['subtotal'] - $summary['line_discount_total']), 2);
+
+            $this->discountAmount($type, $value, $eligibleTotal, true);
+            $reason = trim($reason);
+
+            if ($reason === '') {
+                throw ValidationException::withMessages([
+                    'discount_reason' => __('Enter a discount reason before applying the discount.'),
+                ]);
+            }
+
+            $lockedCart->update([
+                'discount_type' => $type,
+                'discount_value' => round($value, 2),
+                'discount_reason' => $reason,
+            ]);
+
+            $updated = $lockedCart->fresh(['items.product', 'items.variant', 'customer']);
+            $updatedSummary = $this->summary($updated);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_sale_discount_updated',
+                __('POS sale discount updated.'),
+                $cashierUserId,
+                $updated,
+                [
+                    'discount_type' => $type,
+                    'discount_value' => round($value, 2),
+                    'discount_amount' => $updatedSummary['order_discount_total'],
+                    'discount_reason' => $reason,
+                ]
+            );
+
+            return $updated;
+        });
+    }
+
+    public function clearCartDiscount(PosCart $cart, int $cashierUserId): PosCart
+    {
+        return DB::transaction(function () use ($cart, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $previous = [
+                'discount_type' => $lockedCart->discount_type,
+                'discount_value' => (float) $lockedCart->discount_value,
+                'discount_reason' => $lockedCart->discount_reason,
+            ];
+
+            $lockedCart->update([
+                'discount_type' => null,
+                'discount_value' => 0,
+                'discount_reason' => null,
+            ]);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_sale_discount_removed',
+                __('POS sale discount removed.'),
+                $cashierUserId,
+                $lockedCart,
+                $previous
+            );
+
+            return $lockedCart->fresh(['items.product', 'items.variant', 'customer']);
+        });
+    }
+
+    public function updateItemDiscount(
+        PosCart $cart,
+        PosCartItem $item,
+        string $type,
+        float $value,
+        string $reason,
+        int $cashierUserId
+    ): PosCartItem {
+        return DB::transaction(function () use ($cart, $item, $type, $value, $reason, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $lockedItem = PosCartItem::query()
+                ->whereKey($item->id)
+                ->where('pos_cart_id', $lockedCart->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $lockedItem) {
+                throw ValidationException::withMessages([
+                    'cart' => __('This POS cart item no longer exists.'),
+                ]);
+            }
+
+            $gross = round((float) $lockedItem->unit_price * (int) $lockedItem->quantity, 2);
+            $this->discountAmount($type, $value, $gross, true);
+            $reason = trim($reason);
+
+            if ($reason === '') {
+                throw ValidationException::withMessages([
+                    'discount_reason' => __('Enter a discount reason before applying the discount.'),
+                ]);
+            }
+
+            $lockedItem->update([
+                'discount_type' => $type,
+                'discount_value' => round($value, 2),
+                'discount_reason' => $reason,
+            ]);
+
+            $discountAmount = $this->discountAmount($type, $value, $gross);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_line_discount_updated',
+                __('POS line discount updated.'),
+                $cashierUserId,
+                $lockedCart,
+                [
+                    'pos_cart_item_id' => $lockedItem->id,
+                    'product_id' => $lockedItem->product_id,
+                    'product_variant_id' => $lockedItem->product_variant_id,
+                    'discount_type' => $type,
+                    'discount_value' => round($value, 2),
+                    'discount_amount' => $discountAmount,
+                    'discount_reason' => $reason,
+                ]
+            );
+
+            return $lockedItem->fresh(['product', 'variant']);
+        });
+    }
+
+    public function clearItemDiscount(
+        PosCart $cart,
+        PosCartItem $item,
+        int $cashierUserId
+    ): PosCartItem {
+        return DB::transaction(function () use ($cart, $item, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $lockedItem = PosCartItem::query()
+                ->whereKey($item->id)
+                ->where('pos_cart_id', $lockedCart->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $lockedItem) {
+                throw ValidationException::withMessages([
+                    'cart' => __('This POS cart item no longer exists.'),
+                ]);
+            }
+
+            $previous = [
+                'discount_type' => $lockedItem->discount_type,
+                'discount_value' => (float) $lockedItem->discount_value,
+                'discount_reason' => $lockedItem->discount_reason,
+            ];
+
+            $lockedItem->update([
+                'discount_type' => null,
+                'discount_value' => 0,
+                'discount_reason' => null,
+            ]);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_line_discount_removed',
+                __('POS line discount removed.'),
+                $cashierUserId,
+                $lockedCart,
+                array_merge($previous, [
+                    'pos_cart_item_id' => $lockedItem->id,
+                    'product_id' => $lockedItem->product_id,
+                    'product_variant_id' => $lockedItem->product_variant_id,
+                ])
+            );
+
+            return $lockedItem->fresh(['product', 'variant']);
         });
     }
 
@@ -336,6 +559,9 @@ class PosService
                 'hold_label' => null,
                 'customer_user_id' => null,
                 'customer_name' => null,
+                'discount_type' => null,
+                'discount_value' => 0,
+                'discount_reason' => null,
                 'notes' => null,
             ]);
         });
@@ -571,6 +797,23 @@ class PosService
                 ]);
             }
 
+            $hasDiscounts = (
+                $lockedCart->discount_type
+                && (float) $lockedCart->discount_value > 0
+            ) || $items->contains(
+                fn (PosCartItem $item) => $item->discount_type && (float) $item->discount_value > 0
+            );
+
+            if ($hasDiscounts) {
+                $cashier = User::query()->whereKey($cashierUserId)->lockForUpdate()->firstOrFail();
+
+                if (! $cashier->hasPermission('pos.discount')) {
+                    throw ValidationException::withMessages([
+                        'discount' => __('This sale contains discounts but your account no longer has POS discount permission. Remove the discounts or ask an authorized manager to complete the sale.'),
+                    ]);
+                }
+            }
+
             $products = Product::query()
                 ->whereIn('id', $items->pluck('product_id')->filter()->unique())
                 ->orderBy('id')
@@ -587,6 +830,7 @@ class PosService
 
             $prepared = [];
             $subtotal = 0.0;
+            $lineDiscountTotal = 0.0;
             $costTotal = 0.0;
 
             foreach ($items as $item) {
@@ -606,26 +850,87 @@ class PosService
 
                 $unitPrice = round((float) ($variant?->current_price ?? $product->current_price), 2);
                 $unitCost = round((float) ($variant?->cost_price ?? $product->cost_price ?? 0), 2);
-                $lineTotal = round($unitPrice * $quantity, 2);
+                $grossLineTotal = round($unitPrice * $quantity, 2);
+                $lineDiscount = $this->discountAmount(
+                    $item->discount_type,
+                    $item->discount_value,
+                    $grossLineTotal,
+                    true
+                );
+                $netBeforeOrder = round(max(0, $grossLineTotal - $lineDiscount), 2);
                 $lineCost = round($unitCost * $quantity, 2);
 
-                $prepared[] = compact(
-                    'item',
-                    'product',
-                    'variant',
-                    'quantity',
-                    'unitPrice',
-                    'unitCost',
-                    'lineTotal',
-                    'lineCost'
-                );
+                $prepared[] = [
+                    'item' => $item,
+                    'product' => $product,
+                    'variant' => $variant,
+                    'quantity' => $quantity,
+                    'unitPrice' => $unitPrice,
+                    'unitCost' => $unitCost,
+                    'grossLineTotal' => $grossLineTotal,
+                    'lineDiscount' => $lineDiscount,
+                    'netBeforeOrder' => $netBeforeOrder,
+                    'orderDiscountShare' => 0.0,
+                    'discountTotal' => $lineDiscount,
+                    'lineTotal' => $netBeforeOrder,
+                    'lineCost' => $lineCost,
+                ];
 
-                $subtotal += $lineTotal;
+                $subtotal += $grossLineTotal;
+                $lineDiscountTotal += $lineDiscount;
                 $costTotal += $lineCost;
             }
 
             $subtotal = round($subtotal, 2);
+            $lineDiscountTotal = round($lineDiscountTotal, 2);
             $costTotal = round($costTotal, 2);
+            $afterLineDiscounts = round(max(0, $subtotal - $lineDiscountTotal), 2);
+            $orderDiscountTotal = $this->discountAmount(
+                $lockedCart->discount_type,
+                $lockedCart->discount_value,
+                $afterLineDiscounts,
+                true
+            );
+
+            if ($orderDiscountTotal > 0 && $afterLineDiscounts > 0) {
+                $eligibleIndexes = array_values(array_filter(
+                    array_keys($prepared),
+                    fn (int $index) => $prepared[$index]['netBeforeOrder'] > 0
+                ));
+                $remaining = $orderDiscountTotal;
+                $lastEligibleIndex = $eligibleIndexes ? end($eligibleIndexes) : null;
+
+                foreach ($eligibleIndexes as $index) {
+                    if ($index === $lastEligibleIndex) {
+                        $share = round($remaining, 2);
+                    } else {
+                        $share = round(
+                            $orderDiscountTotal
+                                * ($prepared[$index]['netBeforeOrder'] / $afterLineDiscounts),
+                            2
+                        );
+                    }
+
+                    $share = round(min(
+                        $prepared[$index]['netBeforeOrder'],
+                        max(0, $share)
+                    ), 2);
+
+                    $prepared[$index]['orderDiscountShare'] = $share;
+                    $prepared[$index]['discountTotal'] = round(
+                        $prepared[$index]['lineDiscount'] + $share,
+                        2
+                    );
+                    $prepared[$index]['lineTotal'] = round(
+                        max(0, $prepared[$index]['netBeforeOrder'] - $share),
+                        2
+                    );
+                    $remaining = round(max(0, $remaining - $share), 2);
+                }
+            }
+
+            $grandTotal = round(array_sum(array_column($prepared, 'lineTotal')), 2);
+            $discountTotal = round(max(0, $subtotal - $grandTotal), 2);
             $cashReceived = null;
             $changeDue = 0.0;
 
@@ -638,13 +943,13 @@ class PosService
 
                 $cashReceived = round((float) $data['cash_received'], 2);
 
-                if ($cashReceived < $subtotal) {
+                if ($cashReceived < $grandTotal) {
                     throw ValidationException::withMessages([
                         'cash_received' => __('Cash received cannot be less than the sale total.'),
                     ]);
                 }
 
-                $changeDue = round($cashReceived - $subtotal, 2);
+                $changeDue = round($cashReceived - $grandTotal, 2);
             }
 
             $orderNumber = 'POS-' . now()->format('Ymd-His') . '-' . Str::upper(Str::random(4));
@@ -679,12 +984,12 @@ class PosService
                 'delivered_at' => now(),
                 'currency' => 'EGP',
                 'subtotal' => $subtotal,
-                'discount_total' => 0,
+                'discount_total' => $discountTotal,
                 'shipping_total' => 0,
                 'tax_total' => 0,
-                'grand_total' => $subtotal,
+                'grand_total' => $grandTotal,
                 'cost_total' => $costTotal,
-                'profit_total' => round($subtotal - $costTotal, 2),
+                'profit_total' => round($grandTotal - $costTotal, 2),
                 'notes' => $data['notes'] ?? null,
                 'customer_name' => $customerName,
                 'customer_email' => $customerEmail,
@@ -710,6 +1015,16 @@ class PosService
                     'pos' => [
                         'cash_received' => $cashReceived,
                         'change_due' => $changeDue,
+                        'discounts' => [
+                            'line_discount_total' => $lineDiscountTotal,
+                            'order_discount' => [
+                                'type' => $lockedCart->discount_type,
+                                'value' => (float) $lockedCart->discount_value,
+                                'amount' => $orderDiscountTotal,
+                                'reason' => $lockedCart->discount_reason,
+                            ],
+                            'discount_total' => $discountTotal,
+                        ],
                     ],
                 ],
                 'placed_at' => now(),
@@ -740,6 +1055,17 @@ class PosService
                         'sales_channel' => Order::SALES_CHANNEL_POS,
                         'barcode' => $cartItem->barcode,
                         'pos_cart_item_id' => $cartItem->id,
+                        'pos' => [
+                            'discount' => [
+                                'type' => $cartItem->discount_type,
+                                'value' => (float) $cartItem->discount_value,
+                                'reason' => $cartItem->discount_reason,
+                                'line_amount' => $line['lineDiscount'],
+                                'order_share' => $line['orderDiscountShare'],
+                                'total_amount' => $line['discountTotal'],
+                                'gross_line_total' => $line['grossLineTotal'],
+                            ],
+                        ],
                     ],
                 ]);
 
@@ -769,7 +1095,7 @@ class PosService
                 'provider' => $paymentMethod === Order::PAYMENT_METHOD_POS_CARD ? 'card_terminal' : 'cash_register',
                 'status' => Payment::STATUS_PAID,
                 'transaction_reference' => 'POSPAY-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(5)),
-                'amount' => $subtotal,
+                'amount' => $grandTotal,
                 'currency' => 'EGP',
                 'paid_at' => now(),
                 'notes' => $paymentMethod === Order::PAYMENT_METHOD_POS_CARD
@@ -781,6 +1107,7 @@ class PosService
                     'pos_cart_id' => $lockedCart->id,
                     'cash_received' => $cashReceived,
                     'change_due' => $changeDue,
+                    'discount_total' => $discountTotal,
                 ],
             ]);
 
@@ -801,7 +1128,9 @@ class PosService
                 [
                     'pos_cart_id' => $lockedCart->id,
                     'payment_method' => $paymentMethod,
-                    'grand_total' => $subtotal,
+                    'subtotal' => $subtotal,
+                    'discount_total' => $discountTotal,
+                    'grand_total' => $grandTotal,
                     'items_count' => (int) $items->sum('quantity'),
                     'change_due' => $changeDue,
                 ]
@@ -813,6 +1142,58 @@ class PosService
                 'change_due' => $changeDue,
             ];
         });
+    }
+
+    protected function discountAmount(
+        ?string $type,
+        mixed $value,
+        float $eligibleTotal,
+        bool $strict = false
+    ): float {
+        $eligibleTotal = round(max(0, $eligibleTotal), 2);
+        $value = round(max(0, (float) $value), 2);
+
+        if (! $type || $value <= 0) {
+            return 0.0;
+        }
+
+        if ($strict && $eligibleTotal <= 0) {
+            throw ValidationException::withMessages([
+                'discount_value' => __('There is no eligible POS total left to discount.'),
+            ]);
+        }
+
+        if ($eligibleTotal <= 0) {
+            return 0.0;
+        }
+
+        if ($type === self::DISCOUNT_TYPE_FIXED) {
+            if ($strict && $value > $eligibleTotal) {
+                throw ValidationException::withMessages([
+                    'discount_value' => __('Discount amount cannot exceed the current eligible total.'),
+                ]);
+            }
+
+            return round(min($eligibleTotal, $value), 2);
+        }
+
+        if ($type === self::DISCOUNT_TYPE_PERCENT) {
+            if ($strict && $value > 100) {
+                throw ValidationException::withMessages([
+                    'discount_value' => __('Discount percentage cannot exceed 100%.'),
+                ]);
+            }
+
+            return round($eligibleTotal * min(100, $value) / 100, 2);
+        }
+
+        if ($strict) {
+            throw ValidationException::withMessages([
+                'discount_type' => __('Choose a supported discount type.'),
+            ]);
+        }
+
+        return 0.0;
     }
 
     protected function lockOpenCart(PosCart $cart, int $cashierUserId): PosCart
