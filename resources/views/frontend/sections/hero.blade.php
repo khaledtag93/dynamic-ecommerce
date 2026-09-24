@@ -1,8 +1,8 @@
 @php
     $data = $section['data'] ?? [];
-    $heroTitle = $data['heroTitle'] ?? __('Latest electronics and smart devices in one trusted store.');
-    $heroSubtitle = $data['heroSubtitle'] ?? __('Shop phones, laptops, gaming gear, TVs, audio, and accessories with clear offers, secure checkout, and fast delivery.');
-    $heroBadge = $data['heroBadge'] ?? __('Electronics deals');
+    $heroTitle = $data['heroTitle'] ?? __('Everything you need from one trusted store.');
+    $heroSubtitle = $data['heroSubtitle'] ?? __('Discover products, clear offers, secure checkout, and dependable delivery in one place.');
+    $heroBadge = $data['heroBadge'] ?? __('Featured offers');
     $primaryButtonText = $data['primaryButtonText'] ?? __('Shop now');
     $primaryButtonLink = $data['primaryButtonLink'] ?? '#featured-products';
     $secondaryButtonText = $data['secondaryButtonText'] ?? __('Browse categories');
@@ -23,9 +23,9 @@
     }
 
     $quickCampaigns = [
-        ['icon' => 'bi bi-percent', 'title' => __('Today deals'), 'text' => __('Offers on electronics'), 'link' => '#on-sale-products'],
-        ['icon' => 'bi bi-grid-3x3-gap', 'title' => __('Shop by category'), 'text' => __('Phones, laptops, screens'), 'link' => '#categories'],
-        ['icon' => 'bi bi-stars', 'title' => __('Top picks'), 'text' => __('Selected devices'), 'link' => '#featured-products'],
+        ['icon' => 'bi bi-percent', 'title' => __('Today deals'), 'text' => __('Explore current offers'), 'link' => '#on-sale-products'],
+        ['icon' => 'bi bi-grid-3x3-gap', 'title' => __('Shop by category'), 'text' => __('Browse every department'), 'link' => '#categories'],
+        ['icon' => 'bi bi-stars', 'title' => __('Top picks'), 'text' => __('Popular products'), 'link' => '#featured-products'],
     ];
 @endphp
 
