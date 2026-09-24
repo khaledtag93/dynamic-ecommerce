@@ -3634,5 +3634,11 @@
     "Customer attached to POS sale.": "تم ربط العميل بعملية بيع نقطة البيع.",
     "Customer detached from POS sale.": "تم فصل العميل عن عملية بيع نقطة البيع.",
     "Customer removed from POS sale.": "تمت إزالة العميل من عملية بيع نقطة البيع.",
-    "Customer account": "حساب العميل"
+    "Customer account": "حساب العميل",
+    "In-store purchase": "شراء من المتجر",
+    "This purchase was completed at the store counter. No shipping address is required.": "تم إتمام هذا الشراء داخل المتجر عند نقطة البيع، ولا يلزم عنوان شحن.",
+    "Fulfillment": "طريقة الاستلام",
+    "In-store": "داخل المتجر",
+    "Paid in cash at the store counter.": "تم الدفع نقدًا عند نقطة البيع داخل المتجر.",
+    "Paid by card terminal at the store counter.": "تم الدفع بجهاز البطاقة عند نقطة البيع داخل المتجر."
 }
