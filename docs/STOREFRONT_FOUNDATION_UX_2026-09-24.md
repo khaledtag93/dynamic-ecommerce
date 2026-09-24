@@ -34,13 +34,15 @@ Make the customer storefront feel production-ready and marketplace-neutral befor
 - Cart item removal now uses the shared storefront confirmation modal; offer chips use storefront theme tokens instead of hard-coded blue styling.
 - Default legal Privacy / Terms / Refund / Shipping bodies are now blank rather than publishing assumed legal commitments. Public legal pages show a clear unpublished state with a support link until reviewed policy text is configured.
 - Store Content & Policies now warns admins to publish reviewed business/jurisdiction-specific policy copy, and its seven contact/cancellation toggles use the shared aligned switch layout.
+- Shared product cards now use configurable storefront theme tokens instead of hard-coded white/gray/black surfaces; Category result count no longer duplicates the numeric total.
+- Contact no longer renders an empty Business details card, and configured WhatsApp numbers open through a normalized `wa.me` link.
 - Added/extended automated regression coverage for search, local image fallback, checkout payment/toggle behavior, product imagery, account order actions, safe Paymob errors, contact-hours fallback, notification bulk-action visibility, cart confirmation, safe legal defaults, and aligned Store Content switches.
 
 ## Validation state
 
 - Source implementation: complete for the current foundation + safety iteration.
-- Automated regression coverage: expanded.
-- Branch-head CI: pending for the latest Store Content switch regression commit.
+- Automated regression coverage: expanded and passing.
+- Code-head CI: **passed** on `473a119e` — Hardening CI run `36011846373`.
 - Authenticated English/Arabic desktop/mobile QAS review: pending.
 - Production: unchanged.
 
