@@ -273,6 +273,35 @@ class Order extends Model
         }, true);
     }
 
+    public function canTransitionDeliveryTo(string $newStatus): bool
+    {
+        if ($newStatus === $this->delivery_status) {
+            return true;
+        }
+
+        if (! array_key_exists($newStatus, static::deliveryStatusOptions())) {
+            return false;
+        }
+
+        if ($this->delivery_method === self::DELIVERY_METHOD_PICKUP) {
+            return in_array($newStatus, match ($this->delivery_status) {
+                self::DELIVERY_STATUS_PENDING => [self::DELIVERY_STATUS_PREPARING, self::DELIVERY_STATUS_CANCELLED],
+                self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_CANCELLED],
+                self::DELIVERY_STATUS_DELIVERED => [self::DELIVERY_STATUS_RETURNED],
+                default => [],
+            }, true);
+        }
+
+        return in_array($newStatus, match ($this->delivery_status) {
+            self::DELIVERY_STATUS_PENDING => [self::DELIVERY_STATUS_PREPARING, self::DELIVERY_STATUS_CANCELLED],
+            self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_SHIPPED, self::DELIVERY_STATUS_CANCELLED],
+            self::DELIVERY_STATUS_SHIPPED => [self::DELIVERY_STATUS_OUT_FOR_DELIVERY, self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_RETURNED],
+            self::DELIVERY_STATUS_OUT_FOR_DELIVERY => [self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_RETURNED],
+            self::DELIVERY_STATUS_DELIVERED => [self::DELIVERY_STATUS_RETURNED],
+            default => [],
+        }, true);
+    }
+
     public function canBeCancelledByUser(): bool
     {
         return in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING], true);
