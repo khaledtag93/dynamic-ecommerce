@@ -113,7 +113,7 @@
             load(new URL(base.href), 'push');
         });
 
-        results.addEventListener('click', (event) => {
+        root.addEventListener('click', (event) => {
             const link = event.target.closest('.pagination a[href], a[data-live-link][href]');
             if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             const url = new URL(link.href, window.location.href);
