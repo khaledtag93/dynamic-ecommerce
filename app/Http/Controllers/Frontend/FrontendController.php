@@ -189,6 +189,14 @@ class FrontendController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('frontend.products._category_results', [
+                'category' => $category,
+                'products' => $products,
+                'filters' => $filters,
+            ]);
+        }
+
         $categoryStats = [
             'total' => (clone $baseQuery)->count(),
             'in_stock' => (clone $baseQuery)->where(function (Builder $query) {
