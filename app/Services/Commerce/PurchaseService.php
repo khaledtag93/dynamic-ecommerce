@@ -6,6 +6,7 @@ use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
+use App\Models\PurchaseReceivingProgress;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -15,7 +16,17 @@ class PurchaseService
 
     public function receive(Purchase $purchase): bool
     {
-        return DB::transaction(function () use ($purchase) {
+        return $this->receiveInternal($purchase, false);
+    }
+
+    public function receiveVerified(Purchase $purchase): bool
+    {
+        return $this->receiveInternal($purchase, true);
+    }
+
+    protected function receiveInternal(Purchase $purchase, bool $requireBarcodeVerification): bool
+    {
+        return DB::transaction(function () use ($purchase, $requireBarcodeVerification) {
             // The status check and stock writes must share one lock across repeated requests.
             $lockedPurchase = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->firstOrFail();
             if ($lockedPurchase->status === Purchase::STATUS_RECEIVED) {
@@ -32,6 +43,24 @@ class PurchaseService
                 throw ValidationException::withMessages([
                     'purchase' => __('Add purchase items before receiving stock.'),
                 ]);
+            }
+
+            if ($requireBarcodeVerification) {
+                $progress = PurchaseReceivingProgress::query()
+                    ->where('purchase_id', $lockedPurchase->id)
+                    ->whereIn('purchase_item_id', $items->pluck('id'))
+                    ->orderBy('purchase_item_id')
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('purchase_item_id');
+
+                foreach ($items as $item) {
+                    if ((int) optional($progress->get($item->id))->verified_quantity !== (int) $item->quantity) {
+                        throw ValidationException::withMessages([
+                            'purchase' => __('Scan and verify every ordered unit before completing barcode receiving.'),
+                        ]);
+                    }
+                }
             }
 
             $products = Product::query()->whereKey($items->pluck('product_id')->filter()->unique()->all())
