@@ -204,8 +204,8 @@ class PayrollService
     public function removeAdjustment(PayrollAdjustment $adjustment, User $actor): void
     {
         DB::transaction(function () use ($adjustment, $actor) {
-            $entry = PayrollEntry::query()->whereKey($adjustment->payroll_entry_id)->lockForUpdate()->firstOrFail();
-            $run = PayrollRun::query()->whereKey($entry->payroll_run_id)->lockForUpdate()->firstOrFail();
+            $entrySnapshot = PayrollEntry::query()->whereKey($adjustment->payroll_entry_id)->firstOrFail();
+            $run = PayrollRun::query()->whereKey($entrySnapshot->payroll_run_id)->lockForUpdate()->firstOrFail();
 
             if (! $run->isDraft()) {
                 throw ValidationException::withMessages([
@@ -213,6 +213,7 @@ class PayrollService
                 ]);
             }
 
+            $entry = PayrollEntry::query()->whereKey($entrySnapshot->id)->lockForUpdate()->firstOrFail();
             $lockedAdjustment = PayrollAdjustment::query()->whereKey($adjustment->id)->lockForUpdate()->firstOrFail();
             $meta = [
                 'payroll_entry_id' => $entry->id,
