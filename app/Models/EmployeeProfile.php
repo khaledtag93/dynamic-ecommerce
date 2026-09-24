@@ -88,6 +88,16 @@ class EmployeeProfile extends Model
         return $this->hasMany(EmployeeWorkShift::class);
     }
 
+    public function leaveRequests()
+    {
+        return $this->hasMany(EmployeeLeaveRequest::class);
+    }
+
+    public function leaveAdjustments()
+    {
+        return $this->hasMany(EmployeeLeaveAdjustment::class);
+    }
+
     public function posCashShifts()
     {
         return $this->hasMany(PosCashShift::class, 'cashier_user_id', 'user_id');
