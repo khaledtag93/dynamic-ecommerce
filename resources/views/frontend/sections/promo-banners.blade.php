@@ -11,7 +11,7 @@
         <div class="retail-campaigns-v2__head">
             <span>{{ $subtitle }}</span>
             <h2>{{ $title }}</h2>
-            <p>{{ __('Campaigns, offers, and highlighted departments arranged like a real electronics storefront.') }}</p>
+            <p>{{ __('Campaigns, offers, and highlighted categories organized for faster shopping.') }}</p>
         </div>
 
         <div class="retail-campaigns-v2__grid">
