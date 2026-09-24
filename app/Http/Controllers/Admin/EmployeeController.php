@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
 {
@@ -110,6 +111,13 @@ class EmployeeController extends Controller
     {
         $data = $this->validateEmployee($request, $employeeProfile);
         unset($data['user_id']);
+
+        if (($data['status'] ?? EmployeeProfile::STATUS_ACTIVE) !== EmployeeProfile::STATUS_ACTIVE
+            && $employeeProfile->openAttendanceSession()->exists()) {
+            throw ValidationException::withMessages([
+                'status' => __('Clock out the employee before changing to a non-active employment status.'),
+            ]);
+        }
 
         $employeeProfile->update($data);
 
