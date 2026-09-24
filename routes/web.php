@@ -272,6 +272,7 @@ Route::prefix('admin')
             Route::post('/pos/carts/{posCart}/customers/{user}', 'attachCustomer')->name('pos.customer.attach');
             Route::delete('/pos/carts/{posCart}/customer', 'detachCustomer')->name('pos.customer.detach');
             Route::post('/pos/carts/{posCart}/scan', 'scan')->name('pos.scan');
+            Route::post('/pos/carts/{posCart}/products/{product}', 'addCatalogItem')->name('pos.catalog.add');
             Route::patch('/pos/carts/{posCart}/items/{posCartItem}', 'updateQuantity')->name('pos.items.update');
             Route::patch('/pos/carts/{posCart}/items/{posCartItem}/discount', 'updateItemDiscount')->middleware('permission:pos.discount')->name('pos.items.discount.update');
             Route::delete('/pos/carts/{posCart}/items/{posCartItem}/discount', 'clearItemDiscount')->name('pos.items.discount.destroy');
