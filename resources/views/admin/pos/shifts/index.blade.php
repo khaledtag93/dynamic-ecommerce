@@ -6,6 +6,13 @@
 <a href="{{ route('admin.pos.index') }}" class="btn btn-light border"><i class="mdi mdi-cash-register me-1"></i>{{ __('Open POS') }}</a>
 </x-admin.page-header>
 <div class="admin-page-shell">
+<div class="row g-3">
+<div class="col-sm-6 col-xl"><div class="admin-card h-100"><div class="admin-card-body"><div class="text-muted small">{{ __('Open shifts') }}</div><div class="h3 mb-0">{{ number_format($shiftMetrics['open']) }}</div></div></div></div>
+<div class="col-sm-6 col-xl"><div class="admin-card h-100"><div class="admin-card-body"><div class="text-muted small">{{ __('Closed shifts') }}</div><div class="h3 mb-0">{{ number_format($shiftMetrics['closed']) }}</div></div></div></div>
+<div class="col-sm-6 col-xl"><div class="admin-card h-100"><div class="admin-card-body"><div class="text-muted small">{{ __('Shifts with variance') }}</div><div class="h3 mb-0">{{ number_format($shiftMetrics['with_variance']) }}</div></div></div></div>
+<div class="col-sm-6 col-xl"><div class="admin-card h-100"><div class="admin-card-body"><div class="text-muted small">{{ __('Total shortage') }}</div><div class="h3 mb-0 text-danger">EGP {{ number_format($shiftMetrics['short_total'], 2) }}</div></div></div></div>
+<div class="col-sm-6 col-xl"><div class="admin-card h-100"><div class="admin-card-body"><div class="text-muted small">{{ __('Total overage') }}</div><div class="h3 mb-0 text-primary">EGP {{ number_format($shiftMetrics['over_total'], 2) }}</div></div></div></div>
+</div>
 <div class="admin-card mb-4"><div class="admin-card-body">
 <form method="GET" action="{{ route('admin.pos.shifts.index') }}" class="row g-3 align-items-end">
 <div class="col-lg-5"><label class="form-label fw-semibold">{{ __('Cashier') }}</label><input type="search" name="cashier" value="{{ $cashierSearch }}" class="form-control" placeholder="{{ __('Search cashier by name or email') }}"></div>
