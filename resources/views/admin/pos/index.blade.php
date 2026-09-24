@@ -176,7 +176,10 @@
                                         </div>
 
                                         @if($heldCart->customer_name)
-                                            <div class="small mb-1"><span class="text-muted">{{ __('Customer name') }}:</span> {{ $heldCart->customer_name }}</div>
+                                            <div class="small mb-1">
+                                                <span class="text-muted">{{ __('Customer name') }}:</span> {{ $heldCart->customer_name }}
+                                                @if($heldCart->customer)<span class="badge badge-soft-success ms-1">{{ __('Account') }}</span>@endif
+                                            </div>
                                         @endif
                                         @if($heldCart->notes)
                                             <div class="small text-muted mb-3">{{ \Illuminate\Support\Str::limit($heldCart->notes, 90) }}</div>
@@ -232,6 +235,75 @@
                     <h4 class="mb-1">{{ __('Checkout') }}</h4>
                     <p class="text-muted small mb-4">{{ __('Prices and stock are rechecked under database locks before the sale is written.') }}</p>
 
+                    <div class="border rounded-4 p-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                            <div>
+                                <div class="fw-semibold">{{ __('Customer') }}</div>
+                                <div class="text-muted small">{{ __('Attach an existing customer account or keep this as a walk-in sale.') }}</div>
+                            </div>
+                            @if($cart->customer)
+                                <span class="badge admin-status-badge badge-soft-success">{{ __('Attached') }}</span>
+                            @else
+                                <span class="badge admin-status-badge badge-soft-secondary">{{ __('Walk-in') }}</span>
+                            @endif
+                        </div>
+
+                        @if($cart->customer)
+                            <div class="border rounded-3 p-3 mb-3">
+                                <div class="fw-bold">{{ $cart->customer->name }}</div>
+                                <div class="text-muted small">{{ $cart->customer->email }}</div>
+                                <form method="POST" action="{{ route('admin.pos.customer.detach', $cart) }}" class="mt-2" data-submit-loading>
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-light border btn-sm">{{ __('Use walk-in instead') }}</button>
+                                </form>
+                            </div>
+                        @endif
+
+                        <form method="GET" action="{{ route('admin.pos.index') }}" class="mb-2">
+                            <label for="posCustomerSearch" class="form-label small fw-semibold">{{ __('Find customer') }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="mdi mdi-account-search-outline"></i></span>
+                                <input
+                                    id="posCustomerSearch"
+                                    type="search"
+                                    name="customer_search"
+                                    value="{{ $customerSearch }}"
+                                    class="form-control"
+                                    minlength="2"
+                                    maxlength="255"
+                                    placeholder="{{ __('Search by customer name or email') }}"
+                                    autocomplete="off"
+                                >
+                                <button class="btn btn-light border">{{ __('Search') }}</button>
+                            </div>
+                            <div class="form-text">{{ __('Enter at least 2 characters. POS lookup shows customer name and email only.') }}</div>
+                        </form>
+
+                        @error('customer')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
+
+                        @if(mb_strlen($customerSearch) >= 2)
+                            @if($customerResults->isNotEmpty())
+                                <div class="d-grid gap-2 mt-3">
+                                    @foreach($customerResults as $customerResult)
+                                        <div class="d-flex justify-content-between align-items-center gap-3 border rounded-3 p-2">
+                                            <div class="min-w-0">
+                                                <div class="fw-semibold text-truncate">{{ $customerResult->name }}</div>
+                                                <div class="text-muted small text-truncate">{{ $customerResult->email }}</div>
+                                            </div>
+                                            <form method="POST" action="{{ route('admin.pos.customer.attach', ['posCart' => $cart->id, 'user' => $customerResult->id]) }}" data-submit-loading>
+                                                @csrf
+                                                <button class="btn btn-primary btn-sm" data-loading-text="{{ __('Attaching...') }}">{{ __('Attach') }}</button>
+                                            </form>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-muted small mt-3">{{ __('No customer accounts match this search.') }}</div>
+                            @endif
+                        @endif
+                    </div>
+
                     <div class="pos-total-row">
                         <span class="text-muted">{{ __('Units') }}</span>
                         <strong>{{ $summary['items_count'] }}</strong>
@@ -265,8 +337,23 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="posCustomerName" class="form-label fw-semibold">{{ __('Customer name') }} <span class="text-muted fw-normal">({{ __('optional') }})</span></label>
-                            <input id="posCustomerName" name="customer_name" type="text" maxlength="255" value="{{ old('customer_name', $cart->customer_name) }}" class="form-control" placeholder="{{ __('Walk-in customer') }}">
+                            <label for="posCustomerName" class="form-label fw-semibold">
+                                {{ $cart->customer ? __('Attached customer') : __('Walk-in customer name') }}
+                                @unless($cart->customer)<span class="text-muted fw-normal">({{ __('optional') }})</span>@endunless
+                            </label>
+                            <input
+                                id="posCustomerName"
+                                name="customer_name"
+                                type="text"
+                                maxlength="255"
+                                value="{{ old('customer_name', $cart->customer_name) }}"
+                                class="form-control"
+                                placeholder="{{ __('Walk-in customer') }}"
+                                @readonly((bool) $cart->customer)
+                            >
+                            @if($cart->customer)
+                                <div class="form-text">{{ __('The linked customer account is authoritative for this sale. Remove it above to use a walk-in name.') }}</div>
+                            @endif
                         </div>
 
                         <div class="mb-4">
