@@ -7,6 +7,7 @@ use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
 use App\Models\User;
 use App\Services\Commerce\AdminActivityLogService;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -149,8 +150,8 @@ class WorkShiftService
         CarbonInterface|string $startsAt,
         CarbonInterface|string $endsAt,
     ): void {
-        $startDate = $startsAt instanceof CarbonInterface ? $startsAt->toDateString() : date('Y-m-d', strtotime($startsAt));
-        $endDate = $endsAt instanceof CarbonInterface ? $endsAt->toDateString() : date('Y-m-d', strtotime($endsAt));
+        $startDate = $startsAt instanceof CarbonInterface ? $startsAt->toDateString() : Carbon::parse($startsAt)->toDateString();
+        $endDate = $endsAt instanceof CarbonInterface ? $endsAt->toDateString() : Carbon::parse($endsAt)->toDateString();
 
         $approvedLeave = EmployeeLeaveRequest::query()
             ->where('employee_profile_id', $employee->id)
