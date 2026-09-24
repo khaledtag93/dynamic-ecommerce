@@ -333,3 +333,21 @@ The next source slice adds a counted-stock adjustment workspace with product/var
 The product editor now records opening and changed simple/variant stock as signed inventory movements with admin activity inside the catalog transaction. It checks loaded counts and variant membership under lock, blocks structural changes that would discard stock, and refreshes variant IDs after save. Catalog quick quantity edits use the counted-stock service; copies start at zero stock. New copy and audit guidance is bilingual. See `docs/CATALOG_STOCK_AUDIT_2026-09-24.md` and `tests/Feature/CatalogStockAuditTest.php`.
 
 Verification: automated CI pending for this source batch; consolidated manual QAS review remains deferred by the owner. QAS application HEAD is still the operator-confirmed `0a08253`; `main` and Production are unchanged.
+
+
+### Barcode / SKU Foundation V1 — 2026-09-24
+Source implementation on `v42-clean-baseline` now:
+- enforces SKU uniqueness across product and variant records in the active product editor
+- keeps barcode uniqueness across the same catalog scope
+- adds exact SKU resolution alongside exact barcode resolution, with ambiguity protection for legacy collisions
+- lets catalog search match variant SKU/barcode and return the parent product
+- clears SKU/barcode on product duplication while keeping copied stock at zero
+- adds EN/AR guidance, regression tests and a focused implementation note
+
+Verification state:
+- branch-head CI: pending
+- consolidated authenticated QAS review: deferred by owner
+- QAS application HEAD: still `0a08253`
+- Production and `main`: unchanged
+
+See `docs/BARCODE_SKU_FOUNDATION_V1_2026-09-24.md`.

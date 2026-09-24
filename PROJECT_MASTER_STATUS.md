@@ -116,6 +116,13 @@
 - Catalog quick quantity edits use the counted-stock service with stale-count protection and a distinct source. Product duplication starts at zero independent stock. Inventory history labels the three admin sources. English/Arabic UI and focused regression coverage are included; see [`docs/CATALOG_STOCK_AUDIT_2026-09-24.md`](docs/CATALOG_STOCK_AUDIT_2026-09-24.md).
 - The catalog stock batch is CI-verified: [Hardening CI 36031782934](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36031782934) passed at `6889248` with 135 tests (736 assertions) and the frontend production build. The operator-confirmed QAS application HEAD remains `0a08253`; manual review is deferred to the consolidated phase. Production and `main` are unchanged.
 
+## Barcode / SKU Foundation V1 checkpoint — 2026-09-24
+- The active product editor now applies SKU uniqueness across products and variants, matching the existing cross-catalog barcode safety rule. Duplicate identifiers inside the same pending product/variant payload are rejected before save.
+- The shared identifier service now resolves exact SKU values as well as barcodes and refuses ambiguous legacy matches instead of guessing. Catalog search can find a parent product by variant SKU or barcode.
+- Product duplication clears SKU and barcode while preserving the existing zero-stock copy rule so a copied record cannot inherit a sellable retail identity.
+- English/Arabic guidance and focused regression coverage are included. See `docs/BARCODE_SKU_FOUNDATION_V1_2026-09-24.md`.
+- No risky database-wide product identifier uniqueness migration was added; legacy collisions remain detectable and must be audited before stronger schema constraints. Branch-head CI is pending. QAS remains on `0a08253`; Production and `main` are unchanged.
+
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
 - Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.
