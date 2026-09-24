@@ -15,7 +15,7 @@ Working branch: `v42-clean-baseline`.
 ## Verification
 
 - Focused feature tests cover profile/password security, ownership, shipping/billing defaults, checkout prefill and immutable order snapshots.
-- Local PHP/Composer are unavailable in the current workspace. Run the repository's Hardening CI (clean MySQL migration, syntax, Blade compile, PHPUnit and frontend build) at the exact application commit before marking source verified.
+- Hardening CI run [36019574401](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36019574401) passed at application commit `05c2c51`: PHP syntax, clean MySQL migration, route boot, Blade compile, 115 tests (579 assertions), and frontend build.
 - Authenticated QAS desktop/mobile review in English and Arabic: pending.
 - Production and `main`: unchanged.
 

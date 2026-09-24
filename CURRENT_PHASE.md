@@ -317,4 +317,4 @@ See `docs/DELIVERIES_V2_2026-09-24.md` for acceptance checks.
 ### Customer account and address book — 2026-09-24
 The working branch now contains customer profile/password management and saved shipping/billing addresses with ownership checks, transactional default changes, checkout prefill and independent order address snapshots. It also corrects the checkout billing switch's off-state submission. See `docs/CUSTOMER_ACCOUNT_ADDRESS_BOOK_2026-09-24.md`.
 
-Verification: focused tests added; branch-head CI and authenticated English/Arabic desktop/mobile QAS pending. `main` and Production unchanged.
+Verification: Hardening CI run `36019574401` passed at application commit `05c2c51` (115 tests, 579 assertions). Authenticated English/Arabic desktop/mobile QAS remains pending. `main` and Production unchanged.

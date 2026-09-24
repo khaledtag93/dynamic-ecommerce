@@ -97,7 +97,7 @@
 - A customer account overview, editable name/email with current-password protection for email changes, and a separate password-change form are implemented in source.
 - Customer-owned saved addresses now have shipping/billing defaults with serialized mutations and fallback on deletion. Checkout can prefill a selected address and the billing default; each placed order retains an independent address snapshot. The billing-same-as-shipping toggle now submits its off state explicitly.
 - English/Arabic account and address-book copy, compact navigation, in-app deletion confirmation, and focused ownership/profile/default/checkout regression tests were added. See `docs/CUSTOMER_ACCOUNT_ADDRESS_BOOK_2026-09-24.md`.
-- Local PHP/Composer are unavailable in the current workspace; branch-head CI and authenticated English/Arabic desktop/mobile QAS are pending. `main` and Production are unchanged.
+- Hardening CI run `36019574401` passed at application commit `05c2c51`: PHP syntax, clean MySQL migration, Blade compile, 115 tests (579 assertions), and frontend build. Authenticated English/Arabic desktop/mobile QAS remains pending. `main` and Production are unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
