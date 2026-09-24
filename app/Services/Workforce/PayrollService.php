@@ -96,15 +96,6 @@ class PayrollService
                 ]);
             }
 
-            $this->guardStableInputs($lockedPeriod);
-
-            $run = PayrollRun::query()->create([
-                'payroll_period_id' => $lockedPeriod->id,
-                'status' => PayrollRun::STATUS_DRAFT,
-                'created_by_user_id' => $actor->id,
-                'notes' => null,
-            ]);
-
             $compensations = EmployeeCompensation::query()
                 ->with('employee.user')
                 ->where('effective_from', '<=', $lockedPeriod->ends_on)
@@ -122,16 +113,27 @@ class PayrollService
                     });
                 })
                 ->orderBy('employee_profile_id')
+                ->lockForUpdate()
                 ->get();
 
-            foreach ($compensations as $compensation) {
-                $this->createEntrySnapshot($run, $lockedPeriod, $compensation);
-            }
-
-            if ($run->entries()->count() === 0) {
+            if ($compensations->isEmpty()) {
                 throw ValidationException::withMessages([
                     'payroll' => __('No employees with effective compensation were found for this payroll period.'),
                 ]);
+            }
+
+            $employeeIds = $compensations->pluck('employee_profile_id')->unique()->values()->all();
+            $this->guardStableInputs($lockedPeriod, $employeeIds);
+
+            $run = PayrollRun::query()->create([
+                'payroll_period_id' => $lockedPeriod->id,
+                'status' => PayrollRun::STATUS_DRAFT,
+                'created_by_user_id' => $actor->id,
+                'notes' => null,
+            ]);
+
+            foreach ($compensations as $compensation) {
+                $this->createEntrySnapshot($run, $lockedPeriod, $compensation);
             }
 
             $this->activityLogService->log(
@@ -310,12 +312,13 @@ class PayrollService
         });
     }
 
-    private function guardStableInputs(PayrollPeriod $period): void
+    private function guardStableInputs(PayrollPeriod $period, array $employeeIds): void
     {
         $start = $period->starts_on->copy()->startOfDay();
         $endExclusive = $period->ends_on->copy()->addDay()->startOfDay();
 
         $openAttendance = EmployeeAttendanceSession::query()
+            ->whereIn('employee_profile_id', $employeeIds)
             ->whereNull('clock_out_at')
             ->where('clock_in_at', '<', $endExclusive)
             ->exists();
@@ -329,8 +332,9 @@ class PayrollService
         $openBreak = EmployeeAttendanceBreak::query()
             ->whereNull('ends_at')
             ->where('starts_at', '<', $endExclusive)
-            ->whereHas('attendanceSession', function ($query) use ($start) {
-                $query->where(function ($session) use ($start) {
+            ->whereHas('attendanceSession', function ($query) use ($start, $employeeIds) {
+                $query->whereIn('employee_profile_id', $employeeIds)
+                    ->where(function ($session) use ($start) {
                     $session->whereNull('clock_out_at')
                         ->orWhere('clock_out_at', '>=', $start);
                 });
@@ -344,6 +348,7 @@ class PayrollService
         }
 
         $pendingCorrection = EmployeeAttendanceSession::query()
+            ->whereIn('employee_profile_id', $employeeIds)
             ->where('clock_in_at', '<', $endExclusive)
             ->where('clock_out_at', '>=', $start)
             ->whereHas('pendingCorrection')
@@ -356,6 +361,7 @@ class PayrollService
         }
 
         $pendingLeave = EmployeeLeaveRequest::query()
+            ->whereIn('employee_profile_id', $employeeIds)
             ->where('status', EmployeeLeaveRequest::STATUS_PENDING)
             ->where('starts_on', '<=', $period->ends_on)
             ->where('ends_on', '>=', $period->starts_on)
