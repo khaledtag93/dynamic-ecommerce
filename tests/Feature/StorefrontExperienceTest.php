@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CartItem;
+use App\Models\Order;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
@@ -148,6 +149,76 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('Online Payment')
             ->assertDontSee('>Visa<', false)
             ->assertDontSee('>Mastercard<', false);
+    }
+
+    public function test_account_orders_reflect_terminal_statuses_and_use_in_app_cancellation_confirmation(): void
+    {
+        $user = User::factory()->create();
+
+        $completed = Order::query()->create([
+            'user_id' => $user->id,
+            'order_number' => 'ACCOUNT-COMPLETE',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'currency' => 'EGP',
+            'subtotal' => 100,
+            'discount_total' => 0,
+            'shipping_total' => 0,
+            'tax_total' => 0,
+            'grand_total' => 100,
+            'customer_name' => 'Account Customer',
+            'customer_email' => 'account@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'placed_at' => now(),
+        ]);
+
+        $pending = Order::query()->create([
+            'user_id' => $user->id,
+            'order_number' => 'ACCOUNT-PENDING',
+            'status' => Order::STATUS_PENDING,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_status' => Order::DELIVERY_STATUS_PENDING,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'currency' => 'EGP',
+            'subtotal' => 50,
+            'discount_total' => 0,
+            'shipping_total' => 0,
+            'tax_total' => 0,
+            'grand_total' => 50,
+            'customer_name' => 'Account Customer',
+            'customer_email' => 'account@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'placed_at' => now(),
+        ]);
+
+        $list = $this->actingAs($user)->get(route('orders.index'));
+
+        $list
+            ->assertOk()
+            ->assertSee('<span class="lc-status-badge lc-badge-success">Completed</span>', false)
+            ->assertSee('<span class="lc-status-badge lc-badge-success">Paid</span>', false)
+            ->assertSee('<span class="lc-status-badge lc-badge-success">Delivered</span>', false);
+
+        $detail = $this->actingAs($user)->get(route('orders.show', $pending));
+
+        $detail
+            ->assertOk()
+            ->assertSee('id="storefrontConfirmModal"', false)
+            ->assertSee('data-confirm-title="Cancel order"', false)
+            ->assertSee('data-confirm-ok="Cancel order"', false)
+            ->assertDontSee('onclick="return confirm(', false);
     }
 
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
