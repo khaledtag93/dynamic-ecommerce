@@ -328,6 +328,7 @@ class PosService
     public function resume(PosCart $cart, int $cashierUserId): PosCart
     {
         return DB::transaction(function () use ($cart, $cashierUserId) {
+            User::query()->whereKey($cashierUserId)->lockForUpdate()->firstOrFail();
             $heldCart = PosCart::query()->whereKey($cart->id)->lockForUpdate()->firstOrFail();
 
             if ((int) $heldCart->cashier_user_id !== $cashierUserId) {
@@ -416,9 +417,11 @@ class PosService
                 ]);
             }
 
-            $itemsCount = (int) PosCartItem::query()
+            $heldItems = PosCartItem::query()
                 ->where('pos_cart_id', $heldCart->id)
-                ->sum('quantity');
+                ->lockForUpdate()
+                ->get();
+            $itemsCount = (int) $heldItems->sum('quantity');
 
             $heldCart->update([
                 'status' => PosCart::STATUS_ABANDONED,
