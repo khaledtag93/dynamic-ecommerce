@@ -528,3 +528,12 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - **Categories:** explicitly audit Arabic/English parity, mixed-language copy, RTL/LTR layout, labels, validation, empty/loading states, and terminology.
 - **Consistency rule:** every subsequent admin batch must reuse the same page shell, section/card language, KPI components, filters, actions, spacing, typography, states, confirmations, and bilingual/RTL behavior. Avoid one-off UI patterns unless the workflow genuinely requires them.
 - **Quality rule:** when an old screen is touched, fix obvious UI/UX, localization, RTL, and consistency defects encountered in that screen rather than preserving them as legacy debt.
+
+
+## Live / no-reload interaction standard — 2026-09-24
+- This is a cross-product requirement for both **Admin** and **Customer** interfaces, not a POS-only enhancement.
+- Search, autocomplete, filters, sorting, pagination, tab/workspace switching, and safe inline actions should progressively avoid unnecessary full-page reloads and use reusable live/AJAX-style interaction when it preserves context and improves speed.
+- Operational search should normally be debounced, contains-style, keyboard-accessible, and expose enough result context for safe selection.
+- Every touched Admin/Customer screen must be checked for legacy reload-based controls and suitable interactions should be migrated as part of that screen's UX hardening.
+- Live behavior must retain loading, empty, validation and error states, EN/AR + RTL, accessibility, authorization, CSRF, and server-side business rules. Sensitive/destructive/financial/inventory/permission actions remain server-authoritative and require explicit outcome feedback; no optimistic UI may imply success before the backend confirms it.
+- POS is the first current implementation example: product/customer lookup is moving from GET + page reload to debounced live autocomplete while barcode scanning remains a dedicated fast path.
