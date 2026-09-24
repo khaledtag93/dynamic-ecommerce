@@ -50,8 +50,8 @@ Improve the customer-facing storefront without disturbing checkout, cart, pricin
 ## Validation state
 
 - Source implementation: complete for this iteration.
-- Automated regression coverage: updated.
-- Branch-head CI: pending.
+- Automated regression coverage: updated and passing.
+- Code-head CI: **passed** on `d13e6a3` — Hardening CI run `36014798313`.
 - Authenticated English/Arabic desktop/mobile QAS review: pending.
 - Production: unchanged.
 
