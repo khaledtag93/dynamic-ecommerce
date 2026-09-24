@@ -67,5 +67,37 @@
             </form>
         </div>
     </div>
+
+    <div class="admin-card mt-4">
+        <div class="admin-card-body">
+            <div class="admin-table-toolbar">
+                <div>
+                    <h4 class="mb-1">{{ __('Recent balance adjustments') }}</h4>
+                    <div class="text-muted small">{{ __('Append-only history for opening balances, carryovers, credits, and debits.') }}</div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table admin-table align-middle mb-0">
+                    <thead><tr><th>{{ __('Employee') }}</th><th>{{ __('Leave type') }}</th><th>{{ __('Year') }}</th><th>{{ __('Type') }}</th><th>{{ __('Days') }}</th><th>{{ __('Reason') }}</th><th>{{ __('Actor') }}</th></tr></thead>
+                    <tbody>
+                        @forelse($adjustments as $adjustment)
+                            <tr>
+                                <td><div class="fw-semibold">{{ $adjustment->employee?->user?->name }}</div><div class="text-muted small">{{ $adjustment->employee?->employee_code }}</div></td>
+                                <td>{{ $adjustment->leaveType?->displayName() }}</td>
+                                <td>{{ $adjustment->year }}</td>
+                                <td>{{ AppModelsEmployeeLeaveAdjustment::typeOptions()[$adjustment->type] ?? IlluminateSupportStr::headline($adjustment->type) }}</td>
+                                <td class="fw-semibold {{ (float)$adjustment->days < 0 ? 'text-danger' : 'text-success' }}">{{ (float)$adjustment->days > 0 ? '+' : '' }}{{ number_format((float)$adjustment->days, 2) }}</td>
+                                <td>{{ $adjustment->reason }}</td>
+                                <td><div>{{ $adjustment->createdBy?->name ?: '—' }}</div><div class="text-muted small">{{ $adjustment->created_at?->format('d M Y H:i') }}</div></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="text-center text-muted py-4">{{ __('No balance adjustments yet.') }}</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
