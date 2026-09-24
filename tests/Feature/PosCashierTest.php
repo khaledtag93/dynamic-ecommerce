@@ -24,6 +24,7 @@ class PosCashierTest extends TestCase
 
     public function test_cashier_role_can_use_pos_without_broader_order_management_access(): void
     {
+        $this->withoutExceptionHandling();
         app(AuthorizationService::class)->syncDefaults();
 
         $cashier = User::factory()->create(['role_as' => 1]);
