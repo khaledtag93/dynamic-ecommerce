@@ -288,6 +288,7 @@ Route::prefix('admin')
 
             Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
             Route::get('/inventory/scan', [InventoryController::class, 'scanForm'])->name('inventory.scan');
+            Route::get('/inventory/labels/{product}', [InventoryController::class, 'labelPrint'])->name('inventory.labels');
             Route::get('/inventory/adjust', [InventoryController::class, 'adjustForm'])->name('inventory.adjust');
             Route::post('/inventory/adjust', [InventoryController::class, 'adjust'])->name('inventory.adjust.store');
 

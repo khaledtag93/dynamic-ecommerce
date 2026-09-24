@@ -6,6 +6,7 @@ use App\Exceptions\ProductIdentifierAmbiguityException;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryMovement;
 use App\Models\Product;
+use App\Services\Commerce\Code128BarcodeService;
 use App\Services\Commerce\InventoryAdjustmentService;
 use App\Services\Commerce\ProductIdentifierService;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class InventoryController extends Controller
     public function __construct(
         protected InventoryAdjustmentService $adjustmentService,
         protected ProductIdentifierService $identifierService,
+        protected Code128BarcodeService $barcodeService,
     ) {}
 
     public function index(Request $request)
@@ -94,6 +96,61 @@ class InventoryController extends Controller
         }
 
         return view('admin.inventory.scan', compact('barcode', 'match', 'lookupError'));
+    }
+
+    public function labelPrint(Request $request, Product $product)
+    {
+        $data = $request->validate([
+            'variant_id' => ['nullable', 'integer'],
+            'copies' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'size' => ['nullable', 'in:50x30,60x40,70x40'],
+            'show_price' => ['nullable', 'in:0,1'],
+        ]);
+
+        $product->loadMissing('variants.attributes.attribute');
+        $variant = null;
+
+        if ($product->has_variants) {
+            abort_unless(isset($data['variant_id']), 404);
+            $variant = $product->variants->firstWhere('id', (int) $data['variant_id']);
+            abort_unless($variant, 404);
+        } elseif (isset($data['variant_id'])) {
+            abort(404);
+        }
+
+        $barcode = trim((string) ($variant?->barcode ?? $product->barcode ?? ''));
+        $sku = trim((string) ($variant?->sku ?? $product->sku ?? ''));
+        $copies = (int) ($data['copies'] ?? 1);
+        $size = (string) ($data['size'] ?? '50x30');
+        $showPrice = ($data['show_price'] ?? '1') === '1';
+        $price = $variant ? (float) $variant->current_price : (float) $product->current_price;
+        $variantName = $variant ? $variant->variant_name : null;
+        $barcodeSvg = null;
+        $labelError = null;
+
+        if ($barcode === '') {
+            $labelError = __('This item does not have a barcode to print.');
+        } else {
+            try {
+                $barcodeSvg = $this->barcodeService->toSvg($barcode);
+            } catch (\InvalidArgumentException) {
+                $labelError = __('This barcode contains characters that cannot be printed as Code 128B. Use printable ASCII characters only.');
+            }
+        }
+
+        return view('admin.inventory.labels', compact(
+            'product',
+            'variant',
+            'variantName',
+            'barcode',
+            'barcodeSvg',
+            'sku',
+            'price',
+            'copies',
+            'size',
+            'showPrice',
+            'labelError'
+        ));
     }
 
     public function adjustForm(Request $request)

@@ -139,11 +139,17 @@
                                 <a href="{{ route('admin.inventory.adjust', ['product_id' => $matchedProduct->id, 'variant_id' => $matchedVariant->id, 'search' => $barcode]) }}" class="btn btn-primary btn-text-icon">
                                     <i class="mdi mdi-clipboard-edit-outline"></i><span>{{ __('Adjust this stock') }}</span>
                                 </a>
+                                <a href="{{ route('admin.inventory.labels', ['product' => $matchedProduct->id, 'variant_id' => $matchedVariant->id]) }}" class="btn btn-light border btn-text-icon">
+                                    <i class="mdi mdi-printer-outline"></i><span>{{ __('Print barcode label') }}</span>
+                                </a>
                             </div>
                         @elseif(! $needsVariant)
                             <div class="admin-actions-stack mt-4">
                                 <a href="{{ route('admin.inventory.adjust', ['product_id' => $matchedProduct->id, 'search' => $barcode]) }}" class="btn btn-primary btn-text-icon">
                                     <i class="mdi mdi-clipboard-edit-outline"></i><span>{{ __('Adjust this stock') }}</span>
+                                </a>
+                                <a href="{{ route('admin.inventory.labels', ['product' => $matchedProduct->id]) }}" class="btn btn-light border btn-text-icon">
+                                    <i class="mdi mdi-printer-outline"></i><span>{{ __('Print barcode label') }}</span>
                                 </a>
                             </div>
                         @endif
@@ -167,9 +173,12 @@
                                                 </div>
                                                 <span class="badge admin-status-badge {{ $choice->status ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ $choice->status ? __('Active') : __('Inactive') }}</span>
                                             </div>
-                                            <div class="d-flex justify-content-between align-items-center gap-3">
+                                            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
                                                 <div><span class="text-muted small">{{ __('Current stock') }}</span><div class="fw-bold fs-5">{{ (int) $choice->stock }}</div></div>
-                                                <a href="{{ route('admin.inventory.adjust', ['product_id' => $matchedProduct->id, 'variant_id' => $choice->id, 'search' => $barcode]) }}" class="btn btn-sm btn-outline-primary">{{ __('Select variant') }}</a>
+                                                <div class="d-flex gap-2 flex-wrap">
+                                                    <a href="{{ route('admin.inventory.labels', ['product' => $matchedProduct->id, 'variant_id' => $choice->id]) }}" class="btn btn-sm btn-light border"><i class="mdi mdi-printer-outline me-1"></i>{{ __('Print label') }}</a>
+                                                    <a href="{{ route('admin.inventory.adjust', ['product_id' => $matchedProduct->id, 'variant_id' => $choice->id, 'search' => $barcode]) }}" class="btn btn-sm btn-outline-primary">{{ __('Select variant') }}</a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
