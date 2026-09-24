@@ -179,8 +179,8 @@
                         <div class="mb-3">
                             <label for="posPaymentMethod" class="form-label fw-semibold">{{ __('Payment method') }}</label>
                             <select id="posPaymentMethod" name="payment_method" class="form-select @error('payment_method') is-invalid @enderror" required>
-                                <option value="{{ AppModelsOrder::PAYMENT_METHOD_POS_CASH }}" @selected(old('payment_method', AppModelsOrder::PAYMENT_METHOD_POS_CASH) === AppModelsOrder::PAYMENT_METHOD_POS_CASH)>{{ __('Cash') }}</option>
-                                <option value="{{ AppModelsOrder::PAYMENT_METHOD_POS_CARD }}" @selected(old('payment_method') === AppModelsOrder::PAYMENT_METHOD_POS_CARD)>{{ __('Card terminal') }}</option>
+                                <option value="{{ $cashPaymentMethod }}" @selected(old('payment_method', $cashPaymentMethod) === $cashPaymentMethod)>{{ __('Cash') }}</option>
+                                <option value="{{ $cardPaymentMethod }}" @selected(old('payment_method') === $cardPaymentMethod)>{{ __('Card terminal') }}</option>
                             </select>
                             @error('payment_method')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const cashInput = document.getElementById('posCashReceived');
 
     const syncPaymentFields = function () {
-        const isCash = paymentMethod && paymentMethod.value === @json(AppModelsOrder::PAYMENT_METHOD_POS_CASH);
+        const isCash = paymentMethod && paymentMethod.value === @json($cashPaymentMethod);
 
         if (cashWrap) {
             cashWrap.classList.toggle('d-none', !isCash);
