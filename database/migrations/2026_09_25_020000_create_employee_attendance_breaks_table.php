@@ -10,8 +10,10 @@ return new class extends Migration
     {
         Schema::create('employee_attendance_breaks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_attendance_session_id')
-                ->constrained('employee_attendance_sessions')
+            $table->foreignId('employee_attendance_session_id');
+            $table->foreign('employee_attendance_session_id', 'emp_att_break_session_fk')
+                ->references('id')
+                ->on('employee_attendance_sessions')
                 ->cascadeOnDelete();
             $table->timestamp('starts_at');
             $table->timestamp('ends_at')->nullable();
