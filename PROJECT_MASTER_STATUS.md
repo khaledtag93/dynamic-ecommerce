@@ -112,6 +112,17 @@
 - [Hardening CI 36041425089](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36041425089) passed at application head `ef9797d` with **173 tests (969 assertions)** plus frontend production build.
 - QAS remains on `0a08253`; Production and `main` are unchanged. See `docs/POS_CASHIER_FOUNDATION_V1_2026-09-24.md`.
 
+## POS Receipt Printing V1 checkpoint — 2026-09-24
+- Completed POS sales now expose a dedicated read-only Sales Receipt from the cashier Sale Summary.
+- Receipt access reuses the existing cashier ownership / broader order-review boundary; printing cannot bypass sale authorization.
+- Browser-print layouts support 58 mm, 80 mm and A4, with unsupported paper input falling back safely to 80 mm.
+- V1 reuses the recorded POS order number as the receipt reference. Store name/address/support contact data come from existing Store Settings, and receipt values come from persisted Order / Order Items / Payment records.
+- Receipt rendering is presentation-only: repeated viewing/printing does not create or update orders, payments, inventory movements or stock.
+- English/Arabic receipt copy and focused safety regression coverage were added.
+- [Hardening CI 36042936219](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36042936219) passed at application head `bca25c1` with **174 tests (983 assertions)** plus frontend production build.
+- This V1 is intentionally a sales receipt, not a fiscal/tax invoice; no jurisdiction-specific tax identity, legal invoice numbering or fiscal claims were invented.
+- QAS remains on `0a08253`; physical-printer and bilingual visual review stay queued for the consolidated phase. Production and `main` are unchanged. See `docs/POS_RECEIPT_PRINTING_V1_2026-09-24.md`.
+
 ## Purchase Barcode Receiving V1 checkpoint — 2026-09-24
 - Ordered purchases now support persistent per-line barcode verification. Each accepted scan counts one physical unit without changing inventory.
 - Exact simple/variant identity uses the shared barcode resolver; parent variant-product barcodes, unknown/out-of-purchase items, and ambiguous identifiers are rejected.
