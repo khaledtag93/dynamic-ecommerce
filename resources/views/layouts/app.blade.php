@@ -807,11 +807,84 @@
     </div>
 </footer>
 
+<div class="modal fade" id="storefrontConfirmModal" tabindex="-1" aria-labelledby="storefrontConfirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-body p-4 p-lg-5">
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <span class="lc-section-empty__icon flex-shrink-0 mb-0" style="width:58px;height:58px;font-size:1.35rem;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </span>
+                    <div>
+                        <h3 class="h5 fw-bold mb-2" id="storefrontConfirmTitle">{{ __('Confirm action') }}</h3>
+                        <p class="mb-1" id="storefrontConfirmMessage">{{ __('Are you sure you want to continue?') }}</p>
+                        <p class="text-muted small mb-0" id="storefrontConfirmSubtitle"></p>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2 flex-wrap">
+                    <button type="button" class="btn lc-btn-soft" data-bs-dismiss="modal" id="storefrontConfirmCancel">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn lc-btn-danger-soft" id="storefrontConfirmOk">{{ __('Confirm') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 @livewireScripts
 @stack('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  const confirmModalElement = document.getElementById('storefrontConfirmModal');
+  const confirmModal = confirmModalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(confirmModalElement) : null;
+  const confirmTitle = document.getElementById('storefrontConfirmTitle');
+  const confirmMessage = document.getElementById('storefrontConfirmMessage');
+  const confirmSubtitle = document.getElementById('storefrontConfirmSubtitle');
+  const confirmOk = document.getElementById('storefrontConfirmOk');
+  const confirmCancel = document.getElementById('storefrontConfirmCancel');
+  let pendingConfirm = null;
+
+  document.querySelectorAll('form[data-confirm-message]').forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      if (form.dataset.confirmed === '1') {
+        delete form.dataset.confirmed;
+        return;
+      }
+
+      if (!confirmModal) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      pendingConfirm = { form: form, submitter: event.submitter || null };
+
+      confirmTitle.textContent = form.dataset.confirmTitle || @json(__('Confirm action'));
+      confirmMessage.textContent = form.dataset.confirmMessage || @json(__('Are you sure you want to continue?'));
+      confirmSubtitle.textContent = form.dataset.confirmSubtitle || '';
+      confirmOk.textContent = form.dataset.confirmOk || @json(__('Confirm'));
+      confirmCancel.textContent = form.dataset.confirmCancel || @json(__('Cancel'));
+      confirmModal.show();
+    }, true);
+  });
+
+  confirmOk?.addEventListener('click', function () {
+    if (!pendingConfirm) return;
+
+    const target = pendingConfirm;
+    pendingConfirm = null;
+    target.form.dataset.confirmed = '1';
+    confirmModal?.hide();
+
+    if (target.submitter && typeof target.form.requestSubmit === 'function') {
+      target.form.requestSubmit(target.submitter);
+    } else {
+      target.form.submit();
+    }
+  });
+
+  confirmModalElement?.addEventListener('hidden.bs.modal', function () {
+    pendingConfirm = null;
+  });
+
   document.querySelectorAll('form[data-submit-loading]').forEach(function (form) {
     form.addEventListener('submit', function (event) {
       const button = event.submitter || form.querySelector('[data-loading-text]');
