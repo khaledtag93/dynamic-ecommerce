@@ -424,3 +424,24 @@ Verification:
 - Production and `main`: unchanged
 
 Next intended POS slice: formal Receipt / Invoice V1 on top of the verified sale ledger.
+
+
+### POS Receipt Printing V1 — 2026-09-24
+Application implementation verified at `bca25c1`:
+- dedicated Print receipt action from the completed POS Sale Summary
+- read-only receipt rendering under the existing cashier-ownership / broader order-review permission boundary
+- 58 mm, 80 mm and A4 browser-print formats with safe 80 mm fallback
+- stable V1 receipt reference reuses the recorded POS order number
+- store identity/contact fields reuse existing Store Settings
+- printed values come from recorded Order / Order Items / Payment data; viewing or printing does not mutate stock, payments or orders
+- EN/AR receipt copy and focused receipt-safety regression coverage
+
+Verification:
+- Hardening CI `36042936219`: passed at application head `bca25c1`
+- 174 tests / 983 assertions
+- clean MySQL migration, Laravel routes/boot, Blade/config compilation and frontend production build passed
+- consolidated authenticated and physical-printer QAS: deferred by owner
+- QAS application HEAD: `0a08253`
+- Production and `main`: unchanged
+
+Deliberate boundary: this is a sales receipt, not a fiscal/tax invoice. Formal invoice work still requires verified legal/tax identity, configured tax rules and jurisdiction-appropriate numbering.
