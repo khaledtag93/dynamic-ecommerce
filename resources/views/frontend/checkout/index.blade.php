@@ -113,11 +113,11 @@
                                 <span class="lc-badge"><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
                             </div>
 
-                            <div class="payment-icons-row mb-3">
-                                <span>{{ __('Visa') }}</span>
-                                <span>{{ __('Mastercard') }}</span>
-                                <span>{{ __('Cash') }}</span>
-                                <span>{{ __('Protected') }}</span>
+                            <div class="payment-icons-row mb-3" aria-label="{{ __('Available payment methods') }}">
+                                @foreach($paymentOptions as $option)
+                                    <span><i class="bi bi-wallet2"></i>{{ $option['label'] }}</span>
+                                @endforeach
+                                <span><i class="bi bi-shield-check"></i>{{ __('Protected checkout') }}</span>
                             </div>
 
                             <div class="row g-3">
@@ -193,9 +193,14 @@
                                 </div>
                             </div>
 
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" role="switch" id="billingSame" name="billing_same_as_shipping" value="1" @checked($billingSame) onchange="document.getElementById('billingFields').classList.toggle('d-none', this.checked)">
-                                <label class="form-check-label" for="billingSame">{{ __('Billing address is the same as shipping') }}</label>
+                            <div class="checkout-toggle-card mb-3">
+                                <div class="checkout-toggle-card__copy">
+                                    <label class="fw-bold mb-1" for="billingSame">{{ __('Billing address is the same as shipping') }}</label>
+                                    <div class="text-muted small">{{ __('Turn this off only when the invoice needs a different billing address.') }}</div>
+                                </div>
+                                <div class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="billingSame" name="billing_same_as_shipping" value="1" @checked($billingSame) onchange="document.getElementById('billingFields').classList.toggle('d-none', this.checked)">
+                                </div>
                             </div>
 
                             <div id="billingFields" class="{{ $billingSame ? 'd-none' : '' }}">
@@ -365,6 +370,7 @@
 @push('styles')
 <style>
 .checkout-hero-toolbar{overflow:hidden}
+.checkout-toggle-card{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.05rem;border-radius:1rem;background:color-mix(in srgb,var(--lc-soft) 48%,var(--lc-surface));border:1px solid color-mix(in srgb,var(--lc-border) 84%,#fff)}.checkout-toggle-card__copy{min-width:0}.checkout-toggle-card .form-check{padding:0;min-height:0;flex:0 0 auto}.checkout-toggle-card .form-check-input{float:none;margin:0;width:3rem;height:1.55rem}
 .checkout-trust-row,.payment-icons-row{display:flex;flex-wrap:wrap;gap:.75rem}.checkout-trust-row span,.payment-icons-row span{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem .9rem;border-radius:999px;background:rgba(255,255,255,.8);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);font-weight:700;color:var(--lc-primary-dark)}
 .checkout-step-card{position:relative;overflow:hidden}.checkout-step-card::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--lc-primary),var(--lc-secondary));opacity:.85}.checkout-section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}.checkout-step-index{font-size:.78rem;font-weight:800;letter-spacing:.12em;color:var(--lc-primary-dark);margin-bottom:.5rem}
 .checkout-summary-card{background:linear-gradient(180deg,#ffffff 0%, color-mix(in srgb,var(--lc-soft) 70%, white) 100%)}
