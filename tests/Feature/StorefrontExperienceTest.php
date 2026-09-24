@@ -361,6 +361,25 @@ class StorefrontExperienceTest extends TestCase
             ->assertDontSee('onclick="return confirm(', false);
     }
 
+    public function test_default_legal_pages_do_not_publish_assumed_policy_terms(): void
+    {
+        $response = $this->get(route('frontend.refund'));
+
+        $response
+            ->assertOk()
+            ->assertSee('This policy has not been published yet')
+            ->assertSee(route('frontend.contact'))
+            ->assertDontSee('Orders cancelled before shipping may qualify for a full refund.')
+            ->assertDontSee('Delivered items may require inspection before approval.');
+
+        $settings = app(StoreSettingsService::class)->all();
+
+        $this->assertSame('', $settings['legal_privacy_body']);
+        $this->assertSame('', $settings['legal_terms_body']);
+        $this->assertSame('', $settings['legal_refund_body']);
+        $this->assertSame('', $settings['legal_shipping_body']);
+    }
+
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
     {
         $settings = app(StoreSettingsService::class)->all();
