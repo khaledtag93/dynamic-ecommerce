@@ -116,6 +116,13 @@
 - Catalog quick quantity edits use the counted-stock service with stale-count protection and a distinct source. Product duplication starts at zero independent stock. Inventory history labels the three admin sources. English/Arabic UI and focused regression coverage are included; see [`docs/CATALOG_STOCK_AUDIT_2026-09-24.md`](docs/CATALOG_STOCK_AUDIT_2026-09-24.md).
 - The catalog stock batch is CI-verified: [Hardening CI 36031782934](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36031782934) passed at `6889248` with 135 tests (736 assertions) and the frontend production build. The operator-confirmed QAS application HEAD remains `0a08253`; manual review is deferred to the consolidated phase. Production and `main` are unchanged.
 
+## Barcode Label Printing V1 checkpoint — 2026-09-24
+- Inventory scanner results can now open a real-size barcode-label preview for exact simple products and variants. Variant products require an explicit variant before a stock-level label is printable.
+- A dependency-free Code 128B service generates checksum-correct inline SVG barcodes from existing printable-ASCII identifiers; missing/unsupported identifiers remain non-printable instead of being rewritten.
+- Label controls support 1–100 copies, 50 × 30 / 60 × 40 / 70 × 40 mm sizes, optional price display and browser print CSS that hides admin chrome.
+- Unit/feature coverage validates encoding, checksum, SVG geometry, variant ownership, copy count and safe error states. See `docs/BARCODE_LABEL_PRINTING_V1_2026-09-24.md`.
+- No catalog or stock mutation is introduced by label printing. Branch-head CI is pending. QAS remains on `0a08253`; Production and `main` are unchanged.
+
 ## Barcode Scan-to-Find V1 checkpoint — 2026-09-24
 - Inventory now has a dedicated scanner workspace that accepts HID keyboard-mode barcode input and uses the shared exact barcode resolver rather than fuzzy search.
 - Exact simple-product and variant matches link into the existing counted-stock adjustment workflow; scanner lookup itself does not mutate inventory.

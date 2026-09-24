@@ -369,3 +369,22 @@ Verification state:
 - Production and `main`: unchanged
 
 See `docs/BARCODE_SCAN_TO_FIND_V1_2026-09-24.md`.
+
+
+### Barcode Label Printing V1 — 2026-09-24
+Source implementation on `v42-clean-baseline` now:
+- renders dependency-free Code 128B SVG from stored product/variant barcodes
+- adds real-size 50×30, 60×40 and 70×40 mm print previews
+- supports 1–100 copies and optional current-price display
+- links exact scanner matches to label printing
+- requires exact variant selection for variant products
+- keeps missing/non-ASCII legacy identifiers visible but non-printable instead of rewriting them
+- adds EN/AR copy, Code 128 unit tests, label workflow feature tests and implementation notes
+
+Verification state:
+- branch-head CI: pending
+- physical print/rescan QAS review: deferred to consolidated owner review
+- QAS application HEAD: still `0a08253`
+- Production and `main`: unchanged
+
+See `docs/BARCODE_LABEL_PRINTING_V1_2026-09-24.md`.
