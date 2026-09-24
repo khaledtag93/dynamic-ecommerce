@@ -38,13 +38,14 @@ The page also contained a duplicated `chart-suite` anchor and analytics-specific
 - Added Arabic/English copy for the new hierarchy.
 - Growth analytics now removes its duplicated signal-card layer and redundant executive-focus block; the remaining focus + signal + campaign structure keeps the same growth data with less repetition.
 - Offers analytics now removes the extra hero/operator-summary layers before its primary KPIs, keeps one offer-focus story, and uses admin theme tokens for coupon charts instead of hard-coded orange.
+- Growth module shared semantic tokens were corrected to use the defined admin success/warning/danger/primary variables; Growth Insights now reuses the shared admin stat-card language for its four headline metrics.
 - Added `AdminAnalyticsExperienceTest` to guard the Overview, Growth, and Offers hierarchy and prevent the removed duplicate layers from returning.
 
 ## Validation state
 
 - Source implementation: complete for this iteration.
-- Automated regression coverage: added.
-- Branch-head CI: pending.
+- Automated regression coverage: added and passing, including Overview, Growth, Offers, and Growth Insights hierarchy checks.
+- Branch-head CI: **passed** on `8b477d8` — Hardening CI run `36004327589`.
 - Authenticated desktop/mobile English/Arabic QAS review: pending.
 - Production: unchanged.
 
