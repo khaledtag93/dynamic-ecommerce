@@ -37,6 +37,7 @@
 ## Catalog Admin V2 checkpoint — 2026-09-24
 - Catalog administration has expanded beyond Products into Categories, Brands, Attributes, and Attribute Values with operational queues, stronger filters, usage/health metrics, safer destructive actions, and editor workflow improvements.
 - Category editing now enforces unique slugs, image type/size limits, translation-field validation, and protects categories linked to products from deletion.
+- **Category bilingual hardening (2026-09-24):** canonical/base category fields now read raw stored values instead of locale-translated accessors, preventing an Arabic admin edit from overwriting the canonical record. Translation panes now use correct RTL/LTR direction with field-level errors, and clearing an optional Arabic translation removes the stale translation row. Regression coverage was added; branch-head CI/QAS remain pending. See `docs/CATEGORY_BILINGUAL_HARDENING_2026-09-24.md`.
 - Brand management now surfaces empty/linked records and uses guarded deletion with a backend recheck for product dependencies.
 - Attribute and Attribute Value management is variant-aware: attributes or values referenced by product variants are protected from deletion, while usage counts and cleanup queues are visible to admins.
 - Arabic/English catalog-admin localization is now part of the ongoing definition of done. New strings introduced during the V2 work are being registered in English and translated into Arabic as the related screens are upgraded.
