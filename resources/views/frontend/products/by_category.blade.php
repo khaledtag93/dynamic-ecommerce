@@ -13,7 +13,7 @@
     ];
 @endphp
 
-<section class="py-5">
+<section class="py-5" data-live-list>
     <div class="container">
         <div class="lc-card category-hero-card overflow-hidden mb-4">
             <div class="row g-0 align-items-center">
@@ -66,18 +66,18 @@
                         </div>
                     </div>
 
-                    <form method="GET" action="{{ route('category.products', $category->id) }}" class="d-grid gap-3">
+                    <form method="GET" action="{{ route('category.products', $category->id) }}" class="d-grid gap-3" data-live-filter>
                         <div>
                             <label class="form-label fw-bold">{{ __('Search inside this category') }}</label>
                             <div class="position-relative">
                                 <i class="bi bi-search category-filter-search-icon"></i>
-                                <input type="text" name="q" value="{{ $filters['q'] }}" class="form-control lc-form-control ps-5" placeholder="{{ __('Product name or description') }}">
+                                <input type="search" name="q" data-live-search autocomplete="off" value="{{ $filters['q'] }}" class="form-control lc-form-control ps-5" placeholder="{{ __('Product name or description') }}">
                             </div>
                         </div>
 
                         <div>
                             <label class="form-label fw-bold">{{ __('Availability') }}</label>
-                            <select name="availability" class="form-select lc-form-select">
+                            <select name="availability" class="form-select lc-form-select" data-live-filter-control>
                                 <option value="all" @selected($filters['availability'] === 'all')>{{ __('All products') }}</option>
                                 <option value="in_stock" @selected($filters['availability'] === 'in_stock')>{{ __('In stock only') }}</option>
                             </select>
@@ -85,7 +85,7 @@
 
                         <div>
                             <label class="form-label fw-bold">{{ __('Offers') }}</label>
-                            <select name="offer" class="form-select lc-form-select">
+                            <select name="offer" class="form-select lc-form-select" data-live-filter-control>
                                 <option value="all" @selected($filters['offer'] === 'all')>{{ __('All offers') }}</option>
                                 <option value="on_sale" @selected($filters['offer'] === 'on_sale')>{{ __('Discounted only') }}</option>
                             </select>
@@ -93,7 +93,7 @@
 
                         <div>
                             <label class="form-label fw-bold">{{ __('Sort by') }}</label>
-                            <select name="sort" class="form-select lc-form-select">
+                            <select name="sort" class="form-select lc-form-select" data-live-filter-control>
                                 <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('Newest first') }}</option>
                                 <option value="price_low_high" @selected($filters['sort'] === 'price_low_high')>{{ __('Price: low to high') }}</option>
                                 <option value="price_high_low" @selected($filters['sort'] === 'price_high_low')>{{ __('Price: high to low') }}</option>
@@ -105,63 +105,21 @@
                             <button class="btn lc-btn-primary" type="submit">
                                 <i class="bi bi-funnel me-2"></i>{{ __('Apply filters') }}
                             </button>
-                            <a href="{{ route('category.products', $category->id) }}" class="btn lc-btn-soft">
+                            <a href="{{ route('category.products', $category->id) }}" class="btn lc-btn-soft" data-live-reset>
                                 <i class="bi bi-arrow-counterclockwise me-2"></i>{{ __('Reset') }}
                             </a>
                         </div>
                     </form>
+                    <div class="small mt-2" role="status" aria-live="polite" data-live-status
+                         data-loading="{{ __('Updating results...') }}"
+                         data-updated="{{ __('Results updated.') }}"
+                         data-error="{{ __('Could not update results. Open the full page to retry.') }}"></div>
+                    <a href="{{ route('category.products', $category->id) }}" class="small" data-live-fallback hidden>{{ __('Open full page') }}</a>
                 </div>
             </div>
 
             <div class="col-xl-9">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                    <div>
-                        <span class="lc-section-kicker">{{ __('Products') }}</span>
-                        <h2 class="lc-section-title mb-0">{{ __('Products in this category') }}</h2>
-                    </div>
-                    <div class="category-grid-meta">
-                        <span><i class="bi bi-stars"></i> {{ __('Clear prices') }}</span>
-                        <span><i class="bi bi-lightning-charge"></i> {{ __('Easy ordering') }}</span>
-                        <span><i class="bi bi-search-heart"></i> {{ __('Quick view') }}</span>
-                    </div>
-                </div>
-
-                <div class="category-results-bar mb-4">
-                    <div>
-                        <strong>{{ $products->total() }}</strong>
-                        <span>{{ __('Products found') }}</span>
-                    </div>
-                    @if($filters['q'] || $filters['availability'] !== 'all' || $filters['offer'] !== 'all')
-                        <div class="category-results-active-filters">
-                            @if($filters['q'])<span>{{ __('Search') }}: {{ $filters['q'] }}</span>@endif
-                            @if($filters['availability'] === 'in_stock')<span>{{ __('In stock only') }}</span>@endif
-                            @if($filters['offer'] === 'on_sale')<span>{{ __('Discounted only') }}</span>@endif
-                        </div>
-                    @endif
-                </div>
-
-                <div class="row g-4">
-                    @forelse($products as $product)
-                        <div class="col-md-6 col-xxl-4 d-flex">
-                            @include('frontend.sections.partials.product-card', ['product' => $product, 'showQuickView' => true])
-                        </div>
-                    @empty
-                        <div class="col-12">
-                            <div class="lc-card p-5 text-center text-muted category-empty-state">
-                                <div class="lc-empty-icon mx-auto"><i class="bi bi-search"></i></div>
-                                <h3 class="h4 fw-bold mb-2">{{ __('No products matched these filters.') }}</h3>
-                                <p class="mb-3">{{ __('Try changing the search, removing some filters, or browsing the full category again.') }}</p>
-                                <a href="{{ route('category.products', $category->id) }}" class="btn lc-btn-soft">{{ __('Show all products') }}</a>
-                            </div>
-                        </div>
-                    @endforelse
-                </div>
-
-                @if($products->hasPages())
-                    <div class="mt-4 category-pagination-wrap">
-                        {{ $products->onEachSide(1)->links() }}
-                    </div>
-                @endif
+                @include('frontend.products._category_results')
             </div>
         </div>
     </div>
@@ -236,6 +194,7 @@ body[dir="rtl"] .category-filter-search-icon{left:auto;right:1rem}
 @endpush
 
 @push('scripts')
+<script defer src="{{ asset('admin/js/live-list.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const quickViewModal = document.getElementById('quickViewModal');
@@ -254,22 +213,23 @@ document.addEventListener('DOMContentLoaded', function () {
         openProduct: document.getElementById('quickViewOpenProduct')
     };
 
-    document.querySelectorAll('.lc-quick-view-trigger').forEach(function (button) {
-        button.addEventListener('click', function () {
-            elements.image.src = button.getAttribute('data-image-url') || elements.image.src;
-            elements.category.textContent = button.getAttribute('data-category') || '';
-            elements.name.textContent = button.getAttribute('data-product-name') || '';
-            elements.price.textContent = button.getAttribute('data-price') || '';
-            elements.basePrice.textContent = button.getAttribute('data-base-price') || '';
-            elements.description.textContent = button.getAttribute('data-description') || '';
-            elements.stock.textContent = button.getAttribute('data-stock') || '';
-            elements.cartForm.action = button.getAttribute('data-add-to-cart') || '#';
-            elements.openProduct.href = button.getAttribute('data-product-url') || '#';
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.lc-quick-view-trigger');
+        if (!button) return;
 
-            const discount = button.getAttribute('data-discount') || '';
-            elements.discount.textContent = discount;
-            elements.discount.style.display = discount ? 'inline-flex' : 'none';
-        });
+        elements.image.src = button.getAttribute('data-image-url') || elements.image.src;
+        elements.category.textContent = button.getAttribute('data-category') || '';
+        elements.name.textContent = button.getAttribute('data-product-name') || '';
+        elements.price.textContent = button.getAttribute('data-price') || '';
+        elements.basePrice.textContent = button.getAttribute('data-base-price') || '';
+        elements.description.textContent = button.getAttribute('data-description') || '';
+        elements.stock.textContent = button.getAttribute('data-stock') || '';
+        elements.cartForm.action = button.getAttribute('data-add-to-cart') || '#';
+        elements.openProduct.href = button.getAttribute('data-product-url') || '#';
+
+        const discount = button.getAttribute('data-discount') || '';
+        elements.discount.textContent = discount;
+        elements.discount.style.display = discount ? 'inline-flex' : 'none';
     });
 });
 </script>
