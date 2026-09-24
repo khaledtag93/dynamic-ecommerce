@@ -39,6 +39,7 @@ class WorkforcePayrollTest extends TestCase
         $cashier = $this->staffWithRole('cashier');
         $finance = $this->staffWithRole('finance_manager');
 
+        $this->assertTrue($operations->hasPermission('workforce.payroll.self'));
         $this->assertFalse($operations->hasPermission('workforce.payroll.view'));
         $this->assertFalse($operations->hasPermission('workforce.payroll.manage'));
 
@@ -228,6 +229,40 @@ class WorkforcePayrollTest extends TestCase
         $this->assertSame('5000.00', $entry->base_rate_snapshot);
         $this->assertSame('5000.00', $entry->base_pay);
         $this->assertSame('USD', $entry->currency_snapshot);
+    }
+
+    public function test_partial_period_salary_requires_explicit_proration_policy_instead_of_silent_full_salary(): void
+    {
+        Carbon::setTestNow('2026-09-25 12:00:00');
+        app(AuthorizationService::class)->syncDefaults();
+
+        $finance = $this->staffWithRole('finance_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-PARTIAL-SALARY');
+        $employee->update(['hire_date' => '2026-09-10']);
+
+        EmployeeCompensation::query()->create([
+            'employee_profile_id' => $employee->id,
+            'pay_basis' => EmployeeCompensation::BASIS_SALARY,
+            'base_rate' => 5000,
+            'currency' => 'EGP',
+            'effective_from' => '2026-09-10',
+            'overtime_eligible' => false,
+        ]);
+
+        $period = PayrollPeriod::query()->create([
+            'name' => 'Partial salary period',
+            'starts_on' => '2026-09-01',
+            'ends_on' => '2026-09-24',
+            'status' => PayrollPeriod::STATUS_OPEN,
+        ]);
+
+        $this->actingAs($finance)
+            ->post(route('admin.workforce.payroll.periods.generate', $period))
+            ->assertSessionHasErrors('payroll');
+
+        $this->assertDatabaseCount('payroll_runs', 0);
+        $this->assertDatabaseCount('payroll_entries', 0);
     }
 
     public function test_generation_blocks_unstable_attendance_corrections_and_leave_inputs(): void
