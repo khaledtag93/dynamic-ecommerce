@@ -7,12 +7,16 @@ use App\Models\Order;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
 use App\Services\Commerce\PosService;
+use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class PosController extends Controller
 {
-    public function __construct(protected PosService $posService) {}
+    public function __construct(
+        protected PosService $posService,
+        protected StoreSettingsService $storeSettingsService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -132,6 +136,22 @@ class PosController extends Controller
 
     public function sale(Request $request, Order $order)
     {
+        $this->authorizeSaleAccess($request, $order);
+        $order->load(['items', 'payments']);
+
+        if ($request->boolean('receipt')) {
+            $paper = (string) $request->query('paper', '80');
+            $paper = in_array($paper, ['58', '80', 'a4'], true) ? $paper : '80';
+            $settings = $this->storeSettingsService->all();
+
+            return view('admin.pos.receipt', compact('order', 'paper', 'settings'));
+        }
+
+        return view('admin.pos.sale', compact('order'));
+    }
+
+    protected function authorizeSaleAccess(Request $request, Order $order): void
+    {
         abort_unless($order->sales_channel === Order::SALES_CHANNEL_POS, 404);
 
         $cashierUserId = (int) data_get($order->meta, 'cashier_user_id', 0);
@@ -139,9 +159,5 @@ class PosController extends Controller
             || $request->user()->hasPermission('orders.view');
 
         abort_unless($canReviewAllOrders || $cashierUserId === (int) $request->user()->id, 403);
-
-        $order->load(['items', 'payments']);
-
-        return view('admin.pos.sale', compact('order'));
     }
 }
