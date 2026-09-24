@@ -53,6 +53,13 @@
 - English/Arabic hierarchy copy and a focused `AdminAnalyticsExperienceTest` were added. Detailed scope/QAS checks: `docs/ANALYTICS_INSIGHTS_V2_2026-09-24.md`.
 - Source implementation and automated regression verification are complete for this iteration. Hardening CI run `36004327589` passed at `8b477d8`; authenticated English/Arabic desktop/mobile QAS review remains required. Production is unchanged.
 
+## WhatsApp workspace UX checkpoint — 2026-09-24
+- The long WhatsApp administration screen now uses focused Overview / Channel & queue / Provider & templates / Test tools / Logs navigation instead of reading as one oversized white panel.
+- Five channel/queue switches now use aligned toggle cards and shared admin switch sizing; delivery/message summary metrics use the shared admin stat-card language.
+- Provider/template/test/resend/log workflows and server-managed credential handling remain functionally unchanged.
+- English/Arabic workspace copy and focused regression coverage were added. See `docs/WHATSAPP_WORKSPACE_UX_2026-09-24.md`.
+- Source implementation is complete for this UI iteration; final branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
+
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
 - Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.
