@@ -362,3 +362,16 @@ The current `v42-clean-baseline` branch now includes a broad operational-admin p
 - Payment Details locks terminal financial states, exposes only safe next states, points returned-money handling to the order refund workflow, and surfaces HMAC plus gateway reconciliation evidence.
 - English/Arabic safety and reconciliation copy completed for the touched payment workflow.
 - Final Payments V2 CI: **green**, run `35935259115`, head `48fc7c0d`.
+
+
+## Admin UI/UX consistency backlog — 2026-09-24
+These are cross-admin requirements, not isolated screen fixes, and should be applied progressively to every touched admin workspace.
+
+- **Theme system:** redesign the current admin themes/colors; the existing palette is not the desired quality bar. Build a more polished, cohesive theme/token system rather than page-specific color patches.
+- **Page structure:** long or visually flat screens must be divided into clear sections/cards/workspaces. The Brand create/edit screen is a concrete example of a form that currently feels insufficiently structured.
+- **KPI/header cards:** redesign the recurring header metric cards (for example Open/Closed/count cards) into a stronger reusable component and migrate the improved pattern across admin pages instead of fixing individual screens.
+- **Switch alignment:** audit toggle/switch controls globally. Current switches can sit outside or misalign with their label/form row, especially in RTL; fix the shared layout/component so the correction propagates consistently.
+- **Analytics & Insights:** treat this as a major redesign target. The current long page lacks hierarchy and does not consistently follow the Admin V2 visual language; improve information architecture, sectioning, metric presentation, spacing, responsive behavior, and shared components.
+- **Categories:** explicitly audit Arabic/English parity, mixed-language copy, RTL/LTR layout, labels, validation, empty/loading states, and terminology.
+- **Consistency rule:** every subsequent admin batch must reuse the same page shell, section/card language, KPI components, filters, actions, spacing, typography, states, confirmations, and bilingual/RTL behavior. Avoid one-off UI patterns unless the workflow genuinely requires them.
+- **Quality rule:** when an old screen is touched, fix obvious UI/UX, localization, RTL, and consistency defects encountered in that screen rather than preserving them as legacy debt.
