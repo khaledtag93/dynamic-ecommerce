@@ -6,6 +6,7 @@ use App\Models\EmployeeCompensation;
 use App\Models\EmployeeProfile;
 use App\Models\User;
 use App\Services\Commerce\AdminActivityLogService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -20,7 +21,8 @@ class CompensationService
         return DB::transaction(function () use ($employee, $data, $actor) {
             $lockedEmployee = EmployeeProfile::query()->whereKey($employee->id)->lockForUpdate()->firstOrFail();
 
-            if (! empty($data['effective_to']) && $data['effective_to'] < $data['effective_from']) {
+            if (! empty($data['effective_to'])
+                && Carbon::parse($data['effective_to'])->lt(Carbon::parse($data['effective_from']))) {
                 throw ValidationException::withMessages([
                     'effective_to' => __('Compensation end date must be on or after the effective start date.'),
                 ]);
