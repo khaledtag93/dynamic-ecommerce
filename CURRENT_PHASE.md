@@ -536,6 +536,22 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - The QAS deploy script's error handler returns the application from maintenance mode after failure.
 - Before rerun, inspect `employee_attendance_breaks`; if the failed migration left an empty partial table, drop only that empty table and rerun the normal QAS deploy. Production unchanged.
 
+### Workforce Payroll Foundation V1 — 2026-09-25
+- Application source checkpoint `b51a93e6` adds scoped payroll permissions, current employee compensation profiles, non-overlapping payroll periods, Draft/Approved/Paid payroll runs, frozen employee payroll entries, explicit pay components and printable/self-owned payslips.
+- Sensitive payroll access is separate from ordinary `workforce.manage`: Finance Manager receives payroll view/manage/self; Operations Manager, Cashier and Support Agent receive self-payslip access only; Super Admin inherits all.
+- Salary = fixed base amount for one complete payroll period; Hourly = effective net attendance hours × rate. Attendance uses approved corrections and subtracts recorded breaks.
+- Generation waits until the period ends and blocks included employees with open attendance/breaks, Pending corrections or Pending leave.
+- Approved paid/unpaid leave days are snapshotted but are not automatically monetized. Statutory tax/social insurance, leave pay/deductions and overtime remain explicit/configurable policy rather than assumptions.
+- Partial-period Salary is rejected in V1 instead of silently applying an unverified proration formula.
+- Payroll components: Overtime, Allowance, Bonus, Deduction. Negative Net pay is rejected. Run totals remain grouped by currency.
+- Approval freezes entries/components and closes the period; Paid is one-way from Approved. Compensation edits never rewrite historical payroll snapshots.
+- My Payslips exposes only Approved/Paid entries and enforces employee ownership. Draft payroll is hidden.
+- Regression coverage: `WorkforcePayrollTest`; recursive `WorkforceBladeIntegrityTest` also covers Payroll views.
+- Detailed checkpoint: `docs/WORKFORCE_PAYROLL_FOUNDATION_V1_2026-09-25.md`.
+- CI: Pending — no workflow/status visible for `b51a93e6` when checked.
+- QAS: not accepted/currently needs complete Workforce recovery redeploy + consolidated validation after the reported 500/migration state. Payroll is not claimed on QAS. Production unchanged.
+- Next: **Workforce QAS integration & consolidated validation**, then return to critical commerce gaps before Payroll V2 statutory depth.
+
 ### Workforce Leave Management V1 — 2026-09-25
 - Application source checkpoint `c6df3fc2` adds merchant-configurable leave types, employee leave requests, append-only balance adjustments, balance calculation, live manager review and employee My Leave.
 - V1 balance formula: entitlement + signed adjustments - Approved usage; Projected also subtracts Pending requests.
