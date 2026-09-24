@@ -55,6 +55,11 @@
                 <div class="col-md-8"><label class="form-label fw-semibold">{{ __('Cancellation note') }}</label><textarea class="form-control" rows="3" name="orders_customer_cancellation_note">{{ old('orders_customer_cancellation_note', $settings['orders_customer_cancellation_note'] ?? '') }}</textarea></div>
             </div>
 
+            <div class="admin-inline-note mb-4">
+                <i class="mdi mdi-shield-check-outline"></i>
+                <span>{{ __('Publish only policy text reviewed for your business and jurisdiction. Blank policy bodies are shown to customers as not yet published instead of using assumed legal terms.') }}</span>
+            </div>
+
             @foreach(['privacy' => __('Privacy Policy'),'terms' => __('Terms & Conditions'),'refund' => __('Refund Policy'),'shipping' => __('Shipping Policy')] as $key => $label)
                 <div class="row g-4 mb-4 admin-settings-section" id="content-panel-{{ $key }}" role="tabpanel" aria-labelledby="content-tab-{{ $key }}" data-admin-section-panel="{{ $key }}">
                     <div class="col-12"><h4 class="mb-0">{{ $label }}</h4></div>
