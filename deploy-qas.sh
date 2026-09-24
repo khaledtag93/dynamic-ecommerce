@@ -106,8 +106,16 @@ $PHP_BIN artisan down --retry=30 || true
 log "🔄 Updating QAS worktree..."
 git reset --hard "origin/$BRANCH"
 
+log "🧪 Running source preflight checks..."
+if grep -RInE --include='*.blade.php' '(AppModels|IlluminateSupport)[A-Za-z0-9_:]*' resources/views/admin/workforce; then
+    fail "Workforce Blade namespace preflight failed. Fix corrupted PHP class references before deploying."
+fi
+
 log "📦 Installing PHP dependencies..."
 $COMPOSER_BIN install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
+
+log "🧭 Verifying Workforce routes..."
+$PHP_BIN artisan route:list --name=workforce >/dev/null
 
 log "🧹 Clearing Laravel caches..."
 $PHP_BIN artisan optimize:clear
