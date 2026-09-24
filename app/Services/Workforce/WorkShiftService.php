@@ -54,6 +54,9 @@ class WorkShiftService
     public function update(EmployeeWorkShift $shift, array $data, User $actor): EmployeeWorkShift
     {
         return DB::transaction(function () use ($shift, $data, $actor) {
+            $employeeId = (int) ($data['employee_profile_id'] ?? $shift->employee_profile_id);
+            $employee = EmployeeProfile::query()->whereKey($employeeId)->lockForUpdate()->firstOrFail();
+
             $lockedShift = EmployeeWorkShift::query()->whereKey($shift->id)->lockForUpdate()->firstOrFail();
 
             if ($lockedShift->isCancelled()) {
@@ -62,8 +65,6 @@ class WorkShiftService
                 ]);
             }
 
-            $employeeId = (int) ($data['employee_profile_id'] ?? $lockedShift->employee_profile_id);
-            $employee = EmployeeProfile::query()->whereKey($employeeId)->lockForUpdate()->firstOrFail();
             $this->guardSchedulable($employee);
 
             $startsAt = $data['starts_at'] ?? $lockedShift->starts_at;
