@@ -262,6 +262,45 @@ class PosCashierTest extends TestCase
         ]);
     }
 
+    public function test_pos_receipt_is_read_only_and_supports_print_paper_sizes(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('POS Receipt Product', '6224000000009', 3, false, 18, 7);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 20,
+            'customer_name' => 'Receipt Customer',
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $orderCount = Order::query()->count();
+        $paymentCount = Payment::query()->count();
+        $movementCount = InventoryMovement::query()->count();
+        $stockAfterSale = (int) $product->fresh()->quantity;
+
+        $this->get(route('admin.pos.sales.show', $order) . '?receipt=1&paper=58')
+            ->assertOk()
+            ->assertSee(__('Sales receipt'))
+            ->assertSee($order->order_number)
+            ->assertSee('POS Receipt Product')
+            ->assertSee('data-receipt-paper="58"', false);
+
+        $this->get(route('admin.pos.sales.show', $order) . '?receipt=1&paper=unsupported')
+            ->assertOk()
+            ->assertSee('data-receipt-paper="80"', false);
+
+        $this->assertSame($orderCount, Order::query()->count());
+        $this->assertSame($paymentCount, Payment::query()->count());
+        $this->assertSame($movementCount, InventoryMovement::query()->count());
+        $this->assertSame($stockAfterSale, (int) $product->fresh()->quantity);
+    }
+
     public function test_completed_sale_page_is_limited_to_owner_or_broader_order_reviewers(): void
     {
         app(AuthorizationService::class)->syncDefaults();
@@ -289,6 +328,9 @@ class PosCashierTest extends TestCase
 
         $this->actingAs($secondCashier)
             ->get(route('admin.pos.sales.show', $order))
+            ->assertForbidden();
+
+        $this->get(route('admin.pos.sales.show', $order) . '?receipt=1&paper=80')
             ->assertForbidden();
     }
 
