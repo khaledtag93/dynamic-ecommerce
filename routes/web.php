@@ -75,6 +75,7 @@ Route::get('/locale/{locale}', function (Request $request, string $locale) {
 |--------------------------------------------------------------------------
 */
 Route::get('/', [FrontendController::class, 'index'])->name('frontend.home');
+Route::get('/search', [FrontendController::class, 'search'])->name('frontend.search');
 Route::get('/category/{id}', [FrontendController::class, 'showCategoryProducts'])->name('category.products');
 Route::get('/products/{product:slug}', [FrontendProductController::class, 'show'])->name('frontend.products.show');
 Route::get('/contact', [ContentPageController::class, 'contact'])->name('frontend.contact');
