@@ -55,6 +55,17 @@ class PosService
         ];
     }
 
+    public function heldCartsFor(User $cashier)
+    {
+        return PosCart::query()
+            ->where('cashier_user_id', $cashier->id)
+            ->where('status', PosCart::STATUS_HELD)
+            ->with(['items.product', 'items.variant'])
+            ->orderByDesc('held_at')
+            ->orderByDesc('id')
+            ->get();
+    }
+
     public function scan(PosCart $cart, string $barcode, int $cashierUserId): PosCartItem
     {
         $barcode = trim($barcode);
@@ -267,6 +278,165 @@ class PosService
                 'customer_name' => null,
                 'notes' => null,
             ]);
+        });
+    }
+
+    public function hold(PosCart $cart, array $data, int $cashierUserId): PosCart
+    {
+        return DB::transaction(function () use ($cart, $data, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $items = PosCartItem::query()
+                ->where('pos_cart_id', $lockedCart->id)
+                ->lockForUpdate()
+                ->get();
+
+            if ($items->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'cart' => __('Add at least one item before holding the POS sale.'),
+                ]);
+            }
+
+            $holdLabel = trim((string) ($data['hold_label'] ?? ''));
+            $customerName = trim((string) ($data['customer_name'] ?? ''));
+            $notes = trim((string) ($data['notes'] ?? ''));
+
+            $lockedCart->update([
+                'status' => PosCart::STATUS_HELD,
+                'open_token' => null,
+                'hold_label' => $holdLabel !== '' ? $holdLabel : null,
+                'held_at' => now(),
+                'customer_name' => $customerName !== '' ? $customerName : null,
+                'notes' => $notes !== '' ? $notes : null,
+            ]);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_sale_held',
+                __('POS sale held.'),
+                $cashierUserId,
+                $lockedCart,
+                [
+                    'items_count' => (int) $items->sum('quantity'),
+                    'hold_label' => $lockedCart->hold_label,
+                ]
+            );
+
+            return $lockedCart->fresh(['items.product', 'items.variant']);
+        });
+    }
+
+    public function resume(PosCart $cart, int $cashierUserId): PosCart
+    {
+        return DB::transaction(function () use ($cart, $cashierUserId) {
+            $heldCart = PosCart::query()->whereKey($cart->id)->lockForUpdate()->firstOrFail();
+
+            if ((int) $heldCart->cashier_user_id !== $cashierUserId) {
+                throw ValidationException::withMessages([
+                    'cart' => __('This POS cart belongs to another cashier.'),
+                ]);
+            }
+
+            if ($heldCart->status !== PosCart::STATUS_HELD) {
+                throw ValidationException::withMessages([
+                    'cart' => __('This POS cart is not held.'),
+                ]);
+            }
+
+            $heldItems = PosCartItem::query()
+                ->where('pos_cart_id', $heldCart->id)
+                ->lockForUpdate()
+                ->get();
+
+            if ($heldItems->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'cart' => __('This held POS sale no longer contains any items.'),
+                ]);
+            }
+
+            $token = 'cashier:' . $cashierUserId;
+            $currentOpen = PosCart::query()
+                ->where('open_token', $token)
+                ->lockForUpdate()
+                ->first();
+
+            if ($currentOpen && (int) $currentOpen->id !== (int) $heldCart->id) {
+                $currentItems = PosCartItem::query()
+                    ->where('pos_cart_id', $currentOpen->id)
+                    ->lockForUpdate()
+                    ->get();
+
+                if ($currentItems->isNotEmpty()) {
+                    throw ValidationException::withMessages([
+                        'cart' => __('Hold or clear the current POS sale before resuming another sale.'),
+                    ]);
+                }
+
+                $currentOpen->update([
+                    'status' => PosCart::STATUS_ABANDONED,
+                    'open_token' => null,
+                ]);
+            }
+
+            $heldCart->update([
+                'status' => PosCart::STATUS_OPEN,
+                'open_token' => $token,
+                'held_at' => null,
+            ]);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_sale_resumed',
+                __('POS sale resumed.'),
+                $cashierUserId,
+                $heldCart,
+                [
+                    'items_count' => (int) $heldItems->sum('quantity'),
+                    'hold_label' => $heldCart->hold_label,
+                ]
+            );
+
+            return $heldCart->fresh(['items.product', 'items.variant']);
+        });
+    }
+
+    public function discardHeld(PosCart $cart, int $cashierUserId): void
+    {
+        DB::transaction(function () use ($cart, $cashierUserId) {
+            $heldCart = PosCart::query()->whereKey($cart->id)->lockForUpdate()->firstOrFail();
+
+            if ((int) $heldCart->cashier_user_id !== $cashierUserId) {
+                throw ValidationException::withMessages([
+                    'cart' => __('This POS cart belongs to another cashier.'),
+                ]);
+            }
+
+            if ($heldCart->status !== PosCart::STATUS_HELD) {
+                throw ValidationException::withMessages([
+                    'cart' => __('This POS cart is not held.'),
+                ]);
+            }
+
+            $itemsCount = (int) PosCartItem::query()
+                ->where('pos_cart_id', $heldCart->id)
+                ->sum('quantity');
+
+            $heldCart->update([
+                'status' => PosCart::STATUS_ABANDONED,
+                'open_token' => null,
+                'held_at' => null,
+            ]);
+
+            $this->activityLogService->log(
+                'pos',
+                'pos_held_sale_discarded',
+                __('Held POS sale discarded.'),
+                $cashierUserId,
+                $heldCart,
+                [
+                    'items_count' => $itemsCount,
+                    'hold_label' => $heldCart->hold_label,
+                ]
+            );
         });
     }
 
