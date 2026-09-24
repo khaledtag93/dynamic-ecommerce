@@ -16,7 +16,7 @@
     $inventoryOpen = $isRoute('admin.purchases.*', 'admin.inventory.*', 'admin.suppliers.*', 'admin.cost-calculator.*');
     $marketingOpen = $isRoute('admin.coupons.*', 'admin.promotions.*');
     $channelsOpen = $isRoute('admin.settings.branding', 'admin.settings.content*', 'admin.settings.whatsapp*', 'admin.settings.notifications*', 'admin.settings.payments*', 'admin.settings.deploy-center*', 'admin.imports.*');
-    $teamOpen = $isRoute('admin.notifications.*', 'admin.permissions.*');
+    $teamOpen = $isRoute('admin.workforce.*', 'admin.notifications.*', 'admin.permissions.*');
 
   @endphp
 
@@ -248,19 +248,32 @@
     </details>
     @endif
 
-    @if($can('notifications.view') || $can('permissions.manage'))
+    @if($can('workforce.view') || $can('workforce.clock') || $can('notifications.view') || $can('permissions.manage'))
     <details class="sidebar-group sidebar-group-last" {{ $teamOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-account-supervisor-circle-outline"></i></span>
                 <span>
-                    <span class="sidebar-group-title">{{ __('Team & alerts') }}</span>
+                    <span class="sidebar-group-title">{{ __('Team & workforce') }}</span>
                 </span>
             </span>
             <i class="mdi mdi-chevron-down sidebar-group-arrow"></i>
         </summary>
         <div class="sidebar-group-body">
             <ul class="nav flex-column mb-3">
+                @if($can('workforce.view'))
+                <li class="nav-item {{ $isRoute('admin.workforce.employees.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.employees.index') }}"><i class="mdi mdi-account-group-outline menu-icon"></i><span class="menu-title">{{ __('Employees') }}</span></a>
+                </li>
+                <li class="nav-item {{ $isRoute('admin.workforce.attendance.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.attendance.index') }}"><i class="mdi mdi-calendar-clock-outline menu-icon"></i><span class="menu-title">{{ __('Attendance') }}</span></a>
+                </li>
+                @endif
+                @if($can('workforce.clock'))
+                <li class="nav-item {{ $isRoute('admin.workforce.time-clock', 'admin.workforce.clock-*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.time-clock') }}"><i class="mdi mdi-clock-check-outline menu-icon"></i><span class="menu-title">{{ __('My time clock') }}</span></a>
+                </li>
+                @endif
                 @if($can('notifications.view'))
                 <li class="nav-item {{ $isRoute('admin.notifications.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.notifications.index') }}"><i class="mdi mdi-bell-outline menu-icon"></i><span class="menu-title">{{ __('Admin Inbox') }}</span>@if($authNotificationCount > 0)<span class="sidebar-inline-badge sidebar-inline-badge-warn">{{ $authNotificationCount }}</span>@endif</a>
