@@ -513,6 +513,18 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - Two focused feature tests passed locally (29 assertions) in the separate SQLite compatibility test worktree. All compiled Blade templates passed PHP lint, along with changed PHP files, JavaScript syntax and `git diff --check` in the application checkout. Integrated MySQL CI passed at `19a4b8c` in run `36059356857` (197 tests / 1248 assertions).
 - Explicit owner approval superseded the earlier automatic publication block. The GitHub connection recreated the two local source trees exactly as `bb10f96` and `19a4b8c`; the final source tree is identical to local `f69d5cb`. QAS was last confirmed at `0a08253`; `main` and Production are unchanged, and consolidated manual QAS review stays deferred.
 
+### Workforce Shift Scheduling V1 — 2026-09-25
+- Application source checkpoint `ff423286` adds real employee work shifts through `employee_work_shifts`; work scheduling remains separate from attendance sessions and POS cash drawer shifts.
+- Shift lifecycle: Draft / Published / Cancelled. Cancelled shifts are retained historically instead of deleted.
+- `WorkShiftService` uses transactions and employee-first locking; overlapping non-cancelled shifts are rejected while adjacent shifts are allowed.
+- Manager Work Schedule uses the shared live/no-reload pattern with employee/location search, status, department, date-range, per-page and pagination controls.
+- Employees with `workforce.clock` receive My Schedule; only Published current/upcoming shifts are shown. Draft shifts stay hidden and cancelled shifts leave employee planning without deleting manager history.
+- Schedule rows now include the first Schedule-vs-Actual Attendance comparison: actual clock-in/out, on-time tolerance, early/late start variance, future Not started, and ended No attendance recorded states.
+- Existing `workforce.view/manage/clock` permissions are reused; no broader access was introduced.
+- `WorkforceSchedulingTest` covers overlap, adjacency, publication visibility, cancellation retention, permissions, audit records, live filtering/escaping and attendance comparison.
+- Detailed checkpoint: `docs/WORKFORCE_SHIFT_SCHEDULING_V1_2026-09-25.md`. CI is pending independent verification; QAS remains `0a08253`; Production unchanged.
+- Next workforce slice: **Attendance Rules & Corrections V1**, then Leave, then Payroll.
+
 ### Workforce Foundation V1 — 2026-09-25
 - Application source checkpoint `b0fc6d20` introduces the first real employee domain: `employee_profiles` linked one-to-one with existing staff users plus `employee_attendance_sessions` for clock-in/out history.
 - Authentication and roles stay on `users`; employee code, job title, department, employment type/status, hire/termination dates, phone and notes live on the workforce profile. Linked staff identity is stable after creation.
