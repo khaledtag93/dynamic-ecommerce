@@ -66,11 +66,8 @@ class CategoryController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        $stats = [
-            'total' => Category::count(),
-            'visible' => Category::where('status', 0)->count(),
+        $queueStats = [
             'hidden' => Category::where('status', 1)->count(),
-            'with_products' => Category::has('products')->count(),
             'empty' => Category::doesntHave('products')->count(),
             'needs_content' => Category::query()
                 ->where(function ($query) {
@@ -82,7 +79,17 @@ class CategoryController extends Controller
                 ->count(),
         ];
 
-        return view('admin.category.index', compact('categories', 'filters', 'stats'));
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.category._results', compact('categories', 'filters', 'queueStats'));
+        }
+
+        $stats = $queueStats + [
+            'total' => Category::count(),
+            'visible' => Category::where('status', 0)->count(),
+            'with_products' => Category::has('products')->count(),
+        ];
+
+        return view('admin.category.index', compact('categories', 'filters', 'stats', 'queueStats'));
     }
 
     public function create()
