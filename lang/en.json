@@ -2735,5 +2735,11 @@
     "Customer attached to POS sale.": "Customer attached to POS sale.",
     "Customer detached from POS sale.": "Customer detached from POS sale.",
     "Customer removed from POS sale.": "Customer removed from POS sale.",
-    "Customer account": "Customer account"
+    "Customer account": "Customer account",
+    "In-store purchase": "In-store purchase",
+    "This purchase was completed at the store counter. No shipping address is required.": "This purchase was completed at the store counter. No shipping address is required.",
+    "Fulfillment": "Fulfillment",
+    "In-store": "In-store",
+    "Paid in cash at the store counter.": "Paid in cash at the store counter.",
+    "Paid by card terminal at the store counter.": "Paid by card terminal at the store counter."
 }
