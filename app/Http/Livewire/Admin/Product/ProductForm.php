@@ -1106,7 +1106,7 @@ class ProductForm extends Component
 
             if ($productConflict || $variantConflict) {
                 throw ValidationException::withMessages([
-                    'barcode' => 'This barcode is already assigned to another product or variant.',
+                    'barcode' => __('This barcode is already assigned to another product or variant.'),
                 ]);
             }
         }
@@ -1122,7 +1122,7 @@ class ProductForm extends Component
 
             if (isset($seen[$key])) {
                 throw ValidationException::withMessages([
-                    'variants.' . $index . '.barcode' => 'Each product and variant must have a unique barcode.',
+                    'variants.' . $index . '.barcode' => __('Each product and variant must have a unique barcode.'),
                 ]);
             }
 
@@ -1140,7 +1140,7 @@ class ProductForm extends Component
 
             if ($productConflict || $variantConflict) {
                 throw ValidationException::withMessages([
-                    'variants.' . $index . '.barcode' => 'This barcode is already assigned to another product or variant.',
+                    'variants.' . $index . '.barcode' => __('This barcode is already assigned to another product or variant.'),
                 ]);
             }
         }
