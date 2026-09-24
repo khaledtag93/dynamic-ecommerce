@@ -51,8 +51,8 @@
     <div class="col-md-4">
         <label class="form-label fw-semibold">{{ __('Employment type') }}</label>
         <select name="employment_type" class="form-select @error('employment_type') is-invalid @enderror" required>
-            @foreach(AppModelsEmployeeProfile::employmentTypeOptions() as $value => $label)
-                <option value="{{ $value }}" @selected(old('employment_type', $employee->employment_type ?: AppModelsEmployeeProfile::TYPE_FULL_TIME) === $value)>{{ $label }}</option>
+            @foreach(\App\Models\EmployeeProfile::employmentTypeOptions() as $value => $label)
+                <option value="{{ $value }}" @selected(old('employment_type', $employee->employment_type ?: \App\Models\EmployeeProfile::TYPE_FULL_TIME) === $value)>{{ $label }}</option>
             @endforeach
         </select>
         @error('employment_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -60,8 +60,8 @@
     <div class="col-md-4">
         <label class="form-label fw-semibold">{{ __('Employment status') }}</label>
         <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-            @foreach(AppModelsEmployeeProfile::statusOptions() as $value => $label)
-                <option value="{{ $value }}" @selected(old('status', $employee->status ?: AppModelsEmployeeProfile::STATUS_ACTIVE) === $value)>{{ $label }}</option>
+            @foreach(\App\Models\EmployeeProfile::statusOptions() as $value => $label)
+                <option value="{{ $value }}" @selected(old('status', $employee->status ?: \App\Models\EmployeeProfile::STATUS_ACTIVE) === $value)>{{ $label }}</option>
             @endforeach
         </select>
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
