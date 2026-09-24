@@ -87,6 +87,8 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 
 **Admin interaction update — 2026-09-24:** Admin Orders is the next reusable live-list consumer: search, status/payment/method filters, operational queues, column sorting and pagination keep URL/history while replacing server-rendered results. Read-only order staff see no status-edit form; financial and inventory actions remain server-authoritative. Local regression checks and integrated MySQL CI passed at published branch head `19a4b8c` (197 tests / 1248 assertions). Consolidated QAS review remains deferred.
 
+**Admin Customers interaction update — 2026-09-25:** Customer name/email search, role/activity/value filters, per-page changes, operational customer queues and pagination now reuse the same progressive live-list pattern. Live requests preserve `customers.manage` authorization, escaped output, GET fallback and URL/history while avoiding full-page KPI/revenue recomputation. Focused regression coverage is committed at application revision `51a3418`; branch-head CI verification remains pending. QAS and Production are unchanged.
+
 Build POS as a focused operational application, not as another dense admin page.
 
 Core:
