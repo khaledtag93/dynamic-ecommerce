@@ -22,6 +22,7 @@ class PosController extends Controller
     {
         $cart = $this->posService->cartFor($request->user());
         $summary = $this->posService->summary($cart);
+        $heldCarts = $this->posService->heldCartsFor($request->user());
 
         $recentSales = Order::query()
             ->where('sales_channel', Order::SALES_CHANNEL_POS)
@@ -36,6 +37,7 @@ class PosController extends Controller
         return view('admin.pos.index', compact(
             'cart',
             'summary',
+            'heldCarts',
             'recentSales',
             'cashPaymentMethod',
             'cardPaymentMethod'
@@ -101,6 +103,33 @@ class PosController extends Controller
         return redirect()
             ->route('admin.pos.index')
             ->with('success', __('POS cart cleared.'));
+    }
+
+    public function hold(Request $request, PosCart $posCart)
+    {
+        $data = $request->validate([
+            'hold_label' => ['nullable', 'string', 'max:80'],
+            'customer_name' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->posService->hold($posCart, $data, (int) $request->user()->id);
+
+        return redirect()->route('admin.pos.index')->with('success', __('POS sale held.'));
+    }
+
+    public function resume(Request $request, PosCart $posCart)
+    {
+        $this->posService->resume($posCart, (int) $request->user()->id);
+
+        return redirect()->route('admin.pos.index')->with('success', __('POS sale resumed.'));
+    }
+
+    public function discardHeld(Request $request, PosCart $posCart)
+    {
+        $this->posService->discardHeld($posCart, (int) $request->user()->id);
+
+        return redirect()->route('admin.pos.index')->with('success', __('Held POS sale discarded.'));
     }
 
     public function checkout(Request $request, PosCart $posCart)
