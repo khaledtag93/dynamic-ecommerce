@@ -76,6 +76,7 @@ class AuthorizationService
                     'workforce.view',
                     'workforce.manage',
                     'workforce.clock',
+                    'workforce.payroll.self',
                 ],
             ],
             'cashier' => [
