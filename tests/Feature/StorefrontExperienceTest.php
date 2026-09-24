@@ -103,7 +103,10 @@ class StorefrontExperienceTest extends TestCase
             ->assertOk()
             ->assertSee(asset('images/storefront-placeholder.svg'))
             ->assertDontSee('via.placeholder.com', false)
-            ->assertSee('<div><span>Gallery images</span><strong>0</strong></div>', false);
+            ->assertDontSee('Gallery images')
+            ->assertDontSee('More product details will be added soon.')
+            ->assertDontSee('Stock is updated from the product availability settings.')
+            ->assertSee('Availability is checked again before checkout.');
     }
 
     public function test_checkout_uses_aligned_billing_toggle_and_real_payment_options(): void
@@ -148,6 +151,12 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('Cash on Delivery')
             ->assertSee('Bank Transfer')
             ->assertSee('Online Payment')
+            ->assertSee('Order details reviewed before submission')
+            ->assertSee('Payment method shown clearly')
+            ->assertSee('Delivery address confirmed before order')
+            ->assertDontSee('Encrypted checkout messaging')
+            ->assertDontSee('Last-minute boost')
+            ->assertDontSee('Personalized offers')
             ->assertDontSee('>Visa<', false)
             ->assertDontSee('>Mastercard<', false);
     }
