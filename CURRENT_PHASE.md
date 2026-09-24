@@ -469,3 +469,28 @@ Verification:
 - Production and `main`: unchanged
 
 Deliberate boundary: held carts do not reserve stock or freeze prices. Checkout remains authoritative and rechecks current stock/prices.
+
+
+### POS Customer Attach V1 — 2026-09-24
+Application implementation verified at `9129998`:
+- limited POS customer lookup by name/email with 2-character minimum and 8-result cap
+- customer-only results; staff/admin accounts are excluded and rejected by the service
+- cashier-owned Attach / Detach customer workflow
+- attached account persists through Hold / Resume and is cleared by full cart Clear
+- checkout locks and revalidates the attached customer before writing the sale
+- completed POS Order links through `user_id` and snapshots customer name/email
+- walk-in sales remain supported and unlinked
+- customer My Orders correctly handles linked POS purchases as in-store/store-pickup orders
+- POS Cash/Card Terminal customer payment instructions corrected
+- receipt and Sale Summary surface attached customer identity
+- EN/AR copy, audit entries and focused POS/storefront regression coverage
+
+Verification:
+- Hardening CI `36046473889`: passed at application head `9129998`
+- 180 tests / 1094 assertions
+- clean MySQL migration, Laravel routes/boot, Blade/config compilation and frontend production build passed
+- consolidated authenticated QAS: deferred by owner
+- QAS application HEAD: `0a08253`
+- Production and `main`: unchanged
+
+Deliberate boundary: POS lookup exposes name/email only and does not grant customer-management, address, order-history or profile-edit capabilities.
