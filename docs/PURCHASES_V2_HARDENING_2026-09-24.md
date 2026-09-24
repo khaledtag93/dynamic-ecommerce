@@ -1,6 +1,6 @@
 # Purchases V2 receipt hardening — 2026-09-24
 
-Working branch: `v42-clean-baseline`. This batch is source work; it has not been deployed to QAS or Production.
+Working branch: `v42-clean-baseline`. The operator reported a QAS upload after instructions targeting `0a08253` on 2026-09-24. The public login returned HTTP 200; exact server HEAD and authenticated purchase behavior are not yet independently verified. Production is unchanged.
 
 ## Behavior
 
@@ -14,9 +14,9 @@ Working branch: `v42-clean-baseline`. This batch is source work; it has not been
 ## Verification
 
 - `PurchaseReceivingHardeningTest` covers repeated receipt, multi-line balances, selected-variant stock, draft/cancelled/empty rejection, all-or-nothing invalid lines, missing/mismatched variants, invalid admin creation and replay feedback.
-- [Hardening CI run 36023870549](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36023870549) passed at code commit `e723b0c`: PHP syntax, clean MySQL migration, Blade compilation, 122 tests (628 assertions), and frontend build. Authenticated admin QAS review: pending. Production and `main`: unchanged.
+- [Hardening CI run 36023870549](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36023870549) passed at code commit `e723b0c`: PHP syntax, clean MySQL migration, Blade compilation, 122 tests (628 assertions), and frontend build. Final documentation head `0a08253` also passed [Hardening CI run 36024229399](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36024229399). Operator-reported QAS upload and public HTTP 200 are recorded; server HEAD and authenticated admin QAS review are pending. Production and `main`: unchanged.
 
-## QAS focus after CI and deployment
+## QAS review focus
 
 1. Create a simple-product purchase and a variant-product purchase. Check supplier, line costs, totals and bilingual form errors for missing or cross-product variants.
 2. Confirm receipt on an ordered record from list and detail views. Check exact before/after quantity, cost, expiration date and one movement per line.
