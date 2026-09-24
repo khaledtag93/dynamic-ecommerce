@@ -167,7 +167,15 @@ class PosController extends Controller
 
         $cashShifts = $query->paginate(25)->withQueryString();
 
-        return view('admin.pos.shifts.index', compact('cashShifts', 'status', 'cashierSearch'));
+        $shiftMetrics = [
+            'open' => PosCashShift::query()->whereNull('closed_at')->count(),
+            'closed' => PosCashShift::query()->whereNotNull('closed_at')->count(),
+            'with_variance' => PosCashShift::query()->whereNotNull('closed_at')->where('cash_variance', '!=', 0)->count(),
+            'short_total' => abs((float) PosCashShift::query()->where('cash_variance', '<', 0)->sum('cash_variance')),
+            'over_total' => (float) PosCashShift::query()->where('cash_variance', '>', 0)->sum('cash_variance'),
+        ];
+
+        return view('admin.pos.shifts.index', compact('cashShifts', 'status', 'cashierSearch', 'shiftMetrics'));
     }
 
     public function openShift(Request $request)
