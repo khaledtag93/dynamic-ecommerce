@@ -536,6 +536,7 @@
                     @error('discount_value')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
                     @error('discount_reason')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
                     @error('discount')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                    @error('cash_shift')<div class="alert alert-warning py-2 mt-3 mb-0"><i class="mdi mdi-cash-register me-1"></i>{{ $message }}</div>@enderror
 
                     <form method="POST" action="{{ route('admin.pos.checkout', $cart) }}" class="mt-4" data-submit-loading data-confirm-title="{{ __('Complete POS sale?') }}" data-confirm-message="{{ __('Create the paid sale and deduct the exact quantities from inventory?') }}" data-confirm-subtitle="{{ __('The server will recheck stock, prices, products, variants, and this cashier cart before saving.') }}" data-confirm-ok="{{ __('Complete sale') }}">
                         @csrf
@@ -543,7 +544,7 @@
                         <div class="mb-3">
                             <label for="posPaymentMethod" class="form-label fw-semibold">{{ __('Payment method') }}</label>
                             <select id="posPaymentMethod" name="payment_method" class="form-select @error('payment_method') is-invalid @enderror" required>
-                                <option value="{{ $cashPaymentMethod }}" @selected(old('payment_method', $cashPaymentMethod) === $cashPaymentMethod)>{{ __('Cash') }}</option>
+                                <option value="{{ $cashPaymentMethod }}" @selected(old('payment_method', $cashPaymentMethod) === $cashPaymentMethod) @disabled(!$cashShift)>{{ __('Cash') }} @unless($cashShift)· {{ __('Open shift required') }}@endunless</option>
                                 <option value="{{ $cardPaymentMethod }}" @selected(old('payment_method') === $cardPaymentMethod)>{{ __('Card terminal') }}</option>
                             </select>
                             @error('payment_method')<div class="invalid-feedback">{{ $message }}</div>@enderror
