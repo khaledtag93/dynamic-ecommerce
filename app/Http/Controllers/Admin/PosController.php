@@ -132,7 +132,7 @@ class PosController extends Controller
         $status = (string) $request->string('status');
         $cashierSearch = trim((string) $request->string('cashier'));
 
-        $query = PosCashShift::query()->with('cashier')->latest('opened_at');
+        $query = PosCashShift::query()->with('cashier.employeeProfile')->latest('opened_at');
 
         if ($status === 'open') {
             $query->whereNull('closed_at');
@@ -145,7 +145,11 @@ class PosController extends Controller
         if ($cashierSearch !== '') {
             $query->whereHas('cashier', function ($cashierQuery) use ($cashierSearch) {
                 $cashierQuery->where('name', 'like', "%{$cashierSearch}%")
-                    ->orWhere('email', 'like', "%{$cashierSearch}%");
+                    ->orWhere('email', 'like', "%{$cashierSearch}%")
+                    ->orWhereHas('employeeProfile', function ($employeeQuery) use ($cashierSearch) {
+                        $employeeQuery->where('employee_code', 'like', "%{$cashierSearch}%")
+                            ->orWhere('department', 'like', "%{$cashierSearch}%");
+                    });
             });
         }
 
