@@ -25,6 +25,9 @@ class StorefrontExperienceTest extends TestCase
             ->assertOk()
             ->assertSee(route('frontend.search'))
             ->assertSee('Everything you need from one trusted store.')
+            ->assertSee('background:var(--lc-secondary)', false)
+            ->assertSee('background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:var(--lc-btn-text)', false)
+            ->assertSee('[dir="rtl"] .retail-hero-slider__nav i{transform:scaleX(-1)}', false)
             ->assertDontSee('retail-promo-pods', false)
             ->assertDontSee('Exclusive electronics deals', false);
     }
