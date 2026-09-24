@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryMovement;
 use App\Models\Product;
+use App\Services\Commerce\InventoryAdjustmentService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class InventoryController extends Controller
 {
+    public function __construct(protected InventoryAdjustmentService $adjustmentService) {}
+
     public function index(Request $request)
     {
         $filters = [
@@ -60,5 +64,58 @@ class InventoryController extends Controller
             ->pluck('type');
 
         return view('admin.inventory.index', compact('movements', 'lowStockProducts', 'nearExpiryProducts', 'filters', 'movementTypes'));
+    }
+
+    public function adjustForm(Request $request)
+    {
+        $search = trim((string) $request->string('search'));
+        $products = Product::query()
+            ->when($search, fn ($query) => $query->where(fn ($matches) => $matches
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('sku', 'like', "%{$search}%")
+                ->orWhere('barcode', 'like', "%{$search}%")))
+            ->orderBy('name')
+            ->limit(30)
+            ->get();
+
+        $productId = $request->integer('product_id');
+        $product = $productId ? Product::query()->with('variants')->findOrFail($productId) : null;
+        $variant = null;
+        if ($product && $request->filled('variant_id')) {
+            abort_unless($product->has_variants, 404);
+            $variant = $product->variants->firstWhere('id', $request->integer('variant_id'));
+            abort_unless($variant, 404);
+        }
+
+        return view('admin.inventory.adjust', compact('products', 'product', 'variant', 'search'));
+    }
+
+    public function adjust(Request $request)
+    {
+        $data = $request->validate([
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
+            'expected_stock' => ['required', 'integer'],
+            'new_stock' => ['required', 'integer', 'min:0', 'max:999999999'],
+            'reason' => ['required', 'string', 'min:5', 'max:255'],
+        ]);
+
+        try {
+            $movement = $this->adjustmentService->setStock(
+                (int) $data['product_id'],
+                isset($data['variant_id']) ? (int) $data['variant_id'] : null,
+                (int) $data['expected_stock'],
+                (int) $data['new_stock'],
+                $data['reason'],
+                (int) $request->user()->id,
+            );
+        } catch (ValidationException $exception) {
+            return back()->withErrors($exception->errors())->withInput();
+        }
+
+        return redirect()->route('admin.inventory.index')->with(
+            $movement ? 'success' : 'warning',
+            $movement ? __('Stock adjustment recorded.') : __('Stock already matches the requested quantity. No movement was recorded.'),
+        );
     }
 }

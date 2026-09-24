@@ -3,7 +3,9 @@
 @section('title', __('Inventory') . ' | Admin')
 
 @section('content')
-<x-admin.page-header :kicker="__('Operations')" :title="__('Inventory')" :description="__('Monitor stock movement, low stock alerts, and expiration risks with safer fallbacks.')" />
+<x-admin.page-header :kicker="__('Operations')" :title="__('Inventory')" :description="__('Monitor stock movement, low stock alerts, and expiration risks with safer fallbacks.')">
+    <a href="{{ route('admin.inventory.adjust') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-clipboard-edit-outline"></i><span>{{ __('Adjust stock') }}</span></a>
+</x-admin.page-header>
 
 <div class="admin-page-shell">
 <div class="row g-3 mb-4">
@@ -165,7 +167,7 @@
                                 @elseif($movement->order)
                                     <span class="small">{{ __('Order') }} {{ $movement->order->order_number ?? ('#' . $movement->order->id) }}</span>
                                 @else
-                                    <span class="text-muted small">{{ __('Manual / system') }}</span>
+                                    <span class="text-muted small">{{ ($movement->meta['source'] ?? null) === 'manual_adjustment' ? __('Manual adjustment') : __('Manual / system') }}</span>
                                 @endif
                             </td>
                             <td>{{ $movement->reason ?: '—' }}</td>

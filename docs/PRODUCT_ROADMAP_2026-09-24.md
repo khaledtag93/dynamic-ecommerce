@@ -11,7 +11,7 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 ## Delivery principles
 
 - Preserve working behavior and change one reviewable slice at a time.
-- CI -> QAS -> authenticated Arabic/English desktop/mobile review -> exact-commit Production promotion.
+- Run CI for each code batch. The owner deferred manual QAS scenarios to a consolidated review phase after more development; before any Production promotion, verify the exact QAS application commit and complete authenticated Arabic/English desktop/mobile review of the affected flows.
 - Remove demo, placeholder, fabricated, or temporary release-marker content from customer-facing Production.
 - Prefer reusable design-system components and business services over page-specific patches.
 - Do not hard-code payroll, tax, shipping, or compliance rules that depend on jurisdiction or merchant policy.
@@ -155,6 +155,8 @@ Extend the existing delivery status/provider fields into an operational workflow
 - Multi-location/multi-warehouse, advanced carrier integrations, mobile app/API, multi-currency and SaaS only after the core is stable.
 
 ## Immediate execution order
+
+**Execution decision — 2026-09-24:** Continue source work while recording manual QAS checks for a later consolidated pass. The QAS application commit `0a08253` was verified by server-side HEAD output; this confirms the code revision, not feature behavior. New code batches remain branch-only until separately deployed. Production gates are unchanged.
 
 The next working sequence is:
 

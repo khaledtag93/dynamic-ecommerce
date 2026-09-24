@@ -323,3 +323,8 @@ Verification: Hardening CI run `36019574401` passed at application commit `05c2c
 The operator reported the QAS upload targeting `a1e8c57` after a clean-checkout/environment/remote-SHA check and a 157,110-byte rehearsal database snapshot. Public QAS login responded HTTP 200 in Arabic. Exact server HEAD and authenticated account/address-book checks remain unverified.
 
 The next working-line code batch hardens purchase receiving and product–variant validation with bilingual admin confirmation and focused regression coverage. See `docs/PURCHASES_V2_HARDENING_2026-09-24.md`. Hardening CI run `36023870549` passed at `e723b0c` (122 tests, 628 assertions), and final application head `0a08253` passed run `36024229399`. After the QAS upload, the operator supplied server-side `git rev-parse HEAD` output matching `0a08253d61c26f7be841de93c9e5b7ad2d7efdfe`; public login returned HTTP 200. Authenticated purchase/account reviews remain pending; `main` and Production unchanged.
+
+### Continued development with consolidated manual QAS review — 2026-09-24
+The owner deferred manual QAS tests until a later consolidated review phase. Each code slice still receives automated CI, and no unreviewed QAS behavior is marked accepted for Production.
+
+The next source slice adds a counted-stock adjustment workspace with product/variant selection, stale-count protection, one signed movement and admin attribution per real change, bilingual UI and regression tests. See `docs/INVENTORY_ADJUSTMENT_2026-09-24.md`. CI pending; QAS remains on `0a08253` and does not include this batch. `main` and Production are unchanged.
