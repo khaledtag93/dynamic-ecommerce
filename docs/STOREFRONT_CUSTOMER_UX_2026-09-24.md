@@ -1,0 +1,54 @@
+# Storefront customer experience cleanup — 2026-09-24
+
+Working branch: `v42-clean-baseline`
+
+## Goal
+
+Improve the customer-facing storefront without disturbing checkout, cart, pricing, stock, or payment business logic. This iteration focuses on removing internal/demo-like copy, keeping theme settings effective on the homepage, and tightening English/Arabic direction behavior.
+
+## Implemented
+
+### Product detail
+- Removed customer-facing internal wording about stock being sourced from product settings.
+- Replaced it with concise checkout-facing availability guidance.
+- Removed the technical `Gallery images` count from Quick facts.
+- Removed the fallback `More product details will be added soon.`; the Product details panel now renders only when an actual description exists.
+- Quick facts now focus on customer-useful availability, available quantity, category, and purchase options.
+
+### Checkout
+- Kept the existing aligned billing-address toggle because its spacing/control alignment is already correct.
+- Replaced overly technical or promotional labels with clearer customer wording:
+  - Delivery ready → Shipping details
+  - Last-minute boost → You may also like
+  - Personalized offers → Available offers
+  - Encrypted checkout messaging → Order details reviewed before submission
+  - Clear payment choice → Payment method shown clearly
+  - Shipping reviewed before payment → Delivery address confirmed before order
+- No payment-method, totals, address, coupon, promotion, or order submission behavior was changed.
+
+### Home hero / branding
+- Replaced hard-coded dark-blue/orange hero campaign surfaces with the existing storefront brand tokens.
+- Hero viewport, campaign gradients, CTA shadowing, shortcut cards, and shortcut icons now follow configured primary/secondary/accent/surface colors.
+- Corrected hero navigation direction: LTR uses normal previous-left / next-right chevrons; RTL flips the direction automatically.
+- Corrected the primary CTA arrow to point forward in LTR and flip in RTL.
+
+### Regression coverage
+- Updated `StorefrontExperienceTest` for the product-detail cleanup and checkout reassurance copy.
+- Added coverage for the brand-token hero styling and RTL hero navigation behavior.
+
+## Validation state
+
+- Source implementation: complete for this iteration.
+- Automated regression coverage: updated.
+- Branch-head CI: pending.
+- Authenticated English/Arabic desktop/mobile QAS review: pending.
+- Production: unchanged.
+
+## QAS focus
+
+1. Home page with the default brand theme and at least one alternate Branding & Appearance theme.
+2. Hero slider with multiple slides in English and Arabic; verify previous/next direction and touch/mobile behavior.
+3. Product without a description: no placeholder Product details block should appear.
+4. Product with variants: price, stock, quantity limits, Add to cart, Buy now, and bundle behavior must remain unchanged.
+5. Checkout: billing toggle alignment, payment options, addresses, totals, offers, and Place order.
+6. English/Arabic wording and RTL spacing at mobile widths.
