@@ -3,7 +3,7 @@
 @section('title', ($filters['q'] ? __('Search results for :query', ['query' => $filters['q']]) : __('Browse products')) . ' | ' . ($storeSettings['store_name'] ?? 'Storefront'))
 
 @section('content')
-<section class="py-5 storefront-search-page">
+<section class="py-5 storefront-search-page" data-live-list>
     <div class="container">
         <x-frontend.page-hero
             :eyebrow="__('Product search')"
@@ -17,7 +17,7 @@
         </x-frontend.page-hero>
 
         <div class="lc-card p-3 p-lg-4 mb-4 storefront-search-filters">
-            <form method="GET" action="{{ route('frontend.search') }}" class="row g-3 align-items-end">
+            <form method="GET" action="{{ route('frontend.search') }}" class="row g-3 align-items-end" data-live-filter>
                 <div class="col-lg-5">
                     <label class="form-label fw-bold" for="catalogSearch">{{ __('Search products') }}</label>
                     <div class="position-relative">
@@ -26,6 +26,8 @@
                             id="catalogSearch"
                             type="search"
                             name="q"
+                            data-live-search
+                            autocomplete="off"
                             value="{{ $filters['q'] }}"
                             class="form-control lc-form-control ps-5"
                             placeholder="{{ __('Product name, description, or keyword') }}"
@@ -35,7 +37,7 @@
 
                 <div class="col-sm-6 col-lg-2">
                     <label class="form-label fw-bold">{{ __('Availability') }}</label>
-                    <select name="availability" class="form-select lc-form-select">
+                    <select name="availability" class="form-select lc-form-select" data-live-filter-control>
                         <option value="all" @selected($filters['availability'] === 'all')>{{ __('All products') }}</option>
                         <option value="in_stock" @selected($filters['availability'] === 'in_stock')>{{ __('In stock only') }}</option>
                     </select>
@@ -43,7 +45,7 @@
 
                 <div class="col-sm-6 col-lg-2">
                     <label class="form-label fw-bold">{{ __('Offers') }}</label>
-                    <select name="offer" class="form-select lc-form-select">
+                    <select name="offer" class="form-select lc-form-select" data-live-filter-control>
                         <option value="all" @selected($filters['offer'] === 'all')>{{ __('All offers') }}</option>
                         <option value="on_sale" @selected($filters['offer'] === 'on_sale')>{{ __('Discounted only') }}</option>
                     </select>
@@ -51,7 +53,7 @@
 
                 <div class="col-sm-7 col-lg-2">
                     <label class="form-label fw-bold">{{ __('Sort by') }}</label>
-                    <select name="sort" class="form-select lc-form-select">
+                    <select name="sort" class="form-select lc-form-select" data-live-filter-control>
                         <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('Newest first') }}</option>
                         <option value="price_low_high" @selected($filters['sort'] === 'price_low_high')>{{ __('Price: low to high') }}</option>
                         <option value="price_high_low" @selected($filters['sort'] === 'price_high_low')>{{ __('Price: high to low') }}</option>
@@ -60,58 +62,17 @@
                 </div>
 
                 <div class="col-sm-5 col-lg-1 d-grid">
-                    <button type="submit" class="btn lc-btn-primary px-3" aria-label="{{ __('Apply search filters') }}">
-                        <i class="bi bi-search"></i>
-                    </button>
+                    <button type="submit" class="btn lc-btn-primary px-3" aria-label="{{ __('Apply search filters') }}"><i class="bi bi-search"></i></button>
                 </div>
             </form>
+            <div class="small mt-2" role="status" aria-live="polite" data-live-status
+                 data-loading="{{ __('Updating results...') }}"
+                 data-updated="{{ __('Results updated.') }}"
+                 data-error="{{ __('Could not update results. Open the full page to retry.') }}"></div>
+            <a href="{{ route('frontend.search') }}" class="small" data-live-fallback hidden>{{ __('Open full page') }}</a>
         </div>
 
-        <div class="storefront-search-summary mb-4">
-            <div>
-                <span class="lc-section-kicker mb-2">{{ __('Catalog results') }}</span>
-                <h2 class="h3 fw-bold mb-1">
-                    {{ __('Products found: :count', ['count' => number_format($products->total())]) }}
-                </h2>
-                @if($filters['q'])
-                    <div class="text-muted">{{ __('Matching “:query” across the visible catalog.', ['query' => $filters['q']]) }}</div>
-                @else
-                    <div class="text-muted">{{ __('Showing products currently available in the storefront catalog.') }}</div>
-                @endif
-            </div>
-
-            @if($filters['q'] || $filters['availability'] !== 'all' || $filters['offer'] !== 'all' || $filters['sort'] !== 'latest')
-                <a href="{{ route('frontend.search') }}" class="btn lc-btn-soft">
-                    <i class="bi bi-arrow-counterclockwise me-2"></i>{{ __('Clear filters') }}
-                </a>
-            @endif
-        </div>
-
-        <div class="row g-4">
-            @forelse($products as $product)
-                <div class="col-sm-6 col-xl-4 col-xxl-3 d-flex">
-                    @include('frontend.sections.partials.product-card', ['product' => $product])
-                </div>
-            @empty
-                <div class="col-12">
-                    <div class="lc-card p-5 text-center storefront-search-empty">
-                        <div class="lc-section-empty__icon"><i class="bi bi-search"></i></div>
-                        <h3 class="h4 fw-bold mt-3 mb-2">{{ __('No products matched your search.') }}</h3>
-                        <p class="text-muted mb-4">{{ __('Try a broader keyword, clear the filters, or browse categories from the home page.') }}</p>
-                        <div class="d-flex justify-content-center gap-2 flex-wrap">
-                            <a href="{{ route('frontend.search') }}" class="btn lc-btn-soft">{{ __('Clear filters') }}</a>
-                            <a href="{{ route('frontend.home') }}#categories" class="btn lc-btn-primary">{{ __('Browse categories') }}</a>
-                        </div>
-                    </div>
-                </div>
-            @endforelse
-        </div>
-
-        @if($products->hasPages())
-            <div class="mt-5 storefront-search-pagination">
-                {{ $products->onEachSide(1)->links() }}
-            </div>
-        @endif
+        @include('frontend.products._search_results')
     </div>
 </section>
 @endsection
@@ -130,4 +91,8 @@ body[dir="rtl"] .storefront-search-icon{left:auto;right:1rem}
 .storefront-search-pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--lc-primary),var(--lc-secondary));color:#fff}
 @media(max-width:767.98px){.storefront-search-summary{align-items:flex-start;flex-direction:column}.storefront-search-summary .btn{width:100%}}
 </style>
+@endpush
+
+@push('scripts')
+    <script defer src="{{ asset('admin/js/live-list.js') }}"></script>
 @endpush
