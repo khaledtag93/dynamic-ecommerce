@@ -25,6 +25,7 @@ class CouponController extends Controller
         $sortMap = [
             'id' => 'id',
             'code' => 'code',
+            'type' => 'type',
             'value' => 'value',
             'used_count' => 'used_count',
             'ends_at' => 'ends_at',
@@ -62,13 +63,23 @@ class CouponController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $stats = [
+        $queueStats = [
+            'expired' => Coupon::whereNotNull('ends_at')->where('ends_at', '<', now())->count(),
+            'limit_reached' => Coupon::whereNotNull('usage_limit')->whereColumn('used_count', '>=', 'usage_limit')->count(),
+        ];
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.coupons._results', [
+                'coupons' => $coupons,
+                'filters' => $filters,
+                'queueStats' => $queueStats,
+            ]);
+        }
+
+        $stats = $queueStats + [
             'total' => Coupon::count(),
             'active' => Coupon::where('is_active', true)->count(),
-            'expired' => Coupon::whereNotNull('ends_at')->where('ends_at', '<', now())->count(),
             'used' => Coupon::where('used_count', '>', 0)->count(),
-            'unused' => Coupon::where('used_count', 0)->count(),
-            'limit_reached' => Coupon::whereNotNull('usage_limit')->whereColumn('used_count', '>=', 'usage_limit')->count(),
         ];
 
         return view('admin.coupons.index', [
@@ -76,6 +87,7 @@ class CouponController extends Controller
             'filters' => $filters,
             'typeOptions' => Coupon::typeOptions(),
             'stats' => $stats,
+            'queueStats' => $queueStats,
         ]);
     }
 
