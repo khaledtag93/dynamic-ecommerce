@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\WorkShiftController;
 use App\Http\Controllers\Admin\DeployCenterController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\DashBoardController;
@@ -418,9 +419,12 @@ Route::prefix('admin')
             Route::post('/workforce/time-clock/out', 'clockOut')->name('workforce.clock-out');
         });
 
+        Route::middleware('permission:workforce.clock')->get('/workforce/my-schedule', [WorkShiftController::class, 'mySchedule'])->name('workforce.my-schedule');
+
         Route::middleware('permission:workforce.view')->group(function () {
             Route::get('/workforce/employees', [EmployeeController::class, 'index'])->name('workforce.employees.index');
             Route::get('/workforce/attendance', [AttendanceController::class, 'index'])->name('workforce.attendance.index');
+            Route::get('/workforce/schedule', [WorkShiftController::class, 'index'])->name('workforce.schedule.index');
         });
 
         Route::middleware('permission:workforce.manage')->controller(EmployeeController::class)->group(function () {
@@ -428,6 +432,14 @@ Route::prefix('admin')
             Route::post('/workforce/employees', 'store')->name('workforce.employees.store');
             Route::get('/workforce/employees/{employeeProfile}/edit', 'edit')->name('workforce.employees.edit');
             Route::put('/workforce/employees/{employeeProfile}', 'update')->name('workforce.employees.update');
+        });
+
+        Route::middleware('permission:workforce.manage')->controller(WorkShiftController::class)->group(function () {
+            Route::get('/workforce/schedule/create', 'create')->name('workforce.schedule.create');
+            Route::post('/workforce/schedule', 'store')->name('workforce.schedule.store');
+            Route::get('/workforce/schedule/{employeeWorkShift}/edit', 'edit')->name('workforce.schedule.edit');
+            Route::put('/workforce/schedule/{employeeWorkShift}', 'update')->name('workforce.schedule.update');
+            Route::patch('/workforce/schedule/{employeeWorkShift}/cancel', 'cancel')->name('workforce.schedule.cancel');
         });
 
         Route::middleware('permission:notifications.view')->group(function () {
