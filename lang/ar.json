@@ -3815,5 +3815,6 @@
     "Employee clocked out.": "تم تسجيل انصراف الموظف.",
     "You are clocked in.": "تم تسجيل حضورك.",
     "You are clocked out.": "تم تسجيل انصرافك.",
-    "Team & workforce": "الفريق والقوى العاملة"
+    "Team & workforce": "الفريق والقوى العاملة",
+    "Clock out the employee before changing to a non-active employment status.": "يجب تسجيل انصراف الموظف قبل تغيير حالته الوظيفية إلى حالة غير نشطة."
 }
