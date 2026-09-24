@@ -21,6 +21,11 @@
     .pos-total-row--grand { padding-top: 1rem; margin-top: .35rem; border-top: 1px solid var(--admin-border); font-size: 1.18rem; }
     .pos-entry-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
     .pos-search-result { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .75rem; border: 1px solid var(--admin-border); border-radius: .8rem; }
+    .pos-shift-history { display:grid; gap:.65rem; }
+    .pos-shift-history__row { display:grid; grid-template-columns:minmax(150px,1.2fr) repeat(3,minmax(100px,.65fr)); gap:.75rem; align-items:center; padding:.75rem .9rem; border:1px solid var(--admin-border); border-radius:.85rem; }
+    .pos-variance--balanced { color: var(--bs-success); }
+    .pos-variance--over { color: var(--bs-primary); }
+    .pos-variance--short { color: var(--bs-danger); }
     .pos-action-dock { position: sticky; bottom: .75rem; z-index: 12; margin-top: 1rem; padding: .7rem; border: 1px solid var(--admin-border); border-radius: 1rem; background: color-mix(in srgb, var(--admin-surface) 94%, transparent); backdrop-filter: blur(12px); box-shadow: 0 12px 30px rgba(15,23,42,.10); }
     @media (max-width: 1199.98px) { .pos-shell { grid-template-columns: 1fr; } .pos-checkout-sticky { position: static; } }
     @media (max-width: 767.98px) {
@@ -28,6 +33,7 @@
         .pos-cart-line__item { grid-column: 1 / -1; }
         .pos-cart-line__remove { justify-self: end; }
         .pos-discount-form { grid-template-columns: 1fr; }
+        .pos-shift-history__row { grid-template-columns:1fr 1fr; }
     }
 </style>
 
@@ -86,6 +92,26 @@
                 </form>
             @endif
             @error('shift')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+
+            @if($recentCashShifts->isNotEmpty())
+                <details class="mt-3">
+                    <summary class="fw-semibold" style="cursor:pointer"><i class="mdi mdi-history me-1"></i>{{ __('Recent reconciliations') }}</summary>
+                    <div class="pos-shift-history mt-3">
+                        @foreach($recentCashShifts as $recentShift)
+                            @php
+                                $variance = (float) $recentShift->cash_variance;
+                                $varianceState = abs($variance) < 0.005 ? 'balanced' : ($variance > 0 ? 'over' : 'short');
+                            @endphp
+                            <div class="pos-shift-history__row">
+                                <div><div class="fw-semibold">{{ optional($recentShift->closed_at)->format('M d, Y H:i') }}</div><div class="text-muted small">{{ __('Shift #:id', ['id' => $recentShift->id]) }}</div></div>
+                                <div><div class="text-muted small">{{ __('Expected') }}</div><div class="fw-semibold">EGP {{ number_format((float) $recentShift->expected_cash, 2) }}</div></div>
+                                <div><div class="text-muted small">{{ __('Counted') }}</div><div class="fw-semibold">EGP {{ number_format((float) $recentShift->closing_cash_counted, 2) }}</div></div>
+                                <div><div class="text-muted small">{{ __('Variance') }}</div><div class="fw-bold pos-variance--{{ $varianceState }}">{{ $variance > 0 ? '+' : '' }}EGP {{ number_format($variance, 2) }} · {{ __($varianceState === 'balanced' ? 'Balanced' : ($varianceState === 'over' ? 'Over' : 'Short')) }}</div></div>
+                            </div>
+                        @endforeach
+                    </div>
+                </details>
+            @endif
         </div>
     </div>
 
