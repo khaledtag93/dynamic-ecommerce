@@ -17,11 +17,16 @@
                     <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-primary">{{ __('Pay now securely') }}</a>
                 @endif
                 @if($order->can_user_cancel && (($storeSettings['orders_allow_customer_cancellation'] ?? '1') === '1'))
-                    <form method="POST" action="{{ route('orders.cancel', $order) }}" data-submit-loading class="d-flex gap-2 flex-wrap">
+                    <form method="POST" action="{{ route('orders.cancel', $order) }}" data-submit-loading class="d-flex gap-2 flex-wrap"
+                        data-confirm-title="{{ __('Cancel order') }}"
+                        data-confirm-message="{{ __('Are you sure you want to cancel this order?') }}"
+                        data-confirm-subtitle="{{ __('If cancellation is still allowed, stock and the order timeline will be updated through the normal cancellation flow.') }}"
+                        data-confirm-ok="{{ __('Cancel order') }}"
+                        data-confirm-cancel="{{ __('Keep order') }}">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="cancelled_reason" value="Cancelled by customer from account area.">
-                        <button type="submit" class="btn lc-btn-danger-soft" onclick="return confirm('{{ __('Are you sure you want to cancel this order?') }}')"><i class="bi bi-x-circle me-2"></i>{{ __('Cancel order') }}</button>
+                        <button type="submit" class="btn lc-btn-danger-soft" data-loading-text="{{ __('Cancelling...') }}"><i class="bi bi-x-circle me-2"></i>{{ __('Cancel order') }}</button>
                     </form>
                 @endif
             </div>
