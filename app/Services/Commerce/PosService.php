@@ -473,6 +473,65 @@ class PosService
         });
     }
 
+    public function addCatalogItem(PosCart $cart, Product $product, ?ProductVariant $variant, int $cashierUserId): PosCartItem
+    {
+        return DB::transaction(function () use ($cart, $product, $variant, $cashierUserId) {
+            $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
+            $lockedProduct = Product::query()->whereKey($product->id)->lockForUpdate()->first();
+            $lockedVariant = $variant
+                ? ProductVariant::query()->whereKey($variant->id)->lockForUpdate()->first()
+                : null;
+
+            $this->validateSaleTarget($lockedProduct, $lockedVariant, $variant?->id);
+
+            if ($lockedProduct->has_variants && ! $lockedVariant) {
+                throw ValidationException::withMessages([
+                    'product' => __('Choose an exact variant before adding this product to the POS cart.'),
+                ]);
+            }
+
+            $availableStock = (int) ($lockedVariant?->stock ?? $lockedProduct->quantity);
+            if ($availableStock < 1) {
+                throw ValidationException::withMessages([
+                    'product' => __('This item is out of stock and cannot be added to the POS cart.'),
+                ]);
+            }
+
+            $itemKey = 'p:' . $lockedProduct->id . ':v:' . ($lockedVariant?->id ?? 0);
+            $cartItem = PosCartItem::query()->where('pos_cart_id', $lockedCart->id)
+                ->where('item_key', $itemKey)->lockForUpdate()->first();
+            $newQuantity = (int) ($cartItem?->quantity ?? 0) + 1;
+
+            if ($newQuantity > $availableStock) {
+                throw ValidationException::withMessages([
+                    'product' => __('The POS cart already contains all currently available stock for this item.'),
+                ]);
+            }
+
+            $values = [
+                'product_name' => $lockedProduct->name,
+                'variant_name' => $lockedVariant?->variant_name,
+                'sku' => $lockedVariant?->sku ?? $lockedProduct->sku,
+                'barcode' => $lockedVariant?->barcode ?? $lockedProduct->barcode,
+                'unit_price' => round((float) ($lockedVariant?->current_price ?? $lockedProduct->current_price), 2),
+                'quantity' => $newQuantity,
+            ];
+
+            if ($cartItem) {
+                $cartItem->update($values);
+            } else {
+                $cartItem = PosCartItem::query()->create($values + [
+                    'pos_cart_id' => $lockedCart->id,
+                    'product_id' => $lockedProduct->id,
+                    'product_variant_id' => $lockedVariant?->id,
+                    'item_key' => $itemKey,
+                ]);
+            }
+
+            return $cartItem->fresh(['product', 'variant']);
+        });
+    }
+
     public function updateQuantity(
         PosCart $cart,
         PosCartItem $item,
