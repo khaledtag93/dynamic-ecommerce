@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
 use App\Models\User;
@@ -32,19 +34,69 @@ class PosController extends Controller
         $canDiscount = $request->user()->hasPermission('pos.discount');
         $customerSearch = trim((string) $request->string('customer_search'));
         $customerResults = collect();
+        $productSearch = trim((string) $request->string('product_search'));
+        $productResults = collect();
 
         if (mb_strlen($customerSearch) >= 2) {
             $customerResults = User::query()
-                ->select(['id', 'name', 'email'])
+                ->select(['users.id', 'users.name', 'users.email'])
                 ->where('role_as', 0)
                 ->where(function ($query) use ($customerSearch) {
-                    $query->where('name', 'like', "%{$customerSearch}%")
-                        ->orWhere('email', 'like', "%{$customerSearch}%");
+                    $query->where('users.name', 'like', "%{$customerSearch}%")
+                        ->orWhere('users.email', 'like', "%{$customerSearch}%")
+                        ->orWhereHas('addresses', fn ($addressQuery) => $addressQuery->where('phone', 'like', "%{$customerSearch}%"));
                 })
+                ->with(['addresses:id,user_id,phone,is_default_shipping'])
+                ->orderBy('users.name')
+                ->orderBy('users.id')
+                ->limit(8)
+                ->get();
+        }
+
+        if (mb_strlen($productSearch) >= 2) {
+            $products = Product::query()
+                ->where('status', true)
+                ->where(function ($query) use ($productSearch) {
+                    $query->where('name', 'like', "%{$productSearch}%")
+                        ->orWhere('sku', 'like', "%{$productSearch}%")
+                        ->orWhere('barcode', 'like', "%{$productSearch}%");
+                })
+                ->with(['activeVariants.attributes.attribute'])
                 ->orderBy('name')
+                ->limit(8)
+                ->get();
+
+            $variants = ProductVariant::query()
+                ->where('status', true)
+                ->whereHas('product', fn ($query) => $query->where('status', true))
+                ->where(function ($query) use ($productSearch) {
+                    $query->where('sku', 'like', "%{$productSearch}%")
+                        ->orWhere('barcode', 'like', "%{$productSearch}%");
+                })
+                ->with(['product', 'attributes.attribute'])
                 ->orderBy('id')
                 ->limit(8)
                 ->get();
+
+            $productResults = $products->map(fn ($product) => [
+                'product' => $product,
+                'variant' => null,
+                'label' => $product->name,
+                'sku' => $product->sku,
+                'barcode' => $product->barcode,
+                'stock' => (int) $product->quantity_value,
+                'price' => (float) $product->current_price,
+                'selectable' => ! $product->has_variants && trim((string) $product->barcode) !== '',
+            ])->concat($variants->map(fn ($variant) => [
+                'product' => $variant->product,
+                'variant' => $variant,
+                'label' => $variant->product->name . ' · ' . $variant->variant_name,
+                'sku' => $variant->sku,
+                'barcode' => $variant->barcode,
+                'stock' => (int) $variant->stock,
+                'price' => (float) $variant->current_price,
+                'selectable' => trim((string) $variant->barcode) !== '',
+            ]))->take(10)->values();
         }
 
         $recentSales = Order::query()
@@ -65,6 +117,8 @@ class PosController extends Controller
             'canDiscount',
             'customerSearch',
             'customerResults',
+            'productSearch',
+            'productResults',
             'recentSales',
             'cashPaymentMethod',
             'cardPaymentMethod'
