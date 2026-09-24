@@ -94,12 +94,73 @@ class ProductIdentifierServiceTest extends TestCase
         $this->assertTrue($match['requires_variant_selection']);
     }
 
+    public function test_exact_product_sku_resolves_without_guessing(): void
+    {
+        $category = $this->createCategory();
+        $product = Product::query()->create([
+            'name' => 'SKU Lookup Product',
+            'slug' => 'sku-lookup-product-' . Str::lower(Str::random(6)),
+            'sku' => 'SKU-LOOKUP-001',
+            'category_id' => $category->id,
+            'base_price' => 80,
+            'quantity' => 4,
+            'stock_status' => 'in_stock',
+            'status' => true,
+            'has_variants' => false,
+        ]);
+
+        $match = app(ProductIdentifierService::class)->resolveSku(' SKU-LOOKUP-001 ');
+
+        $this->assertNotNull($match);
+        $this->assertTrue($product->is($match['product']));
+        $this->assertNull($match['variant']);
+        $this->assertSame('product', $match['match_type']);
+        $this->assertSame('sku', $match['matched_by']);
+        $this->assertFalse($match['requires_variant_selection']);
+    }
+
+    public function test_exact_variant_sku_returns_variant_and_parent_product(): void
+    {
+        $category = $this->createCategory();
+        $product = Product::query()->create([
+            'name' => 'Variant SKU Lookup Product',
+            'slug' => 'variant-sku-lookup-product-' . Str::lower(Str::random(6)),
+            'category_id' => $category->id,
+            'base_price' => 100,
+            'quantity' => 0,
+            'stock_status' => 'in_stock',
+            'status' => true,
+            'has_variants' => true,
+        ]);
+
+        $variant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'SKU-VARIANT-LOOKUP-001',
+            'barcode' => '6225555555555',
+            'price' => 105,
+            'stock' => 6,
+            'is_default' => true,
+            'status' => true,
+        ]);
+
+        $match = app(ProductIdentifierService::class)->resolveSku('SKU-VARIANT-LOOKUP-001');
+
+        $this->assertNotNull($match);
+        $this->assertTrue($product->is($match['product']));
+        $this->assertTrue($variant->is($match['variant']));
+        $this->assertSame('variant', $match['match_type']);
+        $this->assertSame('sku', $match['matched_by']);
+        $this->assertFalse($match['requires_variant_selection']);
+    }
+
     public function test_unknown_or_blank_barcode_returns_null(): void
     {
         $service = app(ProductIdentifierService::class);
 
         $this->assertNull($service->resolveBarcode(''));
         $this->assertNull($service->resolveBarcode('6229999999999'));
+        $this->assertNull($service->resolveSku(''));
+        $this->assertNull($service->resolveSku('SKU-NOT-FOUND'));
     }
 
     public function test_legacy_cross_table_collision_is_rejected_as_ambiguous(): void

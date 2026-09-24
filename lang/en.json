@@ -2489,5 +2489,12 @@
     "Quantity must be a whole number.": "Quantity must be a whole number.",
     "Quantity cannot be negative.": "Quantity cannot be negative.",
     "This product uses variants. Please edit stock from variant rows.": "This product uses variants. Please edit stock from variant rows.",
-    "Product duplicated with zero stock. You can now edit the copied product.": "Product duplicated with zero stock. You can now edit the copied product."
+    "Product duplicated with zero stock. You can now edit the copied product.": "Product duplicated with zero stock. You can now edit the copied product.",
+    "This SKU is already assigned to another product or variant.": "This SKU is already assigned to another product or variant.",
+    "Each product and variant must have a unique SKU.": "Each product and variant must have a unique SKU.",
+    "SKU must be unique across products and variants so inventory and POS lookup stays deterministic.": "SKU must be unique across products and variants so inventory and POS lookup stays deterministic.",
+    "Optional scannable identifier for retail and stock operations. It must be unique across products and variants.": "Optional scannable identifier for retail and stock operations. It must be unique across products and variants.",
+    "Each variant can have its own unique SKU and barcode, plus price, sale price, stock, and attribute values.": "Each variant can have its own unique SKU and barcode, plus price, sale price, stock, and attribute values.",
+    "Identifier :identifier matches multiple catalog records.": "Identifier :identifier matches multiple catalog records.",
+    "Product duplicated with zero stock and cleared retail identifiers. You can now edit the copied product.": "Product duplicated with zero stock and cleared retail identifiers. You can now edit the copied product."
 }

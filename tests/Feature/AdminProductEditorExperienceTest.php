@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Http\Livewire\Admin\Product\Index;
 use App\Http\Livewire\Admin\Product\ProductForm;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Category;
+use App\Services\Admin\ProductService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -363,6 +365,134 @@ class AdminProductEditorExperienceTest extends TestCase
             ->call('applySavedView', 'featured')
             ->assertSet('savedView', 'featured')
             ->assertSet('featuredFilter', '1');
+    }
+
+    public function test_product_sku_cannot_duplicate_another_product_sku(): void
+    {
+        $category = $this->createCategory('SKU Collision', 'sku-collision');
+
+        Product::create([
+            'name' => 'Existing SKU Product',
+            'slug' => 'existing-sku-product',
+            'sku' => 'SKU-CONFLICT-001',
+            'category_id' => $category->id,
+            'base_price' => 100,
+            'quantity' => 2,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+
+        Livewire::test(ProductForm::class)
+            ->set('name', 'Conflicting SKU Product')
+            ->set('sku', 'SKU-CONFLICT-001')
+            ->set('category_id', $category->id)
+            ->set('base_price', 110)
+            ->set('quantity', 2)
+            ->set('stock_status', 'in_stock')
+            ->set('status', 0)
+            ->set('is_featured', 0)
+            ->call('save')
+            ->assertHasErrors(['sku']);
+
+        $this->assertDatabaseMissing('products', [
+            'name' => 'Conflicting SKU Product',
+        ]);
+    }
+
+    public function test_variant_sku_cannot_duplicate_product_sku(): void
+    {
+        $category = $this->createCategory('Variant SKU Collision', 'variant-sku-collision');
+
+        Product::create([
+            'name' => 'SKU Owner Product',
+            'slug' => 'sku-owner-product',
+            'sku' => 'SKU-OWNER-001',
+            'category_id' => $category->id,
+            'base_price' => 90,
+            'quantity' => 2,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+
+        Livewire::test(ProductForm::class)
+            ->set('name', 'Variant SKU Collision Product')
+            ->set('category_id', $category->id)
+            ->set('hasVariants', true)
+            ->set('status', 0)
+            ->set('is_featured', 0)
+            ->set('variants', [[
+                'id' => null,
+                'sku' => 'SKU-OWNER-001',
+                'barcode' => '6229876543210',
+                'price' => 130,
+                'sale_price' => '',
+                'stock' => 3,
+                'is_default' => true,
+                'status' => true,
+                'attributes' => [],
+            ]])
+            ->call('save')
+            ->assertHasErrors(['variants.0.sku']);
+
+        $this->assertDatabaseMissing('products', [
+            'name' => 'Variant SKU Collision Product',
+        ]);
+    }
+
+    public function test_catalog_search_finds_parent_product_by_variant_identifier(): void
+    {
+        $category = $this->createCategory('Variant Search', 'variant-search');
+
+        $product = Product::create([
+            'name' => 'Lookup Parent Product',
+            'slug' => 'lookup-parent-product',
+            'category_id' => $category->id,
+            'base_price' => 100,
+            'quantity' => 0,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+            'has_variants' => true,
+        ]);
+
+        ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'POS-VAR-001',
+            'barcode' => '6227777777777',
+            'price' => 100,
+            'stock' => 2,
+            'is_default' => true,
+            'status' => true,
+        ]);
+
+        Livewire::test(Index::class)
+            ->set('search', 'POS-VAR-001')
+            ->assertSee('Lookup Parent Product')
+            ->set('search', '6227777777777')
+            ->assertSee('Lookup Parent Product');
+    }
+
+    public function test_product_duplication_clears_retail_identifiers(): void
+    {
+        $category = $this->createCategory('Safe Copy', 'safe-copy');
+
+        $product = Product::create([
+            'name' => 'Copy Source Product',
+            'slug' => 'copy-source-product',
+            'sku' => 'COPY-SKU-001',
+            'barcode' => '6228888888888',
+            'category_id' => $category->id,
+            'base_price' => 120,
+            'quantity' => 5,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+        ]);
+
+        $copy = app(ProductService::class)->duplicateProduct($product);
+
+        $this->assertNotSame($product->id, $copy->id);
+        $this->assertNull($copy->sku);
+        $this->assertNull($copy->barcode);
+        $this->assertSame(0, (int) $copy->quantity);
     }
 
     public function test_reset_filters_exits_operational_view(): void

@@ -1240,7 +1240,7 @@
     "Issues that can slow conversion, operations, or fulfillment.": "مشكلات قد تبطئ التحويل أو التشغيل أو التنفيذ.",
     "Item": "العنصر",
     "Item removed from cart.": "تم حذف العنصر من السلة.",
-    "items": "عنصر",
+    "items": "أصناف",
     "Items": "العناصر",
     "Items are being prepared and checked.": "يتم تجهيز العناصر ومراجعتها الآن.",
     "Items in this order": "عناصر هذا الطلب",
@@ -3374,7 +3374,6 @@
     "Stock adjustments, purchases, and order deductions will appear here once activity starts.": "ستظهر هنا تعديلات المخزون والمشتريات والكميات المخصومة للطلبات عند بدء النشاط.",
     "available": "متاح",
     "expiry date": "تاريخ الصلاحية",
-    "items": "أصناف",
     "Catalog quick edit": "تعديل سريع من قائمة المنتجات",
     "Catalog quick stock update": "تحديث مخزون من قائمة المنتجات",
     "Product editor": "محرر المنتج",
@@ -3390,5 +3389,12 @@
     "Quantity must be a whole number.": "يجب أن تكون الكمية عددًا صحيحًا.",
     "Quantity cannot be negative.": "لا يمكن أن تكون الكمية سالبة.",
     "This product uses variants. Please edit stock from variant rows.": "هذا المنتج له خيارات متعددة. عدّل المخزون من صف خيار المنتج.",
-    "Product duplicated with zero stock. You can now edit the copied product.": "تم نسخ المنتج بمخزون صفري. يمكنك الآن تعديل النسخة الجديدة."
+    "Product duplicated with zero stock. You can now edit the copied product.": "تم نسخ المنتج بمخزون صفري. يمكنك الآن تعديل النسخة الجديدة.",
+    "This SKU is already assigned to another product or variant.": "رمز SKU هذا مستخدم بالفعل لمنتج أو متغير آخر.",
+    "Each product and variant must have a unique SKU.": "يجب أن يكون لكل منتج ومتغير رمز SKU فريد.",
+    "SKU must be unique across products and variants so inventory and POS lookup stays deterministic.": "يجب أن يكون رمز SKU فريدًا بين المنتجات والمتغيرات لضمان بحث ثابت ودقيق في المخزون ونقاط البيع.",
+    "Optional scannable identifier for retail and stock operations. It must be unique across products and variants.": "معرّف اختياري قابل للمسح لعمليات البيع والمخزون، ويجب أن يكون فريدًا بين المنتجات والمتغيرات.",
+    "Each variant can have its own unique SKU and barcode, plus price, sale price, stock, and attribute values.": "يمكن لكل متغير أن يمتلك رمز SKU وباركود فريدين، بالإضافة إلى السعر وسعر التخفيض والمخزون وقيم السمات.",
+    "Identifier :identifier matches multiple catalog records.": "المعرّف :identifier يطابق أكثر من سجل في الكتالوج.",
+    "Product duplicated with zero stock and cleared retail identifiers. You can now edit the copied product.": "تم نسخ المنتج بمخزون صفري مع مسح معرّفات البيع. يمكنك الآن تعديل النسخة الجديدة."
 }
