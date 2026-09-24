@@ -118,6 +118,38 @@ class FrontendController extends Controller
         ]);
     }
 
+    public function search(Request $request)
+    {
+        $allowedSorts = ['latest', 'price_low_high', 'price_high_low', 'name_az'];
+        $sort = in_array($request->string('sort')->toString(), $allowedSorts, true)
+            ? $request->string('sort')->toString()
+            : 'latest';
+
+        $filters = [
+            'q' => trim((string) $request->string('q')),
+            'availability' => in_array($request->string('availability')->toString(), ['all', 'in_stock'], true)
+                ? $request->string('availability')->toString()
+                : 'all',
+            'offer' => in_array($request->string('offer')->toString(), ['all', 'on_sale'], true)
+                ? $request->string('offer')->toString()
+                : 'all',
+            'sort' => $sort,
+        ];
+
+        $baseQuery = Product::query()
+            ->with(['translations', 'category.translations', 'mainImage', 'productImages', 'defaultVariant', 'activeVariants.attributes.attribute'])
+            ->where('status', true);
+
+        $products = $this->applyCategoryFilters(clone $baseQuery, $filters)
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('frontend.products.search', [
+            'products' => $products,
+            'filters' => $filters,
+        ]);
+    }
+
     public function showCategoryProducts(Request $request, $id)
     {
         $category = Category::query()
