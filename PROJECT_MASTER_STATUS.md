@@ -91,7 +91,7 @@
 - Customer Order Details and Order Success now hide raw gateway `checkout_error`/provider-status details and use safe retry/support guidance instead.
 - Cart recommendation labels were cleaned up so internal-style wording (`Personalized offers`, `Smart offers`, `Return path`) is no longer exposed to customers; recommendation logic is unchanged.
 - English/Arabic copy and focused storefront regression coverage were updated. See `docs/STOREFRONT_CUSTOMER_UX_2026-09-24.md`.
-- Source implementation is complete for this iteration; branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
+- Source implementation and automated regression verification are complete for this iteration. Hardening CI run `36014798313` passed at `d13e6a3`; authenticated English/Arabic desktop/mobile QAS review remains required. Production is unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
