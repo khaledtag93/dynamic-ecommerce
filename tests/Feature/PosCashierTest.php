@@ -761,6 +761,108 @@ class PosCashierTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_pos_item_return_uses_discounted_snapshot_and_restocks_once(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('POS Return Product', '6224000000020', 5, false, 100, 40);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin);
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+
+        $item = PosCartItem::query()->where('pos_cart_id', $cart->id)->firstOrFail();
+        $this->patch(route('admin.pos.items.discount.update', ['posCart' => $cart->id, 'posCartItem' => $item->id]), [
+            'discount_type' => PosService::DISCOUNT_TYPE_PERCENT,
+            'discount_value' => 10,
+            'discount_reason' => 'Return snapshot test',
+        ])->assertSessionHas('success');
+        $this->patch(route('admin.pos.discount.update', $cart), [
+            'discount_type' => PosService::DISCOUNT_TYPE_FIXED,
+            'discount_value' => 30,
+            'discount_reason' => 'Manager discount',
+        ])->assertSessionHas('success');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 160,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $orderItem = $order->items()->firstOrFail();
+        $this->assertSame('150.00', $orderItem->line_total);
+        $this->assertSame(3, (int) $product->fresh()->quantity);
+
+        $this->post(route('admin.pos.sales.return', $order), [
+            'items' => [$orderItem->id => 1],
+            'reason' => 'Customer changed mind',
+            'notes' => 'Returned at counter',
+        ])->assertRedirect(route('admin.pos.sales.show', $order))->assertSessionHas('success');
+
+        $this->assertDatabaseHas('order_refunds', [
+            'order_id' => $order->id,
+            'amount' => 75,
+            'reason' => 'Customer changed mind',
+            'processed_by' => $admin->id,
+        ]);
+        $refundId = $order->refunds()->value('id');
+        $this->assertDatabaseHas('pos_return_items', [
+            'order_refund_id' => $refundId,
+            'order_item_id' => $orderItem->id,
+            'quantity' => 1,
+            'amount' => 75,
+            'restocked' => 1,
+        ]);
+        $this->assertSame(4, (int) $product->fresh()->quantity);
+        $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame('75.00', $order->fresh()->refund_total);
+        $this->assertDatabaseHas('inventory_movements', [
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
+            'quantity' => 1,
+        ]);
+
+        $this->post(route('admin.pos.sales.return', $order), [
+            'items' => [$orderItem->id => 2],
+            'reason' => 'Attempt duplicate return',
+        ])->assertSessionHasErrors('items');
+
+        $this->assertSame(4, (int) $product->fresh()->quantity);
+        $this->assertSame(1, (int) $order->refunds()->count());
+    }
+
+    public function test_cashier_role_cannot_process_pos_returns_without_return_permission(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $cashier = User::factory()->create(['role_as' => 1]);
+        $cashierRole = Role::query()->where('slug', 'cashier')->firstOrFail();
+        $cashier->roles()->sync([$cashierRole->id]);
+        $product = $this->product('POS Return Permission Product', '6224000000021', 2, false, 25);
+        $cart = app(PosService::class)->cartFor($cashier);
+
+        $this->actingAs($cashier)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CARD,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $orderItem = $order->items()->firstOrFail();
+
+        $this->post(route('admin.pos.sales.return', $order), [
+            'items' => [$orderItem->id => 1],
+            'reason' => 'Not authorized',
+        ])->assertForbidden();
+
+        $this->assertFalse($cashier->fresh()->hasPermission('pos.return'));
+        $this->assertDatabaseCount('order_refunds', 0);
+        $this->assertDatabaseCount('pos_return_items', 0);
+        $this->assertSame(1, (int) $product->fresh()->quantity);
+    }
+
     private function product(
         string $name,
         string $barcode,
