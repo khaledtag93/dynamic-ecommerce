@@ -19,6 +19,9 @@
     .pos-money { font-weight: 800; white-space: nowrap; }
     .pos-total-row { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .7rem 0; }
     .pos-total-row--grand { padding-top: 1rem; margin-top: .35rem; border-top: 1px solid var(--admin-border); font-size: 1.18rem; }
+    .pos-entry-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .pos-search-result { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .75rem; border: 1px solid var(--admin-border); border-radius: .8rem; }
+    .pos-action-dock { position: sticky; bottom: .75rem; z-index: 12; margin-top: 1rem; padding: .7rem; border: 1px solid var(--admin-border); border-radius: 1rem; background: color-mix(in srgb, var(--admin-surface) 94%, transparent); backdrop-filter: blur(12px); box-shadow: 0 12px 30px rgba(15,23,42,.10); }
     @media (max-width: 1199.98px) { .pos-shell { grid-template-columns: 1fr; } .pos-checkout-sticky { position: static; } }
     @media (max-width: 767.98px) {
         .pos-cart-line { grid-template-columns: 1fr 1fr; }
@@ -71,6 +74,42 @@
                         @error('barcode')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
                         @error('cart')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
                     </form>
+
+                    <details class="mt-3" @if(mb_strlen($productSearch) >= 2) open @endif>
+                        <summary class="fw-semibold" style="cursor:pointer"><i class="mdi mdi-magnify me-1"></i>{{ __('Find product manually') }}</summary>
+                        <form method="GET" action="{{ route('admin.pos.index') }}" class="mt-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="mdi mdi-package-variant-closed"></i></span>
+                                <input type="search" name="product_search" value="{{ $productSearch }}" minlength="2" maxlength="255" class="form-control" placeholder="{{ __('Search by product name, SKU, or barcode') }}" autocomplete="off">
+                                <button class="btn btn-light border">{{ __('Search') }}</button>
+                            </div>
+                        </form>
+                        @if(mb_strlen($productSearch) >= 2)
+                            <div class="d-grid gap-2 mt-3">
+                                @forelse($productResults as $result)
+                                    <div class="pos-search-result">
+                                        <div class="min-w-0">
+                                            <div class="fw-semibold">{{ $result['label'] }}</div>
+                                            <div class="text-muted small">{{ $result['sku'] ?: __('No SKU') }} @if($result['barcode']) · <span class="font-monospace">{{ $result['barcode'] }}</span>@endif · {{ __('Stock') }}: {{ $result['stock'] }} · EGP {{ number_format($result['price'], 2) }}</div>
+                                        </div>
+                                        @if($result['selectable'] && $result['stock'] > 0)
+                                            <form method="POST" action="{{ route('admin.pos.scan', $cart) }}" data-submit-loading>
+                                                @csrf
+                                                <input type="hidden" name="barcode" value="{{ $result['barcode'] }}">
+                                                <button class="btn btn-primary btn-sm">{{ __('Add') }}</button>
+                                            </form>
+                                        @elseif(!$result['selectable'])
+                                            <span class="badge badge-soft-warning">{{ __('Barcode required') }}</span>
+                                        @else
+                                            <span class="badge badge-soft-secondary">{{ __('Out of stock') }}</span>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <div class="text-muted small">{{ __('No sellable products match this search.') }}</div>
+                                @endforelse
+                            </div>
+                        @endif
+                    </details>
                 </div>
             </div>
 
@@ -333,12 +372,12 @@
                                     class="form-control"
                                     minlength="2"
                                     maxlength="255"
-                                    placeholder="{{ __('Search by customer name or email') }}"
+                                    placeholder="{{ __('Search by name, email, or phone') }}"
                                     autocomplete="off"
                                 >
                                 <button class="btn btn-light border">{{ __('Search') }}</button>
                             </div>
-                            <div class="form-text">{{ __('Enter at least 2 characters. POS lookup shows customer name and email only.') }}</div>
+                            <div class="form-text">{{ __('Enter at least 2 characters. Matching customer phone numbers from saved addresses are included.') }}</div>
                         </form>
 
                         @error('customer')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
@@ -351,6 +390,8 @@
                                             <div class="min-w-0">
                                                 <div class="fw-semibold text-truncate">{{ $customerResult->name }}</div>
                                                 <div class="text-muted small text-truncate">{{ $customerResult->email }}</div>
+                                                @php($customerPhone = optional($customerResult->addresses->sortByDesc('is_default_shipping')->first())->phone)
+                                                @if($customerPhone)<div class="text-muted small text-truncate"><i class="mdi mdi-phone-outline me-1"></i>{{ $customerPhone }}</div>@endif
                                             </div>
                                             <form method="POST" action="{{ route('admin.pos.customer.attach', ['posCart' => $cart->id, 'user' => $customerResult->id]) }}" data-submit-loading>
                                                 @csrf
@@ -490,9 +531,11 @@
                             <textarea id="posNotes" name="notes" rows="3" maxlength="1000" class="form-control">{{ old('notes', $cart->notes) }}</textarea>
                         </div>
 
+                        <div class="pos-action-dock">
                         <button class="btn btn-primary w-100 btn-lg btn-text-icon" @disabled($cart->items->isEmpty()) data-loading-text="{{ __('Completing sale...') }}">
                             <i class="mdi mdi-cash-register"></i><span>{{ __('Complete sale') }}</span>
                         </button>
+                        </div>
                     </form>
                 </div>
             </div>
