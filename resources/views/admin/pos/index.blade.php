@@ -176,7 +176,7 @@
                                             <div class="small mb-1"><span class="text-muted">{{ __('Customer name') }}:</span> {{ $heldCart->customer_name }}</div>
                                         @endif
                                         @if($heldCart->notes)
-                                            <div class="small text-muted mb-3">{{ IlluminateSupportStr::limit($heldCart->notes, 90) }}</div>
+                                            <div class="small text-muted mb-3">{{ \Illuminate\Support\Str::limit($heldCart->notes, 90) }}</div>
                                         @endif
 
                                         <div class="d-flex gap-2 flex-wrap mt-3">
