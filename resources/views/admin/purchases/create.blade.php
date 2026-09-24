@@ -130,6 +130,7 @@
             return [
                 'id' => $p->id,
                 'name' => $p->name,
+                'has_variants' => $p->has_variants,
                 'variants' => $p->variants->map(function ($v) {
                     return [
                         'id' => $v->id,
@@ -166,13 +167,25 @@
             const products = window.purchaseProducts || [];
             let index = 0;
 
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>"']/g, character => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[character]);
+            }
+
+            function updateVariantRequirement(row) {
+                const productId = row.querySelector('.js-product').value;
+                const product = products.find(p => String(p.id) === productId);
+                row.querySelector('.js-variant').required = Boolean(product?.has_variants);
+            }
+
             function variantOptions(productId, selected = '') {
                 const product = products.find(p => String(p.id) === String(productId));
                 const variants = product && Array.isArray(product.variants) ? product.variants : [];
-                let html = `<option value="">{{ __('No variant / main product') }}</option>`;
+                let html = `<option value="">${product?.has_variants ? @json(__('Select variant')) : @json(__('No variant / main product'))}</option>`;
 
                 variants.forEach(v => {
-                    html += `<option value="${v.id}" ${String(selected) === String(v.id) ? 'selected' : ''}>${v.name}</option>`;
+                    html += `<option value="${escapeHtml(v.id)}" ${String(selected) === String(v.id) ? 'selected' : ''}>${escapeHtml(v.name)}</option>`;
                 });
 
                 return html;
@@ -182,7 +195,7 @@
                 let html = `<option value="">{{ __('Select product') }}</option>`;
 
                 products.forEach(p => {
-                    html += `<option value="${p.id}" ${String(selected) === String(p.id) ? 'selected' : ''}>${p.name}</option>`;
+                    html += `<option value="${escapeHtml(p.id)}" ${String(selected) === String(p.id) ? 'selected' : ''}>${escapeHtml(p.name)}</option>`;
                 });
 
                 return html;
@@ -223,7 +236,7 @@
                             min="1"
                             name="items[${i}][quantity]"
                             class="form-control"
-                            value="${item.quantity || 1}"
+                            value="${escapeHtml(item.quantity ?? 1)}"
                             required
                         >
                     </td>
@@ -234,7 +247,7 @@
                             min="0"
                             name="items[${i}][unit_cost]"
                             class="form-control"
-                            value="${item.unit_cost || ''}"
+                            value="${escapeHtml(item.unit_cost ?? '')}"
                             required
                         >
                     </td>
@@ -243,7 +256,7 @@
                             type="date"
                             name="items[${i}][expiration_date]"
                             class="form-control"
-                            value="${item.expiration_date || ''}"
+                            value="${escapeHtml(item.expiration_date ?? '')}"
                         >
                     </td>
                     <td class="text-end">
@@ -258,6 +271,7 @@
                 `;
 
                 tableBody.appendChild(row);
+                updateVariantRequirement(row);
                 recalculateTotal();
             }
 
@@ -269,6 +283,7 @@
                     const row = e.target.closest('tr');
                     const variantSelect = row.querySelector('.js-variant');
                     variantSelect.innerHTML = variantOptions(e.target.value);
+                    updateVariantRequirement(row);
                 }
             });
 

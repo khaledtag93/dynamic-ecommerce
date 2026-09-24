@@ -318,3 +318,8 @@ See `docs/DELIVERIES_V2_2026-09-24.md` for acceptance checks.
 The working branch now contains customer profile/password management and saved shipping/billing addresses with ownership checks, transactional default changes, checkout prefill and independent order address snapshots. It also corrects the checkout billing switch's off-state submission. See `docs/CUSTOMER_ACCOUNT_ADDRESS_BOOK_2026-09-24.md`.
 
 Verification: Hardening CI run `36019574401` passed at application commit `05c2c51` (115 tests, 579 assertions). Authenticated English/Arabic desktop/mobile QAS remains pending. `main` and Production unchanged.
+
+### QAS account upload and Purchases V2 work — 2026-09-24
+The operator reported the QAS upload targeting `a1e8c57` after a clean-checkout/environment/remote-SHA check and a 157,110-byte rehearsal database snapshot. Public QAS login responded HTTP 200 in Arabic. Exact server HEAD and authenticated account/address-book checks remain unverified.
+
+The next working-line code batch hardens purchase receiving and product–variant validation with bilingual admin confirmation and focused regression coverage. See `docs/PURCHASES_V2_HARDENING_2026-09-24.md`. Branch-head CI and authenticated QAS deployment/review of this new batch remain pending; `main` and Production unchanged.

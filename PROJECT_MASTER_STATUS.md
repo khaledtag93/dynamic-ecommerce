@@ -13,6 +13,7 @@
 - **GitHub `main`:** still on the older baseline and has not yet been promoted to the validated V42 branch
 - **Production:** V42 routine deployment flow is validated; exact application commit `95e9f50` was deployed successfully with HTTP 200
 - **Production domain:** `tag-marketplace.com`
+- **QAS deployment checkpoint (2026-09-24):** The operator reported uploading the clean working-line head targeted at `a1e8c57` after confirming a clean server checkout, staging environment and rehearsal database, creating a pre-deploy database snapshot, and checking the remote branch SHA. The public QAS login returned HTTP 200 with expected Arabic content afterward. Server deployed HEAD and authenticated customer/account behavior have not been independently verified; the account/address-book English/Arabic desktop/mobile review remains open. The backup is held outside the repository at `deploy_backups/qas_before_account_a1e8c57_20260924.sql` (157,110 bytes; SHA-256 `e1a0f552f1c84eaae56aa0a714bb798d8c559a1dd96802339086e43598b5de86`).
 
 ## Latest working-line update — 2026-09-23
 - An admin daily-work UX batch is CI-verified in source, pending QAS review: the default dashboard now shows four clearly defined 30-day metrics, permission-scoped priorities, workspaces and recent records. Its controller no longer computes the unused deep-dive panels. The sidebar no longer queries order/coupon/supplier counts on every render. Topbar/search and order actions respect route permissions.
@@ -98,6 +99,11 @@
 - Customer-owned saved addresses now have shipping/billing defaults with serialized mutations and fallback on deletion. Checkout can prefill a selected address and the billing default; each placed order retains an independent address snapshot. The billing-same-as-shipping toggle now submits its off state explicitly.
 - English/Arabic account and address-book copy, compact navigation, in-app deletion confirmation, and focused ownership/profile/default/checkout regression tests were added. See `docs/CUSTOMER_ACCOUNT_ADDRESS_BOOK_2026-09-24.md`.
 - Hardening CI run `36019574401` passed at application commit `05c2c51`: PHP syntax, clean MySQL migration, Blade compile, 115 tests (579 assertions), and frontend build. Authenticated English/Arabic desktop/mobile QAS remains pending. `main` and Production are unchanged.
+
+## Purchases V2 receipt hardening checkpoint — 2026-09-24
+- The next working-line batch serializes receipt under a purchase row lock and transaction, permits only ordered nonempty purchases, validates every product/variant line before stock changes, and treats repeated receipt as an informational replay.
+- Admin purchase creation validates product–variant ownership under lock; awaiting count and receive buttons only reflect ordered purchases. The form now requires variants where appropriate and escapes dynamic content. EN/AR confirmations, errors and regression coverage are included. See [`docs/PURCHASES_V2_HARDENING_2026-09-24.md`](docs/PURCHASES_V2_HARDENING_2026-09-24.md).
+- This new batch is not covered by the account QAS upload. Branch-head CI and authenticated QAS review are separate gates; Production and `main` are unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.

@@ -4,7 +4,7 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Purchase Details')" :description="__('Reference') . ': ' . $purchase->reference">
-    <div class="d-flex gap-2 flex-wrap"><a href="{{ route('admin.purchases.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to purchases') }}</span></a>@if($purchase->status !== \App\Models\Purchase::STATUS_RECEIVED)<form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading>@csrf<button class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button></form>@endif</div>
+    <div class="d-flex gap-2 flex-wrap"><a href="{{ route('admin.purchases.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to purchases') }}</span></a>@if($purchase->status === \App\Models\Purchase::STATUS_ORDERED)<form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading data-confirm-title="{{ __('Confirm stock receipt') }}" data-confirm-message="{{ __('Receive this purchase and add its quantities to inventory?') }}" data-confirm-subtitle="{{ __('Receiving will update stock and cost for each line once.') }}" data-confirm-ok="{{ __('Confirm receipt') }}">@csrf<button class="btn btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button></form>@endif</div>
 </x-admin.page-header>
 
 <div class="admin-page-shell">
@@ -29,7 +29,7 @@
         <div class="admin-card-body">
             <div class="admin-table-toolbar">
                 <div>
-                    <h4 class="mb-1">{{ __('Received items') }}</h4>
+                    <h4 class="mb-1">{{ __('Purchase items') }}</h4>
                     <div class="text-muted small">{{ __('Review purchased products, variants, cost lines, and expiration dates in one place.') }}</div>
                 </div>
             </div>

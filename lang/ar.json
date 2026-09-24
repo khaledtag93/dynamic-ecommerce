@@ -3309,5 +3309,16 @@
     "Use your current password to protect account changes.": "أدخل كلمة مرورك الحالية لحماية تغييرات الحساب.",
     "Your orders will appear here after checkout.": "ستظهر طلباتك هنا بعد إتمام الشراء.",
     "Address, payment, and final confirmation.": "العنوان والدفع والتأكيد النهائي.",
-    "Last look before placing the order": "مراجعة أخيرة قبل تأكيد الطلب"
+    "Last look before placing the order": "مراجعة أخيرة قبل تأكيد الطلب",
+    "Only ordered purchases can be received.": "يمكن استلام أوامر الشراء التي حالتها مطلوب فقط.",
+    "Add purchase items before receiving stock.": "أضف بنودًا إلى أمر الشراء قبل استلام المخزون.",
+    "Purchase items have missing or mismatched products or variants. Stock was not changed.": "توجد بنود بمنتجات أو أصناف مفقودة أو غير متطابقة. لم يتغير المخزون.",
+    "Choose a variant for products that use variants.": "اختر صنفًا للمنتجات التي تستخدم الأصناف.",
+    "The selected variant does not belong to this product.": "الصنف المحدد لا يتبع هذا المنتج.",
+    "This purchase was already received. No stock was added again.": "تم استلام أمر الشراء بالفعل. لم تُضف الكميات مرة أخرى.",
+    "Confirm stock receipt": "تأكيد استلام المخزون",
+    "Receive this purchase and add its quantities to inventory?": "هل تريد استلام أمر الشراء وإضافة كمياته إلى المخزون؟",
+    "Receiving will update stock and cost for each line once.": "سيُحدَّث المخزون والتكلفة لكل بند مرة واحدة.",
+    "Confirm receipt": "تأكيد الاستلام",
+    "Select variant": "اختر الصنف"
 }

@@ -43,7 +43,7 @@ class PurchaseController extends Controller
 
         $stats = [
             'total' => Purchase::count(),
-            'awaiting' => Purchase::where('status', '!=', Purchase::STATUS_RECEIVED)->count(),
+            'awaiting' => Purchase::where('status', Purchase::STATUS_ORDERED)->count(),
             'received' => Purchase::where('status', Purchase::STATUS_RECEIVED)->count(),
             'value' => (float) Purchase::sum('grand_total'),
         ];
@@ -97,6 +97,31 @@ class PurchaseController extends Controller
         ]);
 
         $createdPurchase = DB::transaction(function () use ($data) {
+            $products = Product::query()->whereIn('id', collect($data['items'])->pluck('product_id')->unique())
+                ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $variants = ProductVariant::query()->whereIn('id', collect($data['items'])->pluck('product_variant_id')->filter()->unique())
+                ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+
+            foreach ($data['items'] as $index => $item) {
+                $product = $products->get($item['product_id']);
+                $variantId = $item['product_variant_id'] ?? null;
+                if (! $product || ($variantId && ! $variants->get($variantId))) {
+                    throw ValidationException::withMessages([
+                        "items.{$index}.product_id" => __('Purchase items have missing or mismatched products or variants. Stock was not changed.'),
+                    ]);
+                }
+                if ($product->has_variants && ! $variantId) {
+                    throw ValidationException::withMessages([
+                        "items.{$index}.product_variant_id" => __('Choose a variant for products that use variants.'),
+                    ]);
+                }
+                if ($variantId && (int) $variants->get($variantId)->product_id !== (int) $product->id) {
+                    throw ValidationException::withMessages([
+                        "items.{$index}.product_variant_id" => __('The selected variant does not belong to this product.'),
+                    ]);
+                }
+            }
+
             $subtotal = collect($data['items'])->sum(fn ($item) => ((float) $item['unit_cost']) * ((int) $item['quantity']));
             $purchase = Purchase::create([
                 'supplier_id' => $data['supplier_id'],
@@ -110,15 +135,15 @@ class PurchaseController extends Controller
             ]);
 
             foreach ($data['items'] as $item) {
-                $product = Product::find($item['product_id']);
-                $variant = ! empty($item['product_variant_id']) ? ProductVariant::find($item['product_variant_id']) : null;
+                $product = $products->get($item['product_id']);
+                $variant = ! empty($item['product_variant_id']) ? $variants->get($item['product_variant_id']) : null;
 
                 $purchase->items()->create([
-                    'product_id' => $product?->id,
+                    'product_id' => $product->id,
                     'product_variant_id' => $variant?->id,
-                    'product_name' => $product?->name ?? 'Product',
+                    'product_name' => $product->name,
                     'variant_name' => $variant?->sku,
-                    'sku' => $variant?->sku ?? $product?->sku,
+                    'sku' => $variant?->sku ?? $product->sku,
                     'quantity' => (int) $item['quantity'],
                     'unit_cost' => (float) $item['unit_cost'],
                     'line_total' => (int) $item['quantity'] * (float) $item['unit_cost'],
@@ -134,7 +159,10 @@ class PurchaseController extends Controller
 
     public function receive(Purchase $purchase)
     {
-        $this->purchaseService->receive($purchase);
-        return back()->with('success', __('Purchase received and stock updated successfully.'));
+        $receivedNow = $this->purchaseService->receive($purchase);
+
+        return back()->with($receivedNow ? 'success' : 'warning', $receivedNow
+            ? __('Purchase received and stock updated successfully.')
+            : __('This purchase was already received. No stock was added again.'));
     }
 }

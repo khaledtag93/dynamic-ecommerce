@@ -2408,5 +2408,16 @@
     "Your orders will appear here after checkout.": "Your orders will appear here after checkout.",
     "Address, payment, and final confirmation.": "Address, payment, and final confirmation.",
     "Last look before placing the order": "Last look before placing the order",
-    "View all": "View all"
+    "View all": "View all",
+    "Only ordered purchases can be received.": "Only ordered purchases can be received.",
+    "Add purchase items before receiving stock.": "Add purchase items before receiving stock.",
+    "Purchase items have missing or mismatched products or variants. Stock was not changed.": "Purchase items have missing or mismatched products or variants. Stock was not changed.",
+    "Choose a variant for products that use variants.": "Choose a variant for products that use variants.",
+    "The selected variant does not belong to this product.": "The selected variant does not belong to this product.",
+    "This purchase was already received. No stock was added again.": "This purchase was already received. No stock was added again.",
+    "Confirm stock receipt": "Confirm stock receipt",
+    "Receive this purchase and add its quantities to inventory?": "Receive this purchase and add its quantities to inventory?",
+    "Receiving will update stock and cost for each line once.": "Receiving will update stock and cost for each line once.",
+    "Confirm receipt": "Confirm receipt",
+    "Select variant": "Select variant"
 }

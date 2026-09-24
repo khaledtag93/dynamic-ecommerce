@@ -8,10 +8,6 @@
 </x-admin.page-header>
 
 <div class="admin-page-shell">
-    @if(session('success'))
-        <div class="alert alert-success border-0 shadow-sm rounded-4 mb-0">{{ session('success') }}</div>
-    @endif
-
     <div class="row g-3 mb-4">
         @foreach([
             ['label' => __('Purchase orders'), 'value' => $stats['total'], 'copy' => __('All procurement records.'), 'icon' => 'mdi-clipboard-text-outline'],
@@ -77,9 +73,9 @@
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                         <a href="{{ route('admin.purchases.show', $purchase) }}" class="btn-table-icon btn-edit" title="{{ __('View purchase') }}"><i class="mdi mdi-eye-outline"></i></a>
-                                        @if($purchase->status !== \App\Models\Purchase::STATUS_RECEIVED)
-                                            <form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading>@csrf <button class="btn btn-sm btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button></form>
-                                        @else
+                                        @if($purchase->status === \App\Models\Purchase::STATUS_ORDERED)
+                                            <form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading data-confirm-title="{{ __('Confirm stock receipt') }}" data-confirm-message="{{ __('Receive this purchase and add its quantities to inventory?') }}" data-confirm-subtitle="{{ __('Receiving will update stock and cost for each line once.') }}" data-confirm-ok="{{ __('Confirm receipt') }}">@csrf <button class="btn btn-sm btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button></form>
+                                        @elseif($purchase->status === \App\Models\Purchase::STATUS_RECEIVED)
                                             <span class="text-success small">{{ __('Received on :date', ['date' => optional($purchase->received_date)->format('d M Y')]) }}</span>
                                         @endif
                                     </div>
