@@ -99,7 +99,7 @@
     </details>
     @endif
 
-    @if($can('pos.manage') || $can('orders.view') || $can('customers.manage') || $can('payments.view') || $can('delivery.view'))
+    @if($can('pos.manage') || $can('pos.shifts.review') || $can('orders.view') || $can('customers.manage') || $can('payments.view') || $can('delivery.view'))
     <details class="sidebar-group" {{ $operationsOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
@@ -113,8 +113,13 @@
         <div class="sidebar-group-body">
             <ul class="nav flex-column">
                 @if($can('pos.manage'))
-                <li class="nav-item {{ $isRoute('admin.pos.*') ? 'sidebar-current active' : '' }}">
+                <li class="nav-item {{ $isRoute('admin.pos.index', 'admin.pos.sales.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.pos.index') }}"><i class="mdi mdi-cash-register menu-icon"></i><span class="menu-title">{{ __('Point of Sale') }}</span></a>
+                </li>
+                @endif
+                @if($can('pos.shifts.review'))
+                <li class="nav-item {{ $isRoute('admin.pos.shifts.index') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.pos.shifts.index') }}"><i class="mdi mdi-cash-sync menu-icon"></i><span class="menu-title">{{ __('Cash Shift Review') }}</span></a>
                 </li>
                 @endif
                 @if($can('orders.view'))
