@@ -69,6 +69,35 @@ class StorefrontExperienceTest extends TestCase
             ->assertDontSee('via.placeholder.com', false);
     }
 
+    public function test_product_page_uses_local_placeholder_without_counting_it_as_gallery_media(): void
+    {
+        $category = Category::query()->create([
+            'name' => 'Product Detail Category',
+            'slug' => 'product-detail-category-' . Str::lower(Str::random(6)),
+            'description' => 'Product detail category',
+            'status' => 0,
+        ]);
+
+        $product = Product::query()->create([
+            'name' => 'Product Without Image',
+            'slug' => 'product-without-image-' . Str::lower(Str::random(6)),
+            'category_id' => $category->id,
+            'description' => 'Product without gallery media',
+            'base_price' => 250,
+            'quantity' => 3,
+            'status' => true,
+            'has_variants' => false,
+        ]);
+
+        $response = $this->get(route('frontend.products.show', $product->slug));
+
+        $response
+            ->assertOk()
+            ->assertSee(asset('images/storefront-placeholder.svg'))
+            ->assertDontSee('via.placeholder.com', false)
+            ->assertSee('<div><span>Gallery images</span><strong>0</strong></div>', false);
+    }
+
     public function test_checkout_uses_aligned_billing_toggle_and_real_payment_options(): void
     {
         $user = User::factory()->create();
