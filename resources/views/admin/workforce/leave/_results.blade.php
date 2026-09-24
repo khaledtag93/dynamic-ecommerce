@@ -29,9 +29,9 @@
                         @php
                             $conflicts = (int)$scheduleConflicts->get($leave->id, 0);
                             $statusClass = match($leave->status) {
-                                AppModelsEmployeeLeaveRequest::STATUS_APPROVED => 'badge-soft-success',
-                                AppModelsEmployeeLeaveRequest::STATUS_REJECTED => 'badge-soft-danger',
-                                AppModelsEmployeeLeaveRequest::STATUS_CANCELLED => 'badge-soft-secondary',
+                                \App\Models\EmployeeLeaveRequest::STATUS_APPROVED => 'badge-soft-success',
+                                \App\Models\EmployeeLeaveRequest::STATUS_REJECTED => 'badge-soft-danger',
+                                \App\Models\EmployeeLeaveRequest::STATUS_CANCELLED => 'badge-soft-secondary',
                                 default => 'badge-soft-warning',
                             };
                         @endphp
@@ -56,7 +56,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge admin-status-badge {{ $statusClass }}">{{ AppModelsEmployeeLeaveRequest::statusOptions()[$leave->status] ?? IlluminateSupportStr::headline($leave->status) }}</span>
+                                <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeLeaveRequest::statusOptions()[$leave->status] ?? \Illuminate\Support\Str::headline($leave->status) }}</span>
                                 @if($leave->review_notes)<div class="text-muted small mt-1">{{ $leave->review_notes }}</div>@endif
                                 @if($leave->reviewedBy)<div class="text-muted small">{{ $leave->reviewedBy->name }}</div>@endif
                             </td>
