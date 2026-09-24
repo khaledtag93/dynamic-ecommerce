@@ -23,6 +23,9 @@
 </style>
 
 <x-admin.page-header :kicker="__('Sales')" :title="__('Point of Sale')" :description="__('Scan exact barcodes, build a cashier cart, and complete an inventory-safe counter sale.')">
+    @if($heldCarts->isNotEmpty())
+        <span class="admin-chip"><i class="mdi mdi-pause-circle-outline me-1"></i>{{ __('Held sales') }}: {{ $heldCarts->count() }}</span>
+    @endif
     <span class="admin-chip"><i class="mdi mdi-account-outline me-1"></i>{{ auth()->user()->name }}</span>
 </x-admin.page-header>
 
@@ -73,11 +76,22 @@
                             <div class="text-muted small">{{ __(':lines line(s) · :items unit(s)', ['lines' => $summary['lines_count'], 'items' => $summary['items_count']]) }}</div>
                         </div>
                         @if($cart->items->isNotEmpty())
-                            <form method="POST" action="{{ route('admin.pos.clear', $cart) }}" data-submit-loading data-confirm-title="{{ __('Clear POS cart?') }}" data-confirm-message="{{ __('Remove every item from the current cashier cart?') }}" data-confirm-ok="{{ __('Clear cart') }}">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-light border btn-sm">{{ __('Clear cart') }}</button>
-                            </form>
+                            <div class="d-flex gap-2 align-items-center flex-wrap">
+                                <form id="posHoldForm" method="POST" action="{{ route('admin.pos.hold', $cart) }}" class="d-flex gap-2 align-items-center flex-wrap" data-submit-loading>
+                                    @csrf
+                                    <input type="hidden" name="customer_name" id="posHoldCustomerName">
+                                    <input type="hidden" name="notes" id="posHoldNotes">
+                                    <input type="text" name="hold_label" maxlength="80" value="{{ old('hold_label', $cart->hold_label) }}" class="form-control form-control-sm" style="width: 190px" placeholder="{{ __('Hold label (optional)') }}">
+                                    <button class="btn btn-light border btn-sm btn-text-icon" data-loading-text="{{ __('Holding...') }}">
+                                        <i class="mdi mdi-pause-circle-outline"></i><span>{{ __('Hold sale') }}</span>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.pos.clear', $cart) }}" data-submit-loading data-confirm-title="{{ __('Clear POS cart?') }}" data-confirm-message="{{ __('Remove every item from the current cashier cart?') }}" data-confirm-ok="{{ __('Clear cart') }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-light border btn-sm">{{ __('Clear cart') }}</button>
+                                </form>
+                            </div>
                         @endif
                     </div>
 
@@ -130,6 +144,61 @@
                     @endforelse
                 </div>
             </div>
+
+            @if($heldCarts->isNotEmpty())
+                <div class="admin-card mt-4">
+                    <div class="admin-card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                            <div>
+                                <h4 class="mb-1">{{ __('Held sales') }}</h4>
+                                <p class="text-muted small mb-0">{{ __('Resume a paused cashier cart when the current sale is empty. Stock and prices are rechecked before checkout.') }}</p>
+                            </div>
+                            <span class="admin-chip">{{ $heldCarts->count() }}</span>
+                        </div>
+
+                        <div class="row g-3">
+                            @foreach($heldCarts as $heldCart)
+                                @php
+                                    $heldUnits = (int) $heldCart->items->sum('quantity');
+                                    $heldTotal = round((float) $heldCart->items->sum(fn ($item) => (float) $item->unit_price * (int) $item->quantity), 2);
+                                @endphp
+                                <div class="col-lg-6">
+                                    <div class="border rounded-4 p-3 h-100">
+                                        <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                            <div>
+                                                <div class="fw-bold">{{ $heldCart->hold_label ?: __('Held sale #:id', ['id' => $heldCart->id]) }}</div>
+                                                <div class="text-muted small">{{ optional($heldCart->held_at)->format('M d, Y H:i') }} · {{ __(':items unit(s)', ['items' => $heldUnits]) }}</div>
+                                            </div>
+                                            <span class="fw-bold">EGP {{ number_format($heldTotal, 2) }}</span>
+                                        </div>
+
+                                        @if($heldCart->customer_name)
+                                            <div class="small mb-1"><span class="text-muted">{{ __('Customer name') }}:</span> {{ $heldCart->customer_name }}</div>
+                                        @endif
+                                        @if($heldCart->notes)
+                                            <div class="small text-muted mb-3">{{ IlluminateSupportStr::limit($heldCart->notes, 90) }}</div>
+                                        @endif
+
+                                        <div class="d-flex gap-2 flex-wrap mt-3">
+                                            <form method="POST" action="{{ route('admin.pos.resume', $heldCart) }}" data-submit-loading>
+                                                @csrf
+                                                <button class="btn btn-primary btn-sm btn-text-icon" data-loading-text="{{ __('Resuming...') }}">
+                                                    <i class="mdi mdi-play-circle-outline"></i><span>{{ __('Resume sale') }}</span>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.pos.held.destroy', $heldCart) }}" data-submit-loading data-confirm-title="{{ __('Discard held sale?') }}" data-confirm-message="{{ __('This removes it from the held queue without changing inventory.') }}" data-confirm-ok="{{ __('Discard') }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-light border btn-sm text-danger">{{ __('Discard') }}</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             @if($recentSales->isNotEmpty())
                 <div class="admin-card mt-4">
@@ -194,12 +263,12 @@
 
                         <div class="mb-3">
                             <label for="posCustomerName" class="form-label fw-semibold">{{ __('Customer name') }} <span class="text-muted fw-normal">({{ __('optional') }})</span></label>
-                            <input id="posCustomerName" name="customer_name" type="text" maxlength="255" value="{{ old('customer_name') }}" class="form-control" placeholder="{{ __('Walk-in customer') }}">
+                            <input id="posCustomerName" name="customer_name" type="text" maxlength="255" value="{{ old('customer_name', $cart->customer_name) }}" class="form-control" placeholder="{{ __('Walk-in customer') }}">
                         </div>
 
                         <div class="mb-4">
                             <label for="posNotes" class="form-label fw-semibold">{{ __('Sale notes') }} <span class="text-muted fw-normal">({{ __('optional') }})</span></label>
-                            <textarea id="posNotes" name="notes" rows="3" maxlength="1000" class="form-control">{{ old('notes') }}</textarea>
+                            <textarea id="posNotes" name="notes" rows="3" maxlength="1000" class="form-control">{{ old('notes', $cart->notes) }}</textarea>
                         </div>
 
                         <button class="btn btn-primary w-100 btn-lg btn-text-icon" @disabled($cart->items->isEmpty()) data-loading-text="{{ __('Completing sale...') }}">
@@ -218,6 +287,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const paymentMethod = document.getElementById('posPaymentMethod');
     const cashWrap = document.getElementById('posCashReceivedWrap');
     const cashInput = document.getElementById('posCashReceived');
+    const holdForm = document.getElementById('posHoldForm');
+    const holdCustomerName = document.getElementById('posHoldCustomerName');
+    const holdNotes = document.getElementById('posHoldNotes');
+    const customerName = document.getElementById('posCustomerName');
+    const notes = document.getElementById('posNotes');
+
+    if (holdForm) {
+        holdForm.addEventListener('submit', function () {
+            if (holdCustomerName) {
+                holdCustomerName.value = customerName ? customerName.value : '';
+            }
+            if (holdNotes) {
+                holdNotes.value = notes ? notes.value : '';
+            }
+        });
+    }
 
     const syncPaymentFields = function () {
         const isCash = paymentMethod && paymentMethod.value === @json($cashPaymentMethod);
