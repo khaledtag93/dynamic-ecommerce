@@ -114,7 +114,7 @@
 ## Catalog stock audit checkpoint — 2026-09-24
 - The product editor now saves catalog data, variant rows and stock audit entries in one transaction after checking loaded product/variant quantities under lock. Opening stock and real editor changes write signed movements and admin activity; no-op saves do not. Stale editors are stopped, stocked variants cannot be silently deleted, and stocked simple products cannot be converted to variants until counted to zero.
 - Catalog quick quantity edits use the counted-stock service with stale-count protection and a distinct source. Product duplication starts at zero independent stock. Inventory history labels the three admin sources. English/Arabic UI and focused regression coverage are included; see [`docs/CATALOG_STOCK_AUDIT_2026-09-24.md`](docs/CATALOG_STOCK_AUDIT_2026-09-24.md).
-- This source-only batch is awaiting automated CI. The operator-confirmed QAS application HEAD remains `0a08253`; manual review is deferred to the consolidated phase. Production and `main` are unchanged.
+- The catalog stock batch is CI-verified: [Hardening CI 36031782934](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36031782934) passed at `6889248` with 135 tests (736 assertions) and the frontend production build. The operator-confirmed QAS application HEAD remains `0a08253`; manual review is deferred to the consolidated phase. Production and `main` are unchanged.
 
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.

@@ -14,7 +14,7 @@ Working line: `v42-clean-baseline`. This batch is source-only; QAS remains on th
 
 - `CatalogStockAuditTest` covers opening/change/no-op movements, admin attribution, stale simple and variant edits, variant removal, catalog quick edit and copy stock. Existing product editor and inventory-adjustment regressions remain in the full CI suite.
 - The editor records stock from its own save and the quick edit. Other stock sources outside these flows must be reviewed separately; the movement ledger is not asserted to reconstruct all historical inventory. Existing records receive no retroactive opening movements.
-- Automated CI is required for this code batch. The owner deferred manual QAS review to the consolidated later phase. `main` and Production remain unchanged.
+- Automated verification is complete: [Hardening CI run 36031782934](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36031782934) passed at `6889248` with 135 tests (736 assertions) and the production frontend build. The owner deferred manual QAS review to the consolidated later phase. QAS remains on `0a08253`; `main` and Production remain unchanged.
 
 ## Consolidated QAS scenarios later
 
