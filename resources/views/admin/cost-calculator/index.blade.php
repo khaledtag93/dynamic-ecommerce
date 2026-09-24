@@ -244,7 +244,7 @@
                                     <td>{{ $material->unit }}</td>
                                     <td class="text-end">{{ number_format($material->unit_price, 2) }}</td>
                                     <td class="text-end">
-                                        <form method="POST" action="{{ route('admin.cost-calculator.materials.destroy', $material) }}" data-submit-loading data-confirm-title="{{ __('Delete material') }}" data-confirm-message="{{ __('Delete this material?') }}" data-confirm-subtitle="{{ __('This removes the reusable material record. Saved recipe history should be reviewed before continuing.') }}" data-confirm-ok="{{ __('Delete') }}" data-confirm-cancel="{{ __('Cancel') }}">
+                                        <form method="POST" action="{{ route('admin.cost-calculator.materials.destroy', $material) }}" data-submit-loading data-confirm-title="{{ __('Delete material') }}" data-confirm-message="{{ __('Delete this material?') }}" data-confirm-subtitle="{{ __('This removes the reusable material record from the material list.') }}" data-confirm-ok="{{ __('Delete') }}" data-confirm-cancel="{{ __('Cancel') }}">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-sm btn-outline-danger" type="submit" title="{{ __('Delete') }}">
