@@ -4,7 +4,7 @@
 
 @section('content')
 @php
-    $categoryImage = $category->image_url ?: 'https://via.placeholder.com/1200x700?text=Category';
+    $categoryImage = $category->image_url ?: asset('images/storefront-placeholder.svg');
     $filters = $filters ?? ['q' => '', 'availability' => 'all', 'offer' => 'all', 'sort' => 'latest'];
     $categoryStats = $categoryStats ?? [
         'total' => $products->total(),
@@ -174,7 +174,7 @@
                 <div class="row g-0">
                     <div class="col-md-5">
                         <div class="quick-view-media-wrap h-100">
-                            <img src="https://via.placeholder.com/900x900?text=Product" alt="" id="quickViewImage" class="quick-view-image w-100 h-100">
+                            <img src="{{ asset('images/storefront-placeholder.svg') }}" alt="" id="quickViewImage" class="quick-view-image w-100 h-100">
                         </div>
                     </div>
                     <div class="col-md-7">
