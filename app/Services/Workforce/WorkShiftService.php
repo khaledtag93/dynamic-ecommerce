@@ -149,7 +149,7 @@ class WorkShiftService
         $overlap = EmployeeWorkShift::query()
             ->where('employee_profile_id', $employee->id)
             ->where('status', '!=', EmployeeWorkShift::STATUS_CANCELLED)
-            ->when($ignoreShiftId, fn ($query) => $query->whereKeyNot($ignoreShiftId))
+            ->when($ignoreShiftId, fn ($query) => $query->where('id', '!=', $ignoreShiftId))
             ->where('starts_at', '<', $endsAt)
             ->where('ends_at', '>', $startsAt)
             ->lockForUpdate()
