@@ -2689,5 +2689,13 @@
     "Item removed from the POS cart.": "Item removed from the POS cart.",
     "POS cart cleared.": "POS cart cleared.",
     "POS sale completed successfully.": "POS sale completed successfully.",
-    "This POS cart was already completed. The original sale is shown below.": "This POS cart was already completed. The original sale is shown below."
+    "This POS cart was already completed. The original sale is shown below.": "This POS cart was already completed. The original sale is shown below.",
+    "Print receipt": "Print receipt",
+    "Sales receipt": "Sales receipt",
+    "Back to sale": "Back to sale",
+    "Paper size": "Paper size",
+    "Receipt reference": "Receipt reference",
+    "Payment reference": "Payment reference",
+    "Thank you for your purchase.": "Thank you for your purchase.",
+    "This receipt reflects the completed POS sale recorded in the system.": "This receipt reflects the completed POS sale recorded in the system."
 }
