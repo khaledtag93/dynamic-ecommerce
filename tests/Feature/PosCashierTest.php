@@ -8,12 +8,14 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
+use App\Models\PosCashShift;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
 use App\Services\Commerce\PosService;
+use App\Services\Commerce\PosCashShiftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -152,6 +154,7 @@ class PosCashierTest extends TestCase
         $cart = app(PosService::class)->cartFor($admin);
 
         $this->actingAs($admin);
+        app(PosCashShiftService::class)->openShift($admin, 100);
         $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
         $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
 
@@ -211,6 +214,64 @@ class PosCashierTest extends TestCase
         $this->assertSame(1, Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->count());
         $this->assertSame(1, InventoryMovement::query()->where('order_id', $order->id)->count());
         $this->assertSame(1, Payment::query()->where('order_id', $order->id)->count());
+    }
+
+    public function test_cash_checkout_requires_an_open_cash_shift_but_card_checkout_does_not(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $cashProduct = $this->product('POS Shift Guard Cash', '6224000000090', 2, false, 20);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $cashProduct->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 20,
+        ])->assertSessionHasErrors('cash_shift');
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertSame(2, (int) $cashProduct->fresh()->quantity);
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CARD,
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseCount('orders', 1);
+    }
+
+    public function test_cash_shift_reconciliation_records_expected_cash_and_variance(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+        $product = $this->product('POS Shift Product', '6224000000091', 2, false, 30);
+        $shiftService = app(PosCashShiftService::class);
+        $shift = $shiftService->openShift($admin, 100, 'Opening float');
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 30,
+        ])->assertSessionHas('success');
+
+        $summary = $shiftService->summary($shift->fresh());
+        $this->assertSame(100.0, $summary['opening_cash']);
+        $this->assertSame(30.0, $summary['cash_sales']);
+        $this->assertSame(130.0, $summary['expected_cash']);
+
+        $closed = $shiftService->closeShift($shift, $admin, 128, 'Two pounds short');
+        $this->assertSame('130.00', $closed->expected_cash);
+        $this->assertSame('128.00', $closed->closing_cash_counted);
+        $this->assertSame('-2.00', $closed->cash_variance);
+        $this->assertNotNull($closed->closed_at);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'pos_cash_shift_closed',
+            'subject_id' => $shift->id,
+        ]);
     }
 
     public function test_cash_checkout_rejects_insufficient_cash_without_writing_sale_or_stock(): void
