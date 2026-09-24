@@ -46,6 +46,7 @@ class ProductVariantService
 
                 $payload = [
                     'sku' => blank($variantData['sku'] ?? null) ? null : trim((string) $variantData['sku']),
+                    'barcode' => blank($variantData['barcode'] ?? null) ? null : trim((string) $variantData['barcode']),
                     'price' => $variantData['price'] ?? 0,
                     'sale_price' => ($variantData['sale_price'] ?? null) === '' ? null : ($variantData['sale_price'] ?? null),
                     'stock' => $variantData['stock'] ?? 0,
