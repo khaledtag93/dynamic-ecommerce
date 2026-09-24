@@ -6,7 +6,7 @@
 <section class="py-5 lc-page-shell">
     <div class="container">
         @php($latestPayment = $order->payments->sortByDesc('id')->first())
-        <div class="lc-card p-4 p-lg-5 mb-4 overflow-hidden" style="background:radial-gradient(circle at top right, rgba(249,115,22,.16), transparent 28%), linear-gradient(180deg, #fff9f4 0%, #ffffff 62%);">
+        <div class="lc-card p-4 p-lg-5 mb-4 overflow-hidden" style="background:radial-gradient(circle at top right, color-mix(in srgb,var(--lc-primary) 16%,transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb,var(--lc-soft) 46%,var(--lc-surface)) 0%, var(--lc-surface) 62%);">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-7">
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle text-white mb-4" style="width:78px;height:78px;background:linear-gradient(135deg,var(--lc-primary),var(--lc-primary-dark)); box-shadow:0 20px 40px color-mix(in srgb, var(--lc-primary) 22%, transparent);">
@@ -26,7 +26,7 @@
                             <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-soft">{{ __('Pay now securely') }}</a>
                         @endif
                         <a href="{{ route('notifications.index') }}" class="btn lc-btn-soft">{{ __('Notifications') }}</a>
-                <a href="{{ route('frontend.contact') }}" class="btn lc-btn-soft">{{ __('Contact support') }}</a>
+                        <a href="{{ route('frontend.contact') }}" class="btn lc-btn-soft">{{ __('Contact support') }}</a>
                         <a href="{{ route('frontend.home') }}" class="btn lc-btn-soft">{{ __('Home') }}</a>
                     </div>
                 </div>
