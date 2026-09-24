@@ -3122,5 +3122,9 @@
     "Leave request submitted.": "Leave request submitted.",
     "Leave balance adjustment recorded.": "Leave balance adjustment recorded.",
     "Leave type created.": "Leave type created.",
-    "Leave type updated.": "Leave type updated."
+    "Leave type updated.": "Leave type updated.",
+    "Recent balance adjustments": "Recent balance adjustments",
+    "Append-only history for opening balances, carryovers, credits, and debits.": "Append-only history for opening balances, carryovers, credits, and debits.",
+    "Actor": "Actor",
+    "No balance adjustments yet.": "No balance adjustments yet."
 }
