@@ -20,7 +20,7 @@
         <form method="GET" action="{{ route('admin.pos.shifts.index') }}" class="row g-3 align-items-end" data-live-filter>
             <div class="col-lg-5">
                 <label for="shiftCashierSearch" class="form-label fw-semibold">{{ __('Cashier') }}</label>
-                <input id="shiftCashierSearch" type="search" name="cashier" value="{{ $cashierSearch }}" class="form-control" placeholder="{{ __('Search cashier by name or email') }}" autocomplete="off" data-live-search>
+                <input id="shiftCashierSearch" type="search" name="cashier" value="{{ $cashierSearch }}" class="form-control" placeholder="{{ __('Search cashier by name, email, employee code, or department') }}" autocomplete="off" data-live-search>
             </div>
             <div class="col-lg-4">
                 <label for="shiftStatus" class="form-label fw-semibold">{{ __('Shift status') }}</label>
