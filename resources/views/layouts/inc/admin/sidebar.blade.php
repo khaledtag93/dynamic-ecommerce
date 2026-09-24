@@ -265,11 +265,17 @@
                 <li class="nav-item {{ $isRoute('admin.workforce.employees.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.employees.index') }}"><i class="mdi mdi-account-group-outline menu-icon"></i><span class="menu-title">{{ __('Employees') }}</span></a>
                 </li>
+                <li class="nav-item {{ $isRoute('admin.workforce.schedule.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.schedule.index') }}"><i class="mdi mdi-calendar-multiselect-outline menu-icon"></i><span class="menu-title">{{ __('Work schedule') }}</span></a>
+                </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.attendance.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.attendance.index') }}"><i class="mdi mdi-calendar-clock-outline menu-icon"></i><span class="menu-title">{{ __('Attendance') }}</span></a>
                 </li>
                 @endif
                 @if($can('workforce.clock'))
+                <li class="nav-item {{ $isRoute('admin.workforce.my-schedule') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.workforce.my-schedule') }}"><i class="mdi mdi-calendar-account-outline menu-icon"></i><span class="menu-title">{{ __('My schedule') }}</span></a>
+                </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.time-clock', 'admin.workforce.clock-*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.workforce.time-clock') }}"><i class="mdi mdi-clock-check-outline menu-icon"></i><span class="menu-title">{{ __('My time clock') }}</span></a>
                 </li>
