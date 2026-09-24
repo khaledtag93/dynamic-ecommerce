@@ -283,7 +283,27 @@ class StorefrontExperienceTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSee('Business details')
             ->assertSee('Daily 09:00 - 18:00');
+    }
+
+    public function test_contact_page_hides_empty_business_card_and_links_configured_whatsapp(): void
+    {
+        $blank = $this->get(route('frontend.contact'));
+
+        $blank
+            ->assertOk()
+            ->assertDontSee('Business details');
+
+        \App\Models\WebsiteSetting::setValue('store_support_whatsapp', '+20 100 123 4567', 'content');
+        \App\Models\WebsiteSetting::setValue('contact_show_whatsapp', '1', 'content');
+
+        $configured = $this->get(route('frontend.contact'));
+
+        $configured
+            ->assertOk()
+            ->assertSee('href="https://wa.me/201001234567"', false)
+            ->assertSee('+20 100 123 4567');
     }
 
     public function test_category_quick_view_preserves_product_image_ratio(): void
