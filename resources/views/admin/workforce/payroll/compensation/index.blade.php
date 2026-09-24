@@ -23,7 +23,7 @@
                     <label class="form-label fw-semibold">{{ __('Pay basis') }}</label>
                     <select name="pay_basis" class="form-select">
                         <option value="">{{ __('All pay bases') }}</option>
-                        @foreach(AppModelsEmployeeCompensation::payBasisOptions() as $value => $label)
+                        @foreach(\App\Models\EmployeeCompensation::payBasisOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($basis === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -53,7 +53,7 @@
                             @php($comp = $employee->compensation)
                             <tr>
                                 <td><div class="fw-bold">{{ $employee->user?->name ?: __('Missing account') }}</div><div class="text-muted small">{{ $employee->employee_code }}@if($employee->department) · {{ $employee->department }}@endif</div></td>
-                                <td>{{ $comp ? (AppModelsEmployeeCompensation::payBasisOptions()[$comp->pay_basis] ?? IlluminateSupportStr::headline($comp->pay_basis)) : __('Not configured') }}</td>
+                                <td>{{ $comp ? (\App\Models\EmployeeCompensation::payBasisOptions()[$comp->pay_basis] ?? \Illuminate\Support\Str::headline($comp->pay_basis)) : __('Not configured') }}</td>
                                 <td>@if($comp)<span class="fw-semibold">{{ number_format((float)$comp->base_rate, 2) }} {{ $comp->currency }}</span>@else—@endif</td>
                                 <td>@if($comp){{ $comp->effective_from->format('d M Y') }}@if($comp->effective_to) → {{ $comp->effective_to->format('d M Y') }}@endif @else—@endif</td>
                                 <td>@if($comp && $comp->overtime_eligible)<span class="badge admin-status-badge badge-soft-success">{{ __('Eligible') }}</span>@else<span class="text-muted">{{ __('Not eligible') }}</span>@endif</td>
