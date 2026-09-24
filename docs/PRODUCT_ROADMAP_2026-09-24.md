@@ -89,6 +89,8 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 
 **Admin Customers interaction update — 2026-09-25:** Customer name/email search, role/activity/value filters, per-page changes, operational customer queues and pagination now reuse the same progressive live-list pattern. Live requests preserve `customers.manage` authorization, escaped output, GET fallback and URL/history while avoiding full-page KPI/revenue recomputation. Focused regression coverage is committed at application revision `51a3418`; branch-head CI verification remains pending. QAS and Production are unchanged.
 
+**Procurement / Inventory interaction update — 2026-09-25:** Suppliers, Purchases and Inventory Movement Explorer now reuse the same server-rendered progressive live-list infrastructure for their safe read-only search/filter/sort/queue/pagination interactions. Destructive, stock-receipt and inventory-changing actions remain explicit backend mutations. Inventory fragment requests no longer recompute low-stock/expiry workspaces. Application revision `7df29ec`; CI verification remains pending and QAS/Production are unchanged.
+
 Build POS as a focused operational application, not as another dense admin page.
 
 Core:
