@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
@@ -219,6 +220,101 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('data-confirm-title="Cancel order"', false)
             ->assertSee('data-confirm-ok="Cancel order"', false)
             ->assertDontSee('onclick="return confirm(', false);
+    }
+
+    public function test_paymob_result_hides_raw_provider_error_from_customer(): void
+    {
+        $user = User::factory()->create();
+
+        $order = Order::query()->create([
+            'user_id' => $user->id,
+            'order_number' => 'PAYMOB-SAFE-ERROR',
+            'status' => Order::STATUS_PENDING,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'delivery_status' => Order::DELIVERY_STATUS_PENDING,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'currency' => 'EGP',
+            'subtotal' => 100,
+            'discount_total' => 0,
+            'shipping_total' => 0,
+            'tax_total' => 0,
+            'grand_total' => 100,
+            'customer_name' => 'Payment Customer',
+            'customer_email' => 'payment@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'placed_at' => now(),
+        ]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'paymob',
+            'provider_status' => 'initiation_failed',
+            'status' => Payment::STATUS_FAILED,
+            'amount' => 100,
+            'currency' => 'EGP',
+            'meta' => [
+                'checkout_error' => 'HTTP 401 secret provider response',
+                'checkout_error_at' => now()->toDateTimeString(),
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('payments.paymob.result', $order));
+
+        $response
+            ->assertOk()
+            ->assertSee('Secure payment page could not be opened')
+            ->assertSee('We could not start the secure payment session.')
+            ->assertDontSee('HTTP 401 secret provider response');
+    }
+
+    public function test_contact_page_uses_localized_business_hours_fallback(): void
+    {
+        \App\Models\WebsiteSetting::setValue('store_contact_hours_en', 'Daily 09:00 - 18:00', 'content');
+        \App\Models\WebsiteSetting::setValue('store_contact_hours_ar', '', 'content');
+        \App\Models\WebsiteSetting::setValue('contact_show_hours', '1', 'content');
+
+        $response = $this->withSession(['locale' => 'ar'])->get(route('frontend.contact'));
+
+        $response
+            ->assertOk()
+            ->assertSee('Daily 09:00 - 18:00');
+    }
+
+    public function test_category_quick_view_preserves_product_image_ratio(): void
+    {
+        $category = Category::query()->create([
+            'name' => 'Quick View Category',
+            'slug' => 'quick-view-category-' . Str::lower(Str::random(6)),
+            'description' => 'Quick view category',
+            'meta_title' => 'Quick View Category',
+            'meta_keyword' => 'quick view',
+            'meta_description' => 'Quick view category',
+            'status' => 0,
+        ]);
+
+        $response = $this->get(route('category.products', $category->id));
+
+        $response
+            ->assertOk()
+            ->assertSee('.quick-view-image{object-fit:contain;', false)
+            ->assertDontSee('.quick-view-image{object-fit:cover;', false);
+    }
+
+    public function test_notifications_hide_mark_all_when_inbox_has_no_unread_items(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('notifications.index'));
+
+        $response
+            ->assertOk()
+            ->assertDontSee('Mark all as read');
     }
 
     public function test_storefront_defaults_do_not_expose_demo_contact_details(): void
