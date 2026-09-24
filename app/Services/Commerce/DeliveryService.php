@@ -38,13 +38,13 @@ class DeliveryService
                 ]);
             }
 
-            $updates = [
-                'delivery_status' => $newStatus,
-                'shipping_provider' => $attributes['shipping_provider'] ?? null,
-                'tracking_number' => $attributes['tracking_number'] ?? null,
-                'estimated_delivery_date' => $attributes['estimated_delivery_date'] ?? null,
-                'delivery_notes' => $attributes['delivery_notes'] ?? null,
-            ];
+            $updates = array_intersect_key($attributes, array_flip([
+                'shipping_provider',
+                'tracking_number',
+                'estimated_delivery_date',
+                'delivery_notes',
+            ]));
+            $updates['delivery_status'] = $newStatus;
 
             if ($statusChanged) {
                 if ($newStatus === Order::DELIVERY_STATUS_SHIPPED && ! $lockedOrder->shipped_at) {
