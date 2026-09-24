@@ -35,7 +35,7 @@ class CheckoutController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $cart = $this->cartService->summary();
 
@@ -46,6 +46,15 @@ class CheckoutController extends Controller
         }
 
         $paymentOptions = $this->paymentService->paymentOptionsForCheckout();
+        $savedAddresses = $request->user()->addresses()->orderByDesc('is_default_shipping')->orderBy('id')->get();
+        $requestedAddress = $request->query('address');
+        abort_if($requestedAddress !== null && $requestedAddress !== 'new' &&
+            (! is_string($requestedAddress) || ! ctype_digit($requestedAddress)), 404);
+        $selectedShippingAddress = $requestedAddress === 'new' ? null :
+            ($requestedAddress === null ? $savedAddresses->firstWhere('is_default_shipping', true) :
+                $savedAddresses->firstWhere('id', (int) $requestedAddress));
+        abort_if($requestedAddress !== null && $requestedAddress !== 'new' && ! $selectedShippingAddress, 404);
+        $defaultBillingAddress = $savedAddresses->firstWhere('is_default_billing', true);
         $deliveryOptions = Order::deliveryMethodOptions();
         $upsellProducts = $this->recommendationService->forCart($cart['items'], 3);
         $shippingGoal = $this->recommendationService->shippingProgress((float) $cart['subtotal']);
@@ -63,6 +72,9 @@ class CheckoutController extends Controller
 
         return view('frontend.checkout.index', [
             'cart' => $cart,
+            'savedAddresses' => $savedAddresses,
+            'selectedShippingAddress' => $selectedShippingAddress,
+            'defaultBillingAddress' => $defaultBillingAddress,
             'paymentOptions' => $paymentOptions,
             'deliveryOptions' => $deliveryOptions,
             'upsellProducts' => $upsellProducts,

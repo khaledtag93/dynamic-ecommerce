@@ -17,6 +17,8 @@
             </div>
         </div>
 
+        @include('frontend.account.partials.navigation')
+
         @if($orders->count())
             <div class="d-flex flex-column gap-3">
                 @foreach($orders as $order)

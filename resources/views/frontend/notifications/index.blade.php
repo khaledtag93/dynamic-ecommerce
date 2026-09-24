@@ -10,6 +10,7 @@
                 <form method="POST" action="{{ route('notifications.read-all') }}">@csrf @method('PATCH')<button class="btn lc-btn-soft">{{ __('Mark all as read') }} <span class="ms-1">({{ $unreadCount }})</span></button></form>
             @endif
         </x-frontend.page-hero>
+        @include('frontend.account.partials.navigation')
 
         <div class="lc-grid-shell d-flex flex-column gap-3">
             @forelse($notifications as $notification)

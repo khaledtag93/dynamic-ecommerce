@@ -28,6 +28,8 @@ use App\Http\Controllers\Admin\WhatsAppSettingsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Frontend\CartController;
+use App\Http\Controllers\Frontend\AccountController;
+use App\Http\Controllers\Frontend\AddressBookController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
@@ -93,6 +95,16 @@ Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name(
 Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/account', [AccountController::class, 'index'])->name('account.index');
+    Route::patch('/account/profile', [AccountController::class, 'updateProfile'])->name('account.profile.update');
+    Route::patch('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
+    Route::get('/account/addresses', [AddressBookController::class, 'index'])->name('account.addresses.index');
+    Route::get('/account/addresses/new', [AddressBookController::class, 'create'])->name('account.addresses.create');
+    Route::post('/account/addresses', [AddressBookController::class, 'store'])->name('account.addresses.store');
+    Route::get('/account/addresses/{address}/edit', [AddressBookController::class, 'edit'])->name('account.addresses.edit');
+    Route::patch('/account/addresses/{address}', [AddressBookController::class, 'update'])->name('account.addresses.update');
+    Route::delete('/account/addresses/{address}', [AddressBookController::class, 'destroy'])->name('account.addresses.destroy');
+
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/orders', [CheckoutController::class, 'orders'])->name('orders.index');

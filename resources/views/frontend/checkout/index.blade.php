@@ -81,7 +81,7 @@
 
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <input name="customer_name" value="{{ old('customer_name', auth()->user()->name) }}" class="form-control lc-form-control @error('customer_name') is-invalid @enderror" placeholder="{{ __('Full name') }}" required>
+                                    <input name="customer_name" value="{{ old('customer_name', $selectedShippingAddress?->recipient_name ?? auth()->user()->name) }}" class="form-control lc-form-control @error('customer_name') is-invalid @enderror" placeholder="{{ __('Full name') }}" required>
                                     @error('customer_name') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
@@ -89,7 +89,7 @@
                                     @error('customer_email') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <input name="customer_phone" value="{{ old('customer_phone') }}" class="form-control lc-form-control @error('customer_phone') is-invalid @enderror" placeholder="{{ __('Phone number') }}" required>
+                                    <input name="customer_phone" value="{{ old('customer_phone', $selectedShippingAddress?->phone) }}" class="form-control lc-form-control @error('customer_phone') is-invalid @enderror" placeholder="{{ __('Phone number') }}" required>
                                     @error('customer_phone') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
@@ -155,36 +155,51 @@
                                 </div>
                                 <span class="lc-badge"><i class="bi bi-geo-alt"></i>{{ __('Shipping details') }}</span>
                             </div>
+                            @if($savedAddresses->isNotEmpty())
+                                <div class="mb-4">
+                                    <div class="fw-bold mb-2">{{ __('Choose a saved address') }}</div>
+                                    <p class="text-muted small mb-2">{{ __('Choose before completing the rest of the form. You can still edit the filled fields for this order.') }}</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach($savedAddresses as $savedAddress)
+                                            <a href="{{ route('checkout.index', ['address' => $savedAddress->id]) }}" class="btn btn-sm {{ $selectedShippingAddress?->id === $savedAddress->id ? 'lc-btn-primary' : 'lc-btn-soft' }}" @if($selectedShippingAddress?->id === $savedAddress->id) aria-current="true" @endif>
+                                                {{ $savedAddress->label }} · {{ $savedAddress->city }}
+                                            </a>
+                                        @endforeach
+                                        <a href="{{ route('checkout.index', ['address' => 'new']) }}" class="btn btn-sm {{ $selectedShippingAddress ? 'lc-btn-soft' : 'lc-btn-primary' }}">{{ __('Enter a new address') }}</a>
+                                    </div>
+                                    <a href="{{ route('account.addresses.index') }}" class="small d-inline-block mt-2">{{ __('Manage saved addresses') }}</a>
+                                </div>
+                            @endif
                             <div class="row g-3">
                                 <div class="col-12">
-                                    <input name="shipping_address_line_1" value="{{ old('shipping_address_line_1') }}" class="form-control lc-form-control @error('shipping_address_line_1') is-invalid @enderror" placeholder="{{ __('Address line 1') }}" required>
+                                    <input name="shipping_address_line_1" value="{{ old('shipping_address_line_1', $selectedShippingAddress?->address_line_1) }}" class="form-control lc-form-control @error('shipping_address_line_1') is-invalid @enderror" placeholder="{{ __('Address line 1') }}" required>
                                     @error('shipping_address_line_1') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-12">
-                                    <input name="shipping_address_line_2" value="{{ old('shipping_address_line_2') }}" class="form-control lc-form-control @error('shipping_address_line_2') is-invalid @enderror" placeholder="{{ __('Address line 2 (optional)') }}">
+                                    <input name="shipping_address_line_2" value="{{ old('shipping_address_line_2', $selectedShippingAddress?->address_line_2) }}" class="form-control lc-form-control @error('shipping_address_line_2') is-invalid @enderror" placeholder="{{ __('Address line 2 (optional)') }}">
                                     @error('shipping_address_line_2') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <input name="shipping_city" value="{{ old('shipping_city') }}" class="form-control lc-form-control @error('shipping_city') is-invalid @enderror" placeholder="{{ __('City') }}" required>
+                                    <input name="shipping_city" value="{{ old('shipping_city', $selectedShippingAddress?->city) }}" class="form-control lc-form-control @error('shipping_city') is-invalid @enderror" placeholder="{{ __('City') }}" required>
                                     @error('shipping_city') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <input name="shipping_state" value="{{ old('shipping_state') }}" class="form-control lc-form-control @error('shipping_state') is-invalid @enderror" placeholder="{{ __('State / Area') }}">
+                                    <input name="shipping_state" value="{{ old('shipping_state', $selectedShippingAddress?->state) }}" class="form-control lc-form-control @error('shipping_state') is-invalid @enderror" placeholder="{{ __('State / Area') }}">
                                     @error('shipping_state') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <input name="shipping_postal_code" value="{{ old('shipping_postal_code') }}" class="form-control lc-form-control @error('shipping_postal_code') is-invalid @enderror" placeholder="{{ __('Postal code') }}">
+                                    <input name="shipping_postal_code" value="{{ old('shipping_postal_code', $selectedShippingAddress?->postal_code) }}" class="form-control lc-form-control @error('shipping_postal_code') is-invalid @enderror" placeholder="{{ __('Postal code') }}">
                                     @error('shipping_postal_code') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <input name="shipping_country" value="{{ old('shipping_country', 'Egypt') }}" class="form-control lc-form-control @error('shipping_country') is-invalid @enderror" placeholder="{{ __('Country') }}" required>
+                                    <input name="shipping_country" value="{{ old('shipping_country', $selectedShippingAddress?->country ?? 'Egypt') }}" class="form-control lc-form-control @error('shipping_country') is-invalid @enderror" placeholder="{{ __('Country') }}" required>
                                     @error('shipping_country') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                         </div>
 
                         <div class="lc-card p-4 checkout-step-card">
-                            @php($billingSame = old('billing_same_as_shipping', '1') === '1')
+                            @php($billingSame = old('billing_same_as_shipping', $defaultBillingAddress && $defaultBillingAddress->id !== $selectedShippingAddress?->id ? '0' : '1') === '1')
                             <div class="checkout-section-head mb-3">
                                 <div>
                                     <div class="checkout-step-index">04</div>
@@ -199,6 +214,7 @@
                                     <div class="text-muted small">{{ __('Turn this off only when the invoice needs a different billing address.') }}</div>
                                 </div>
                                 <div class="form-check form-switch m-0">
+                                    <input type="hidden" name="billing_same_as_shipping" value="0">
                                     <input class="form-check-input" type="checkbox" role="switch" id="billingSame" name="billing_same_as_shipping" value="1" @checked($billingSame) onchange="document.getElementById('billingFields').classList.toggle('d-none', this.checked)">
                                 </div>
                             </div>
@@ -207,27 +223,27 @@
                                 <h4 class="fw-bold mb-3">{{ __('Billing address') }}</h4>
                                 <div class="row g-3">
                                     <div class="col-12">
-                                        <input name="billing_address_line_1" value="{{ old('billing_address_line_1') }}" class="form-control lc-form-control @error('billing_address_line_1') is-invalid @enderror" placeholder="{{ __('Address line 1') }}">
+                                        <input name="billing_address_line_1" value="{{ old('billing_address_line_1', $defaultBillingAddress?->address_line_1) }}" class="form-control lc-form-control @error('billing_address_line_1') is-invalid @enderror" placeholder="{{ __('Address line 1') }}">
                                         @error('billing_address_line_1') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-12">
-                                        <input name="billing_address_line_2" value="{{ old('billing_address_line_2') }}" class="form-control lc-form-control @error('billing_address_line_2') is-invalid @enderror" placeholder="{{ __('Address line 2') }}">
+                                        <input name="billing_address_line_2" value="{{ old('billing_address_line_2', $defaultBillingAddress?->address_line_2) }}" class="form-control lc-form-control @error('billing_address_line_2') is-invalid @enderror" placeholder="{{ __('Address line 2') }}">
                                         @error('billing_address_line_2') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-md-4">
-                                        <input name="billing_city" value="{{ old('billing_city') }}" class="form-control lc-form-control @error('billing_city') is-invalid @enderror" placeholder="{{ __('City') }}">
+                                        <input name="billing_city" value="{{ old('billing_city', $defaultBillingAddress?->city) }}" class="form-control lc-form-control @error('billing_city') is-invalid @enderror" placeholder="{{ __('City') }}">
                                         @error('billing_city') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-md-4">
-                                        <input name="billing_state" value="{{ old('billing_state') }}" class="form-control lc-form-control @error('billing_state') is-invalid @enderror" placeholder="{{ __('State / Area') }}">
+                                        <input name="billing_state" value="{{ old('billing_state', $defaultBillingAddress?->state) }}" class="form-control lc-form-control @error('billing_state') is-invalid @enderror" placeholder="{{ __('State / Area') }}">
                                         @error('billing_state') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-md-4">
-                                        <input name="billing_postal_code" value="{{ old('billing_postal_code') }}" class="form-control lc-form-control @error('billing_postal_code') is-invalid @enderror" placeholder="{{ __('Postal code') }}">
+                                        <input name="billing_postal_code" value="{{ old('billing_postal_code', $defaultBillingAddress?->postal_code) }}" class="form-control lc-form-control @error('billing_postal_code') is-invalid @enderror" placeholder="{{ __('Postal code') }}">
                                         @error('billing_postal_code') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                     <div class="col-md-6">
-                                        <input name="billing_country" value="{{ old('billing_country', 'Egypt') }}" class="form-control lc-form-control @error('billing_country') is-invalid @enderror" placeholder="{{ __('Country') }}">
+                                        <input name="billing_country" value="{{ old('billing_country', $defaultBillingAddress?->country ?? 'Egypt') }}" class="form-control lc-form-control @error('billing_country') is-invalid @enderror" placeholder="{{ __('Country') }}">
                                         @error('billing_country') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                 </div>

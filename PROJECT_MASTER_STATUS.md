@@ -93,6 +93,12 @@
 - English/Arabic copy and focused storefront regression coverage were updated. See `docs/STOREFRONT_CUSTOMER_UX_2026-09-24.md`.
 - Source implementation and automated regression verification are complete for this iteration. Hardening CI run `36014798313` passed at `d13e6a3`; authenticated English/Arabic desktop/mobile QAS review remains required. Production is unchanged.
 
+## Customer account and address book checkpoint — 2026-09-24
+- A customer account overview, editable name/email with current-password protection for email changes, and a separate password-change form are implemented in source.
+- Customer-owned saved addresses now have shipping/billing defaults with serialized mutations and fallback on deletion. Checkout can prefill a selected address and the billing default; each placed order retains an independent address snapshot. The billing-same-as-shipping toggle now submits its off state explicitly.
+- English/Arabic account and address-book copy, compact navigation, in-app deletion confirmation, and focused ownership/profile/default/checkout regression tests were added. See `docs/CUSTOMER_ACCOUNT_ADDRESS_BOOK_2026-09-24.md`.
+- Local PHP/Composer are unavailable in the current workspace; branch-head CI and authenticated English/Arabic desktop/mobile QAS are pending. `main` and Production are unchanged.
+
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
 - Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.

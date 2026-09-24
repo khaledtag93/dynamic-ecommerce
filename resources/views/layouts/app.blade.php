@@ -571,6 +571,19 @@
             body[dir="rtl"] .retail-quick-tile { grid-template-columns: minmax(0, 1fr) 44px; }
         }
 
+        .lc-account-nav { display:flex; gap:.55rem; overflow-x:auto; padding:.35rem 0 .75rem; scrollbar-width:thin; }
+        .lc-account-nav a { flex:none; border:1px solid var(--lc-border); border-radius:999px; padding:.6rem 1rem; background:var(--lc-surface); color:var(--lc-text); font-weight:700; }
+        .lc-account-nav a:hover, .lc-account-nav a[aria-current="page"] { background:var(--lc-primary); border-color:var(--lc-primary); color:var(--lc-btn-text); }
+        .lc-account-nav a:focus-visible, .lc-account-shortcut:focus-visible, .lc-account-order:focus-visible { outline:3px solid var(--lc-primary); outline-offset:3px; }
+        .lc-account-shortcut { display:flex; align-items:center; gap:1rem; padding:1.35rem; color:var(--lc-text); }
+        .lc-account-shortcut:hover { color:var(--lc-primary-dark); border-color:var(--lc-primary); }
+        .lc-account-shortcut > i:first-child { display:grid; place-items:center; flex:none; width:2.8rem; height:2.8rem; border-radius:.9rem; background:var(--lc-soft); color:var(--lc-primary-dark); font-size:1.2rem; }
+        .lc-account-shortcut span { display:grid; gap:.15rem; min-width:0; flex:1; }
+        .lc-account-shortcut small, .lc-account-order small { color:var(--lc-muted); }
+        .lc-account-order { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1rem 0; border-top:1px solid var(--lc-border); color:var(--lc-text); }
+        .lc-account-order span:first-child { display:grid; gap:.2rem; min-width:0; overflow-wrap:anywhere; }
+        @media (max-width:575.98px) { .lc-account-shortcut { padding:1rem; } }
+
     </style>
     @stack('styles')
 </head>
@@ -625,7 +638,9 @@
                                     <strong>{{ auth()->user()->name ?? __('My account') }}</strong>
                                     <small>{{ auth()->user()->email ?? '' }}</small>
                                 </div>
+                                <a class="dropdown-item" href="{{ route('account.index') }}"><i class="bi bi-person"></i>{{ __('My account') }}</a>
                                 <a class="dropdown-item" href="{{ route('orders.index') }}"><i class="bi bi-receipt"></i>{{ __('My Orders') }}</a>
+                                <a class="dropdown-item" href="{{ route('account.addresses.index') }}"><i class="bi bi-geo-alt"></i>{{ __('Address book') }}</a>
                                 <a class="dropdown-item" href="{{ route('notifications.index') }}"><i class="bi bi-bell"></i>{{ __('Notifications') }}</a>
                                 @if((int) auth()->user()->role_as === 1)
                                     <a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i>{{ __('Admin Dashboard') }}</a>
@@ -699,7 +714,9 @@
                         <a href="#latest-products">{{ __('New arrivals') }}</a>
                         <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
                         @auth
+                            <a class="d-md-none" href="{{ route('account.index') }}"><i class="bi bi-person me-1"></i>{{ __('My account') }}</a>
                             <a class="d-md-none" href="{{ route('orders.index') }}"><i class="bi bi-receipt me-1"></i>{{ __('My Orders') }}</a>
+                            <a class="d-md-none" href="{{ route('account.addresses.index') }}"><i class="bi bi-geo-alt me-1"></i>{{ __('Address book') }}</a>
                             <a class="d-md-none" href="{{ route('notifications.index') }}"><i class="bi bi-bell me-1"></i>{{ __('Notifications') }}</a>
                             @if((int) auth()->user()->role_as === 1)
                                 <a href="{{ route('admin.dashboard') }}">{{ __('Admin Dashboard') }}</a>
@@ -772,6 +789,7 @@
                 <a href="{{ route('frontend.home') }}">{{ __('Home') }}</a>
                 <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
                 @auth
+                    <a href="{{ route('account.index') }}">{{ __('My account') }}</a>
                     <a href="{{ route('orders.index') }}">{{ __('My Orders') }}</a>
                     <a href="{{ route('checkout.index') }}">{{ __('Checkout') }}</a>
                 @else
