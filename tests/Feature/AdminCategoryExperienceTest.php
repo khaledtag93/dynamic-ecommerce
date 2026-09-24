@@ -73,6 +73,75 @@ class AdminCategoryExperienceTest extends TestCase
         ]);
     }
 
+    public function test_category_edit_keeps_canonical_fields_separate_from_arabic_translation(): void
+    {
+        $owner = User::factory()->create(['role_as' => 1]);
+        $category = $this->category('Canonical Category', 'canonical-category', 'Canonical description', 'category/canonical.webp');
+
+        $category->translations()->create([
+            'locale' => 'ar',
+            'name' => 'قسم عربي',
+            'slug' => 'قسم-عربي',
+            'description' => 'وصف عربي',
+            'meta_title' => 'عنوان عربي',
+            'meta_keyword' => 'كلمات عربية',
+            'meta_description' => 'وصف ميتا عربي',
+        ]);
+
+        app()->setLocale('ar');
+
+        $this->actingAs($owner)
+            ->get(route('admin.categories.edit', $category))
+            ->assertOk()
+            ->assertSee('value="Canonical Category"', false)
+            ->assertSee('value="canonical-category"', false)
+            ->assertSee('value="قسم عربي"', false);
+    }
+
+    public function test_clearing_optional_arabic_translation_removes_stale_translation(): void
+    {
+        $owner = User::factory()->create(['role_as' => 1]);
+        $category = $this->category('Canonical Category', 'canonical-category', 'Canonical description', 'category/canonical.webp');
+
+        $category->translations()->create([
+            'locale' => 'ar',
+            'name' => 'قسم عربي',
+            'slug' => 'قسم-عربي',
+            'description' => 'وصف عربي',
+            'meta_title' => 'عنوان عربي',
+            'meta_keyword' => 'كلمات عربية',
+            'meta_description' => 'وصف ميتا عربي',
+        ]);
+
+        $payload = [
+            'name' => 'Canonical Category',
+            'slug' => 'canonical-category',
+            'description' => 'Canonical description',
+            'meta_title' => 'Canonical Category',
+            'meta_keyword' => 'canonical,category',
+            'meta_description' => 'Canonical category description',
+            'translations' => [
+                'ar' => [
+                    'name' => '',
+                    'slug' => '',
+                    'description' => '',
+                    'meta_title' => '',
+                    'meta_keyword' => '',
+                    'meta_description' => '',
+                ],
+            ],
+        ];
+
+        $this->actingAs($owner)
+            ->put(route('admin.categories.update', $category), $payload)
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseMissing('category_translations', [
+            'category_id' => $category->id,
+            'locale' => 'ar',
+        ]);
+    }
+
     public function test_category_with_products_cannot_be_deleted(): void
     {
         $owner = User::factory()->create(['role_as' => 1]);
