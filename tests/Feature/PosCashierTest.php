@@ -100,6 +100,19 @@ class PosCashierTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 0);
     }
 
+    public function test_pos_page_uses_live_lookup_endpoints_without_legacy_search_query_state(): void
+    {
+        $admin = User::factory()->create(['role_as' => 1]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.pos.index', ['product_search' => 'legacy', 'customer_search' => 'legacy']))
+            ->assertOk()
+            ->assertSee(route('admin.pos.lookups.products'), false)
+            ->assertSee(route('admin.pos.lookups.customers'), false)
+            ->assertDontSee('name="product_search"', false)
+            ->assertDontSee('name="customer_search"', false);
+    }
+
     public function test_pos_live_product_lookup_supports_name_and_barcode_free_products(): void
     {
         $admin = User::factory()->create(['role_as' => 1]);
