@@ -4201,5 +4201,6 @@
     "End all attendance breaks touching this payroll period before generating payroll.": "أنه كل استراحات الحضور التي تمس فترة الرواتب قبل إنشاء الرواتب.",
     "Resolve pending attendance corrections touching this payroll period before generating payroll.": "أنه كل تصحيحات الحضور المعلقة التي تمس فترة الرواتب قبل إنشاء الرواتب.",
     "Resolve pending leave requests touching this payroll period before generating payroll.": "أنه كل طلبات الإجازة المعلقة التي تمس فترة الرواتب قبل إنشاء الرواتب.",
-    "Payroll deductions cannot make net pay negative.": "لا يمكن أن تجعل خصومات الرواتب صافي الأجر سالبًا."
+    "Payroll deductions cannot make net pay negative.": "لا يمكن أن تجعل خصومات الرواتب صافي الأجر سالبًا.",
+    "Salary compensation must cover the full payroll period in V1. Configure an explicit proration policy before processing partial-period salary.": "يجب أن يغطي تعويض الراتب فترة الرواتب كاملة في الإصدار الأول. اضبط سياسة تناسب صريحة قبل معالجة راتب يغطي جزءًا من الفترة."
 }
