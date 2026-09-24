@@ -230,6 +230,8 @@ class CategoryController extends Controller
     {
         foreach ($translations as $locale => $data) {
             if (($data['name'] ?? '') === '') {
+                $category->translations()->where('locale', $locale)->delete();
+
                 continue;
             }
 
