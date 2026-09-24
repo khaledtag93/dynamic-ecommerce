@@ -21,6 +21,7 @@
 - **Finance & Promotions live-list checkpoint (2026-09-25):** application revision `b79177a` extends the shared live-list pattern to Payments, Coupons and Promotion Rules. Payment reads remain under `payments.view`; payment mutations are unchanged under `payments.manage`. Coupon Type sorting is corrected, promotion sorting is now exposed in the UI, and related destructive/pricing mutations remain backend-confirmed. Three focused feature-test files were added. CI verification remains pending; QAS remains `0a08253` and Production is unchanged.
 - **Live / no-reload phase closed in source (2026-09-25):** application revision `eedd109` completes the broad read-side migration across Deliveries, Categories, Imports, storefront Catalog Search/Category browsing, My Orders pagination and Customer Notifications pagination. Product Admin remains Livewire; mutations that change money, stock, delivery, access, cancellation or destructive business state remain explicit backend requests. See `docs/LIVE_NO_RELOAD_CLOSURE_2026-09-25.md`. CI verification remains pending; QAS stays at `0a08253`, and Production is unchanged.
 - **Workforce Foundation V1 (2026-09-25):** application revision `b0fc6d20` adds employee profiles, attendance sessions, scoped workforce permissions, manager Employee Directory / Attendance Review, personal Time Clock, transaction-safe attendance guards, activity auditing and POS cash-shift identity integration. Attendance and POS cash shifts remain separate concepts; checkout is not blocked by attendance. CI verification is pending; QAS remains `0a08253` and Production is unchanged. See `docs/WORKFORCE_FOUNDATION_2026-09-25.md`.
+- **Workforce Shift Scheduling V1 (2026-09-25):** application revision `ff423286` adds Draft/Published/Cancelled employee work shifts, transaction-safe overlap protection, live manager schedule, employee My Schedule and Schedule-vs-Actual attendance comparison. Cancelled shifts are retained historically; published-only visibility is enforced for employees. CI pending; QAS stays `0a08253`; Production unchanged. See `docs/WORKFORCE_SHIFT_SCHEDULING_V1_2026-09-25.md`.
 
 ## Latest working-line update — 2026-09-23
 - An admin daily-work UX batch is CI-verified in source, pending QAS review: the default dashboard now shows four clearly defined 30-day metrics, permission-scoped priorities, workspaces and recent records. Its controller no longer computes the unused deep-dive panels. The sidebar no longer queries order/coupon/supplier counts on every render. Topbar/search and order actions respect route permissions.
@@ -33,6 +34,19 @@
 - Focused promotion/demotion, permission-boundary and Production demo-guard regression tests were added. Code revision `f7ff4e8` passed [Hardening CI run 35916058338](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/35916058338): PHP syntax, clean MySQL migration, Blade compilation, 45 PHPUnit tests and frontend build. **QAS visual verification and Production deployment are still pending**; neither environment is recorded as running this batch.
 - The pre-existing roleless-admin Super Admin fallback is still active. This is a **partial authorization fix**; inventory current admins, designate and explicitly assign the owner, then remove the fallback with migration/rollback tests. Other P0 release gates in the audits remain open.
 - The source audit and UI review are dated baselines, and their later implementation states are tracked in the [documentation guide](docs/README.md). Update this section and the ledger for every subsequent batch.
+
+## Workforce Shift Scheduling V1 — 2026-09-25
+- Added `employee_work_shifts` and `EmployeeWorkShift` with Draft / Published / Cancelled lifecycle.
+- Added transaction-safe `WorkShiftService` with employee-first locking and overlap prevention. Adjacent shifts remain valid.
+- Manager Work Schedule supports live search/filter/date range/pagination using the shared fragment helper.
+- Staff My Schedule shows only published current/upcoming work shifts.
+- Cancelled work shifts remain historical records and are no longer editable.
+- Manager schedule compares planned shifts against overlapping attendance sessions and reports actual clock-in/out plus early/late/on-time start state.
+- All create/update/cancel actions write to the existing admin activity audit log.
+- Existing `workforce.view`, `workforce.manage`, `workforce.clock` permission boundaries are reused.
+- Regression coverage: `WorkforceSchedulingTest`.
+- Application source: `ff423286`. CI pending; QAS `0a08253`; Production unchanged.
+- Next: **Attendance Rules & Corrections V1** → Leave → Payroll.
 
 ## Workforce Foundation V1 — 2026-09-25
 - Added `employee_profiles` with one-to-one staff-user identity and employment metadata.
