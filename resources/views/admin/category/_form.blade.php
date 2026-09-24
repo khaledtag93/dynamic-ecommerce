@@ -27,7 +27,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">{{ __('Name') }} <span class="required-star">*</span></label>
-                        <input type="text" name="name" value="{{ old('name', $category?->name ?? '') }}" class="form-control @error('name') is-invalid @enderror" placeholder="{{ __('Category name') }}">
+                        <input type="text" name="name" value="{{ old('name', $category?->getRawOriginal('name') ?? '') }}" class="form-control @error('name') is-invalid @enderror" placeholder="{{ __('Category name') }}">
                         @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -35,7 +35,7 @@
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">{{ __('Slug') }} <span class="required-star">*</span></label>
-                        <input type="text" name="slug" value="{{ old('slug', $category?->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="category-slug">
+                        <input type="text" name="slug" value="{{ old('slug', $category?->getRawOriginal('slug') ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="category-slug">
                         @error('slug')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -43,7 +43,7 @@
 
                     <div class="col-12 mb-3">
                         <label class="form-label">{{ __('Description') }}</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="5" placeholder="{{ __('Write a short description') }}">{{ old('description', $category?->description ?? '') }}</textarea>
+                        <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="5" placeholder="{{ __('Write a short description') }}">{{ old('description', $category?->getRawOriginal('description') ?? '') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -69,31 +69,50 @@
                 <div class="tab-content">
                     @foreach($translationLocales as $locale => $label)
                         @php($currentTranslation = $translations[$locale] ?? [])
-                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="category-translation-{{ $locale }}" role="tabpanel">
+                        @php($translationDirection = $locale === 'ar' ? 'rtl' : 'ltr')
+                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="category-translation-{{ $locale }}" role="tabpanel" dir="{{ $translationDirection }}">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">{{ __('Name') }} ({{ strtoupper($locale) }})</label>
-                                    <input type="text" name="translations[{{ $locale }}][name]" value="{{ old("translations.$locale.name", $currentTranslation['name'] ?? '') }}" class="form-control">
+                                    <input type="text" name="translations[{{ $locale }}][name]" value="{{ old("translations.$locale.name", $currentTranslation['name'] ?? '') }}" class="form-control @error("translations.$locale.name") is-invalid @enderror">
+                                    @error("translations.$locale.name")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">{{ __('Slug') }} ({{ strtoupper($locale) }})</label>
-                                    <input type="text" name="translations[{{ $locale }}][slug]" value="{{ old("translations.$locale.slug", $currentTranslation['slug'] ?? '') }}" class="form-control" dir="ltr">
+                                    <input type="text" name="translations[{{ $locale }}][slug]" value="{{ old("translations.$locale.slug", $currentTranslation['slug'] ?? '') }}" class="form-control @error("translations.$locale.slug") is-invalid @enderror" dir="ltr">
+                                    @error("translations.$locale.slug")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-12 mb-3">
                                     <label class="form-label">{{ __('Description') }} ({{ strtoupper($locale) }})</label>
-                                    <textarea class="form-control" name="translations[{{ $locale }}][description]" rows="3">{{ old("translations.$locale.description", $currentTranslation['description'] ?? '') }}</textarea>
+                                    <textarea class="form-control @error("translations.$locale.description") is-invalid @enderror" name="translations[{{ $locale }}][description]" rows="3">{{ old("translations.$locale.description", $currentTranslation['description'] ?? '') }}</textarea>
+                                    @error("translations.$locale.description")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">{{ __('Meta Title') }} ({{ strtoupper($locale) }})</label>
-                                    <input type="text" name="translations[{{ $locale }}][meta_title]" value="{{ old("translations.$locale.meta_title", $currentTranslation['meta_title'] ?? '') }}" class="form-control">
+                                    <input type="text" name="translations[{{ $locale }}][meta_title]" value="{{ old("translations.$locale.meta_title", $currentTranslation['meta_title'] ?? '') }}" class="form-control @error("translations.$locale.meta_title") is-invalid @enderror">
+                                    @error("translations.$locale.meta_title")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">{{ __('Keywords') }} ({{ strtoupper($locale) }})</label>
-                                    <input type="text" name="translations[{{ $locale }}][meta_keyword]" value="{{ old("translations.$locale.meta_keyword", $currentTranslation['meta_keyword'] ?? '') }}" class="form-control">
+                                    <input type="text" name="translations[{{ $locale }}][meta_keyword]" value="{{ old("translations.$locale.meta_keyword", $currentTranslation['meta_keyword'] ?? '') }}" class="form-control @error("translations.$locale.meta_keyword") is-invalid @enderror">
+                                    @error("translations.$locale.meta_keyword")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="col-12 mb-0">
                                     <label class="form-label">{{ __('Meta Description') }} ({{ strtoupper($locale) }})</label>
-                                    <textarea class="form-control" name="translations[{{ $locale }}][meta_description]" rows="3">{{ old("translations.$locale.meta_description", $currentTranslation['meta_description'] ?? '') }}</textarea>
+                                    <textarea class="form-control @error("translations.$locale.meta_description") is-invalid @enderror" name="translations[{{ $locale }}][meta_description]" rows="3">{{ old("translations.$locale.meta_description", $currentTranslation['meta_description'] ?? '') }}</textarea>
+                                    @error("translations.$locale.meta_description")
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -110,7 +129,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">{{ __('Meta Title') }} <span class="required-star">*</span></label>
-                        <input type="text" name="meta_title" value="{{ old('meta_title', $category?->meta_title ?? '') }}" class="form-control @error('meta_title') is-invalid @enderror">
+                        <input type="text" name="meta_title" value="{{ old('meta_title', $category?->getRawOriginal('meta_title') ?? '') }}" class="form-control @error('meta_title') is-invalid @enderror">
                         @error('meta_title')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -118,7 +137,7 @@
 
                     <div class="col-12 mb-3">
                         <label class="form-label">{{ __('Keywords') }} <span class="required-star">*</span></label>
-                        <textarea class="form-control @error('meta_keyword') is-invalid @enderror" name="meta_keyword" rows="3">{{ old('meta_keyword', $category?->meta_keyword ?? '') }}</textarea>
+                        <textarea class="form-control @error('meta_keyword') is-invalid @enderror" name="meta_keyword" rows="3">{{ old('meta_keyword', $category?->getRawOriginal('meta_keyword') ?? '') }}</textarea>
                         @error('meta_keyword')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -126,7 +145,7 @@
 
                     <div class="col-12 mb-0">
                         <label class="form-label">{{ __('Meta Description') }} <span class="required-star">*</span></label>
-                        <textarea class="form-control @error('meta_description') is-invalid @enderror" name="meta_description" rows="4">{{ old('meta_description', $category?->meta_description ?? '') }}</textarea>
+                        <textarea class="form-control @error('meta_description') is-invalid @enderror" name="meta_description" rows="4">{{ old('meta_description', $category?->getRawOriginal('meta_description') ?? '') }}</textarea>
                         @error('meta_description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
