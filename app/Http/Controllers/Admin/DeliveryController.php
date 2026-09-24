@@ -46,12 +46,23 @@ class DeliveryController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $stats = [
-            'total' => Order::count(),
+        $queueStats = [
             'action' => Order::whereIn('delivery_status', [Order::DELIVERY_STATUS_PENDING, Order::DELIVERY_STATUS_PREPARING])->count(),
             'transit' => Order::whereIn('delivery_status', [Order::DELIVERY_STATUS_SHIPPED, Order::DELIVERY_STATUS_OUT_FOR_DELIVERY])->count(),
-            'delivered' => Order::where('delivery_status', Order::DELIVERY_STATUS_DELIVERED)->count(),
             'exceptions' => Order::whereIn('delivery_status', [Order::DELIVERY_STATUS_RETURNED, Order::DELIVERY_STATUS_CANCELLED])->count(),
+        ];
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.deliveries._results', [
+                'orders' => $orders,
+                'filters' => $filters,
+                'queueStats' => $queueStats,
+            ]);
+        }
+
+        $stats = $queueStats + [
+            'total' => Order::count(),
+            'delivered' => Order::where('delivery_status', Order::DELIVERY_STATUS_DELIVERED)->count(),
         ];
 
         return view('admin.deliveries.index', [
@@ -60,6 +71,7 @@ class DeliveryController extends Controller
             'deliveryStatusOptions' => Order::deliveryStatusOptions(),
             'deliveryMethodOptions' => Order::deliveryMethodOptions(),
             'stats' => $stats,
+            'queueStats' => $queueStats,
         ]);
     }
 
