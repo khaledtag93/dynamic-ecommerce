@@ -494,3 +494,13 @@ Verification:
 - Production and `main`: unchanged
 
 Deliberate boundary: POS lookup exposes name/email only and does not grant customer-management, address, order-history or profile-edit capabilities.
+
+
+### POS shift review live list — 2026-09-24
+- Manager Cash Shift Review now has debounced cashier name/email search, immediate status filters, and pagination that update its server-rendered results without a full-page reload.
+- The same permission-protected route and query serve both the normal HTML page and a small results fragment. Without JavaScript, the GET form, Reset link and pagination links still work.
+- A reusable `public/admin/js/live-list.js` helper cancels stale requests, preserves shareable query URLs and browser Back/Forward, announces loading/results/errors, and provides a full-page fallback on failed requests.
+- Result rows and notes remain Blade-escaped. Global shift KPI cards remain unfiltered and are refreshed on a normal page load; the live fragment only replaces the filtered table/count/pagination.
+- Focused regression coverage checks manager authorization on full/fragment requests, identical filtered records, and escaped notes. The previous branch CI at `a4fbfe9` failed five POS tests; this working batch corrects stale role/search/schema assertions, an unreachable missing-variant validation message, and a Sale Summary Blade parse error. A second compiled-Blade parse error in Customer Address Book was corrected as well.
+- Local verification: POS 32 tests / 330 assertions and Customer Account 3 tests / 58 assertions passed in a separate SQLite test worktree with temporary database-compatibility adjustments to three MySQL-only expressions/migrations; no such test-only changes are in the application branch. All 166 compiled Blade views passed PHP syntax lint, as did changed PHP files; Node syntax, EN/AR JSON parsing and `git diff --check` passed.
+- The actual MySQL GitHub Actions gate is still unverified. Source work is local on `v42-clean-baseline`: an automated approval review blocked pushing it to the public GitHub repository, pending explicit owner approval. QAS application HEAD was last operator-confirmed at `0a08253`; no new QAS/Production deployment is claimed. Consolidated authenticated EN/AR QAS review remains deferred by the owner.

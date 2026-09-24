@@ -482,13 +482,13 @@ class PosService
                 ? ProductVariant::query()->whereKey($variant->id)->lockForUpdate()->first()
                 : null;
 
-            $this->validateSaleTarget($lockedProduct, $lockedVariant, $variant?->id);
-
-            if ($lockedProduct->has_variants && ! $lockedVariant) {
+            if ($lockedProduct?->has_variants && ! $lockedVariant) {
                 throw ValidationException::withMessages([
                     'product' => __('Choose an exact variant before adding this product to the POS cart.'),
                 ]);
             }
+
+            $this->validateSaleTarget($lockedProduct, $lockedVariant, $variant?->id);
 
             $availableStock = (int) ($lockedVariant?->stock ?? $lockedProduct->quantity);
             if ($availableStock < 1) {

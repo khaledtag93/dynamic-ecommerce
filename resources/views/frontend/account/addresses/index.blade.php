@@ -25,8 +25,13 @@
                         <div class="fw-semibold">{{ $address->recipient_name }}</div>
                         <div class="text-muted mb-3" dir="auto">{{ $address->phone }}</div>
                         <address class="text-muted mb-4" dir="auto">
-                            {{ $address->address_line_1 }}@if($address->address_line_2), {{ $address->address_line_2 }}@endif<br>
-                            {{ $address->city }}@if($address->state), {{ $address->state }}@endif@if($address->postal_code) {{ $address->postal_code }}@endif<br>
+                            {{ $address->address_line_1 }}
+                            @if($address->address_line_2), {{ $address->address_line_2 }}@endif
+                            <br>
+                            {{ $address->city }}
+                            @if($address->state), {{ $address->state }}@endif
+                            @if($address->postal_code) {{ $address->postal_code }}@endif
+                            <br>
                             {{ $address->country }}
                         </address>
                         <div class="d-flex gap-2 flex-wrap mt-auto">

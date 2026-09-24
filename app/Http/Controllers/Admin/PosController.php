@@ -151,6 +151,10 @@ class PosController extends Controller
 
         $cashShifts = $query->paginate(25)->withQueryString();
 
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('admin.pos.shifts._results', compact('cashShifts'));
+        }
+
         $shiftMetrics = [
             'open' => PosCashShift::query()->whereNull('closed_at')->count(),
             'closed' => PosCashShift::query()->whereNotNull('closed_at')->count(),

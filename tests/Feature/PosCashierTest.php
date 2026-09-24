@@ -26,8 +26,11 @@ class PosCashierTest extends TestCase
 
     public function test_cashier_cannot_open_manager_shift_review_but_operations_manager_can(): void
     {
-        $cashier = User::factory()->create(['role_as' => 4]);
-        $manager = User::factory()->create(['role_as' => 3]);
+        app(AuthorizationService::class)->syncDefaults();
+        $cashier = User::factory()->create(['role_as' => 1]);
+        $manager = User::factory()->create(['role_as' => 1]);
+        $cashier->roles()->sync([Role::query()->where('slug', 'cashier')->firstOrFail()->id]);
+        $manager->roles()->sync([Role::query()->where('slug', 'operations_manager')->firstOrFail()->id]);
 
         $this->actingAs($cashier)
             ->get(route('admin.pos.shifts.index'))
@@ -37,6 +40,54 @@ class PosCashierTest extends TestCase
             ->get(route('admin.pos.shifts.index'))
             ->assertOk()
             ->assertSee(__('Cash Shift Review'));
+
+        $this->actingAs($cashier)
+            ->withHeader('X-Live-List', '1')
+            ->get(route('admin.pos.shifts.index'))
+            ->assertForbidden();
+    }
+
+    public function test_manager_shift_review_filters_the_same_server_records_for_full_and_live_requests(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = User::factory()->create(['role_as' => 1]);
+        $manager->roles()->sync([Role::query()->where('slug', 'operations_manager')->firstOrFail()->id]);
+        $matchingCashier = User::factory()->create(['role_as' => 1, 'name' => 'Mina Youssef']);
+        $otherCashier = User::factory()->create(['role_as' => 1, 'name' => 'Other Cashier']);
+
+        PosCashShift::query()->create([
+            'cashier_user_id' => $matchingCashier->id,
+            'opening_cash' => 100,
+            'expected_cash' => 120,
+            'closing_cash_counted' => 115,
+            'cash_variance' => -5,
+            'opened_at' => now()->subHour(),
+            'closed_at' => now(),
+            'closing_notes' => '<private note>',
+        ]);
+        PosCashShift::query()->create([
+            'cashier_user_id' => $otherCashier->id,
+            'opening_cash' => 50,
+            'opened_at' => now(),
+        ]);
+
+        $url = route('admin.pos.shifts.index', ['cashier' => 'Youssef', 'status' => 'variance']);
+
+        $this->actingAs($manager)->get($url)
+            ->assertOk()
+            ->assertSee('data-live-filter', false)
+            ->assertSee('data-live-results', false)
+            ->assertSee('Mina Youssef')
+            ->assertDontSee('Other Cashier')
+            ->assertSee('&lt;private note&gt;', false);
+
+        $this->withHeader('X-Live-List', '1')->get($url)
+            ->assertOk()
+            ->assertSee('data-live-results', false)
+            ->assertSee('Mina Youssef')
+            ->assertDontSee('Other Cashier')
+            ->assertDontSee('data-live-filter', false)
+            ->assertDontSee('<html', false);
     }
 
     public function test_arabic_pos_validation_does_not_leak_default_english_required_message(): void
@@ -448,10 +499,10 @@ class PosCashierTest extends TestCase
         $cart = app(PosService::class)->cartFor($admin);
 
         $this->actingAs($admin)
-            ->get(route('admin.pos.index', ['customer_search' => 'Mona']))
+            ->getJson(route('admin.pos.lookups.customers', ['q' => 'Mona']))
             ->assertOk()
-            ->assertSee('Mona POS Customer')
-            ->assertSee('mona.pos@example.test')
+            ->assertJsonPath('results.0.id', $customer->id)
+            ->assertJsonPath('results.0.email', 'mona.pos@example.test')
             ->assertDontSee('Mona Internal Staff')
             ->assertDontSee('mona.staff@example.test');
 
@@ -991,7 +1042,7 @@ class PosCashierTest extends TestCase
             'order_id' => $order->id,
             'product_id' => $product->id,
             'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
-            'quantity' => 1,
+            'quantity_change' => 1,
         ]);
 
         $this->post(route('admin.pos.sales.return', $order), [

@@ -2762,5 +2762,9 @@
     "POS line discount updated.": "POS line discount updated.",
     "POS line discount removed.": "POS line discount removed.",
     "POS sale discount updated.": "POS sale discount updated.",
-    "POS sale discount removed.": "POS sale discount removed."
+    "POS sale discount removed.": "POS sale discount removed.",
+    "Updating results...": "Updating results...",
+    "Results updated.": "Results updated.",
+    "Could not update results. Open the full page to retry.": "Could not update results. Open the full page to retry.",
+    "Open full page": "Open full page"
 }

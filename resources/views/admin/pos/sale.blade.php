@@ -74,14 +74,18 @@
                                 <td>{{ $item->sku ?: '—' }}</td>
                                 <td>
                                     {{ $item->quantity }}
-                                    @php($returnedQty = (int) ($returnedQuantities[$item->id] ?? 0))
+                                    @php
+                                        $returnedQty = (int) ($returnedQuantities[$item->id] ?? 0);
+                                    @endphp
                                     @if($returnedQty > 0)
                                         <div class="small text-muted">{{ __('Returned') }}: {{ $returnedQty }}</div>
                                     @endif
                                 </td>
                                 <td>EGP {{ number_format((float) $item->unit_price, 2) }}</td>
                                 <td>
-                                    @php($itemDiscount = (float) data_get($item->meta, 'pos.discount.total_amount', 0))
+                                    @php
+                                        $itemDiscount = (float) data_get($item->meta, 'pos.discount.total_amount', 0);
+                                    @endphp
                                     {{ $itemDiscount > 0 ? '-EGP ' . number_format($itemDiscount, 2) : '—' }}
                                 </td>
                                 <td class="fw-bold">EGP {{ number_format((float) $item->line_total, 2) }}</td>

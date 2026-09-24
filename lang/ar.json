@@ -3706,5 +3706,9 @@
     "Type at least 2 characters. Use arrow keys and Enter to attach a customer.": "اكتب حرفين على الأقل. استخدم مفاتيح الأسهم وEnter لربط العميل.",
     "No matching results.": "لا توجد نتائج مطابقة.",
     "Select": "اختيار",
-    "Choose a variant": "اختر نوع المنتج"
+    "Choose a variant": "اختر نوع المنتج",
+    "Updating results...": "جارٍ تحديث النتائج...",
+    "Results updated.": "تم تحديث النتائج.",
+    "Could not update results. Open the full page to retry.": "تعذر تحديث النتائج. افتح الصفحة كاملة للمحاولة مجددًا.",
+    "Open full page": "فتح الصفحة كاملة"
 }
