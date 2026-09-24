@@ -81,11 +81,11 @@
                                     <article class="lc-cart-item">
                                         @if($productSlug)
                                             <a href="{{ route('frontend.products.show', $productSlug) }}" class="lc-cart-item__media">
-                                                <img src="{{ $item->image_url ?: 'https://via.placeholder.com/100x100?text=No+Image' }}" alt="{{ $item->product_name }}">
+                                                <img src="{{ $item->image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $item->product_name }}">
                                             </a>
                                         @else
                                             <div class="lc-cart-item__media">
-                                                <img src="{{ $item->image_url ?: 'https://via.placeholder.com/100x100?text=No+Image' }}" alt="{{ $item->product_name }}">
+                                                <img src="{{ $item->image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $item->product_name }}">
                                             </div>
                                         @endif
 
