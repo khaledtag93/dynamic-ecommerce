@@ -3588,5 +3588,13 @@
     "Item removed from the POS cart.": "تمت إزالة العنصر من سلة نقطة البيع.",
     "POS cart cleared.": "تم مسح سلة نقطة البيع.",
     "POS sale completed successfully.": "تم إتمام بيع نقطة البيع بنجاح.",
-    "This POS cart was already completed. The original sale is shown below.": "تم إتمام سلة نقطة البيع هذه بالفعل. يتم عرض عملية البيع الأصلية أدناه."
+    "This POS cart was already completed. The original sale is shown below.": "تم إتمام سلة نقطة البيع هذه بالفعل. يتم عرض عملية البيع الأصلية أدناه.",
+    "Print receipt": "طباعة الإيصال",
+    "Sales receipt": "إيصال مبيعات",
+    "Back to sale": "العودة إلى عملية البيع",
+    "Paper size": "مقاس الورق",
+    "Receipt reference": "مرجع الإيصال",
+    "Payment reference": "مرجع الدفع",
+    "Thank you for your purchase.": "شكرًا لتسوقك معنا.",
+    "This receipt reflects the completed POS sale recorded in the system.": "يعكس هذا الإيصال عملية البيع المكتملة والمسجلة في نظام نقطة البيع."
 }
