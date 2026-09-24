@@ -123,6 +123,16 @@
 - This V1 is intentionally a sales receipt, not a fiscal/tax invoice; no jurisdiction-specific tax identity, legal invoice numbering or fiscal claims were invented.
 - QAS remains on `0a08253`; physical-printer and bilingual visual review stay queued for the consolidated phase. Production and `main` are unchanged. See `docs/POS_RECEIPT_PRINTING_V1_2026-09-24.md`.
 
+## POS Customer Attach V1 checkpoint — 2026-09-24
+- POS now supports a limited customer-account lookup by name/email, capped at 8 customer-only results and scoped under `pos.manage`; staff/admin accounts are not exposed by the lookup.
+- Cashiers can attach/detach a customer account on their own active cart. Attachment persists through Hold / Resume, and full Clear removes it.
+- Final checkout locks and rechecks the attached account, then links the canonical POS Order through `user_id` while snapshotting customer name/email. Walk-in sales remain unlinked.
+- Customer eligibility changes are fail-safe: if an attached account becomes staff before checkout, Order/Payment/Inventory writes are rejected.
+- Linked POS purchases now render correctly in customer My Orders as in-store/store-pickup purchases instead of showing blank shipping/courier content; POS Cash/Card Terminal account-area payment instructions were corrected.
+- Sale Summary and printable receipt surface attached customer identity. Attach/detach are audit logged.
+- [Hardening CI 36046473889](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36046473889) passed at application head `9129998` with **180 tests (1094 assertions)** plus frontend production build.
+- QAS remains on `0a08253`; consolidated authenticated review is deferred. Production and `main` are unchanged. See `docs/POS_CUSTOMER_ATTACH_V1_2026-09-24.md`.
+
 ## POS Hold / Resume V1 checkpoint — 2026-09-24
 - Cashiers can now pause a non-empty POS cart into a persistent held queue and immediately continue with a fresh active cart.
 - Hold preserves cart items, quantities, optional customer name, notes, a hold label and held timestamp without creating an Order/Payment or mutating inventory.
