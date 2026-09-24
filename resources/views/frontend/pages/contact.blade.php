@@ -3,6 +3,11 @@
 @section('title', ($settings['contact_page_title'] ?? __('Contact us')) . ' | ' . ($storeSettings['store_name'] ?? 'Store'))
 
 @section('content')
+@php
+    $whatsappDigits = preg_replace('/\D+/', '', (string) ($settings['store_support_whatsapp'] ?? ''));
+    $hasBusinessDetails = !empty($settings['store_business_website'])
+        || (($settings['contact_show_hours'] ?? '1') === '1' && !empty($settings['store_contact_hours']));
+@endphp
 <section class="py-5 lc-page-shell">
     <div class="container">
         <div class="mb-4">
@@ -37,7 +42,11 @@
                             <div class="col-md-6">
                                 <div class="border rounded-4 p-3 h-100">
                                     <div class="fw-bold mb-2"><i class="bi bi-whatsapp me-2"></i>{{ __('WhatsApp') }}</div>
-                                    <div>{{ $settings['store_support_whatsapp'] }}</div>
+                                    @if($whatsappDigits)
+                                        <a href="https://wa.me/{{ $whatsappDigits }}" target="_blank" rel="noopener">{{ $settings['store_support_whatsapp'] }}</a>
+                                    @else
+                                        <div>{{ $settings['store_support_whatsapp'] }}</div>
+                                    @endif
                                 </div>
                             </div>
                         @endif
@@ -53,21 +62,23 @@
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="lc-card p-4 mb-4">
-                    <h4 class="fw-bold mb-3">{{ __('Business details') }}</h4>
-                    @if(!empty($settings['store_business_website']))
-                        <div class="d-flex justify-content-between gap-3 mb-3 flex-wrap">
-                            <span class="text-muted">{{ __('Website') }}</span>
-                            <a href="{{ $settings['store_business_website'] }}" target="_blank" rel="noopener">{{ $settings['store_business_website'] }}</a>
-                        </div>
-                    @endif
-                    @if(($settings['contact_show_hours'] ?? '1') === '1' && !empty($settings['store_contact_hours']))
-                        <div class="d-flex justify-content-between gap-3 flex-wrap">
-                            <span class="text-muted">{{ __('Business hours') }}</span>
-                            <strong>{{ $settings['store_contact_hours'] }}</strong>
-                        </div>
-                    @endif
-                </div>
+                @if($hasBusinessDetails)
+                    <div class="lc-card p-4 mb-4">
+                        <h4 class="fw-bold mb-3">{{ __('Business details') }}</h4>
+                        @if(!empty($settings['store_business_website']))
+                            <div class="d-flex justify-content-between gap-3 mb-3 flex-wrap">
+                                <span class="text-muted">{{ __('Website') }}</span>
+                                <a href="{{ $settings['store_business_website'] }}" target="_blank" rel="noopener">{{ $settings['store_business_website'] }}</a>
+                            </div>
+                        @endif
+                        @if(($settings['contact_show_hours'] ?? '1') === '1' && !empty($settings['store_contact_hours']))
+                            <div class="d-flex justify-content-between gap-3 flex-wrap">
+                                <span class="text-muted">{{ __('Business hours') }}</span>
+                                <strong>{{ $settings['store_contact_hours'] }}</strong>
+                            </div>
+                        @endif
+                    </div>
+                @endif
                 <div class="lc-card p-4">
                     <h4 class="fw-bold mb-3">{{ __('Store policies') }}</h4>
                     <div class="d-flex flex-column gap-2">
