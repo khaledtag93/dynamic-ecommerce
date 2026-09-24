@@ -8,6 +8,7 @@ use App\Models\PosCart;
 use App\Models\PosCartItem;
 use App\Models\User;
 use App\Services\Commerce\PosService;
+use App\Services\Commerce\PosReturnService;
 use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,7 @@ class PosController extends Controller
 {
     public function __construct(
         protected PosService $posService,
+        protected PosReturnService $posReturnService,
         protected StoreSettingsService $storeSettingsService,
     ) {}
 
@@ -287,7 +289,9 @@ class PosController extends Controller
     public function sale(Request $request, Order $order)
     {
         $this->authorizeSaleAccess($request, $order);
-        $order->load(['items', 'payments']);
+        $order->load(['items', 'payments', 'refunds.posReturnItems']);
+        $returnedQuantities = $this->posReturnService->returnedQuantities($order);
+        $canReturn = $request->user()->hasPermission('pos.return') && $order->canBeRefunded();
 
         if ($request->boolean('receipt')) {
             $paper = (string) $request->query('paper', '80');
@@ -297,7 +301,31 @@ class PosController extends Controller
             return view('admin.pos.receipt', compact('order', 'paper', 'settings'));
         }
 
-        return view('admin.pos.sale', compact('order'));
+        return view('admin.pos.sale', compact('order', 'returnedQuantities', 'canReturn'));
+    }
+
+    public function processReturn(Request $request, Order $order)
+    {
+        $this->authorizeSaleAccess($request, $order);
+
+        $data = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*' => ['nullable', 'integer', 'min:0', 'max:9999'],
+            'reason' => ['required', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->posReturnService->process(
+            $order,
+            $data['items'],
+            $data['reason'],
+            $data['notes'] ?? null,
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('admin.pos.sales.show', $order)
+            ->with('success', __('POS return recorded successfully.'));
     }
 
     protected function authorizeSaleAccess(Request $request, Order $order): void
