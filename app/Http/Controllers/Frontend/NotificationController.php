@@ -11,8 +11,9 @@ class NotificationController extends Controller
     public function index()
     {
         $notifications = auth()->user()->notifications()->latest()->paginate(15);
+        $unreadCount = auth()->user()->unreadNotifications()->count();
 
-        return view('frontend.notifications.index', compact('notifications'));
+        return view('frontend.notifications.index', compact('notifications', 'unreadCount'));
     }
 
     public function markRead(DatabaseNotification $notification): RedirectResponse
