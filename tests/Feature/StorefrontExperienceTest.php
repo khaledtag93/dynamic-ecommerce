@@ -33,6 +33,9 @@ class StorefrontExperienceTest extends TestCase
             'name' => 'Search Category',
             'slug' => 'search-category-' . Str::lower(Str::random(6)),
             'description' => 'Search test category',
+            'meta_title' => 'Search Category',
+            'meta_keyword' => 'search',
+            'meta_description' => 'Search test category',
             'status' => 0,
         ]);
 
@@ -75,6 +78,9 @@ class StorefrontExperienceTest extends TestCase
             'name' => 'Product Detail Category',
             'slug' => 'product-detail-category-' . Str::lower(Str::random(6)),
             'description' => 'Product detail category',
+            'meta_title' => 'Product Detail Category',
+            'meta_keyword' => 'product detail',
+            'meta_description' => 'Product detail category',
             'status' => 0,
         ]);
 
@@ -106,6 +112,9 @@ class StorefrontExperienceTest extends TestCase
             'name' => 'Checkout Category',
             'slug' => 'checkout-category-' . Str::lower(Str::random(6)),
             'description' => 'Checkout test category',
+            'meta_title' => 'Checkout Category',
+            'meta_keyword' => 'checkout',
+            'meta_description' => 'Checkout test category',
             'status' => 0,
         ]);
 
