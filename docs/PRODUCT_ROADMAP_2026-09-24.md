@@ -111,6 +111,11 @@ Core:
 
 ## Phase 5 — employees and workforce
 
+**Foundation V1 implemented in source — 2026-09-25:** `b0fc6d20` adds employee profiles linked to staff users, personal attendance clock-in/out, live manager Employee Directory and Attendance Review, workforce permissions, attendance audit logs, and workforce identity in POS Cash Shift Review. Attendance remains separate from POS cash-drawer shifts and is not yet enforced as a checkout prerequisite. Detailed checkpoint: `WORKFORCE_FOUNDATION_2026-09-25.md`. CI verification is pending; QAS/Production are unchanged.
+
+**Next implementation order:** Shift Scheduling V1 → leave balances/requests → payroll/deductions.
+
+
 Keep workforce identity related to, but not overloaded into, the customer account model.
 
 Foundation:
