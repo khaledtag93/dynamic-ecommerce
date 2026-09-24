@@ -28,7 +28,7 @@ The current customer area exposes Orders and Notifications but does not yet prov
 
 - Source implementation: complete for this account-access iteration.
 - Automated regression coverage: updated.
-- Branch-head CI: pending.
+- Code-head CI: **passed** on `2c182308` — Hardening CI run `36016732522`.
 - Authenticated English/Arabic desktop/mobile QAS review: pending.
 - Production: unchanged.
 
