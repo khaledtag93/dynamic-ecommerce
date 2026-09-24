@@ -10,11 +10,16 @@ return new class extends Migration
     {
         Schema::create('employee_attendance_corrections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_attendance_session_id')
-                ->constrained('employee_attendance_sessions')
+            $table->foreignId('employee_attendance_session_id');
+            $table->foreign('employee_attendance_session_id', 'emp_att_corr_session_fk')
+                ->references('id')
+                ->on('employee_attendance_sessions')
                 ->restrictOnDelete();
-            $table->foreignId('employee_profile_id')
-                ->constrained('employee_profiles')
+
+            $table->foreignId('employee_profile_id');
+            $table->foreign('employee_profile_id', 'emp_att_corr_employee_fk')
+                ->references('id')
+                ->on('employee_profiles')
                 ->restrictOnDelete();
 
             $table->timestamp('previous_clock_in_at');
@@ -25,7 +30,11 @@ return new class extends Migration
             $table->text('reason');
             $table->string('status', 30)->default('pending');
             $table->text('review_notes')->nullable();
-            $table->foreignId('reviewed_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('reviewed_by_user_id')->nullable();
+            $table->foreign('reviewed_by_user_id', 'emp_att_corr_reviewer_fk')
+                ->references('id')
+                ->on('users')
+                ->nullOnDelete();
             $table->timestamp('reviewed_at')->nullable();
             $table->timestamps();
 
