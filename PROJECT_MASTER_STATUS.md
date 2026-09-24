@@ -43,6 +43,14 @@
 - Arabic/English catalog-admin localization is now part of the ongoing definition of done. New strings introduced during the V2 work are being registered in English and translated into Arabic as the related screens are upgraded.
 - Automated coverage has started for the upgraded catalog workflows. Final release readiness still requires green branch-head CI plus authenticated QAS review in English and Arabic before Production promotion.
 
+## Analytics & Insights V2 checkpoint — 2026-09-24
+- The Analytics overview now uses a shorter decision-first hierarchy: four primary KPIs → decision read → trends → funnel/period comparison → commercial drilldowns.
+- Repeated operator/depth/pattern/storytelling layers were removed while preserving the underlying calculations, reporting windows, funnels, comparisons and drilldowns.
+- Daily detail remains available under an expandable More diagnostics section instead of filling the default page.
+- Shared Analytics navigation and report surfaces now use configurable admin theme tokens instead of hard-coded orange styling; the duplicate on-screen export summary table is hidden while CSV/print behavior remains available.
+- English/Arabic hierarchy copy and a focused `AdminAnalyticsExperienceTest` were added. Detailed scope/QAS checks: `docs/ANALYTICS_INSIGHTS_V2_2026-09-24.md`.
+- Source implementation is complete for this iteration; branch-head CI and authenticated English/Arabic desktop/mobile QAS review remain required. Production is unchanged.
+
 ## Product Admin commercial UX checkpoint — 2026-09-24
 - Product catalog management now has combined search/status/category/brand/content-readiness/inventory/featured filters, catalog-health counters, actionable low-stock and out-of-stock views, inline simple-product pricing/quantity controls, and clearer stock/content/featured state badges.
 - Bulk operations now cover storefront visibility and featured merchandising. Activation intentionally keeps the current non-blocking content-readiness policy; incomplete content is advisory until barcode/variant/retail publication rules are finalized.
