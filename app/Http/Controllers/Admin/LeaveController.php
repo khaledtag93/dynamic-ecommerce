@@ -184,6 +184,15 @@ class LeaveController extends Controller
             ->with('success', __('Leave request rejected.'));
     }
 
+    public function adjustmentForm()
+    {
+        return view('admin.workforce.leave.adjustment', [
+            'employees' => EmployeeProfile::query()->with('user')->orderBy('employee_code')->get(),
+            'leaveTypes' => EmployeeLeaveType::query()->where('is_active', true)->orderBy('name')->get(),
+            'year' => now()->year,
+        ]);
+    }
+
     public function adjustBalance(Request $request)
     {
         $data = $request->validate([
