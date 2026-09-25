@@ -16,7 +16,10 @@
                 @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
                     <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-primary">{{ __('Pay now securely') }}</a>
                 @endif
-                @if($order->can_user_cancel && (($storeSettings['orders_allow_customer_cancellation'] ?? '1') === '1'))
+                @if(($canRequestReturn ?? false) && ($remainingReturnableTotal ?? 0) > 0)
+                    <a href="{{ route('returns.create', $order) }}" class="btn lc-btn-soft"><i class="bi bi-arrow-counterclockwise me-2"></i>{{ __('Request return') }}</a>
+                @endif
+                                @if($order->can_user_cancel && (($storeSettings['orders_allow_customer_cancellation'] ?? '1') === '1'))
                     <form method="POST" action="{{ route('orders.cancel', $order) }}" data-submit-loading class="d-flex gap-2 flex-wrap"
                         data-confirm-title="{{ __('Cancel order') }}"
                         data-confirm-message="{{ __('Are you sure you want to cancel this order?') }}"
@@ -97,6 +100,29 @@
                         <div class="row-item fs-5"><span class="fw-bold">{{ __('Grand total') }}</span><strong>EGP {{ number_format($order->grand_total, 2) }}</strong></div>
                     </div>
                 </div>
+
+                @if($order->returnRequests->isNotEmpty())
+                    <div class="lc-card p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                            <div>
+                                <h4 class="fw-bold mb-1">{{ __('Return history') }}</h4>
+                                <div class="text-muted small">{{ __('Return requests linked to this order.') }}</div>
+                            </div>
+                            <a href="{{ route('returns.index') }}" class="btn lc-btn-soft btn-sm">{{ __('My Returns') }}</a>
+                        </div>
+                        <div class="d-grid gap-2">
+                            @foreach($order->returnRequests as $returnRequest)
+                                <a href="{{ route('returns.show', $returnRequest) }}" class="border rounded-4 p-3 text-decoration-none text-body d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                    <div>
+                                        <div class="fw-bold">{{ $returnRequest->reference }}</div>
+                                        <div class="text-muted small">{{ optional($returnRequest->requested_at)->format('d M Y, h:i A') }}</div>
+                                    </div>
+                                    <span class="lc-status-badge {{ $returnRequest->status === $returnRequest::STATUS_COMPLETED ? 'lc-badge-success' : (in_array($returnRequest->status, [$returnRequest::STATUS_REJECTED, $returnRequest::STATUS_CANCELLED], true) ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $returnRequest->status_label }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div class="col-lg-4">
