@@ -112,4 +112,17 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString('body.admin-sidebar-open', $layout);
     }
 
+    public function test_admin_topbar_menus_support_keyboard_navigation(): void
+    {
+        $navbar = file_get_contents(resource_path('views/layouts/inc/admin/navbar.blade.php'));
+
+        $this->assertStringContainsString('aria-controls="quick-create-menu" aria-haspopup="menu"', $navbar);
+        $this->assertStringContainsString('aria-controls="profile-menu" aria-haspopup="menu"', $navbar);
+        $this->assertStringContainsString('role="menu"', $navbar);
+        $this->assertStringContainsString('function focusableMenuItems(menu)', $navbar);
+        $this->assertStringContainsString("['ArrowDown', 'ArrowUp'].includes(event.key)", $navbar);
+        $this->assertStringContainsString('closeMenus(null, true)', $navbar);
+        $this->assertStringContainsString('window.requestAnimationFrame(() => firstItem.focus())', $navbar);
+    }
+
 }
