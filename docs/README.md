@@ -77,3 +77,7 @@ The roleless-admin Super Admin fallback still exists for pre-existing accounts. 
 4. Complete the customer funnel with real reviews/returns/addresses and measurable bilingual/mobile accessibility checks.
 
 Each slice is reviewable on its own and follows CI → QAS → user review → Production. The roadmap is updated as new evidence appears; no document should imply a future feature is already live.
+
+
+### 2026-09-25 — Returns / RMA V1
+- [Returns / RMA V1 implementation and release note](RETURNS_RMA_V1_2026-09-25.md)
