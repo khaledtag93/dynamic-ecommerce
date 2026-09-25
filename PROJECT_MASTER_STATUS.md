@@ -937,4 +937,6 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Completed the Growth navigation performance slice: normal Growth GET requests no longer recompute attribution, cohort, predictive, or adaptive-learning datasets; those refreshes remain behind scheduled/explicit Growth processing.
 - Removed duplicate predictive/adaptive refresh work from the scheduled command and scoped Growth snapshots by active workspace so Overview, Content, Operations, and Insights no longer load each other's unrelated datasets.
 - Added regression coverage for the read-only-heavy-computation boundary and workspace-scoped data loading.
-- Next Growth performance target: optimize experiment-performance conversion/revenue calculation, which still evaluates order windows per delivery and can become N+1-style work as delivery volume grows.
+- Completed experiment-performance batching: Insights now loads eligible experiment deliveries once and matching orders once per experiment, then evaluates each delivery conversion window in memory instead of issuing Order queries inside the delivery loop.
+- Regression coverage verifies overlapping delivery windows preserve conversion counts/rates and revenue while guarding the batched query contract.
+- Next Growth performance target: measure real QAS response/query counts and add pagination or bounded result windows where campaigns, templates, deliveries, scores, or analytics datasets can grow beyond comfortable Admin-page sizes.
