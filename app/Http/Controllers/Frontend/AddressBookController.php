@@ -33,18 +33,36 @@ class AddressBookController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
-        $this->addressBook->save($request->user(), $this->validatedAddress($request));
+        $address = $this->addressBook->save($request->user(), $this->validatedAddress($request));
+        $message = __('Address saved.');
 
-        return redirect()->route('account.addresses.index')->with('success', __('Address saved.'));
+        if ($request->expectsJson() || $request->header('X-Address-Live') === '1') {
+            return response()->json([
+                'message' => $message,
+                'redirect_url' => route('account.addresses.index'),
+                'address' => ['id' => (int) $address->id],
+            ], 201);
+        }
+
+        return redirect()->route('account.addresses.index')->with('success', $message);
     }
 
-    public function update(Request $request, int $address): RedirectResponse
+    public function update(Request $request, int $address): RedirectResponse|JsonResponse
     {
-        $this->addressBook->save($request->user(), $this->validatedAddress($request), $address);
+        $savedAddress = $this->addressBook->save($request->user(), $this->validatedAddress($request), $address);
+        $message = __('Address updated.');
 
-        return redirect()->route('account.addresses.index')->with('success', __('Address updated.'));
+        if ($request->expectsJson() || $request->header('X-Address-Live') === '1') {
+            return response()->json([
+                'message' => $message,
+                'redirect_url' => route('account.addresses.index'),
+                'address' => ['id' => (int) $savedAddress->id],
+            ]);
+        }
+
+        return redirect()->route('account.addresses.index')->with('success', $message);
     }
 
     public function destroy(Request $request, int $address): RedirectResponse|JsonResponse

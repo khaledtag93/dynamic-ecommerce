@@ -134,6 +134,39 @@ class CustomerAccountTest extends TestCase
         $this->assertDatabaseHas('customer_addresses', ['id' => $foreign->id, 'user_id' => $other->id]);
     }
 
+
+    public function test_address_can_be_created_and_updated_through_live_endpoints(): void
+    {
+        $user = User::factory()->create();
+
+        $created = $this->actingAs($user)->postJson(
+            route('account.addresses.store'),
+            $this->address('Live Home'),
+            ['X-Address-Live' => '1']
+        );
+
+        $created->assertCreated()
+            ->assertJsonPath('message', 'Address saved.')
+            ->assertJsonPath('redirect_url', route('account.addresses.index'));
+
+        $address = $user->addresses()->where('label', 'Live Home')->firstOrFail();
+
+        $updated = $this->patchJson(
+            route('account.addresses.update', $address),
+            $this->address('Live Office', ['city' => 'Alexandria']),
+            ['X-Address-Live' => '1']
+        );
+
+        $updated->assertOk()
+            ->assertJsonPath('message', 'Address updated.')
+            ->assertJsonPath('address.id', $address->id);
+        $this->assertDatabaseHas('customer_addresses', [
+            'id' => $address->id,
+            'label' => 'Live Office',
+            'city' => 'Alexandria',
+        ]);
+    }
+
     public function test_saved_addresses_prefill_checkout_but_orders_keep_their_own_snapshot(): void
     {
         $user = User::factory()->create();

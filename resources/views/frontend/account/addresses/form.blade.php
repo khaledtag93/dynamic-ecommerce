@@ -9,9 +9,10 @@
         @include('frontend.account.partials.navigation')
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <form method="POST" action="{{ $address ? route('account.addresses.update', $address) : route('account.addresses.store') }}" class="lc-card p-4 p-lg-5" data-submit-loading>
+                <form method="POST" action="{{ $address ? route('account.addresses.update', $address) : route('account.addresses.store') }}" class="lc-card p-4 p-lg-5" data-submit-loading data-address-save-live>
                     @csrf
                     @if($address) @method('PATCH') @endif
+                    <div class="small mb-3 d-none" role="status" aria-live="polite" data-address-save-status></div>
                     <h2 class="h4 fw-bold mb-3">{{ __('Contact and delivery') }}</h2>
                     <div class="row g-3 mb-4">
                         @foreach([
@@ -56,3 +57,51 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form[data-address-save-live]');
+    if (!form || typeof window.fetch !== 'function') return;
+    const status = form.querySelector('[data-address-save-status]');
+    const show = (message, error = false) => {
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.toggle('d-none', !message);
+        status.classList.toggle('text-danger', error);
+        status.classList.toggle('text-success', !error && Boolean(message));
+    };
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const button = event.submitter || form.querySelector('button[type="submit"]');
+        if (button) button.disabled = true;
+        show('');
+
+        try {
+            const response = await fetch(form.action, {
+                method: @json($address ? 'PATCH' : 'POST'),
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Address-Live': '1',
+                    'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                },
+                body: new FormData(form),
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const firstError = Object.values(payload.errors || {}).flat()[0];
+                throw new Error(firstError || payload.message || @json(__('Could not save the address. Please review the form and try again.')));
+            }
+            show(payload.message || @json(__('Address saved.')));
+            if (payload.redirect_url) window.location.assign(payload.redirect_url);
+        } catch (error) {
+            show(error.message, true);
+            if (button) button.disabled = false;
+        }
+    }, true);
+});
+</script>
+@endpush
