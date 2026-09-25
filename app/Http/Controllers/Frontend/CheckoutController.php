@@ -262,6 +262,20 @@ public function store(Request $request): RedirectResponse
         ));
     }
 
+    public function receipt(Order $order)
+    {
+        abort_unless((int) $order->user_id === (int) auth()->id(), 403);
+
+        $order->load(['items', 'payments', 'refunds']);
+
+        return view('orders.receipt', [
+            'order' => $order,
+            'settings' => $this->storeSettingsService->all(),
+            'backUrl' => route('orders.show', $order),
+            'backLabel' => __('Back to order'),
+        ]);
+    }
+
     public function cancelOrder(Request $request, Order $order): RedirectResponse
     {
         abort_unless((int) $order->user_id === (int) auth()->id(), 403);
