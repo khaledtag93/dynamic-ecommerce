@@ -24,7 +24,7 @@ class AdminContentSettingsExperienceTest extends TestCase
 
         $html = $response->getContent();
 
-        $this->assertSame(15, substr_count($html, 'class="form-check form-switch m-0 flex-nowrap"'));
+        $this->assertSame(16, substr_count($html, 'class="form-check form-switch m-0 flex-nowrap"'));
         $this->assertStringContainsString('id="contact_show_email"', $html);
         $this->assertStringContainsString('id="contact_show_hours"', $html);
         $this->assertStringContainsString('id="orders_allow_customer_cancellation"', $html);
@@ -36,6 +36,9 @@ class AdminContentSettingsExperienceTest extends TestCase
         $this->assertStringContainsString('name="footer_trust_1_text_en"', $html);
         $this->assertStringContainsString('name="footer_trust_1_text_ar"', $html);
         $this->assertStringContainsString('name="footer_trust_3_text_ar"', $html);
+        $this->assertStringContainsString('id="footer_show_social"', $html);
+        $this->assertStringContainsString('name="store_social_facebook"', $html);
+        $this->assertStringContainsString('name="store_social_linkedin"', $html);
         $this->assertStringNotContainsString('form-check admin-switch-card h-100 d-block', $html);
     }
     public function test_footer_visibility_settings_are_persisted(): void
@@ -78,6 +81,35 @@ class AdminContentSettingsExperienceTest extends TestCase
         $this->assertDatabaseHas('website_settings', ['key' => 'footer_trust_1_text_en', 'value' => 'Protected payments']);
         $this->assertDatabaseHas('website_settings', ['key' => 'footer_trust_1_text_ar', 'value' => 'مدفوعات محمية']);
         $this->assertDatabaseHas('website_settings', ['key' => 'footer_trust_3_text_en', 'value' => 'Clear information']);
+    }
+
+
+    public function test_footer_social_channels_are_persisted_and_can_be_hidden(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $this->actingAs($admin)
+            ->put(route('admin.settings.content.update'), [
+                'footer_show_social' => '1',
+                'store_social_facebook' => 'https://www.facebook.com/tagmarketplace',
+                'store_social_instagram' => 'https://www.instagram.com/tagmarketplace',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_social', 'value' => '1']);
+        $this->assertDatabaseHas('website_settings', ['key' => 'store_social_facebook', 'value' => 'https://www.facebook.com/tagmarketplace']);
+        $this->assertDatabaseHas('website_settings', ['key' => 'store_social_instagram', 'value' => 'https://www.instagram.com/tagmarketplace']);
+
+        $this->actingAs($admin)
+            ->put(route('admin.settings.content.update'), [
+                'store_social_facebook' => 'https://www.facebook.com/tagmarketplace',
+                'store_social_instagram' => 'https://www.instagram.com/tagmarketplace',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_social', 'value' => '0']);
     }
 
 }
