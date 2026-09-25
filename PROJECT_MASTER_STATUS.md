@@ -1002,7 +1002,8 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added a reusable permission-aware support commerce context service for linked Customer / Order / Delivery / Payment / Return data.
 - Order/return drill-through respects `orders.view`, delivery drill-through respects `delivery.view`, customer statement respects `customers.manage`, and payment-specific context is withheld unless the viewer has `payments.view`.
 - The context is read-only and designed outside Blade so a future mobile/API client can reuse the same authorization-aware contract.
-- Regression coverage added in `SupportCaseFoundationTest`; QAS acceptance remains separate.
+- Regression coverage added in `SupportCaseFoundationTest`.
+- Hardening CI #1374 passed at `3645bdd` with 369 tests / 2499 assertions plus clean MySQL migration, routes, Blade compilation and frontend production build. Authenticated QAS acceptance remains separate.
 
 ## Customer Account Statement V1 — 2026-09-25
 - Added an Admin customer statement built only from canonical Orders, captured Payments, Order Refunds and Return Requests.
