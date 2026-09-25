@@ -616,4 +616,13 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("items[nextIndex].focus()", $layout);
     }
 
+    public function test_storefront_utility_navigation_exposes_current_page_state(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString("routeIs('notifications.*')", $layout);
+        $this->assertStringContainsString("routeIs('cart.*')", $layout);
+        $this->assertStringContainsString('.retail-action[aria-current="page"]', $layout);
+    }
+
 }
