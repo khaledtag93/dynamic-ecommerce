@@ -22,6 +22,13 @@
     <a href="{{ route('admin.orders.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to orders') }}</span></a>
 </x-admin.page-header>
 
+@if(data_get($order->meta, 'stock_reservation_exception'))
+    <div class="alert alert-danger rounded-4 border-0 mb-4">
+        <div class="fw-bold mb-1">{{ __('Paid order requires stock review') }}</div>
+        <div>{{ __('Payment was confirmed, but the online stock reservation could not be fully restored. Review inventory and fulfillment before processing this order.') }}</div>
+    </div>
+@endif
+
 <nav class="admin-order-jump" aria-label="{{ __('Page sections') }}">
     <a href="#order-items">{{ __('Items') }}</a>
     <a href="#order-customer">{{ __('Customer & Shipping') }}</a>
