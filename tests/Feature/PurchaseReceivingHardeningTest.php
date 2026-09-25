@@ -118,7 +118,7 @@ class PurchaseReceivingHardeningTest extends TestCase
 
     public function test_admin_create_rejects_variant_from_another_product_and_requires_variant_when_applicable(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product(0, true);
         $anotherProduct = $this->product(0, true);
         $wrongVariant = $this->variant($anotherProduct, 1);
@@ -143,7 +143,7 @@ class PurchaseReceivingHardeningTest extends TestCase
 
     public function test_admin_receive_replay_is_informational_and_cancelled_order_has_no_receive_action(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product(5);
         $purchase = $this->purchase();
         $this->item($purchase, $product, 2, 10);

@@ -13,7 +13,7 @@ class BrandingSettingsExperienceTest extends TestCase
 
     public function test_branding_workspace_exposes_visual_professional_theme_controls(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         $this->actingAs($owner)
             ->get(route('admin.settings.branding'))
@@ -28,7 +28,7 @@ class BrandingSettingsExperienceTest extends TestCase
 
     public function test_professional_theme_can_be_saved_and_homepage_toggles_normalize(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         WebsiteSetting::setValue('show_home_featured_categories', true, 'branding');
         WebsiteSetting::setValue('show_home_manual_featured_products', true, 'branding');
         WebsiteSetting::setValue('show_home_trust_blocks', true, 'branding');

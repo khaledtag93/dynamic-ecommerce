@@ -144,7 +144,7 @@ class AdminPromotionHardeningTest extends TestCase
 
     public function test_category_percentage_requires_a_category(): void
     {
-        $owner = \App\Models\User::factory()->create(['role_as' => 1]);
+        $owner = \App\Models\$this->createSuperAdmin();
 
         $this->actingAs($owner)
             ->post(route('admin.promotions.store'), [
@@ -161,7 +161,7 @@ class AdminPromotionHardeningTest extends TestCase
 
     public function test_switching_promotion_type_clears_irrelevant_configuration(): void
     {
-        $owner = \App\Models\User::factory()->create(['role_as' => 1]);
+        $owner = \App\Models\$this->createSuperAdmin();
         $category = $this->category('Old Category', 'old-category');
 
         $promotion = PromotionRule::create([

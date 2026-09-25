@@ -69,7 +69,7 @@ class ProviderSecretHardeningTest extends TestCase
 
     public function test_payment_settings_save_cannot_persist_submitted_provider_secrets(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         WebsiteSetting::setValue('paymob_api_key', 'legacy-db-api', 'payment');
         WebsiteSetting::setValue('paymob_hmac_secret', 'legacy-db-hmac', 'payment');
@@ -91,7 +91,7 @@ class ProviderSecretHardeningTest extends TestCase
 
     public function test_payment_settings_page_never_renders_legacy_secret_values(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         WebsiteSetting::setValue('paymob_api_key', 'SHOULD-NOT-RENDER-API', 'payment');
         WebsiteSetting::setValue('paymob_hmac_secret', 'SHOULD-NOT-RENDER-HMAC', 'payment');

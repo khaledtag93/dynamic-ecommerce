@@ -17,7 +17,7 @@ class CostCalculatorSemanticsTest extends TestCase
 
     public function test_cost_calculator_uses_theme_aware_sections_and_in_app_delete_confirmation(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         RawMaterial::query()->create([
             'name' => 'Test Material',
@@ -45,7 +45,7 @@ class CostCalculatorSemanticsTest extends TestCase
 
     public function test_profit_margin_uses_selling_price_not_cost_as_denominator(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         $categoryId = DB::table('categories')->insertGetId([
             'name' => 'Cost Test '.Str::random(6),
