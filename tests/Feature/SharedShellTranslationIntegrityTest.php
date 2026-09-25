@@ -60,6 +60,14 @@ class SharedShellTranslationIntegrityTest extends TestCase
             resource_path('views/admin/pos/receipt.blade.php'),
             resource_path('views/admin/pos/shifts/index.blade.php'),
             resource_path('views/admin/pos/shifts/_results.blade.php'),
+            resource_path('views/admin/category/_form.blade.php'),
+            resource_path('views/admin/category/_results.blade.php'),
+            resource_path('views/admin/category/index.blade.php'),
+            resource_path('views/admin/inventory/index.blade.php'),
+            resource_path('views/admin/inventory/_results.blade.php'),
+            resource_path('views/admin/inventory/adjust.blade.php'),
+            resource_path('views/admin/inventory/labels.blade.php'),
+            resource_path('views/admin/inventory/scan.blade.php'),
         ];
 
         $keys = [];
