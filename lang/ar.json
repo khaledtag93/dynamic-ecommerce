@@ -5592,5 +5592,6 @@
     "Return this account to customer access? Any assigned staff roles will be removed.": "هل تريد إعادة هذا الحساب إلى صلاحية العميل؟ ستتم إزالة أي أدوار موظفين مسندة إليه.",
     "Staff role :role was updated.": "تم تحديث دور الموظف :role.",
     "Staff role updated for :staff.": "تم تحديث دور الموظف للحساب :staff.",
-    "Change this staff role? The account permissions will change immediately.": "هل تريد تغيير دور هذا الموظف؟ ستتغير صلاحيات الحساب فورًا."
+    "Change this staff role? The account permissions will change immediately.": "هل تريد تغيير دور هذا الموظف؟ ستتغير صلاحيات الحساب فورًا.",
+    "Delivery updated for order :order.": "تم تحديث بيانات التسليم للطلب :order."
 }
