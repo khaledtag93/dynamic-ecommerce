@@ -876,3 +876,19 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - QAS now contains the accumulated 2026-09-25 source work: Returns/RMA, explicit admin-role hardening, Roles & Permissions V2, Admin UI consistency foundation, Analytics/Branding/Categories/Catalog workspaces, Admin consistency/form/settings sweeps and final Admin V2 cleanup.
 - QAS deployment confirmation establishes code integration only; authenticated functional, EN/AR, RTL, responsive and workflow acceptance remains the next phase.
 - Production is unchanged and no Production deployment is implied by this checkpoint.
+
+
+## Open issue — Growth Engine workspace review
+- The Growth Engine / Growth Automation area is **not accepted as final UI/UX quality** despite the earlier structural Analytics/Growth workspace work.
+- Owner feedback: current page division, hierarchy, UI, UX, and cross-page consistency are still below the desired professional standard.
+- A dedicated review is required for:
+  - page structure and section grouping;
+  - visual hierarchy, card density and information prioritization;
+  - consistency with the newer Admin V2 design language;
+  - responsive behavior;
+  - Arabic/English translation completeness and mixed-language copy;
+  - RTL alignment and control placement;
+  - duplicated, unclear, demo-like or operationally confusing text;
+  - functional issues or broken/unclear actions discovered during QAS.
+- Treat this as both a **UI/UX audit and functional audit**, not a cosmetic-only task.
+- Do not mark Growth Engine accepted until it is reviewed in authenticated QAS in EN/AR and any discovered issues are fixed.
