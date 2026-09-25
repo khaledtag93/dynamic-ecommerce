@@ -21,13 +21,32 @@ Reduce the long-scroll, mixed-hierarchy analytics experience without changing ca
 - Existing recommendations, rule readiness, product opportunity table, coupon candidates, and promotions remain unchanged.
 - Specialized signal cards retain their meter visualization because that carries extra information beyond a standard KPI card.
 
+## Product drilldown
+- Added Product Drilldown to the same focused workspace model with Operator summary, Performance, Trends, and Variant mix sections.
+- Replaced legacy hard-coded white/orange/slate surfaces with shared Admin theme tokens.
+- Mobile navigation and chart/card spacing now follow the same responsive behavior as the rest of Analytics.
+- Product Drilldown is included in the bilingual catalog completeness guard.
+
+## Shared workspace hardening
+- Analytics section selection is persisted in the URL with `?section=...` for refresh/share/back-navigation continuity while server validation errors retain priority.
+- Overview, Growth, Offers, and Product Drilldown all opt into section-history persistence.
+- Analytics top navigation becomes horizontally scrollable/snap-aligned on narrow screens instead of wrapping into a tall navigation block.
+- Report actions stack cleanly on mobile and Copy report link now exposes accessible success/failure feedback instead of failing silently.
+- Data-trust semantic surfaces use Admin success/warning/danger/theme tokens rather than fixed colors.
+- Range/filter controls and wide chart frames have explicit narrow-screen behavior.
+
 ## Localization / RTL
 - Added EN/AR labels for all new workspace sections.
+- Literal translation-key coverage now spans Overview, Growth, Offers, and Product Drilldown with an automated EN/AR completeness test.
 - Reuses the shared section-tab keyboard behavior, including RTL-aware arrow navigation.
 
 ## Regression coverage
 tests/Feature/AnalyticsWorkspaceV2Test.php verifies:
-- section-tab contracts for Revenue Intelligence, Offers, and Growth;
+- section-tab contracts for Revenue Intelligence, Offers, Growth, and Product Drilldown;
+- URL section persistence across all four analytics workspaces;
+- mobile filter/navigation and shared-shell contracts;
+- theme-token consistency for shared trust surfaces and Product Drilldown;
+- complete EN/AR literal-key catalogs for all four analytics views;
 - removal of the old anchor-navigation markup from the main analytics and offers workspaces;
 - shared Stat Card use for offer KPIs;
 - Arabic labels for the new analytics sections.
