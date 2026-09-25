@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderRefund;
 use App\Services\Commerce\AdminActivityLogService;
 use App\Services\Commerce\OrderActionService;
+use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,6 +18,7 @@ class OrderController extends Controller
     public function __construct(
         protected OrderActionService $orderActionService,
         protected AdminActivityLogService $adminActivityLogService,
+        protected StoreSettingsService $storeSettingsService,
     ) {
     }
 
@@ -126,6 +128,18 @@ class OrderController extends Controller
             'order' => $order,
             'statusOptions' => Order::statusOptions(),
             'deliveryStatusOptions' => Order::deliveryStatusOptions(),
+        ]);
+    }
+
+    public function receipt(Order $order)
+    {
+        $order->load(['items', 'payments', 'refunds']);
+
+        return view('orders.receipt', [
+            'order' => $order,
+            'settings' => $this->storeSettingsService->all(),
+            'backUrl' => route('admin.orders.show', $order),
+            'backLabel' => __('Back to order'),
         ]);
     }
 
