@@ -583,6 +583,16 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("bootstrap.Collapse.getOrCreateInstance(retailNav).hide()", $layout);
     }
 
+    public function test_mobile_authenticated_navigation_exposes_current_section(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('class="d-md-none" href="{{ route(\'account.index\') }}" @if(request()->routeIs(\'account.*\')) aria-current="page" @endif', $layout);
+        $this->assertStringContainsString('class="d-md-none" href="{{ route(\'orders.index\') }}" @if(request()->routeIs(\'orders.*\')) aria-current="page" @endif', $layout);
+        $this->assertStringContainsString('class="d-md-none" href="{{ route(\'account.addresses.index\') }}" @if(request()->routeIs(\'account.addresses.*\')) aria-current="page" @endif', $layout);
+        $this->assertStringContainsString('class="d-md-none" href="{{ route(\'notifications.index\') }}" @if(request()->routeIs(\'notifications.*\')) aria-current="page" @endif', $layout);
+    }
+
     public function test_account_navigation_keeps_current_section_visible_on_mobile(): void
     {
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
