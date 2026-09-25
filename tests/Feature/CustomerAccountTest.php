@@ -234,4 +234,12 @@ class CustomerAccountTest extends TestCase
             'country' => 'Egypt',
         ], $extra);
     }
+    public function test_account_navigation_exposes_current_page_semantics(): void
+    {
+        $navigation = file_get_contents(resource_path('views/frontend/account/partials/navigation.blade.php'));
+
+        $this->assertSame(6, substr_count($navigation, 'aria-current="{{ request()->routeIs('));
+        $this->assertStringContainsString("? 'page' : 'false' }}", $navigation);
+    }
+
 }
