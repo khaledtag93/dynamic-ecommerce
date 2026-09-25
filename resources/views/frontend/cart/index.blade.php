@@ -5,7 +5,7 @@
 @section('content')
 <section class="py-5 lc-page-shell">
     <div class="container">
-        <div class="lc-cart-shell">
+        <div class="lc-cart-shell" data-cart-live-root>
             <div class="lc-cart-toolbar">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
                     <div>
@@ -54,6 +54,8 @@
                 @endif
 
                 @include('frontend.partials.behavioral-offers', ['cards' => $behavioralOffers['cards'] ?? collect()])
+
+                <div class="cart-live-status small text-muted mt-2 d-none" data-cart-live-status role="status" aria-live="polite"></div>
             </div>
 
             @if($cart['items']->isEmpty())
@@ -72,13 +74,13 @@
                                     <h4 class="fw-bold mb-1">{{ __('Cart items') }}</h4>
                                     <div class="text-muted small">{{ __('Review product details, quantity, and line totals before continuing.') }}</div>
                                 </div>
-                                <span class="lc-badge"><i class="bi bi-box-seam"></i>{{ __(':count items', ['count' => $cart['items_count']]) }}</span>
+                                <span class="lc-badge" data-cart-items-badge><i class="bi bi-box-seam"></i>{{ __(':count items', ['count' => $cart['items_count']]) }}</span>
                             </div>
 
                             <div class="d-grid gap-3">
                                 @foreach($cart['items'] as $item)
                                     @php($productSlug = $item->meta['product_slug'] ?? optional($item->product)->slug)
-                                    <article class="lc-cart-item">
+                                    <article class="lc-cart-item" data-cart-item="{{ $item->id }}">
                                         @if($productSlug)
                                             <a href="{{ route('frontend.products.show', $productSlug) }}" class="lc-cart-item__media">
                                                 <img src="{{ $item->image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $item->product_name }}">
@@ -123,7 +125,7 @@
                                                 <div class="lc-cart-item__actions d-flex align-items-center gap-2 ms-auto">
                                                     <div class="text-end">
                                                         <div class="small text-muted">{{ __('Line total') }}</div>
-                                                        <div class="fw-bold fs-5">EGP {{ number_format($item->line_total, 2) }}</div>
+                                                        <div class="fw-bold fs-5">EGP <span data-cart-line-total>{{ number_format($item->line_total, 2) }}</span></div>
                                                     </div>
                                                     <form method="POST" action="{{ route('cart.destroy', $item) }}" data-submit-loading
                                                           data-confirm-title="{{ __('Remove item') }}"
@@ -211,14 +213,16 @@
                                     <span class="lc-badge"><i class="bi bi-bag-check"></i>{{ __('Ready') }}</span>
                                 </div>
 
-                                <div class="lc-summary-row"><span class="text-muted">{{ __('Items') }}</span><strong>{{ $cart['items_count'] }}</strong></div>
-                                <div class="lc-summary-row"><span class="text-muted">{{ __('Subtotal') }}</span><strong>EGP {{ number_format($cart['subtotal'], 2) }}</strong></div>
-                                @if($cart['discount'] > 0)
-                                    <div class="lc-summary-row"><span class="text-muted">{{ __('Coupon discount') }}</span><strong class="text-success">- EGP {{ number_format($cart['discount'], 2) }}</strong></div>
-                                @endif
-                                @if(($cart['promotion_discount'] ?? 0) > 0)
-                                    <div class="lc-summary-row"><span class="text-muted">{{ __('Promotion') }}</span><strong class="text-success">- EGP {{ number_format($cart['promotion_discount'], 2) }}</strong></div>
-                                @endif
+                                <div class="lc-summary-row"><span class="text-muted">{{ __('Items') }}</span><strong data-cart-items-count>{{ $cart['items_count'] }}</strong></div>
+                                <div class="lc-summary-row"><span class="text-muted">{{ __('Subtotal') }}</span><strong>EGP <span data-cart-subtotal>{{ number_format($cart['subtotal'], 2) }}</span></strong></div>
+                                <div class="lc-summary-row" data-cart-coupon-discount-row @if(($cart['coupon_discount'] ?? 0) <= 0) hidden @endif>
+                                    <span class="text-muted">{{ __('Coupon discount') }}</span>
+                                    <strong class="text-success">- EGP <span data-cart-coupon-discount>{{ number_format($cart['coupon_discount'] ?? 0, 2) }}</span></strong>
+                                </div>
+                                <div class="lc-summary-row" data-cart-promotion-discount-row @if(($cart['promotion_discount'] ?? 0) <= 0) hidden @endif>
+                                    <span class="text-muted">{{ __('Promotion') }}</span>
+                                    <strong class="text-success">- EGP <span data-cart-promotion-discount>{{ number_format($cart['promotion_discount'] ?? 0, 2) }}</span></strong>
+                                </div>
                                 <div class="lc-summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong>{{ __('Calculated at checkout') }}</strong></div>
                             @if(!empty($shippingGoal) && !$shippingGoal['qualified'])
                                 <div class="lc-note-card p-3 mt-3">
@@ -226,9 +230,9 @@
                                     <div class="small text-muted">{{ __('You are only :amount away from the shipping target.', ['amount' => 'EGP ' . number_format($shippingGoal['remaining'], 2)]) }}</div>
                                 </div>
                             @endif
-                                <div class="lc-summary-row"><span class="text-muted">{{ __('Tax') }}</span><strong>EGP {{ number_format($cart['tax'], 2) }}</strong></div>
+                                <div class="lc-summary-row"><span class="text-muted">{{ __('Tax') }}</span><strong>EGP <span data-cart-tax>{{ number_format($cart['tax'], 2) }}</span></strong></div>
                                 <div class="lc-summary-divider"></div>
-                                <div class="lc-summary-row fs-5"><span class="fw-bold">{{ __('Total before shipping') }}</span><span class="fw-bold">EGP {{ number_format($cart['total'], 2) }}</span></div>
+                                <div class="lc-summary-row fs-5"><span class="fw-bold">{{ __('Total before shipping') }}</span><span class="fw-bold">EGP <span data-cart-total>{{ number_format($cart['total'], 2) }}</span></span></div>
 
                                 <div class="lc-note-card p-3 mb-3">
                                     <div class="fw-bold mb-1">{{ __('Before checkout') }}</div>
@@ -300,7 +304,7 @@
 <style>
 .cart-offers-card{background:linear-gradient(180deg,var(--lc-surface) 0%,color-mix(in srgb,var(--lc-soft) 76%, white) 100%)}.cart-offer-signal{padding:.95rem;border-radius:1rem;background:color-mix(in srgb,var(--lc-surface) 92%,transparent);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white);box-shadow:0 12px 30px color-mix(in srgb,var(--lc-primary) 7%, transparent)}.cart-offer-signal__chip{display:inline-flex;align-items:center;padding:.35rem .6rem;border-radius:999px;background:color-mix(in srgb,var(--lc-soft) 82%,var(--lc-surface));border:1px solid color-mix(in srgb,var(--lc-primary) 18%,var(--lc-border));color:var(--lc-primary-dark);font-size:.75rem;font-weight:800}
 .cart-aov-progress__bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--lc-border) 70%, white);overflow:hidden}.cart-aov-progress__bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--lc-primary),var(--lc-secondary))}.cart-aov-progress{background:linear-gradient(180deg,var(--lc-surface) 0%,color-mix(in srgb,var(--lc-soft) 72%, white) 100%)}
-.cart-qty-update-fallback{display:none}.cart-remove-btn{font-weight:900}
+.cart-live-enabled .cart-qty-update-fallback{display:none}.cart-remove-btn{font-weight:900}.cart-qty-auto-form[aria-busy="true"] input{opacity:.65}.cart-live-status{min-height:1.25rem}
 </style>
 @endpush
 
@@ -308,14 +312,123 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.cart-qty-auto-form input[name="quantity"]').forEach(function (input) {
+    const root = document.querySelector('[data-cart-live-root]');
+    if (!root || typeof window.fetch !== 'function') return;
+
+    root.classList.add('cart-live-enabled');
+
+    const status = root.querySelector('[data-cart-live-status]');
+    const itemsLabelTemplate = @json(__(':count items', ['count' => '__COUNT__']));
+    const formatter = new Intl.NumberFormat(document.documentElement.lang || 'en', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    const money = (value) => formatter.format(Number(value || 0));
+    const showStatus = (message, isError = false) => {
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.toggle('text-danger', isError);
+        status.classList.toggle('text-success', !isError && Boolean(message));
+        status.classList.toggle('text-muted', !message);
+        status.classList.toggle('d-none', !message);
+    };
+
+    const updateSummary = (cart) => {
+        const setText = (selector, value) => {
+            const node = root.querySelector(selector);
+            if (node) node.textContent = value;
+        };
+
+        setText('[data-cart-items-count]', String(cart.items_count));
+        setText('[data-cart-subtotal]', money(cart.subtotal));
+        setText('[data-cart-coupon-discount]', money(cart.coupon_discount));
+        setText('[data-cart-promotion-discount]', money(cart.promotion_discount));
+        setText('[data-cart-tax]', money(cart.tax));
+        setText('[data-cart-total]', money(cart.total));
+
+        const badge = root.querySelector('[data-cart-items-badge]');
+        if (badge) {
+            badge.innerHTML = '<i class="bi bi-box-seam"></i>' +
+                itemsLabelTemplate.replace('__COUNT__', String(cart.items_count));
+        }
+
+        const couponRow = root.querySelector('[data-cart-coupon-discount-row]');
+        if (couponRow) couponRow.hidden = Number(cart.coupon_discount || 0) <= 0;
+
+        const promotionRow = root.querySelector('[data-cart-promotion-discount-row]');
+        if (promotionRow) promotionRow.hidden = Number(cart.promotion_discount || 0) <= 0;
+    };
+
+    const submitQuantity = async (form) => {
+        const input = form.querySelector('input[name="quantity"]');
+        if (!input || form.dataset.cartPending === '1') return;
+
+        const requested = Math.max(1, Number.parseInt(input.value || '1', 10) || 1);
+        input.value = String(requested);
+        form.dataset.cartPending = '1';
+        form.setAttribute('aria-busy', 'true');
+        input.disabled = true;
+        showStatus(@json(__('Updating...')));
+
+        try {
+            const body = new FormData(form);
+            body.set('quantity', String(requested));
+
+            const response = await fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-Cart-Live': '1',
+                },
+                body,
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const errors = payload.errors || {};
+                const firstError = Object.values(errors).flat()[0];
+                throw new Error(firstError || payload.message || @json(__('Unable to update the cart right now.')));
+            }
+
+            input.value = String(payload.item.quantity);
+            input.dataset.lastQuantity = String(payload.item.quantity);
+
+            const item = form.closest('[data-cart-item]');
+            const lineTotal = item ? item.querySelector('[data-cart-line-total]') : null;
+            if (lineTotal) lineTotal.textContent = money(payload.item.line_total);
+
+            updateSummary(payload.cart || {});
+            showStatus(payload.message || @json(__('Cart updated successfully.')));
+        } catch (error) {
+            input.value = input.dataset.lastQuantity || input.value;
+            showStatus(error.message || @json(__('Unable to update the cart right now.')), true);
+        } finally {
+            input.disabled = false;
+            form.removeAttribute('aria-busy');
+            delete form.dataset.cartPending;
+        }
+    };
+
+    root.querySelectorAll('.cart-qty-auto-form').forEach(function (form) {
+        const input = form.querySelector('input[name="quantity"]');
+        if (!input) return;
+
+        input.dataset.lastQuantity = input.value;
         let timer = null;
+
         input.addEventListener('change', function () {
             clearTimeout(timer);
-            timer = setTimeout(function () {
-                if (Number(input.value) < 1) input.value = 1;
-                input.closest('form').requestSubmit();
-            }, 250);
+            timer = setTimeout(() => submitQuantity(form), 250);
+        });
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            clearTimeout(timer);
+            submitQuantity(form);
         });
     });
 });
