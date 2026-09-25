@@ -4831,5 +4831,12 @@
     "Campaigns needing a rule": "حملات تحتاج إلى قاعدة",
     "Active campaigns that do not have an active linked automation rule.": "حملات نشطة لا توجد لها قاعدة أتمتة نشطة مرتبطة.",
     "Some active campaigns cannot run because they do not have an active linked rule. Open Content & Journeys to fix the linkage.": "بعض الحملات النشطة لن تعمل لأنها لا تملك قاعدة نشطة مرتبطة. افتح المحتوى والرحلات لإصلاح الربط.",
-    "The change could not be completed. Please refresh and try again.": "تعذر إكمال التغيير. حدّث الصفحة وحاول مرة أخرى."
+    "The change could not be completed. Please refresh and try again.": "تعذر إكمال التغيير. حدّث الصفحة وحاول مرة أخرى.",
+    "Order receipt": "إيصال الطلب",
+    "This document is an order receipt, not a tax or fiscal invoice.": "هذا المستند إيصال طلب وليس فاتورة ضريبية أو فاتورة مالية رسمية.",
+    "Order information": "معلومات الطلب",
+    "Payment & delivery": "الدفع والتوصيل",
+    "Paid at": "وقت الدفع",
+    "This receipt reflects the order values currently recorded in the system.": "يعكس هذا الإيصال قيم الطلب المسجلة حاليًا في النظام.",
+    "Placed at": "وقت إنشاء الطلب"
 }
