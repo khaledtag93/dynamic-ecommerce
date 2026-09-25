@@ -22,6 +22,13 @@
 - Analytics, Branding, Categories, Catalog, Commerce Settings and Admin V2 consistency sweeps.
 - Shared Admin Page Header / Stat Card / Section Tabs / switch / RTL / confirmation contracts.
 
+
+### Development continuation decision — 2026-09-25
+- Consolidated QAS acceptance remains required before Production, but manual acceptance is intentionally deferred while ordered source development continues.
+- Current source slice: Growth Workspace V2, following the recorded UI/UX concern that the Growth area was crowded, inconsistent and still mixed EN/AR.
+- Growth source checkpoint: `f32fba8a`; CI and authenticated QAS visual acceptance remain separate gates.
+- New ideas continue to be recorded and placed into the roadmap by dependency/priority rather than interrupting the active slice unless they are blockers, regressions or security issues.
+
 ### Current objective
 Run the consolidated authenticated QAS acceptance pass on the operator-confirmed QAS deployment of `v42-clean-baseline`.
 

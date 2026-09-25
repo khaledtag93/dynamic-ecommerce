@@ -11,6 +11,7 @@ The documentation is a living reference for the V42 application and release proc
 | Current version, environment state, release blockers | [Master project status](../PROJECT_MASTER_STATUS.md) | Update this with every code or deployment batch. It is the primary current-state record. |
 | Scope, severity, source evidence, acceptance criteria | [Full project audit](FULL_PROJECT_AUDIT_2026-09-23.md) | Findings are a dated baseline; read the current-status note at its top before using an older statement. |
 | Expanded product direction and implementation sequence | [Product roadmap](PRODUCT_ROADMAP_2026-09-24.md) | Tracks UI/UX, POS, barcode, invoices, workforce and delivery expansion as phased future work. |
+| Product principles, target verticals, Help, migration and scalability direction | [2026-09-25 product-direction addendum](PRODUCT_DIRECTION_ADDENDUM_2026-09-25.md) | Use as the active cross-product design and commercialization guardrail while implementing roadmap slices. |
 | Admin screens and customer journeys | [UI/UX and commercial-readiness review](UI_UX_AND_COMMERCIAL_READINESS_REVIEW_2026-09-23.md) | Use its screen-by-screen acceptance checks for focused QAS reviews. |
 | Admin daily-work QAS tasks | [Admin UX QAS checklist](ADMIN_UX_QAS_CHECKLIST.md) | Record authenticated Arabic/English desktop/mobile evidence against the exact application commit. |
 | Exact release and rollback procedure | [Production deploy](PRODUCTION_DEPLOY.md), [release checklist](RELEASE_CHECKLIST.md), [QAS checklist](QA_CHECKLIST.md) | Follow the exact-commit CI → QAS → visual review → Production dry-run/deploy sequence. |
@@ -19,6 +20,7 @@ The documentation is a living reference for the V42 application and release proc
 
 ## Current implementation and validation ledger
 
+| Growth Workspace V2 | Source head `f32fba8a`: reusable Admin Help, shared stat cards/switches, collapsible journeys, cleaner Operations/Insights and complete Growth Arabic coverage. See [implementation note](GROWTH_WORKSPACE_V2_2026-09-25.md). | CI pending | QAS visual acceptance pending | Not deployed | Validate EN/AR/RTL desktop/mobile, Help modal, switches, forms, tables and existing Growth business actions before Production. |
 | Work | Source state | CI | QAS | Production | What remains |
 | --- | --- | --- | --- | --- | --- |
 | V42 deployed application | Exact deployed commit `95e9f50` in the master record | Previously verified | Previously verified | Verified HTTP 200 | Reconcile later source changes by exact commit. |
@@ -133,3 +135,10 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — New Chat Handoff
 - [Dynamic New Chat Handoff](NEW_CHAT_HANDOFF_2026-09-25.md)
+
+
+### 2026-09-25 — Growth Workspace V2
+- [Growth Workspace V2](GROWTH_WORKSPACE_V2_2026-09-25.md)
+
+### 2026-09-25 — Product Direction Addendum
+- [Dynamic Product Direction Addendum](PRODUCT_DIRECTION_ADDENDUM_2026-09-25.md)

@@ -5,6 +5,9 @@
 
 ## Current state
 
+- **Growth Workspace V2 (2026-09-25):** source head `f32fba8a` starts the focused Growth Engine redesign: reusable Admin page-help modal, shared KPI cards and RTL-safe switches, calmer navigation, collapsible journey setup, cleaner Operations/Insights hierarchy, removal of developer CLI copy, and complete Arabic coverage for all 375 translation keys currently used by the 10 Growth Blade views. Regression coverage: `GrowthWorkspaceV2Test`. CI/QAS visual acceptance pending; Production unchanged. See `docs/GROWTH_WORKSPACE_V2_2026-09-25.md`.
+- **Dynamic product-direction addendum (2026-09-25):** multi-vertical configurable-platform vision, global no-reload/readability principles, reusable in-product Help, customer UX modernization, legacy-data Migration Center, scalability measurement rules and target-business examples are now explicit project requirements. See `docs/PRODUCT_DIRECTION_ADDENDUM_2026-09-25.md`.
+
 - **Expanded product direction (2026-09-24):** UI/UX/design-system modernization, POS/cashier, barcode scanning, invoice/receipt, employee attendance/shifts/leave/payroll, and expanded delivery operations are now tracked in `docs/PRODUCT_ROADMAP_2026-09-24.md`. These are phased roadmap items; they are not yet deployed features.
 - **Official application baseline:** V42
 - **Baseline description:** Cost Calculator refactor + Arabic/English translation updates
