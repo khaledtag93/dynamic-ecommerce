@@ -4560,5 +4560,9 @@
     "No customer movements match this period and filter.": "No customer movements match this period and filter.",
     "This statement lists recorded commercial activity. It does not calculate a running customer balance.": "This statement lists recorded commercial activity. It does not calculate a running customer balance.",
     "Add a supplier for sourcing and purchase orders with a cleaner form layout.": "Add a supplier for sourcing and purchase orders with a cleaner form layout.",
-    "Update supplier details without affecting existing orders or purchase history.": "Update supplier details without affecting existing orders or purchase history."
+    "Update supplier details without affecting existing orders or purchase history.": "Update supplier details without affecting existing orders or purchase history.",
+    "Confirm order cancellation": "Confirm order cancellation",
+    "Cancel this order?": "Cancel this order?",
+    "Cancelling the order restores reserved stock and records the cancellation in the audit trail. This action should only be used when the order must not continue to fulfillment.": "Cancelling the order restores reserved stock and records the cancellation in the audit trail. This action should only be used when the order must not continue to fulfillment.",
+    "Keep order active": "Keep order active"
 }
