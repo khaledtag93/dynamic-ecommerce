@@ -11,6 +11,7 @@ class OrderRefund extends Model
 
     protected $fillable = [
         'order_id',
+        'return_request_id',
         'amount',
         'reason',
         'notes',
@@ -26,6 +27,11 @@ class OrderRefund extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function returnRequest()
+    {
+        return $this->belongsTo(ReturnRequest::class);
     }
 
     public function processedBy()
