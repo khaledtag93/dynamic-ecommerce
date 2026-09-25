@@ -37,6 +37,7 @@ class SharedShellTranslationIntegrityTest extends TestCase
             resource_path('views/admin/workforce/time-clock.blade.php'),
             resource_path('views/admin/settings/branding.blade.php'),
             resource_path('views/admin/settings/content.blade.php'),
+            resource_path('views/admin/settings/payments.blade.php'),
             resource_path('views/admin/settings/shipping/_nav.blade.php'),
             resource_path('views/admin/settings/shipping/methods.blade.php'),
             resource_path('views/admin/settings/shipping/rates.blade.php'),
