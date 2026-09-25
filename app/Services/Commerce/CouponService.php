@@ -34,7 +34,7 @@ class CouponService
 
         if (! $coupon) {
             throw ValidationException::withMessages([
-                'coupon' => 'Coupon code was not found.',
+                'coupon' => __('Coupon code was not found.'),
             ]);
         }
 
@@ -119,7 +119,7 @@ class CouponService
 
         if ($affected !== 1) {
             throw ValidationException::withMessages([
-                'coupon' => 'This coupon is no longer available. Please review your cart and try again.',
+                'coupon' => __('This coupon is no longer available. Please review your cart and try again.'),
             ]);
         }
 
@@ -129,25 +129,27 @@ class CouponService
     protected function assertCouponUsable(Coupon $coupon, float $subtotal): void
     {
         if (! $coupon->is_active) {
-            throw ValidationException::withMessages(['coupon' => 'This coupon is not active right now.']);
+            throw ValidationException::withMessages(['coupon' => __('This coupon is not active right now.')]);
         }
 
         if (! $coupon->isWithinSchedule()) {
-            throw ValidationException::withMessages(['coupon' => 'This coupon is not available at the current time.']);
+            throw ValidationException::withMessages(['coupon' => __('This coupon is not available at the current time.')]);
         }
 
         if (! $coupon->hasRemainingUsage()) {
-            throw ValidationException::withMessages(['coupon' => 'This coupon has reached its usage limit.']);
+            throw ValidationException::withMessages(['coupon' => __('This coupon has reached its usage limit.')]);
         }
 
         if ($coupon->min_order_amount !== null && $subtotal < (float) $coupon->min_order_amount) {
             throw ValidationException::withMessages([
-                'coupon' => 'Order subtotal must be at least EGP ' . number_format((float) $coupon->min_order_amount, 2) . ' to use this coupon.',
+                'coupon' => __('Order subtotal must be at least :amount to use this coupon.', [
+                    'amount' => 'EGP '.number_format((float) $coupon->min_order_amount, 2),
+                ]),
             ]);
         }
 
         if ($coupon->calculateDiscount($subtotal) <= 0) {
-            throw ValidationException::withMessages(['coupon' => 'This coupon does not apply to the current cart.']);
+            throw ValidationException::withMessages(['coupon' => __('This coupon does not apply to the current cart.')]);
         }
     }
 }

@@ -5048,6 +5048,13 @@
     "Notification marked as read.": "تم تعليم الإشعار كمقروء.",
     "All notifications marked as read.": "تم تعليم جميع الإشعارات كمقروءة.",
     "Could not send your reply. Please try again.": "تعذر إرسال ردك. حاول مرة أخرى.",
+    "Coupon code was not found.": "لم يتم العثور على رمز الكوبون.",
+    "This coupon is no longer available. Please review your cart and try again.": "هذا الكوبون لم يعد متاحًا. راجع سلة التسوق وحاول مرة أخرى.",
+    "This coupon is not active right now.": "هذا الكوبون غير نشط حاليًا.",
+    "This coupon is not available at the current time.": "هذا الكوبون غير متاح في الوقت الحالي.",
+    "This coupon has reached its usage limit.": "وصل هذا الكوبون إلى الحد الأقصى للاستخدام.",
+    "Order subtotal must be at least :amount to use this coupon.": "يجب ألا يقل المجموع الفرعي للطلب عن :amount لاستخدام هذا الكوبون.",
+    "This coupon does not apply to the current cart.": "هذا الكوبون لا ينطبق على سلة التسوق الحالية.",
     "العربية": "العربية",
     "Unable to update the cart right now.": "تعذر تحديث سلة التسوق الآن. حاول مرة أخرى."
 }

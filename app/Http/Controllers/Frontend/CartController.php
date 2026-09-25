@@ -211,16 +211,7 @@ class CartController extends Controller
                     'quantity' => (int) $updatedItem->quantity,
                     'line_total' => round((float) $updatedItem->line_total, 2),
                 ],
-                'cart' => [
-                    'items_count' => (int) $summary['items_count'],
-                    'subtotal' => (float) $summary['subtotal'],
-                    'coupon_discount' => (float) ($summary['coupon_discount'] ?? 0),
-                    'promotion_discount' => (float) ($summary['promotion_discount'] ?? 0),
-                    'discount' => (float) $summary['discount'],
-                    'shipping' => (float) $summary['shipping'],
-                    'tax' => (float) $summary['tax'],
-                    'total' => (float) $summary['total'],
-                ],
+                'cart' => $this->cartSummaryPayload($summary),
             ]);
         }
 
@@ -235,7 +226,7 @@ class CartController extends Controller
         return back()->with('success', __('Item removed from cart.'));
     }
 
-    public function applyCoupon(Request $request): RedirectResponse
+    public function applyCoupon(Request $request)
     {
         $data = $request->validate([
             'coupon_code' => ['required', 'string', 'max:50'],
@@ -245,17 +236,60 @@ class CartController extends Controller
 
         try {
             $coupon = $this->couponService->applyFromCode($data['coupon_code'], (float) $summary['subtotal']);
+            $message = __('Coupon :code applied successfully.', ['code' => $coupon->code]);
 
-            return back()->with('success', __('Coupon :code applied successfully.', ['code' => $coupon->code]));
+            if ($request->expectsJson() || $request->header('X-Cart-Coupon-Live') === '1') {
+                $updatedSummary = $this->cartService->summary();
+
+                return response()->json([
+                    'message' => $message,
+                    'coupon' => [
+                        'code' => (string) $updatedSummary['coupon_code'],
+                        'label' => (string) $updatedSummary['coupon_label'],
+                    ],
+                    'cart' => $this->cartSummaryPayload($updatedSummary),
+                ]);
+            }
+
+            return back()->with('success', $message);
         } catch (ValidationException $e) {
+            if ($request->expectsJson() || $request->header('X-Cart-Coupon-Live') === '1') {
+                throw $e;
+            }
+
             return back()->withErrors($e->errors())->withInput();
         }
     }
 
-    public function removeCoupon(): RedirectResponse
+    public function removeCoupon(Request $request)
     {
         $this->couponService->remove();
+        $message = __('Coupon removed from cart.');
 
-        return back()->with('status', __('Coupon removed from cart.'));
+        if ($request->expectsJson() || $request->header('X-Cart-Coupon-Live') === '1') {
+            $summary = $this->cartService->summary();
+
+            return response()->json([
+                'message' => $message,
+                'coupon' => null,
+                'cart' => $this->cartSummaryPayload($summary),
+            ]);
+        }
+
+        return back()->with('status', $message);
+    }
+
+    protected function cartSummaryPayload(array $summary): array
+    {
+        return [
+            'items_count' => (int) $summary['items_count'],
+            'subtotal' => (float) $summary['subtotal'],
+            'coupon_discount' => (float) ($summary['coupon_discount'] ?? 0),
+            'promotion_discount' => (float) ($summary['promotion_discount'] ?? 0),
+            'discount' => (float) $summary['discount'],
+            'shipping' => (float) $summary['shipping'],
+            'tax' => (float) $summary['tax'],
+            'total' => (float) $summary['total'],
+        ];
     }
 }

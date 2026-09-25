@@ -172,3 +172,6 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Storefront Add-to-Cart Live UX
 - [Storefront Add-to-Cart Live UX](STOREFRONT_ADD_TO_CART_LIVE_UX_2026-09-25.md)
+
+### 2026-09-25 — Storefront Cart Coupon Live UX
+- [Storefront Cart Coupon Live UX](STOREFRONT_CART_COUPON_LIVE_UX_2026-09-25.md)

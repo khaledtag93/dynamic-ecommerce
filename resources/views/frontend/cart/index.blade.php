@@ -148,36 +148,34 @@
 
                     <div class="col-lg-4">
                         <div class="lc-summary-card-sticky d-grid gap-3">
-                            <div class="lc-card p-4 lc-coupon-box">
+                            <div class="lc-card p-4 lc-coupon-box" data-cart-coupon-box>
                                 <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
                                     <div>
                                         <h4 class="fw-bold mb-1">{{ __('Coupon') }}</h4>
                                         <div class="text-muted small">{{ __('Apply an available code before checkout.') }}</div>
                                     </div>
-                                    @if($cart['coupon_code'])
-                                        <span class="lc-status-badge lc-badge-completed">{{ $cart['coupon_code'] }}</span>
-                                    @endif
+                                    <span class="lc-status-badge lc-badge-completed" data-cart-coupon-code @if(!$cart['coupon_code']) hidden @endif>{{ $cart['coupon_code'] ?? '' }}</span>
                                 </div>
 
-                                @if($cart['coupon'])
+                                <div data-cart-coupon-applied @if(!$cart['coupon']) hidden @endif>
                                     <div class="lc-note-card p-3 mb-3">
-                                        <div class="fw-bold mb-1">{{ $cart['coupon_label'] }}</div>
+                                        <div class="fw-bold mb-1" data-cart-coupon-label>{{ $cart['coupon_label'] ?? '' }}</div>
                                         <div class="text-muted small">{{ __('Discount applied successfully to this cart.') }}</div>
                                     </div>
-                                    <form method="POST" action="{{ route('cart.coupon.remove') }}" data-submit-loading>
+                                    <form method="POST" action="{{ route('cart.coupon.remove') }}" data-cart-coupon-remove>
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn lc-btn-soft w-100" type="submit" data-loading-text="{{ __('Removing...') }}">{{ __('Remove coupon') }}</button>
                                     </form>
-                                @else
-                                    <form method="POST" action="{{ route('cart.coupon.apply') }}" data-submit-loading>
-                                        @csrf
-                                        <div class="input-group">
-                                            <input type="text" name="coupon_code" value="{{ old('coupon_code') }}" class="form-control lc-form-control" placeholder="{{ __('Enter coupon code') }}">
-                                            <button class="btn lc-btn-primary" type="submit" data-loading-text="{{ __('Applying...') }}">{{ __('Apply') }}</button>
-                                        </div>
-                                    </form>
-                                @endif
+                                </div>
+
+                                <form method="POST" action="{{ route('cart.coupon.apply') }}" data-cart-coupon-apply @if($cart['coupon']) hidden @endif>
+                                    @csrf
+                                    <div class="input-group">
+                                        <input type="text" name="coupon_code" value="{{ old('coupon_code') }}" class="form-control lc-form-control" placeholder="{{ __('Enter coupon code') }}" autocomplete="off">
+                                        <button class="btn lc-btn-primary" type="submit" data-loading-text="{{ __('Applying...') }}">{{ __('Apply') }}</button>
+                                    </div>
+                                </form>
                             </div>
 
                             @if(($offerSignals ?? collect())->isNotEmpty())
@@ -360,6 +358,73 @@ document.addEventListener('DOMContentLoaded', function () {
         if (promotionRow) promotionRow.hidden = Number(cart.promotion_discount || 0) <= 0;
     };
 
+    const updateCouponState = (coupon) => {
+        const code = root.querySelector('[data-cart-coupon-code]');
+        const applied = root.querySelector('[data-cart-coupon-applied]');
+        const label = root.querySelector('[data-cart-coupon-label]');
+        const applyForm = root.querySelector('[data-cart-coupon-apply]');
+
+        if (code) {
+            code.textContent = coupon?.code || '';
+            code.hidden = !coupon;
+        }
+        if (label) label.textContent = coupon?.label || '';
+        if (applied) applied.hidden = !coupon;
+        if (applyForm) {
+            applyForm.hidden = Boolean(coupon);
+            const input = applyForm.querySelector('input[name="coupon_code"]');
+            if (coupon && input) input.value = '';
+        }
+    };
+
+    const submitCoupon = async (form) => {
+        if (form.dataset.cartCouponPending === '1') return;
+
+        form.dataset.cartCouponPending = '1';
+        const button = form.querySelector('button[type="submit"]');
+        if (button) {
+            button.dataset.originalHtml = button.innerHTML;
+            button.innerHTML = '<span class="lc-loading-spinner"></span>' + (button.dataset.loadingText || @json(__('Updating...')));
+            button.disabled = true;
+        }
+        showStatus(@json(__('Updating...')));
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-Cart-Coupon-Live': '1',
+                },
+                body: new FormData(form),
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const errors = payload.errors || {};
+                const firstError = Object.values(errors).flat()[0];
+                throw new Error(firstError || payload.message || @json(__('Unable to update the cart right now.')));
+            }
+
+            updateCouponState(payload.coupon || null);
+            updateSummary(payload.cart || {});
+            showStatus(payload.message || @json(__('Cart updated successfully.')));
+        } catch (error) {
+            showStatus(error.message || @json(__('Unable to update the cart right now.')), true);
+        } finally {
+            if (button) {
+                button.disabled = false;
+                if (button.dataset.originalHtml !== undefined) {
+                    button.innerHTML = button.dataset.originalHtml;
+                    delete button.dataset.originalHtml;
+                }
+            }
+            delete form.dataset.cartCouponPending;
+        }
+    };
+
     const submitQuantity = async (form) => {
         const input = form.querySelector('input[name="quantity"]');
         if (!input || form.dataset.cartPending === '1') return;
@@ -430,6 +495,15 @@ document.addEventListener('DOMContentLoaded', function () {
             clearTimeout(timer);
             submitQuantity(form);
         });
+    });
+
+    root.addEventListener('submit', function (event) {
+        const form = event.target.closest('[data-cart-coupon-apply], [data-cart-coupon-remove]');
+        if (!form) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        submitCoupon(form);
     });
 });
 </script>

@@ -41,7 +41,7 @@ Remove avoidable full-page reloads from the primary storefront Add to Cart actio
 
 - Source: implemented on `v42-clean-baseline`.
 - Base Add-to-Cart implementation: Hardening CI #1402 passed at `72b8528` with 383 tests / 2596 assertions plus clean migration, routes, Blade compilation and frontend production build.
-- Quick View consistency follow-up: branch-head CI pending.
+- Quick View consistency follow-up: Hardening CI #1403 passed at `63f4d43` with 383 tests / 2598 assertions plus clean migration, routes, Blade compilation and frontend production build.
 - QAS: not yet claimed for this slice.
 - Production: unchanged.
 
