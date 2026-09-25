@@ -121,7 +121,7 @@ class ReturnRequest extends Model
     public function canTransitionTo(string $status): bool
     {
         if ($status === $this->status) {
-            return true;
+            return false;
         }
 
         return in_array($status, match ($this->status) {
