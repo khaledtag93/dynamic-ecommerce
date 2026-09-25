@@ -4576,5 +4576,7 @@
     "Complete this return with a refund of :amount?": "Complete this return with a refund of :amount?",
     "Undo verified unit": "Undo verified unit",
     "Remove one verified unit from this purchase line?": "Remove one verified unit from this purchase line?",
-    "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.": "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt."
+    "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.": "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.",
+    "Mark this payment as Paid manually? Confirm that the provider or transaction evidence proves the money was received.": "Mark this payment as Paid manually? Confirm that the provider or transaction evidence proves the money was received.",
+    "Mark this payment as Failed manually? For online payments this can release the active stock reservation.": "Mark this payment as Failed manually? For online payments this can release the active stock reservation."
 }
