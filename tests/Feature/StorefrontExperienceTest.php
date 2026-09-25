@@ -571,4 +571,16 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("Please review the highlighted fields.", $layout);
     }
 
+    public function test_storefront_navigation_exposes_active_and_mobile_focus_states(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString("routeIs('frontend.home')", $layout);
+        $this->assertStringContainsString("routeIs('frontend.contact')", $layout);
+        $this->assertStringContainsString('.retail-links a[aria-current="page"]', $layout);
+        $this->assertStringContainsString("retailNav.addEventListener('shown.bs.collapse'", $layout);
+        $this->assertStringContainsString("event.key !== 'Escape'", $layout);
+        $this->assertStringContainsString("bootstrap.Collapse.getOrCreateInstance(retailNav).hide()", $layout);
+    }
+
 }
