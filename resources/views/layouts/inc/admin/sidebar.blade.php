@@ -221,6 +221,9 @@
                 <li class="nav-item {{ $isRoute('admin.settings.content*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.settings.content') }}"><i class="mdi mdi-file-document-edit-outline menu-icon"></i><span class="menu-title">{{ __('Store content') }}</span></a>
                 </li>
+                <li class="nav-item {{ $isRoute('admin.settings.shipping.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.settings.shipping.methods') }}"><i class="mdi mdi-truck-cargo-container menu-icon"></i><span class="menu-title">{{ __('Shipping setup') }}</span></a>
+                </li>
                 <li class="nav-item {{ $isRoute('admin.settings.whatsapp*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.settings.whatsapp') }}"><i class="mdi mdi-whatsapp menu-icon"></i><span class="menu-title">{{ __('WhatsApp Channel') }}</span></a>
                 </li>
