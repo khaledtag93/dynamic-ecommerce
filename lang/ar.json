@@ -5561,5 +5561,7 @@
     "Link an existing staff account to a workforce profile without changing its login or role permissions.": "اربط حساب موظف موجود بملف القوى العاملة دون تغيير بيانات تسجيل الدخول أو صلاحيات الدور.",
     "Maintain employment details while preserving the linked staff identity and attendance history.": "حدّث بيانات التوظيف مع الحفاظ على هوية الموظف المرتبطة وسجل الحضور.",
     "Deductions": "الخصومات",
-    "Net pay": "صافي الراتب"
+    "Net pay": "صافي الراتب",
+    "Add a supplier for sourcing and purchase orders with a cleaner form layout.": "أضف موردًا لعمليات التوريد وأوامر الشراء من خلال نموذج أوضح وأكثر تنظيمًا.",
+    "Update supplier details without affecting existing orders or purchase history.": "حدّث بيانات المورد دون التأثير على الطلبات الحالية أو سجل المشتريات."
 }
