@@ -350,8 +350,8 @@ class SettingController extends Controller
             $customThemes = $this->customThemes();
             $themeKey = 'custom_' . Str::slug($data['custom_theme_name'], '_');
             $customThemes[$themeKey] = array_merge(
-                ['theme_preset' => $themeKey, 'theme_label' => trim((string) $data['custom_theme_name'])],
-                collect($data)->only($this->themeFields())->toArray()
+                collect($data)->only($this->themeFields())->toArray(),
+                ['theme_preset' => $themeKey, 'theme_label' => trim((string) $data['custom_theme_name'])]
             );
             WebsiteSetting::setValue('custom_themes', json_encode($customThemes, JSON_UNESCAPED_UNICODE), 'branding', 'json');
             $data['theme_preset'] = $themeKey;
