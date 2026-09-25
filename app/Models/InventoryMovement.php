@@ -30,6 +30,25 @@ class InventoryMovement extends Model
         'meta' => 'array',
     ];
 
+    public static function typeOptions(): array
+    {
+        return [
+            self::TYPE_PURCHASE_IN => __('Purchase receipt'),
+            self::TYPE_ORDER_OUT => __('Order sale'),
+            self::TYPE_ORDER_RESERVATION => __('Online payment reservation'),
+            self::TYPE_RESERVATION_RELEASE => __('Reservation release'),
+            self::TYPE_ADJUSTMENT => __('Stock adjustment'),
+            self::TYPE_DAMAGE => __('Damaged stock'),
+            self::TYPE_LOST => __('Lost stock'),
+            self::TYPE_REFUND_RESTOCK => __('Refund / cancellation restock'),
+        ];
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return static::typeOptions()[$this->type] ?? \Illuminate\Support\Str::headline((string) $this->type);
+    }
+
     public function product() { return $this->belongsTo(Product::class); }
     public function variant() { return $this->belongsTo(ProductVariant::class, 'product_variant_id'); }
     public function purchase() { return $this->belongsTo(Purchase::class); }
