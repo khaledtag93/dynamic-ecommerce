@@ -31,7 +31,6 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\PurchaseController;
-use App\Http\Controllers\Admin\ReturnRequestController as AdminReturnRequestController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ShippingSettingsController;
 use App\Http\Controllers\Admin\SupplierController;
@@ -48,7 +47,6 @@ use App\Http\Controllers\Frontend\ProductController as FrontendProductController
 use App\Http\Controllers\Frontend\NotificationController as FrontendNotificationController;
 use App\Http\Controllers\Frontend\PaymobController;
 use App\Http\Controllers\Frontend\ReturnController;
-use App\Http\Controllers\Frontend\ReturnController as FrontendReturnController;
 use App\Http\Controllers\Frontend\ContentPageController;
 use App\Http\Controllers\Admin\ContentSettingsController;
 use App\Http\Controllers\Admin\CostCalculatorController;
