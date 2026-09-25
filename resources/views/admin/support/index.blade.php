@@ -9,6 +9,7 @@
     :description="__('Track customer cases, ownership, urgency, order context, and conversation progress from one workspace.')"
 >
     @if(auth()->user()?->hasPermission('support.manage'))
+        <a href="{{ route('admin.support.settings') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-tune-variant"></i><span>{{ __('Support settings') }}</span></a>
         <a href="{{ route('admin.support.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-plus"></i><span>{{ __('New support case') }}</span></a>
     @endif
 </x-admin.page-header>
@@ -20,8 +21,9 @@
             ['label' => __('Urgent'), 'value' => $stats['urgent'], 'icon' => 'mdi-alert-circle-outline', 'tone' => 'danger'],
             ['label' => __('Unassigned'), 'value' => $stats['unassigned'], 'icon' => 'mdi-account-question-outline', 'tone' => 'warning'],
             ['label' => __('Resolved'), 'value' => $stats['resolved'], 'icon' => 'mdi-check-circle-outline', 'tone' => 'success'],
+            ['label' => __('SLA breached'), 'value' => $stats['sla_breached'], 'icon' => 'mdi-timer-alert-outline', 'tone' => 'danger'],
         ] as $card)
-            <div class="col-sm-6 col-xl-3">
+            <div class="col-sm-6 col-xl">
                 <x-admin.stat-card :label="$card['label']" :value="$card['value']" :icon="$card['icon']" :tone="$card['tone']" class="h-100" />
             </div>
         @endforeach

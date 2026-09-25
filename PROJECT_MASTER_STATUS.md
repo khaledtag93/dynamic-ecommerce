@@ -984,3 +984,14 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Source currently isolated on `wip/customer-account-statement-v1` pending a green base CI before merge.
 - Production unchanged; QAS/Production remain separate gates.
 
+## Helpdesk V2 SLA + Reply Templates — 2026-09-25
+- Working source is isolated on `wip/helpdesk-v2-sla-templates` while the current customer-statement branch-head CI is validated.
+- Added first-response and resolution due timestamps driven by case priority.
+- Added configurable per-priority SLA hours in Support Settings.
+- Added breach indicators and an SLA-breached Support queue count.
+- Internal notes do not satisfy first-response SLA.
+- Added reusable bilingual reply templates with customer/internal default visibility, ordering and enable/disable state.
+- Active templates prefill the case reply composer but do not bypass the existing authorization, visibility or audit path.
+- Added Arabic coverage and focused `SupportSlaAndTemplatesTest` regression coverage.
+- Attachments and external channel ingestion remain deliberately separate future slices.
+

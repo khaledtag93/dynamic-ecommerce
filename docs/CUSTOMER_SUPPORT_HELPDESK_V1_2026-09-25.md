@@ -132,3 +132,38 @@ Future channels should feed this same case timeline rather than introduce parall
 - Production: unchanged
 - QAS: not claimed by this document
 - Required next gate: green branch-head CI, then authenticated EN/AR/RTL/responsive Helpdesk acceptance on QAS.
+
+## V2 — SLA targets and reply templates
+
+This follow-up keeps the existing Helpdesk case model and adds two operational layers without introducing attachments or external-channel ingestion.
+
+### SLA targets
+- Cases now store first-response and resolution due timestamps.
+- Targets are derived from the case priority at creation time.
+- Default hours are configurable through Support Settings and stored in Website Settings.
+- Changing the priority of an unresolved case recalculates still-relevant due dates from the original case creation time.
+- First-response SLA only completes on a customer-visible staff reply; internal notes do not satisfy it.
+- Case detail surfaces first-response and resolution SLA state plus due timestamps.
+- The Support overview includes an SLA-breached queue count.
+- V2 deliberately does not pause SLA clocks while waiting for the customer. Business-hours calendars and pause policies require merchant policy and are deferred.
+
+### Reply templates
+- Added reusable bilingual reply templates with English/Arabic name and body.
+- Templates have customer-visible or internal-note default visibility.
+- Templates are ordered, can be enabled/disabled, and remain editable.
+- The case reply composer can prefill body + visibility from an active template; staff can still edit the text before submitting.
+- Templates never bypass the normal support reply endpoint, validation, authorization, audit, or customer/internal visibility rules.
+
+### V2 regression coverage
+`SupportSlaAndTemplatesTest` covers:
+- SLA deadline creation;
+- priority-driven recalculation;
+- first-response breach semantics;
+- internal-note exclusion from first-response completion;
+- SLA settings persistence;
+- bilingual template localization;
+- active template availability in the case composer;
+- cashier denial for Support Settings.
+
+Attachments, malware-safe file handling, business-hours SLA calendars, pause policies, and email/WhatsApp/chat ingestion remain deferred.
+

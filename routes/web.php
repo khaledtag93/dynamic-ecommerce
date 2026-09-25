@@ -456,6 +456,11 @@ Route::prefix('admin')
         Route::middleware('permission:support.manage')->controller(AdminSupportCaseController::class)->group(function () {
             Route::get('/support/create', 'create')->name('support.create');
             Route::post('/support', 'store')->name('support.store');
+            Route::get('/support/settings', 'settings')->name('support.settings');
+            Route::put('/support/settings/sla', 'updateSla')->name('support.settings.sla');
+            Route::post('/support/templates', 'storeTemplate')->name('support.templates.store');
+            Route::put('/support/templates/{supportReplyTemplate}', 'updateTemplate')->name('support.templates.update');
+            Route::patch('/support/templates/{supportReplyTemplate}/toggle', 'toggleTemplate')->name('support.templates.toggle');
             Route::patch('/support/{supportCase}', 'update')->name('support.update');
             Route::post('/support/{supportCase}/reply', 'reply')->name('support.reply');
         });
