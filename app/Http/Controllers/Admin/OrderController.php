@@ -18,7 +18,6 @@ class OrderController extends Controller
     public function __construct(
         protected OrderActionService $orderActionService,
         protected AdminActivityLogService $adminActivityLogService,
-        protected StoreSettingsService $storeSettingsService,
     ) {
     }
 
@@ -137,7 +136,7 @@ class OrderController extends Controller
 
         return view('orders.receipt', [
             'order' => $order,
-            'settings' => $this->storeSettingsService->all(),
+            'settings' => app(StoreSettingsService::class)->all(),
             'backUrl' => route('admin.orders.show', $order),
             'backLabel' => __('Back to order'),
         ]);
