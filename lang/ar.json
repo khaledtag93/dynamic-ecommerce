@@ -5557,5 +5557,9 @@
     "Paymob result": "نتيجة دفع Paymob",
     "Secure payment page could not be opened": "تعذر فتح صفحة الدفع الآمنة",
     "Last attempt": "آخر محاولة",
-    "Retry secure payment": "إعادة محاولة الدفع الآمن"
+    "Retry secure payment": "إعادة محاولة الدفع الآمن",
+    "Link an existing staff account to a workforce profile without changing its login or role permissions.": "اربط حساب موظف موجود بملف القوى العاملة دون تغيير بيانات تسجيل الدخول أو صلاحيات الدور.",
+    "Maintain employment details while preserving the linked staff identity and attendance history.": "حدّث بيانات التوظيف مع الحفاظ على هوية الموظف المرتبطة وسجل الحضور.",
+    "Deductions": "الخصومات",
+    "Net pay": "صافي الراتب"
 }
