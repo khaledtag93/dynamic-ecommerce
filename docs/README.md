@@ -81,3 +81,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Returns / RMA V1
 - [Returns / RMA V1 implementation and release note](RETURNS_RMA_V1_2026-09-25.md)
+
+
+### 2026-09-25 — Explicit admin role hardening
+- [Explicit admin role hardening](EXPLICIT_ADMIN_ROLE_HARDENING_2026-09-25.md)
