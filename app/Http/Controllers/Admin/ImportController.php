@@ -41,6 +41,6 @@ class ImportController extends Controller
             'meta' => ['future_ready' => true],
         ]);
 
-        return back()->with('success', 'Import job draft created successfully.');
+        return back()->with('success', __('Import job draft created successfully.'));
     }
 }
