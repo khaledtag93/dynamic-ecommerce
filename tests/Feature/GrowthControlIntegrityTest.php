@@ -95,30 +95,30 @@ class GrowthControlIntegrityTest extends TestCase
         $service = app(GrowthCampaignService::class);
 
         $content = $service->dashboardSnapshot('content');
-        $this->assertNotEmpty($content['campaigns']);
-        $this->assertNotEmpty($content['rules']);
-        $this->assertNotEmpty($content['templates']);
-        $this->assertEmpty($content['deliveries']);
-        $this->assertEmpty($content['trigger_logs']);
+        $this->assertTrue($content['campaigns']->isNotEmpty());
+        $this->assertTrue($content['rules']->isNotEmpty());
+        $this->assertTrue($content['templates']->isNotEmpty());
+        $this->assertTrue($content['deliveries']->isEmpty());
+        $this->assertTrue($content['trigger_logs']->isEmpty());
         $this->assertSame([], $content['attribution_summary']);
         $this->assertSame([], $content['predictive_summary']);
         $this->assertSame([], $content['performance']);
 
         $operations = $service->dashboardSnapshot('operations');
-        $this->assertEmpty($operations['campaigns']);
-        $this->assertEmpty($operations['rules']);
-        $this->assertEmpty($operations['templates']);
-        $this->assertEmpty($operations['segments']);
+        $this->assertTrue($operations['campaigns']->isEmpty());
+        $this->assertTrue($operations['rules']->isEmpty());
+        $this->assertTrue($operations['templates']->isEmpty());
+        $this->assertTrue($operations['segments']->isEmpty());
         $this->assertSame([], $operations['attribution_summary']);
         $this->assertSame([], $operations['cohort_summary']);
         $this->assertSame([], $operations['predictive_summary']);
         $this->assertSame([], $operations['performance']);
 
         $insights = $service->dashboardSnapshot('insights');
-        $this->assertEmpty($insights['campaigns']);
-        $this->assertEmpty($insights['rules']);
-        $this->assertEmpty($insights['templates']);
-        $this->assertEmpty($insights['deliveries']);
+        $this->assertTrue($insights['campaigns']->isEmpty());
+        $this->assertTrue($insights['rules']->isEmpty());
+        $this->assertTrue($insights['templates']->isEmpty());
+        $this->assertTrue($insights['deliveries']->isEmpty());
         $this->assertSame([], $insights['performance']);
     }
 
