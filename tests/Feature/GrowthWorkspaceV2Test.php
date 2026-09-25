@@ -86,4 +86,34 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertSame('حملات تحتاج إلى قاعدة', $translations['Campaigns needing a rule'] ?? null);
         $this->assertSame('تعذر إكمال التغيير. حدّث الصفحة وحاول مرة أخرى.', $translations['The change could not be completed. Please refresh and try again.'] ?? null);
     }
+
+    public function test_growth_large_workspaces_use_real_pagination_and_bounded_overview_reads(): void
+    {
+        $service = file_get_contents(app_path('Services/Growth/GrowthCampaignService.php'));
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/GrowthController.php'));
+        $overview = file_get_contents(resource_path('views/admin/growth/index.blade.php'));
+        $content = file_get_contents(resource_path('views/admin/growth/content.blade.php'));
+        $operations = file_get_contents(resource_path('views/admin/growth/operations.blade.php'));
+        $insights = file_get_contents(resource_path('views/admin/growth/insights.blade.php'));
+
+        $this->assertStringContainsString("paginate(12, ['*'], 'campaign_page')", $service);
+        $this->assertStringContainsString("paginate(12, ['*'], 'rule_page')", $service);
+        $this->assertStringContainsString("paginate(12, ['*'], 'template_page')", $service);
+        $this->assertStringContainsString("paginate(12, ['*'], 'segment_page')", $service);
+        $this->assertStringContainsString("paginate(12, ['*'], 'experiment_page')", $service);
+        $this->assertStringContainsString("paginate(15, ['*'], 'delivery_page')", $service);
+        $this->assertStringContainsString("paginate(12, ['*'], 'trigger_page')", $service);
+        $this->assertStringContainsString("paginate(15, ['*'], 'message_page')", $service);
+        $this->assertStringContainsString("paginate(8, ['*'], 'insight_experiment_page')", $service);
+        $this->assertStringContainsString("'overview_health' => $overviewHealth", $service);
+        $this->assertStringContainsString("'operations_summary' => $operationsSummary", $service);
+        $this->assertStringNotContainsString("'campaigns' => collect($snapshot", $controller);
+        $this->assertStringContainsString('$overviewHealth[', $overview);
+        $this->assertStringNotContainsString('$campaigns->take(12)', $content);
+        $this->assertStringNotContainsString('$rules->take(12)', $content);
+        $this->assertStringContainsString("fragment('growth-campaigns')->links()", $content);
+        $this->assertStringContainsString("fragment('growth-deliveries')->links()", $operations);
+        $this->assertStringContainsString("fragment('growth-experiment-performance')->links()", $insights);
+    }
+
 }

@@ -4,21 +4,21 @@
 <div class="gm-grid gm-grid--three">
     <x-admin.stat-card
         :label="__('Pending deliveries')"
-        :value="$deliveries->where('status', 'pending')->count()"
+        :value="(int) ($operationsSummary['pending_deliveries'] ?? 0)"
         icon="mdi-clock-outline"
         tone="warning"
         :help="__('Messages still waiting for delivery processing.')" />
     <x-admin.stat-card
         :label="__('Failed deliveries')"
-        :value="$deliveries->where('status', 'failed')->count()"
+        :value="(int) ($operationsSummary['failed_deliveries'] ?? 0)"
         icon="mdi-alert-circle-outline"
         tone="danger"
         :help="__('Failed sends that may need investigation or retry.')" />
     <x-admin.stat-card
-        :label="__('Recent triggers')"
-        :value="$triggerLogs->take(12)->count()"
+        :label="__('Trigger records')"
+        :value="(int) ($operationsSummary['trigger_records'] ?? 0)"
         icon="mdi-lightning-bolt-outline"
-        :help="__('Recent automation triggers available in this workspace snapshot.')" />
+        :help="__('Tracked automation trigger records available for review.')" />
 </div>
 
 @if(app()->environment('local', 'testing', 'staging'))
@@ -57,7 +57,7 @@
         <div class="gm-empty">{{ __('No deliveries yet.') }}</div>
     @else
         <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Campaign') }}</th><th>{{ __('Customer') }}</th><th>{{ __('Status') }}</th><th>{{ __('Created') }}</th><th>{{ __('Actions') }}</th></tr></thead><tbody>
-        @foreach($deliveries->take(15) as $delivery)
+        @foreach($deliveries as $delivery)
             <tr>
                 <td><strong>{{ $delivery->campaign?->name ?? '—' }}</strong></td>
                 <td>{{ $delivery->user?->name ?? __('Guest') }}</td>
@@ -67,6 +67,9 @@
             </tr>
         @endforeach
         </tbody></table></div>
+        @if(method_exists($deliveries, 'hasPages') && $deliveries->hasPages())
+            <div class="mt-3">{{ $deliveries->fragment('growth-deliveries')->links() }}</div>
+        @endif
     @endif
 </section>
 
@@ -77,10 +80,13 @@
             <div class="gm-empty">{{ __('No trigger logs yet.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Campaign') }}</th><th>{{ __('Customer') }}</th><th>{{ __('Event') }}</th><th>{{ __('Triggered at') }}</th></tr></thead><tbody>
-            @foreach($triggerLogs->take(12) as $log)
+            @foreach($triggerLogs as $log)
                 <tr><td>{{ $log->campaign?->name ?? '—' }}</td><td>{{ $log->user?->name ?? __('Guest') }}</td><td>{{ $log->trigger_event ?? '—' }}</td><td>{{ optional($log->triggered_at)->format('Y-m-d H:i') }}</td></tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($triggerLogs, 'hasPages') && $triggerLogs->hasPages())
+                <div class="mt-3">{{ $triggerLogs->fragment('growth-trigger-log')->links() }}</div>
+            @endif
         @endif
     </section>
 
@@ -90,10 +96,13 @@
             <div class="gm-empty">{{ __('No message logs yet.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Campaign') }}</th><th>{{ __('Customer') }}</th><th>{{ __('Channel') }}</th><th>{{ __('Experiment') }}</th><th>{{ __('Sent at') }}</th></tr></thead><tbody>
-            @foreach($messageLogs->take(15) as $log)
+            @foreach($messageLogs as $log)
                 <tr><td>{{ $log->campaign?->name ?? '—' }}</td><td>{{ $log->user?->name ?? __('Guest') }}</td><td>{{ strtoupper((string) ($log->channel ?? '—')) }}</td><td>{{ $log->experiment?->name ?? '—' }}</td><td>{{ optional($log->sent_at)->format('Y-m-d H:i') }}</td></tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($messageLogs, 'hasPages') && $messageLogs->hasPages())
+                <div class="mt-3">{{ $messageLogs->fragment('growth-message-log')->links() }}</div>
+            @endif
         @endif
     </section>
 </div>

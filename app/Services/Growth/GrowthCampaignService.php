@@ -101,37 +101,188 @@ class GrowthCampaignService
         $isOperations = $page === 'operations';
         $isInsights = $page === 'insights';
 
-        $campaigns = ($isFull || $isOverview || $isContent) && Schema::hasTable('growth_campaigns')
-            ? GrowthCampaign::query()->with(['segment', 'experiments'])->orderBy('priority')->orderBy('id')->get()
-            : collect();
+        $campaigns = collect();
+        if (Schema::hasTable('growth_campaigns')) {
+            if ($isFull) {
+                $campaigns = GrowthCampaign::query()
+                    ->with(['segment', 'experiments'])
+                    ->orderBy('priority')
+                    ->orderBy('id')
+                    ->get();
+            } elseif ($isContent) {
+                $campaigns = GrowthCampaign::query()
+                    ->orderBy('priority')
+                    ->orderBy('id')
+                    ->paginate(12, ['*'], 'campaign_page')
+                    ->withQueryString();
+            }
+        }
 
-        $rules = ($isFull || $isOverview || $isContent) && Schema::hasTable('growth_automation_rules')
-            ? GrowthAutomationRule::query()->with('segment')->orderBy('priority')->orderBy('id')->get()
-            : collect();
+        $rules = collect();
+        if (Schema::hasTable('growth_automation_rules')) {
+            if ($isFull) {
+                $rules = GrowthAutomationRule::query()
+                    ->with('segment')
+                    ->orderBy('priority')
+                    ->orderBy('id')
+                    ->get();
+            } elseif ($isContent) {
+                $rules = GrowthAutomationRule::query()
+                    ->orderBy('priority')
+                    ->orderBy('id')
+                    ->paginate(12, ['*'], 'rule_page')
+                    ->withQueryString();
+            }
+        }
 
-        $templates = ($isFull || $isOverview || $isContent) && Schema::hasTable('growth_message_templates')
-            ? GrowthMessageTemplate::query()->orderBy('template_key')->orderBy('locale')->orderBy('priority')->get()
-            : collect();
+        $templates = collect();
+        if (Schema::hasTable('growth_message_templates')) {
+            if ($isFull) {
+                $templates = GrowthMessageTemplate::query()
+                    ->orderBy('template_key')
+                    ->orderBy('locale')
+                    ->orderBy('priority')
+                    ->get();
+            } elseif ($isContent) {
+                $templates = GrowthMessageTemplate::query()
+                    ->orderBy('template_key')
+                    ->orderBy('locale')
+                    ->orderBy('priority')
+                    ->paginate(12, ['*'], 'template_page')
+                    ->withQueryString();
+            }
+        }
 
-        $segments = ($isFull || $isContent) && Schema::hasTable('growth_audience_segments')
-            ? GrowthAudienceSegment::query()->orderBy('priority')->orderBy('name')->get()
-            : collect();
+        $segments = collect();
+        if (($isFull || $isContent) && Schema::hasTable('growth_audience_segments')) {
+            $segmentQuery = GrowthAudienceSegment::query()
+                ->orderBy('priority')
+                ->orderBy('name');
 
-        $triggerLogs = ($isFull || $isOperations) && Schema::hasTable('growth_trigger_logs')
-            ? GrowthTriggerLog::query()->with(['campaign', 'user'])->latest('triggered_at')->latest('id')->limit(20)->get()
-            : collect();
+            $segments = $isContent
+                ? $segmentQuery->paginate(12, ['*'], 'segment_page')->withQueryString()
+                : $segmentQuery->get();
+        }
 
-        $messageLogs = ($isFull || $isOperations) && Schema::hasTable('growth_message_logs')
-            ? GrowthMessageLog::query()->with(['campaign', 'user', 'experiment'])->latest('sent_at')->latest('id')->limit(20)->get()
-            : collect();
+        $triggerLogs = collect();
+        if (($isFull || $isOperations) && Schema::hasTable('growth_trigger_logs')) {
+            $triggerQuery = GrowthTriggerLog::query()
+                ->with(['campaign', 'user'])
+                ->latest('triggered_at')
+                ->latest('id');
 
-        $deliveries = ($isFull || $isOverview || $isOperations) && Schema::hasTable('growth_deliveries')
-            ? GrowthDelivery::query()->with(['campaign', 'user', 'experiment'])->latest('created_at')->latest('id')->limit(30)->get()
-            : collect();
+            $triggerLogs = $isOperations
+                ? $triggerQuery->paginate(12, ['*'], 'trigger_page')->withQueryString()
+                : $triggerQuery->limit(20)->get();
+        }
 
-        $experiments = ($isFull || $isContent || $isInsights) && Schema::hasTable('growth_experiments')
-            ? GrowthExperiment::query()->with('campaign')->orderBy('priority')->orderBy('id')->get()
-            : collect();
+        $messageLogs = collect();
+        if (($isFull || $isOperations) && Schema::hasTable('growth_message_logs')) {
+            $messageQuery = GrowthMessageLog::query()
+                ->with(['campaign', 'user', 'experiment'])
+                ->latest('sent_at')
+                ->latest('id');
+
+            $messageLogs = $isOperations
+                ? $messageQuery->paginate(15, ['*'], 'message_page')->withQueryString()
+                : $messageQuery->limit(20)->get();
+        }
+
+        $deliveries = collect();
+        if (($isFull || $isOperations) && Schema::hasTable('growth_deliveries')) {
+            $deliveryQuery = GrowthDelivery::query()
+                ->with(['campaign', 'user', 'experiment'])
+                ->latest('created_at')
+                ->latest('id');
+
+            $deliveries = $isOperations
+                ? $deliveryQuery->paginate(15, ['*'], 'delivery_page')->withQueryString()
+                : $deliveryQuery->limit(30)->get();
+        }
+
+        $experiments = collect();
+        if (($isFull || $isContent || $isInsights) && Schema::hasTable('growth_experiments')) {
+            $experimentQuery = GrowthExperiment::query()
+                ->with('campaign')
+                ->orderBy('priority')
+                ->orderBy('id');
+
+            if ($isContent) {
+                $experiments = $experimentQuery
+                    ->paginate(12, ['*'], 'experiment_page')
+                    ->withQueryString();
+            } elseif ($isInsights) {
+                $experiments = $experimentQuery
+                    ->paginate(8, ['*'], 'insight_experiment_page')
+                    ->withQueryString();
+            } else {
+                $experiments = $experimentQuery->get();
+            }
+        }
+
+        $overviewHealth = [
+            'active_campaigns' => 0,
+            'automation_rules' => 0,
+            'templates' => 0,
+            'pending_deliveries' => 0,
+            'campaigns_needing_rule' => 0,
+        ];
+
+        if ($isFull || $isOverview) {
+            if (Schema::hasTable('growth_campaigns')) {
+                $overviewHealth['active_campaigns'] = GrowthCampaign::query()
+                    ->where('is_active', true)
+                    ->count();
+            }
+
+            if (Schema::hasTable('growth_automation_rules')) {
+                $overviewHealth['automation_rules'] = GrowthAutomationRule::query()->count();
+            }
+
+            if (Schema::hasTable('growth_message_templates')) {
+                $overviewHealth['templates'] = GrowthMessageTemplate::query()->count();
+            }
+
+            if (Schema::hasTable('growth_deliveries')) {
+                $overviewHealth['pending_deliveries'] = GrowthDelivery::query()
+                    ->where('status', 'pending')
+                    ->count();
+            }
+
+            if (Schema::hasTable('growth_campaigns') && Schema::hasTable('growth_automation_rules')) {
+                $overviewHealth['campaigns_needing_rule'] = GrowthCampaign::query()
+                    ->where('is_active', true)
+                    ->whereNotIn(
+                        'campaign_key',
+                        GrowthAutomationRule::query()
+                            ->select('rule_key')
+                            ->where('is_active', true)
+                            ->whereNotNull('rule_key')
+                    )
+                    ->count();
+            }
+        }
+
+        $operationsSummary = [
+            'pending_deliveries' => 0,
+            'failed_deliveries' => 0,
+            'trigger_records' => 0,
+        ];
+
+        if ($isFull || $isOperations) {
+            if (Schema::hasTable('growth_deliveries')) {
+                $operationsSummary['pending_deliveries'] = GrowthDelivery::query()
+                    ->where('status', 'pending')
+                    ->count();
+                $operationsSummary['failed_deliveries'] = GrowthDelivery::query()
+                    ->where('status', 'failed')
+                    ->count();
+            }
+
+            if (Schema::hasTable('growth_trigger_logs')) {
+                $operationsSummary['trigger_records'] = GrowthTriggerLog::query()->count();
+            }
+        }
 
         $attributionSummary = ($isFull || $isOverview || $isInsights)
             ? app(GrowthAttributionService::class)->summary()
@@ -158,6 +309,13 @@ class GrowthCampaignService
             ? app(GrowthAdaptiveLearningService::class)->topRows()
             : collect();
 
+        $experimentPerformance = collect();
+        if ($isFull) {
+            $experimentPerformance = $this->experimentPerformanceSummary($experiments);
+        } elseif ($isInsights && method_exists($experiments, 'getCollection')) {
+            $experimentPerformance = $this->experimentPerformanceSummary($experiments->getCollection());
+        }
+
         return [
             'settings' => [
                 'engine_enabled' => $this->engineEnabled(),
@@ -180,12 +338,12 @@ class GrowthCampaignService
             'segments' => $segments,
             'experiments' => $experiments,
             'deliveries' => $deliveries,
+            'overview_health' => $overviewHealth,
+            'operations_summary' => $operationsSummary,
             'performance' => $isFull ? $this->buildPerformance() : [],
             'trigger_logs' => $triggerLogs,
             'message_logs' => $messageLogs,
-            'experiment_performance' => ($isFull || $isInsights)
-                ? $this->experimentPerformanceSummary($experiments)
-                : collect(),
+            'experiment_performance' => $experimentPerformance,
             'attribution_summary' => $attributionSummary,
             'attribution_breakdown' => $attributionBreakdown,
             'cohort_summary' => $cohortSummary,

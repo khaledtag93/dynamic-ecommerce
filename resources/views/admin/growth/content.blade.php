@@ -1,6 +1,10 @@
 @extends('admin.growth.layout')
 
 @section('growth-module-content')
+@php
+    $growthTotal = fn ($items) => method_exists($items, 'total') ? $items->total() : $items->count();
+    $contentPageSelected = request()->hasAny(['campaign_page', 'rule_page', 'template_page', 'segment_page', 'experiment_page']);
+@endphp
 <div class="gm-section-heading">
     <div>
         <h3>{{ __('Journey setup') }}</h3>
@@ -8,13 +12,13 @@
     </div>
 </div>
 
-<details class="gm-panel gm-module" open>
+<details class="gm-panel gm-module" id="growth-campaigns" {{ !$contentPageSelected || request()->has('campaign_page') ? 'open' : '' }}>
     <summary>
         <div class="gm-module-summary">
             <span class="gm-module-icon"><i class="mdi mdi-bullhorn-outline"></i></span>
             <div><div class="gm-module-title">{{ __('Campaigns') }}</div><div class="gm-mini">{{ __('Customer journeys that connect an audience, trigger, message, and offer.') }}</div></div>
         </div>
-        <span class="gm-count">{{ $campaigns->count() }}</span>
+        <span class="gm-count">{{ $growthTotal($campaigns) }}</span>
     </summary>
     <div class="gm-module-body">
         <div class="gm-section mt-3"><div></div><a href="{{ route('admin.growth.campaigns.create') }}" class="btn btn-sm btn-primary">{{ __('Create campaign') }}</a></div>
@@ -22,7 +26,7 @@
             <div class="gm-empty">{{ __('No campaigns yet. Create the first journey when you are ready.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Campaign') }}</th><th>{{ __('Channel') }}</th><th>{{ __('Priority') }}</th><th>{{ __('Status') }}</th><th>{{ __('Actions') }}</th></tr></thead><tbody>
-            @foreach($campaigns->take(12) as $campaign)
+            @foreach($campaigns as $campaign)
                 <tr>
                     <td><strong>{{ $campaign->name }}</strong><div class="gm-mini">{{ $campaign->campaign_key }}</div></td>
                     <td>{{ strtoupper((string) $campaign->channel) }}</td>
@@ -32,17 +36,20 @@
                 </tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($campaigns, 'hasPages') && $campaigns->hasPages())
+                <div class="mt-3">{{ $campaigns->fragment('growth-campaigns')->links() }}</div>
+            @endif
         @endif
     </div>
 </details>
 
-<details class="gm-panel gm-module">
+<details class="gm-panel gm-module" id="growth-rules" {{ request()->has('rule_page') ? 'open' : '' }}>
     <summary>
         <div class="gm-module-summary">
             <span class="gm-module-icon"><i class="mdi mdi-source-branch"></i></span>
             <div><div class="gm-module-title">{{ __('Automation rules') }}</div><div class="gm-mini">{{ __('Control when a journey can run and how often it may repeat.') }}</div></div>
         </div>
-        <span class="gm-count">{{ $rules->count() }}</span>
+        <span class="gm-count">{{ $growthTotal($rules) }}</span>
     </summary>
     <div class="gm-module-body">
         <div class="gm-section mt-3"><div></div><a href="{{ route('admin.growth.rules.create') }}" class="btn btn-sm btn-primary">{{ __('Create rule') }}</a></div>
@@ -50,7 +57,7 @@
             <div class="gm-empty">{{ __('No automation rules yet.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Rule') }}</th><th>{{ __('Trigger') }}</th><th>{{ __('Priority') }}</th><th>{{ __('Status') }}</th><th>{{ __('Actions') }}</th></tr></thead><tbody>
-            @foreach($rules->take(12) as $rule)
+            @foreach($rules as $rule)
                 <tr>
                     <td><strong>{{ $rule->name }}</strong><div class="gm-mini">{{ $rule->rule_key }}</div></td>
                     <td>{{ $rule->trigger_event ?? '—' }}</td>
@@ -60,17 +67,20 @@
                 </tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($rules, 'hasPages') && $rules->hasPages())
+                <div class="mt-3">{{ $rules->fragment('growth-rules')->links() }}</div>
+            @endif
         @endif
     </div>
 </details>
 
-<details class="gm-panel gm-module">
+<details class="gm-panel gm-module" id="growth-templates" {{ request()->has('template_page') ? 'open' : '' }}>
     <summary>
         <div class="gm-module-summary">
             <span class="gm-module-icon"><i class="mdi mdi-message-text-outline"></i></span>
             <div><div class="gm-module-title">{{ __('Templates') }}</div><div class="gm-mini">{{ __('Reusable Arabic and English message content for your campaigns.') }}</div></div>
         </div>
-        <span class="gm-count">{{ $templates->count() }}</span>
+        <span class="gm-count">{{ $growthTotal($templates) }}</span>
     </summary>
     <div class="gm-module-body">
         <div class="gm-section mt-3"><div></div><a href="{{ route('admin.growth.templates.create') }}" class="btn btn-sm btn-primary">{{ __('Create template') }}</a></div>
@@ -78,21 +88,24 @@
             <div class="gm-empty">{{ __('No templates yet.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Template') }}</th><th>{{ __('Locale') }}</th><th>{{ __('Channel') }}</th><th>{{ __('Actions') }}</th></tr></thead><tbody>
-            @foreach($templates->take(12) as $template)
+            @foreach($templates as $template)
                 <tr><td><strong>{{ $template->name }}</strong><div class="gm-mini">{{ $template->template_key }}</div></td><td>{{ strtoupper((string) $template->locale) }}</td><td>{{ strtoupper((string) $template->channel) }}</td><td><a href="{{ route('admin.growth.templates.edit', $template) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a></td></tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($templates, 'hasPages') && $templates->hasPages())
+                <div class="mt-3">{{ $templates->fragment('growth-templates')->links() }}</div>
+            @endif
         @endif
     </div>
 </details>
 
-<details class="gm-panel gm-module">
+<details class="gm-panel gm-module" id="growth-segments" {{ request()->has('segment_page') ? 'open' : '' }}>
     <summary>
         <div class="gm-module-summary">
             <span class="gm-module-icon"><i class="mdi mdi-account-group-outline"></i></span>
             <div><div class="gm-module-title">{{ __('Audience segments') }}</div><div class="gm-mini">{{ __('Reusable customer groups for consistent targeting across journeys.') }}</div></div>
         </div>
-        <span class="gm-count">{{ $segments->count() }}</span>
+        <span class="gm-count">{{ $growthTotal($segments) }}</span>
     </summary>
     <div class="gm-module-body">
         <div class="gm-section mt-3"><div></div><a href="{{ route('admin.growth.segments.create') }}" class="btn btn-sm btn-primary">{{ __('Create segment') }}</a></div>
@@ -100,21 +113,24 @@
             <div class="gm-empty">{{ __('No audience segments yet.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Segment') }}</th><th>{{ __('Type') }}</th><th>{{ __('Priority') }}</th><th>{{ __('Actions') }}</th></tr></thead><tbody>
-            @foreach($segments->take(12) as $segment)
+            @foreach($segments as $segment)
                 <tr><td><strong>{{ $segment->name }}</strong><div class="gm-mini">{{ $segment->segment_key }}</div></td><td>{{ $segment->audience_type ?? '—' }}</td><td>{{ $segment->priority }}</td><td><a href="{{ route('admin.growth.segments.edit', $segment) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a></td></tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($segments, 'hasPages') && $segments->hasPages())
+                <div class="mt-3">{{ $segments->fragment('growth-segments')->links() }}</div>
+            @endif
         @endif
     </div>
 </details>
 
-<details class="gm-panel gm-module">
+<details class="gm-panel gm-module" id="growth-experiments" {{ request()->has('experiment_page') ? 'open' : '' }}>
     <summary>
         <div class="gm-module-summary">
             <span class="gm-module-icon"><i class="mdi mdi-flask-outline"></i></span>
             <div><div class="gm-module-title">{{ __('Experiments') }}</div><div class="gm-mini">{{ __('Compare controlled variants before deciding which message or offer should stay.') }}</div></div>
         </div>
-        <span class="gm-count">{{ $experiments->count() }}</span>
+        <span class="gm-count">{{ $growthTotal($experiments) }}</span>
     </summary>
     <div class="gm-module-body">
         <div class="gm-section mt-3"><div></div><a href="{{ route('admin.growth.experiments.create') }}" class="btn btn-sm btn-primary">{{ __('Create experiment') }}</a></div>
@@ -122,7 +138,7 @@
             <div class="gm-empty">{{ __('No experiments yet.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Experiment') }}</th><th>{{ __('Campaign') }}</th><th>{{ __('Priority') }}</th><th>{{ __('Status') }}</th><th>{{ __('Actions') }}</th></tr></thead><tbody>
-            @foreach($experiments->take(12) as $experiment)
+            @foreach($experiments as $experiment)
                 <tr>
                     <td><strong>{{ $experiment->name }}</strong><div class="gm-mini">{{ $experiment->experiment_key }}</div></td>
                     <td>{{ $experiment->campaign?->name ?? '—' }}</td>
@@ -132,6 +148,9 @@
                 </tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($experiments, 'hasPages') && $experiments->hasPages())
+                <div class="mt-3">{{ $experiments->fragment('growth-experiments')->links() }}</div>
+            @endif
         @endif
     </div>
 </details>

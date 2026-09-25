@@ -2,13 +2,11 @@
 
 @section('growth-module-content')
 @php
-    $activeCampaigns = $campaigns->where('is_active', true)->count();
-    $pendingDeliveries = $deliveries->where('status', 'pending')->count();
-    $activeRuleKeys = $rules->where('is_active', true)->pluck('rule_key')->filter();
-    $campaignsMissingRule = $campaigns
-        ->where('is_active', true)
-        ->filter(fn ($campaign) => ! $activeRuleKeys->contains($campaign->campaign_key))
-        ->count();
+    $activeCampaigns = (int) ($overviewHealth['active_campaigns'] ?? 0);
+    $pendingDeliveries = (int) ($overviewHealth['pending_deliveries'] ?? 0);
+    $campaignsMissingRule = (int) ($overviewHealth['campaigns_needing_rule'] ?? 0);
+    $automationRuleCount = (int) ($overviewHealth['automation_rules'] ?? 0);
+    $templateCount = (int) ($overviewHealth['templates'] ?? 0);
 @endphp
 
 <div class="gm-grid">
@@ -48,8 +46,8 @@
         <div class="gm-stack">
             @foreach([
                 [__('Active campaigns'), $activeCampaigns, __('Journeys currently enabled and ready to trigger.')],
-                [__('Automation rules'), $rules->count(), __('Rules controlling eligibility, timing, priority, and cooldowns.')],
-                [__('Templates'), $templates->count(), __('Reusable localized message content.')],
+                [__('Automation rules'), $automationRuleCount, __('Rules controlling eligibility, timing, priority, and cooldowns.')],
+                [__('Templates'), $templateCount, __('Reusable localized message content.')],
                 [__('Pending deliveries'), $pendingDeliveries, __('Messages still waiting to be processed or sent.')],
                 [__('Campaigns needing a rule'), $campaignsMissingRule, __('Active campaigns that do not have an active linked automation rule.')],
             ] as [$label, $value, $hint])

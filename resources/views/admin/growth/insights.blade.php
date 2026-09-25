@@ -54,10 +54,13 @@
             <div class="gm-empty">{{ __('No experiment performance yet.') }}</div>
         @else
             <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Experiment') }}</th><th>{{ __('Messages') }}</th><th>{{ __('Conversions') }}</th><th>{{ __('Revenue') }}</th></tr></thead><tbody>
-            @foreach($experimentPerformance->take(12) as $row)
+            @foreach($experimentPerformance as $row)
                 <tr><td>{{ $row['name'] ?? $row['experiment_name'] ?? '—' }}</td><td>{{ $row['messages'] ?? $row['message_count'] ?? 0 }}</td><td>{{ $row['conversions'] ?? $row['conversion_count'] ?? 0 }}</td><td>{{ number_format((float) ($row['revenue'] ?? 0), 2) }}</td></tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($experiments, 'hasPages') && $experiments->hasPages())
+                <div class="mt-3">{{ $experiments->fragment('growth-experiment-performance')->links() }}</div>
+            @endif
         @endif
     </section>
 </div>

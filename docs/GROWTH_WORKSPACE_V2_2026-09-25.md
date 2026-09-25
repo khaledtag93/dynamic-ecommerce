@@ -60,6 +60,18 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 - Variant delivery counts still include eligible sent/delivered/simulated deliveries even when a delivery cannot be matched because it has no user or send timestamp.
 - Added regression coverage with overlapping delivery windows to verify conversion count, conversion rate, revenue, and the one-delivery-query / one-order-query implementation contract.
 
+
+## V2.4 bounded growth workspaces and real pagination
+
+- Replaced hidden first-N truncation in Content & Journeys with independent server-side pagination for Campaigns, Automation Rules, Templates, Audience Segments, and Experiments.
+- Each content paginator has its own query-string key and section fragment so paging one module keeps the relevant accordion open and returns the user to the same module.
+- Operations now paginates Deliveries, Trigger Logs, and Message Logs instead of making older records unreachable after the previous 15/20/30-record snapshot limits.
+- Operations KPI counts now come from explicit database counts rather than the currently visible page, so Pending/Failed/Trigger totals remain accurate while paging.
+- Growth Overview no longer loads all campaigns, rules, templates, or deliveries simply to calculate health cards. It uses targeted counts plus a database subquery for active campaigns that are missing an active linked rule.
+- Insights experiment performance is bounded to eight experiments per page; the expensive conversion/revenue batching introduced in V2.3 now runs only for the current experiment page.
+- Attribution breakdown, cohort rows, predictive rows, and adaptive-learning rows remain intentionally bounded “top/recent” insight panels through their existing service-level limits.
+- Added regression coverage preventing a return to hidden `take()` truncation and asserting the independent paginator contracts.
+
 ## Product rules reinforced by this batch
 
 - Readability and simplicity beat showing every control at once.
@@ -82,4 +94,4 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 
 ## Next Growth slice
 
-Next, profile remaining read paths with realistic QAS data volume. Prioritize query counts, response time, and pagination for large campaigns, templates, deliveries, customer scores, and analytics tables before adding more Growth surface area.
+Next, validate the new paginated Growth workspaces with realistic QAS volume and capture response/query counts. If the measured data shows another bottleneck, optimize that specific read path before adding more Growth surface area.
