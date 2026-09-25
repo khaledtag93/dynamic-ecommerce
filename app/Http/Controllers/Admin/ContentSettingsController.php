@@ -65,6 +65,12 @@ class ContentSettingsController extends Controller
             'footer_show_experience_note' => ['nullable', 'boolean'],
             'footer_show_whatsapp' => ['nullable', 'boolean'],
             'footer_show_website' => ['nullable', 'boolean'],
+            'footer_trust_1_text_ar' => ['nullable', 'string', 'max:120'],
+            'footer_trust_1_text_en' => ['nullable', 'string', 'max:120'],
+            'footer_trust_2_text_ar' => ['nullable', 'string', 'max:120'],
+            'footer_trust_2_text_en' => ['nullable', 'string', 'max:120'],
+            'footer_trust_3_text_ar' => ['nullable', 'string', 'max:120'],
+            'footer_trust_3_text_en' => ['nullable', 'string', 'max:120'],
             'orders_allow_customer_cancellation' => ['nullable', 'boolean'],
             'orders_customer_cancellation_note' => ['nullable', 'string', 'max:1000'],
         ]);
