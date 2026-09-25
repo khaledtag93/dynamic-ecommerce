@@ -11,6 +11,8 @@ class InventoryMovement extends Model
 
     public const TYPE_PURCHASE_IN = 'purchase_in';
     public const TYPE_ORDER_OUT = 'order_out';
+    public const TYPE_ORDER_RESERVATION = 'order_reservation';
+    public const TYPE_RESERVATION_RELEASE = 'reservation_release';
     public const TYPE_ADJUSTMENT = 'adjustment';
     public const TYPE_DAMAGE = 'damage';
     public const TYPE_LOST = 'lost';
