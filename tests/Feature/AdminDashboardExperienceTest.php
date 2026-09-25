@@ -16,7 +16,7 @@ class AdminDashboardExperienceTest extends TestCase
 
     public function test_dashboard_metrics_distinguish_order_value_from_paid_order_share(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         foreach ([
             ['order_number' => 'UX-PAID', 'grand_total' => 100, 'payment_status' => Order::PAYMENT_STATUS_PAID],
             ['order_number' => 'UX-UNPAID', 'grand_total' => 50, 'payment_status' => Order::PAYMENT_STATUS_UNPAID],

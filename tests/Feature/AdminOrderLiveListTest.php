@@ -50,7 +50,7 @@ class AdminOrderLiveListTest extends TestCase
 
     public function test_order_queue_sort_and_pagination_return_matching_full_and_live_results(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         for ($number = 1; $number <= 13; $number++) {
             $this->order('LIVE-'.str_pad((string) $number, 2, '0', STR_PAD_LEFT), 'Queue Customer', 'queue@example.test', $number, Order::STATUS_PENDING);
         }

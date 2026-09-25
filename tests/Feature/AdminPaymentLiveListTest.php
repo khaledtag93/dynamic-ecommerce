@@ -18,7 +18,7 @@ class AdminPaymentLiveListTest extends TestCase
     {
         app(AuthorizationService::class)->syncDefaults();
 
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $cashier = User::factory()->create(['role_as' => 1]);
         $cashier->roles()->sync([Role::where('slug', 'cashier')->firstOrFail()->id]);
 

@@ -16,7 +16,7 @@ class LiveListClosureTest extends TestCase
 
     public function test_import_pagination_returns_the_same_page_for_full_and_live_requests(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         foreach (range(1, 21) as $number) {
             ImportJob::create([
