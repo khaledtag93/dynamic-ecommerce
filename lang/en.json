@@ -3901,5 +3901,7 @@
     "A fast view of active promotion rules and current promotional inventory.": "A fast view of active promotion rules and current promotional inventory.",
     "No active promotions are visible right now, so this section focuses on tracked coupon coverage only.": "No active promotions are visible right now, so this section focuses on tracked coupon coverage only.",
     "No active promotions configured yet.": "No active promotions configured yet.",
-    "Coupon performance table": "Coupon performance table"
+    "Coupon performance table": "Coupon performance table",
+    "Report link copied to clipboard.": "Report link copied to clipboard.",
+    "Copy failed. Copy the current browser address manually.": "Copy failed. Copy the current browser address manually."
 }
