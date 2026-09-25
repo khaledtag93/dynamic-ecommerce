@@ -108,6 +108,43 @@ class VerifiedProductReviewsTest extends TestCase
         $this->assertNull($review->moderated_at);
     }
 
+
+    public function test_verified_customer_can_submit_and_remove_review_through_live_endpoints(): void
+    {
+        $customer = User::factory()->create();
+        $product = $this->makeProduct();
+        $this->makePaidOrder($customer, $product);
+
+        $submit = $this->actingAs($customer)->postJson(route('reviews.store', $product), [
+            'rating' => 5,
+            'comment' => 'Live verified review.',
+        ], ['X-Review-Live' => '1']);
+
+        $submit->assertOk()
+            ->assertJsonPath('message', 'Your review was submitted for moderation.')
+            ->assertJsonPath('review.rating', 5)
+            ->assertJsonPath('review.status', ProductReview::STATUS_PENDING);
+
+        $this->assertDatabaseHas('product_reviews', [
+            'product_id' => $product->id,
+            'user_id' => $customer->id,
+            'rating' => 5,
+            'status' => ProductReview::STATUS_PENDING,
+        ]);
+
+        $remove = $this->actingAs($customer)->deleteJson(
+            route('reviews.destroy', $product),
+            [],
+            ['X-Review-Live' => '1']
+        );
+
+        $remove->assertOk()->assertJsonPath('message', 'Your review was removed.');
+        $this->assertDatabaseMissing('product_reviews', [
+            'product_id' => $product->id,
+            'user_id' => $customer->id,
+        ]);
+    }
+
     public function test_admin_review_workspace_requires_review_moderation_permission(): void
     {
         app(AuthorizationService::class)->syncDefaults();

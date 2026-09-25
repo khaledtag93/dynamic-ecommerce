@@ -50,7 +50,7 @@
             </div>
 
             <div class="col-lg-5">
-                <div class="border rounded-4 p-3 p-lg-4 h-100">
+                <div class="border rounded-4 p-3 p-lg-4 h-100" data-review-workspace>
                     @auth
                         @if($currentUserReview)
                             <div class="d-flex justify-content-between gap-3 align-items-start mb-3">
@@ -59,7 +59,7 @@
                                     <div class="text-muted small">{{ __('Edits are moderated again before they are published.') }}</div>
                                 </div>
                                 <span class="lc-status-badge {{ $currentUserReview->status === \App\Models\ProductReview::STATUS_APPROVED ? 'lc-badge-success' : ($currentUserReview->status === \App\Models\ProductReview::STATUS_REJECTED ? 'lc-badge-danger' : 'lc-badge-processing') }}">
-                                    {{ $currentUserReview->status_label }}
+                                    <span data-review-status-label>{{ $currentUserReview->status_label }}</span>
                                 </span>
                             </div>
                             @if($currentUserReview->status === \App\Models\ProductReview::STATUS_REJECTED && $currentUserReview->moderation_note)
@@ -70,7 +70,7 @@
                         @endif
 
                         @if($canReview)
-                            <form method="POST" action="{{ route('reviews.store', $product) }}" data-submit-loading>
+                            <form method="POST" action="{{ route('reviews.store', $product) }}" data-submit-loading data-review-live>
                                 @csrf
                                 <div class="mb-3">
                                     <label class="form-label fw-bold" for="reviewRating">{{ __('Rating') }}</label>
@@ -119,12 +119,14 @@
                                     data-confirm-ok="{{ __('Remove review') }}"
                                     data-confirm-cancel="{{ __('Keep review') }}"
                                     data-submit-loading
+                                    data-review-delete-live
                                 >
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn lc-btn-danger-soft w-100" data-loading-text="{{ __('Removing...') }}">{{ __('Remove review') }}</button>
                                 </form>
                             @endif
+                        <div class="small mt-3 d-none" role="status" aria-live="polite" data-review-live-status></div>
                         @else
                             <div class="text-center py-3">
                                 <i class="bi bi-patch-check fs-2 text-muted"></i>
@@ -145,3 +147,68 @@
         </div>
     </div>
 </section>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const workspace = document.querySelector('[data-review-workspace]');
+    if (!workspace || typeof window.fetch !== 'function') return;
+
+    const statusNode = workspace.querySelector('[data-review-live-status]');
+    const setStatus = (message, isError = false) => {
+        if (!statusNode) return;
+        statusNode.textContent = message || '';
+        statusNode.classList.toggle('d-none', !message);
+        statusNode.classList.toggle('text-danger', isError);
+        statusNode.classList.toggle('text-success', !isError && Boolean(message));
+    };
+    const request = async (form, method) => {
+        const response = await fetch(form.action, {
+            method,
+            headers: {
+                'Accept': 'application/json',
+                'X-Review-Live': '1',
+                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+            },
+            credentials: 'same-origin',
+            body: method === 'DELETE' ? null : new FormData(form),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const firstError = Object.values(payload.errors || {}).flat()[0];
+            throw new Error(firstError || payload.message || @json(__('Could not save your review. Please try again.')));
+        }
+        return payload;
+    };
+
+    workspace.addEventListener('submit', async function (event) {
+        const form = event.target.closest('[data-review-live], [data-review-delete-live]');
+        if (!form) return;
+        if (form.matches('[data-review-delete-live]') && form.dataset.confirmed !== '1') return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const button = event.submitter || form.querySelector('button[type="submit"]');
+        if (button) button.disabled = true;
+
+        try {
+            const deleting = form.matches('[data-review-delete-live]');
+            const payload = await request(form, deleting ? 'DELETE' : 'POST');
+            setStatus(payload.message);
+
+            if (deleting) {
+                window.location.reload();
+                return;
+            }
+
+            const label = workspace.querySelector('[data-review-status-label]');
+            if (label && payload.review?.status_label) label.textContent = payload.review.status_label;
+            if (button) button.disabled = false;
+        } catch (error) {
+            if (button) button.disabled = false;
+            setStatus(error.message, true);
+        }
+    }, true);
+});
+</script>
+@endpush
