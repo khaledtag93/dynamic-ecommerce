@@ -79,62 +79,41 @@
     {{-- Catalog Health --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl">
-            <div class="card admin-card stat-card h-100">
-                <div class="card-body">
-                    <div class="stat-label">{{ __('Catalog') }}</div>
-                    <div class="stat-value">{{ $this->catalogHealth['total'] }}</div>
-                    <div class="stat-note">{{ __('Total products') }}</div>
-                </div>
-            </div>
+            <x-admin.stat-card :label="__('Catalog')" :value="$this->catalogHealth['total']" icon="mdi-package-variant-closed" :help="__('Total products')" class="h-100" />
         </div>
 
         <div class="col-6 col-xl">
-            <div class="card admin-card stat-card h-100">
-                <div class="card-body">
-                    <div class="stat-label">{{ __('Active') }}</div>
-                    <div class="stat-value">{{ $this->catalogHealth['active'] }}</div>
-                    <div class="stat-note">{{ __('Visible products') }}</div>
-                </div>
-            </div>
+            <x-admin.stat-card :label="__('Active')" :value="$this->catalogHealth['active']" icon="mdi-eye-outline" tone="success" :help="__('Visible products')" class="h-100" />
         </div>
 
         <div class="col-6 col-xl">
-            <div class="card admin-card stat-card h-100">
-                <div class="card-body">
-                    <div class="stat-label">{{ __('Hidden') }}</div>
-                    <div class="stat-value">{{ $this->catalogHealth['hidden'] }}</div>
-                    <div class="stat-note">{{ __('Draft or hidden products') }}</div>
-                </div>
-            </div>
+            <x-admin.stat-card :label="__('Hidden')" :value="$this->catalogHealth['hidden']" icon="mdi-eye-off-outline" :help="__('Draft or hidden products')" class="h-100" />
         </div>
 
         <div class="col-6 col-xl">
-            <button type="button" class="card admin-card stat-card h-100 w-100 text-start border-0" wire:click="$set('readinessFilter', 'needs_attention')">
-                <div class="card-body">
-                    <div class="stat-label">{{ __('Needs content') }}</div>
-                    <div class="stat-value">{{ $this->catalogHealth['needs_content'] }}</div>
-                    <div class="stat-note">{{ __('Click to review incomplete content') }}</div>
-                </div>
+            <button type="button" class="admin-card admin-stat-card admin-stat-card--v2 admin-stat-action h-100 w-100 text-start" wire:click="$set('readinessFilter', 'needs_attention')">
+                <span class="admin-stat-icon"><i class="mdi mdi-text-box-search-outline"></i></span>
+                <span class="admin-stat-label">{{ __('Needs content') }}</span>
+                <span class="admin-stat-value">{{ $this->catalogHealth['needs_content'] }}</span>
+                <span class="admin-stat-help">{{ __('Click to review incomplete content') }}</span>
             </button>
         </div>
 
         <div class="col-12 col-xl">
-            <button type="button" class="card admin-card stat-card h-100 w-100 text-start border-0" wire:click="$set('stockFilter', 'low')">
-                <div class="card-body">
-                    <div class="stat-label">{{ __('Low stock') }}</div>
-                    <div class="stat-value">{{ $this->catalogHealth['low_stock'] }}</div>
-                    <div class="stat-note">{{ __('Click to review products at threshold') }}</div>
-                </div>
+            <button type="button" class="admin-card admin-stat-card admin-stat-card--v2 admin-stat-card--warning admin-stat-action h-100 w-100 text-start" wire:click="$set('stockFilter', 'low')">
+                <span class="admin-stat-icon"><i class="mdi mdi-package-variant-closed-alert"></i></span>
+                <span class="admin-stat-label">{{ __('Low stock') }}</span>
+                <span class="admin-stat-value">{{ $this->catalogHealth['low_stock'] }}</span>
+                <span class="admin-stat-help">{{ __('Click to review products at threshold') }}</span>
             </button>
         </div>
 
         <div class="col-12 col-xl">
-            <button type="button" class="card admin-card stat-card h-100 w-100 text-start border-0" wire:click="$set('stockFilter', 'out')">
-                <div class="card-body">
-                    <div class="stat-label">{{ __('Out of stock') }}</div>
-                    <div class="stat-value">{{ $this->catalogHealth['out_of_stock'] }}</div>
-                    <div class="stat-note">{{ __('Click to review unavailable products') }}</div>
-                </div>
+            <button type="button" class="admin-card admin-stat-card admin-stat-card--v2 admin-stat-card--danger admin-stat-action h-100 w-100 text-start" wire:click="$set('stockFilter', 'out')">
+                <span class="admin-stat-icon"><i class="mdi mdi-package-variant-remove"></i></span>
+                <span class="admin-stat-label">{{ __('Out of stock') }}</span>
+                <span class="admin-stat-value">{{ $this->catalogHealth['out_of_stock'] }}</span>
+                <span class="admin-stat-help">{{ __('Click to review unavailable products') }}</span>
             </button>
         </div>
     </div>
@@ -366,9 +345,8 @@
                     <button
                         type="button"
                         class="btn btn-outline-success btn-modern"
-                        wire:click="bulkSetStatus(true)"
-                        onclick="return confirm('{{ __('Activate selected products on the storefront?') }}')"
-                        wire:loading.attr="disabled"
+                        data-bs-toggle="modal"
+                        data-bs-target="#productBulkActivateConfirmationModal"
                         @disabled($this->selectedCount === 0)
                     >
                         <i class="mdi mdi-eye-outline me-1"></i>{{ __('Activate') }}
@@ -377,9 +355,8 @@
                     <button
                         type="button"
                         class="btn btn-outline-secondary btn-modern"
-                        wire:click="bulkSetStatus(false)"
-                        onclick="return confirm('{{ __('Hide selected products from the storefront?') }}')"
-                        wire:loading.attr="disabled"
+                        data-bs-toggle="modal"
+                        data-bs-target="#productBulkHideConfirmationModal"
                         @disabled($this->selectedCount === 0)
                     >
                         <i class="mdi mdi-eye-off-outline me-1"></i>{{ __('Hide') }}
@@ -1183,30 +1160,20 @@
             font-size: 0.85rem;
         }
 
-        .stat-card .card-body {
-            padding: 1rem 1.1rem;
+        .admin-stat-action {
+            appearance: none;
+            cursor: pointer;
+            border: 1px solid var(--admin-border);
+            text-align: start;
+            transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
         }
 
-        .stat-label {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 0.45rem;
-        }
-
-        .stat-value {
-            font-size: 1.6rem;
-            line-height: 1;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 0.35rem;
-        }
-
-        .stat-note {
-            color: var(--text-muted);
-            font-size: 0.85rem;
+        .admin-stat-action:hover,
+        .admin-stat-action:focus-visible {
+            transform: translateY(-1px);
+            border-color: color-mix(in srgb, var(--admin-primary) 35%, var(--admin-border));
+            box-shadow: 0 14px 34px color-mix(in srgb, var(--admin-text) 7%, transparent);
+            outline: none;
         }
 
         .admin-table thead th {
