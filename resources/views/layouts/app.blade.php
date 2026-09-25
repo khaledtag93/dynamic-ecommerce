@@ -579,6 +579,7 @@
         .lc-flash-toast.is-leaving { opacity:0; transform:translateY(-8px); }
         @media (max-width:575.98px) { .lc-toast-stack { top:.75rem; inset-inline:.75rem; width:auto; } }
 
+        .retail-action[aria-current="page"] { box-shadow:0 0 0 3px color-mix(in srgb, var(--lc-primary) 24%, transparent); border-color:color-mix(in srgb, var(--lc-primary) 45%, white); }
         .retail-links a[aria-current="page"] { color:var(--lc-primary-dark); background:color-mix(in srgb, var(--lc-soft) 82%, white); }
         .retail-links a:focus-visible, .retail-link-button:focus-visible, .retail-menu-toggle:focus-visible, .retail-category-button:focus-visible, .retail-action:focus-visible { outline:3px solid var(--lc-primary); outline-offset:3px; }
 
@@ -662,7 +663,7 @@
                                 </form>
                             </div>
                         </div>
-                        <a class="retail-action retail-action--icon" href="{{ route('notifications.index') }}" aria-label="{{ __('Notifications') }}">
+                        <a class="retail-action retail-action--icon" href="{{ route('notifications.index') }}" aria-label="{{ __('Notifications') }}" @if(request()->routeIs('notifications.*')) aria-current="page" @endif>
                             <i class="bi bi-bell"></i>
                             @if($authNotificationCount > 0)<em>{{ $authNotificationCount }}</em>@endif
                         </a>
@@ -671,7 +672,7 @@
                             <i class="bi bi-person"></i><span>{{ __('Login') }}</span>
                         </a>
                     @endauth
-                    <a class="retail-action retail-action--cart" href="{{ route('cart.index') }}">
+                    <a class="retail-action retail-action--cart" href="{{ route('cart.index') }}" @if(request()->routeIs('cart.*')) aria-current="page" @endif>
                         <i class="bi bi-bag"></i><span class="d-none d-sm-inline">{{ __('Cart') }}</span><em data-layout-cart-count>{{ $layoutCartCount }}</em>
                     </a>
                     <button class="retail-menu-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#retailNav" aria-controls="retailNav" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
