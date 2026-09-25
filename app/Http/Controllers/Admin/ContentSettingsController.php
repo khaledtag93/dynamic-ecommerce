@@ -65,6 +65,12 @@ class ContentSettingsController extends Controller
             'footer_show_experience_note' => ['nullable', 'boolean'],
             'footer_show_whatsapp' => ['nullable', 'boolean'],
             'footer_show_website' => ['nullable', 'boolean'],
+            'footer_show_social' => ['nullable', 'boolean'],
+            'store_social_facebook' => ['nullable', 'url', 'max:500'],
+            'store_social_instagram' => ['nullable', 'url', 'max:500'],
+            'store_social_tiktok' => ['nullable', 'url', 'max:500'],
+            'store_social_youtube' => ['nullable', 'url', 'max:500'],
+            'store_social_linkedin' => ['nullable', 'url', 'max:500'],
             'footer_trust_1_text_ar' => ['nullable', 'string', 'max:120'],
             'footer_trust_1_text_en' => ['nullable', 'string', 'max:120'],
             'footer_trust_2_text_ar' => ['nullable', 'string', 'max:120'],
@@ -77,7 +83,7 @@ class ContentSettingsController extends Controller
 
         foreach ([
             'contact_show_email', 'contact_show_phone', 'contact_show_whatsapp', 'contact_show_address', 'contact_show_hours', 'contact_show_map',
-            'footer_show_shop', 'footer_show_policies', 'footer_show_categories', 'footer_show_support', 'footer_show_trust', 'footer_show_experience_note', 'footer_show_whatsapp', 'footer_show_website',
+            'footer_show_shop', 'footer_show_policies', 'footer_show_categories', 'footer_show_support', 'footer_show_trust', 'footer_show_experience_note', 'footer_show_whatsapp', 'footer_show_website', 'footer_show_social',
             'orders_allow_customer_cancellation',
         ] as $booleanKey) {
             WebsiteSetting::setValue($booleanKey, $request->boolean($booleanKey) ? '1' : '0', 'content');
