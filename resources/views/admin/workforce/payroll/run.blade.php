@@ -20,13 +20,13 @@
         <a href="{{ route('admin.workforce.payroll.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to payroll') }}</span></a>
 
         @if(auth()->user()?->hasPermission('workforce.payroll.manage') && $payrollRun->isDraft())
-            <form method="POST" action="{{ route('admin.workforce.payroll.runs.approve', $payrollRun) }}" data-confirm-message="{{ __('Approve this payroll run? Entries and adjustments will become immutable.') }}">
+            <form method="POST" action="{{ route('admin.workforce.payroll.runs.approve', $payrollRun) }}" data-confirm-message="{{ __('Approve this payroll run? Entries and adjustments will become immutable.') }}" data-submit-loading>
                 @csrf
                 @method('PATCH')
                 <button class="btn btn-primary btn-text-icon"><i class="mdi mdi-check-decagram-outline"></i><span>{{ __('Approve run') }}</span></button>
             </form>
         @elseif(auth()->user()?->hasPermission('workforce.payroll.manage') && $payrollRun->isApproved())
-            <form method="POST" action="{{ route('admin.workforce.payroll.runs.paid', $payrollRun) }}" data-confirm-message="{{ __('Mark this approved payroll run as Paid?') }}">
+            <form method="POST" action="{{ route('admin.workforce.payroll.runs.paid', $payrollRun) }}" data-confirm-message="{{ __('Mark this approved payroll run as Paid?') }}" data-submit-loading>
                 @csrf
                 @method('PATCH')
                 <button class="btn btn-success btn-text-icon"><i class="mdi mdi-cash-check"></i><span>{{ __('Mark paid') }}</span></button>
@@ -180,7 +180,7 @@
                                                                     <td>{{ $adjustment->createdBy?->name ?: '—' }}</td>
                                                                     <td class="text-end">
                                                                         @if($payrollRun->isDraft() && auth()->user()?->hasPermission('workforce.payroll.manage'))
-                                                                            <form method="POST" action="{{ route('admin.workforce.payroll.adjustments.destroy', $adjustment) }}" data-confirm-message="{{ __('Remove this payroll component?') }}">
+                                                                            <form method="POST" action="{{ route('admin.workforce.payroll.adjustments.destroy', $adjustment) }}" data-confirm-message="{{ __('Remove this payroll component?') }}" data-submit-loading>
                                                                                 @csrf
                                                                                 @method('DELETE')
                                                                                 <button class="btn btn-sm btn-outline-danger">{{ __('Remove') }}</button>
