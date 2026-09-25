@@ -5335,5 +5335,19 @@
     "Request payload": "حمولة الطلب",
     "Response payload": "حمولة الاستجابة",
     "No WhatsApp logs yet": "لا توجد سجلات واتساب حتى الآن",
-    "Delivery attempts, retries, and provider responses will appear here as soon as activity starts.": "ستظهر هنا محاولات التسليم وإعادات المحاولة واستجابات المزود بمجرد بدء النشاط."
+    "Delivery attempts, retries, and provider responses will appear here as soon as activity starts.": "ستظهر هنا محاولات التسليم وإعادات المحاولة واستجابات المزود بمجرد بدء النشاط.",
+    "Could not save the address. Please review the form and try again.": "تعذر حفظ العنوان. راجع البيانات وحاول مرة أخرى.",
+    "Could not save your changes. Please try again.": "تعذر حفظ تغييراتك. حاول مرة أخرى.",
+    "Changes saved.": "تم حفظ التغييرات.",
+    "Shipping goal": "هدف الشحن",
+    "Pay now securely": "ادفع الآن بأمان",
+    "Are you sure you want to cancel this order?": "هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟",
+    "Status overview": "ملخص الحالة",
+    "Secure payment session could not be opened.": "تعذر فتح جلسة الدفع الآمنة.",
+    "Last secure payment session created at": "آخر جلسة دفع آمنة تم إنشاؤها في",
+    "Last checkout start failure": "آخر فشل في بدء الدفع",
+    "You can keep tracking payment and delivery updates from your account notifications.": "يمكنك متابعة تحديثات الدفع والتوصيل من إشعارات حسابك.",
+    "Could not cancel this order. Please try again.": "تعذر إلغاء هذا الطلب. حاول مرة أخرى.",
+    "Order cancelled successfully. Stock was restored and the order timeline was updated.": "تم إلغاء الطلب بنجاح. تمت إعادة المخزون وتحديث الخط الزمني للطلب.",
+    "Contact support": "تواصل مع الدعم"
 }
