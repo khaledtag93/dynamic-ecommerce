@@ -5175,5 +5175,6 @@
     "View → cart → checkout → purchase, with direct leakage context.": "عرض ← سلة ← إتمام الشراء ← شراء، مع توضيح مباشر لمواضع التسرب.",
     "Report link copied to clipboard.": "تم نسخ رابط التقرير إلى الحافظة.",
     "Copy failed. Copy the current browser address manually.": "تعذر النسخ. انسخ عنوان المتصفح الحالي يدويًا.",
-    "Dismiss notification": "إغلاق الإشعار"
+    "Dismiss notification": "إغلاق الإشعار",
+    "Search admin workspace": "البحث في مساحة الإدارة"
 }
