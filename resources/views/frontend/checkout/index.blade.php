@@ -54,7 +54,7 @@
                 <div class="alert alert-danger mb-0">{{ $errors->first('cart') }}</div>
             @endif
 
-            <form method="POST" action="{{ route('checkout.store') }}" data-submit-loading>
+            <form method="POST" action="{{ route('checkout.store') }}" data-submit-loading data-shipping-quote-form data-shipping-quote-url="{{ route('checkout.shipping-quote') }}">
                 @csrf
                 @if(!empty($shippingGoal))
                     <div class="lc-card p-3 p-lg-4 mb-4 checkout-aov-progress">
@@ -93,12 +93,15 @@
                                     @error('customer_phone') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <select name="delivery_method" class="form-select lc-form-select @error('delivery_method') is-invalid @enderror" required>
-                                        @foreach($deliveryOptions as $value => $label)
-                                            <option value="{{ $value }}" @selected(old('delivery_method', \App\Models\Order::DELIVERY_METHOD_STANDARD) === $value)>{{ $label }}</option>
-                                        @endforeach
+                                    <select name="delivery_method" class="form-select lc-form-select @error('delivery_method') is-invalid @enderror" required data-shipping-method>
+                                        @forelse($deliveryOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected(old('delivery_method', array_key_first($deliveryOptions)) === $value)>{{ $label }}</option>
+                                        @empty
+                                            <option value="">{{ __('No delivery methods are currently available') }}</option>
+                                        @endforelse
                                     </select>
                                     @error('delivery_method') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                                    <div class="small text-muted mt-2" data-shipping-quote-status>{{ __('Shipping is calculated from the selected method and destination.') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -180,7 +183,7 @@
                                     @error('shipping_address_line_2') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <input name="shipping_city" value="{{ old('shipping_city', $selectedShippingAddress?->city) }}" class="form-control lc-form-control @error('shipping_city') is-invalid @enderror" placeholder="{{ __('City') }}" required>
+                                    <input name="shipping_city" data-shipping-city value="{{ old('shipping_city', $selectedShippingAddress?->city) }}" class="form-control lc-form-control @error('shipping_city') is-invalid @enderror" placeholder="{{ __('City') }}" required>
                                     @error('shipping_city') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">
@@ -192,7 +195,7 @@
                                     @error('shipping_postal_code') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <input name="shipping_country" value="{{ old('shipping_country', $selectedShippingAddress?->country ?? 'Egypt') }}" class="form-control lc-form-control @error('shipping_country') is-invalid @enderror" placeholder="{{ __('Country') }}" required>
+                                    <input name="shipping_country" data-shipping-country value="{{ old('shipping_country', $selectedShippingAddress?->country ?? 'Egypt') }}" class="form-control lc-form-control @error('shipping_country') is-invalid @enderror" placeholder="{{ __('Country') }}" required>
                                     @error('shipping_country') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                             </div>
@@ -293,10 +296,11 @@
                             @if(($cart['promotion_discount'] ?? 0) > 0)
                                 <div class="lc-summary-row"><span class="text-muted">{{ __('Promotion') }}{{ !empty($cart['promotion_label']) ? ' (' . $cart['promotion_label'] . ')' : '' }}</span><strong class="text-success">- EGP {{ number_format($cart['promotion_discount'], 2) }}</strong></div>
                             @endif
-                            <div class="lc-summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong>EGP {{ number_format($cart['shipping'], 2) }}</strong></div>
+                            <div class="lc-summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong data-shipping-amount>—</strong></div>
+                            <div class="small text-muted mb-2" data-shipping-meta>{{ __('Enter a supported city and choose a delivery method to calculate shipping.') }}</div>
                             <div class="lc-summary-row"><span class="text-muted">{{ __('Tax') }}</span><strong>EGP {{ number_format($cart['tax'], 2) }}</strong></div>
                             <div class="lc-summary-divider"></div>
-                            <div class="lc-summary-row fs-5"><span class="fw-bold">{{ __('Total') }}</span><span class="fw-bold">EGP {{ number_format($cart['total'], 2) }}</span></div>
+                            <div class="lc-summary-row fs-5"><span class="fw-bold">{{ __('Total') }}</span><span class="fw-bold" data-shipping-total>EGP {{ number_format($cart['total'], 2) }}</span></div>
 
                             @if(($upsellProducts ?? collect())->isNotEmpty())
                                 <div class="checkout-upsell-stack mb-3">
@@ -347,7 +351,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn lc-btn-primary w-100" data-loading-text="{{ __('Placing order...') }}">{{ __('Place order') }}</button>
+                            <button type="submit" class="btn lc-btn-primary w-100" data-loading-text="{{ __('Placing order...') }}" data-shipping-submit disabled>{{ __('Place order') }}</button>
                             <div class="checkout-legal-note mt-3">{{ __('By placing the order, you confirm the entered information and continue under the store terms, shipping, and refund policies.') }}</div>
                         </div>
                     </div>
@@ -395,4 +399,116 @@
 .checkout-legal-note{font-size:.88rem;color:var(--lc-muted);text-align:center}.checkout-personalized-offers{display:grid;gap:.75rem}.checkout-personalized-offer-card{padding:.9rem;border-radius:1rem;background:rgba(255,255,255,.84);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white)}.checkout-personalized-offer-card__chip{display:inline-flex;align-items:center;padding:.34rem .6rem;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:.75rem;font-weight:800}.checkout-aov-progress__bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--lc-border) 70%, white);overflow:hidden}.checkout-aov-progress__bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--lc-primary),var(--lc-secondary))}.checkout-aov-progress{background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--lc-soft) 72%, white) 100%)}.checkout-upsell-stack{display:grid;gap:.75rem}.checkout-upsell-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem;border-radius:1rem;background:rgba(255,255,255,.82);border:1px solid color-mix(in srgb,var(--lc-border) 80%, white)}.checkout-upsell-item img{width:64px;height:64px;object-fit:cover;border-radius:.9rem}
 @media (max-width: 767.98px){.checkout-summary-product{grid-template-columns:64px 1fr}.checkout-summary-product__media img{width:64px;height:64px}}
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('[data-shipping-quote-form]');
+    if (!form) return;
+
+    const method = form.querySelector('[data-shipping-method]');
+    const city = form.querySelector('[data-shipping-city]');
+    const country = form.querySelector('[data-shipping-country]');
+    const status = form.querySelector('[data-shipping-quote-status]');
+    const amount = form.querySelector('[data-shipping-amount]');
+    const meta = form.querySelector('[data-shipping-meta]');
+    const total = form.querySelector('[data-shipping-total]');
+    const submit = form.querySelector('[data-shipping-submit]');
+    const token = form.querySelector('input[name="_token"]')?.value;
+    let timer = null;
+    let controller = null;
+
+    const money = (value, currency) => currency + ' ' + Number(value || 0).toFixed(2);
+
+    const invalidate = (message) => {
+        submit.disabled = true;
+        amount.textContent = '—';
+        status.textContent = message || @json(__('Shipping quote is required before placing the order.'));
+        meta.textContent = '';
+    };
+
+    const requestQuote = async () => {
+        const methodValue = method?.value || '';
+        const cityValue = city?.value.trim() || '';
+        const countryValue = country?.value.trim() || '';
+
+        if (!methodValue) {
+            invalidate(@json(__('No delivery method is selected.')));
+            return;
+        }
+
+        if (methodValue !== 'store_pickup' && (!cityValue || !countryValue)) {
+            invalidate(@json(__('Enter a city and country to calculate shipping.')));
+            return;
+        }
+
+        controller?.abort();
+        controller = new AbortController();
+        submit.disabled = true;
+        status.textContent = @json(__('Calculating shipping...'));
+
+        try {
+            const response = await fetch(form.dataset.shippingQuoteUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                },
+                body: JSON.stringify({
+                    delivery_method: methodValue,
+                    shipping_city: cityValue,
+                    shipping_country: countryValue,
+                }),
+                signal: controller.signal,
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok) {
+                const errors = payload.errors || {};
+                const message = errors.shipping_city?.[0]
+                    || errors.delivery_method?.[0]
+                    || errors.cart?.[0]
+                    || payload.message
+                    || @json(__('Shipping could not be calculated.'));
+                invalidate(message);
+                return;
+            }
+
+            amount.textContent = money(payload.shipping, payload.currency || 'EGP');
+            total.textContent = money(payload.total, payload.currency || 'EGP');
+
+            const details = [];
+            if (payload.zone_name) details.push(payload.zone_name);
+            if (payload.eta_label) details.push(payload.eta_label);
+            if (payload.pickup) details.push(@json(__('Free store pickup')));
+            if (payload.free_shipping_qualified) {
+                details.push(@json(__('Free shipping applied')));
+            } else if (payload.free_shipping_remaining !== null && payload.free_shipping_remaining !== undefined) {
+                details.push(@json(__('Add :amount more for free shipping.')).replace(':amount', money(payload.free_shipping_remaining, payload.currency || 'EGP')));
+            }
+
+            meta.textContent = details.join(' · ');
+            status.textContent = @json(__('Shipping quote confirmed.'));
+            submit.disabled = false;
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            invalidate(@json(__('Shipping could not be calculated. Try again.')));
+        }
+    };
+
+    const scheduleQuote = () => {
+        clearTimeout(timer);
+        timer = setTimeout(requestQuote, 350);
+    };
+
+    method?.addEventListener('change', requestQuote);
+    city?.addEventListener('input', scheduleQuote);
+    country?.addEventListener('input', scheduleQuote);
+
+    requestQuote();
+});
+</script>
 @endpush
