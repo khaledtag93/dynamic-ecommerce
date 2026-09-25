@@ -98,4 +98,18 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString("current.scrollIntoView({ block: 'nearest', inline: 'nearest' })", $sidebar);
     }
 
+    public function test_mobile_sidebar_has_complete_open_close_lifecycle(): void
+    {
+        $script = file_get_contents(public_path('admin/js/off-canvas.js'));
+        $layout = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+
+        $this->assertStringContainsString('admin-sidebar-backdrop', $script);
+        $this->assertStringContainsString("aria-expanded", $script);
+        $this->assertStringContainsString("event.key === 'Escape'", $script);
+        $this->assertStringContainsString("body').toggleClass('admin-sidebar-open'", $script);
+        $this->assertStringContainsString("window.matchMedia('(max-width: 991.98px)')", $script);
+        $this->assertStringContainsString('.admin-sidebar-backdrop.is-active', $layout);
+        $this->assertStringContainsString('body.admin-sidebar-open', $layout);
+    }
+
 }
