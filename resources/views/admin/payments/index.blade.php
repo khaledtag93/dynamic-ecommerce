@@ -11,11 +11,11 @@
 
 <div class="admin-page-shell" data-live-list>
 <div class="row g-3 mb-4">
-    <div class="col-md-6 col-xl"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi mdi-cash-multiple"></i></span><div class="admin-stat-label">{{ __('Total records') }}</div><div class="admin-stat-value">{{ number_format($stats['total']) }}</div></div></div>
-    <div class="col-md-6 col-xl"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi mdi-progress-clock"></i></span><div class="admin-stat-label">{{ __('Pending') }}</div><div class="admin-stat-value">{{ number_format($stats['pending']) }}</div></div></div>
-    <div class="col-md-6 col-xl"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi mdi-check-decagram-outline"></i></span><div class="admin-stat-label">{{ __('Paid') }}</div><div class="admin-stat-value">{{ number_format($stats['paid']) }}</div></div></div>
-    <div class="col-md-6 col-xl"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi mdi-alert-circle-outline"></i></span><div class="admin-stat-label">{{ __('Needs attention') }}</div><div class="admin-stat-value">{{ number_format($stats['attention']) }}</div></div></div>
-    <div class="col-md-6 col-xl"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi mdi-cash-check"></i></span><div class="admin-stat-label">{{ __('Paid amount') }}</div><div class="admin-stat-value">EGP {{ number_format($stats['paid_amount'], 2) }}</div></div></div>
+    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Total records')" :value="number_format($stats['total'])" icon="mdi-cash-multiple" class="h-100" /></div>
+    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Pending')" :value="number_format($stats['pending'])" icon="mdi-progress-clock" tone="warning" class="h-100" /></div>
+    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Paid')" :value="number_format($stats['paid'])" icon="mdi-check-decagram-outline" tone="success" class="h-100" /></div>
+    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Needs attention')" :value="number_format($stats['attention'])" icon="mdi-alert-circle-outline" tone="danger" class="h-100" /></div>
+    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Paid amount')" :value="'EGP ' . number_format($stats['paid_amount'], 2)" icon="mdi-cash-check" tone="success" class="h-100" /></div>
 </div>
 
 <div class="admin-card mb-4">
