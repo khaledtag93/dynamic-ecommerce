@@ -47,8 +47,14 @@ Admin V2 consistency is source-complete for the known high-impact workspaces:
 
 ## Current verification state
 - Latest source changes are committed to `v42-clean-baseline`.
-- Branch-head CI status has not yet produced a current run for the newest checkpoint.
-- QAS has not yet been refreshed to the latest branch head.
+- Operator-confirmed QAS deployment completed on 2026-09-25 at commit `899e6410331543fa3c2a807c788ccf4d066a25f5`.
+- QAS URL: `https://v42.tag-marketplace.com`.
+- The deploy safety gates caught and blocked two issues before the successful deployment:
+  1. duplicate invalid frontend return routes referencing `FrontendReturnController`;
+  2. corrupted Blade namespaces in Inventory, Payment details, and Purchases.
+- Those issues were fixed in source before the final QAS deployment.
+- `BladeNamespacePreflightTest` now recursively guards Admin Blade files against the same corrupted namespace pattern.
+- Current branch-head CI status still has no visible run for the newest checkpoint.
 - Production is unchanged.
 
 ## Remaining high-priority product work
@@ -79,8 +85,7 @@ Admin V2 consistency is source-complete for the known high-impact workspaces:
    - split oversized controllers/views/services incrementally.
 
 ## Near-term execution order
-1. Deploy current `v42-clean-baseline` to QAS.
-2. Run consolidated QAS smoke/acceptance across Admin, Catalog, Payments/Shipping, POS, Workforce, Returns and Storefront account flows.
-3. Fix only discovered regressions/blockers.
-4. Continue feature work with storefront polish + online invoice/receipt + import pipeline.
-5. Keep Production unchanged until the release gate and operational checks are explicitly completed.
+1. Run consolidated QAS smoke/acceptance across Admin, Catalog, Payments/Shipping, POS, Workforce, Returns and Storefront account flows on deployed commit `899e6410`.
+2. Fix only discovered regressions/blockers.
+3. Continue feature work with storefront polish + online invoice/receipt + import pipeline.
+4. Keep Production unchanged until the release gate and operational checks are explicitly completed.
