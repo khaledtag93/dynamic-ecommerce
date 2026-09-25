@@ -920,3 +920,15 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
   - synchronizing existing public uploads into the QAS uploads directory for cloned database records.
 - The media-root finding is now **verified resolved in QAS**.
 - Production behavior remains unchanged; no Production media migration was performed.
+
+## 2026-09-25 — Growth Engine integrity & UX hardening
+
+- Fixed Growth settings persistence so saving the visible Overview controls no longer disables advanced Growth capabilities that were not submitted by that form.
+- Changed Growth default seeding to create-if-missing behavior so opening the workspace or running the engine no longer overwrites admin-customized default campaigns, rules, audience segments, message templates, or experiments.
+- Made automation-rule linkage explicit: a rule now selects an existing campaign and uses that campaign key, matching the runtime contract used by the engine and preventing rules that can never execute.
+- Added an Overview health signal for active campaigns that are missing an active linked automation rule.
+- Reworked the Overview switches into RTL-safe, consistently aligned control rows and added explicit false values for unchecked controls.
+- Fixed the disabled-engine Run Now path so the UI shows the disabled note instead of an incomplete metrics message.
+- Filled the remaining Growth workspace Arabic copy gaps for page metadata, CRUD feedback, validation/demo feedback, and the new integrity labels.
+- Added source-level and database regression coverage for selective settings updates, preservation of admin Growth customizations, rule-link UX, and disabled-run result shape.
+- Follow-up audit item: `dashboardSnapshot()` still refreshes attribution, cohorts, predictive scores, and adaptive-learning snapshots during Growth page GET requests. Review caching/scheduled refresh so Growth navigation remains fast as data volume grows.

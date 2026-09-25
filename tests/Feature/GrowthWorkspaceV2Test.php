@@ -16,7 +16,10 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('overflow-x:auto', $layout);
         $this->assertSame(4, substr_count($overview, '<x-admin.stat-card'));
         $this->assertSame(4, substr_count($insights, '<x-admin.stat-card'));
-        $this->assertStringContainsString('form-check form-switch gm-toggle-row', $overview);
+        $this->assertSame(4, substr_count($overview, 'class="gm-setting-row"'));
+        $this->assertSame(4, substr_count($overview, '<input type="hidden" name="growth_'));
+        $this->assertStringContainsString('gm-setting-switch', $overview);
+        $this->assertStringNotContainsString('gm-toggle-row', $overview);
     }
 
     public function test_growth_content_is_split_into_focused_collapsible_modules(): void
@@ -30,6 +33,16 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("__('Audience segments')", $source);
         $this->assertStringContainsString("__('Experiments')", $source);
         $this->assertStringNotContainsString('class="gm-three"', $source);
+    }
+
+    public function test_growth_rules_use_an_explicit_campaign_link_instead_of_a_free_text_runtime_key(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/growth/rule-form.blade.php'));
+
+        $this->assertStringContainsString("__('Linked campaign')", $source);
+        $this->assertStringContainsString('<select name="rule_key"', $source);
+        $this->assertStringContainsString('$campaign->campaign_key', $source);
+        $this->assertStringNotContainsString('placeholder="returning_customer_followup"', $source);
     }
 
     public function test_growth_operations_hides_developer_cli_copy_from_the_admin_ui(): void
@@ -50,5 +63,7 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertSame('إعداد الرحلات', $translations['Journey setup'] ?? null);
         $this->assertSame('أدوات بيانات الاختبار', $translations['Test-data tools'] ?? null);
         $this->assertSame('صحة العملاء', $translations['Customer health'] ?? null);
+        $this->assertSame('الحملة المرتبطة', $translations['Linked campaign'] ?? null);
+        $this->assertSame('حملات تحتاج إلى قاعدة', $translations['Campaigns needing a rule'] ?? null);
     }
 }

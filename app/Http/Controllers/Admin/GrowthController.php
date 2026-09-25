@@ -119,10 +119,21 @@ class GrowthController extends Controller
     public function updateSettings(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'growth_delivery_provider' => ['nullable', Rule::in(config('growth.supported_email_providers', ['smtp']))],
+            'growth_engine_enabled' => ['sometimes', 'boolean'],
+            'growth_messaging_enabled' => ['sometimes', 'boolean'],
+            'growth_real_email_enabled' => ['sometimes', 'boolean'],
+            'growth_experiments_enabled' => ['sometimes', 'boolean'],
+            'growth_ai_selection_enabled' => ['sometimes', 'boolean'],
+            'growth_smart_timing_enabled' => ['sometimes', 'boolean'],
+            'growth_dynamic_coupons_enabled' => ['sometimes', 'boolean'],
+            'growth_predictive_enabled' => ['sometimes', 'boolean'],
+            'growth_winback_enabled' => ['sometimes', 'boolean'],
+            'growth_adaptive_learning_enabled' => ['sometimes', 'boolean'],
+            'growth_smarter_winback_enabled' => ['sometimes', 'boolean'],
+            'growth_delivery_provider' => ['sometimes', 'nullable', Rule::in(config('growth.supported_email_providers', ['smtp']))],
         ]);
 
-        $this->growthCampaignService->updateSettings(array_merge($request->all(), $validated));
+        $this->growthCampaignService->updateSettings($validated);
 
         return back()->with('success', __('Growth workspace settings were saved successfully.'));
     }
@@ -169,6 +180,10 @@ class GrowthController extends Controller
             : null;
 
         $result = $this->growthCampaignService->runNow($campaign);
+
+        if (! empty($result['note'])) {
+            return back()->with('warning', $result['note']);
+        }
 
         return back()->with('success', __('Growth engine run completed. Processed: :processed | Triggered: :triggered | Messages: :messages | Scheduled: :scheduled | Due processed: :due | Skipped: :skipped', $result));
     }
@@ -261,6 +276,7 @@ class GrowthController extends Controller
             ]),
             'segments' => GrowthAudienceSegment::query()->orderBy('priority')->orderBy('name')->get(),
             'templateGroups' => $this->templateGroups(),
+            'campaigns' => GrowthCampaign::query()->orderBy('priority')->orderBy('name')->get(),
         ]);
     }
 
@@ -277,6 +293,7 @@ class GrowthController extends Controller
             'rule' => $rule,
             'segments' => GrowthAudienceSegment::query()->orderBy('priority')->orderBy('name')->get(),
             'templateGroups' => $this->templateGroups(),
+            'campaigns' => GrowthCampaign::query()->orderBy('priority')->orderBy('name')->get(),
         ]);
     }
 
@@ -479,7 +496,13 @@ class GrowthController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'rule_key' => ['nullable', 'string', 'max:120', Rule::unique('growth_automation_rules', 'rule_key')->ignore($rule?->id)],
+            'rule_key' => [
+                'required',
+                'string',
+                'max:120',
+                Rule::exists('growth_campaigns', 'campaign_key'),
+                Rule::unique('growth_automation_rules', 'rule_key')->ignore($rule?->id),
+            ],
             'trigger_type' => ['required', 'string', 'max:120'],
             'channel' => ['required', Rule::in(['in_app', 'email'])],
             'audience_type' => ['required', Rule::in(['user', 'session', 'user_or_session'])],
@@ -503,7 +526,7 @@ class GrowthController extends Controller
 
         return [
             'name' => $validated['name'],
-            'rule_key' => $validated['rule_key'] ?: Str::slug($validated['name'], '_'),
+            'rule_key' => $validated['rule_key'],
             'trigger_type' => $validated['trigger_type'],
             'channel' => $validated['channel'],
             'audience_type' => $validated['audience_type'],

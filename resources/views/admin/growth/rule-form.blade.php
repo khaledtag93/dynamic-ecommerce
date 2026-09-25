@@ -50,8 +50,23 @@ html[dir="rtl"] .growth-form-page .growth-switch{justify-content:flex-start}
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">{{ __('Rule key') }}</label>
-                            <input type="text" name="rule_key" class="form-control" value="{{ old('rule_key', $rule->rule_key) }}" placeholder="returning_customer_followup">
+                            @php
+                                $selectedRuleKey = (string) old('rule_key', $rule->rule_key);
+                                $hasSelectedCampaign = $campaigns->contains(fn ($campaign) => (string) $campaign->campaign_key === $selectedRuleKey);
+                            @endphp
+                            <label class="form-label fw-semibold">{{ __('Linked campaign') }}</label>
+                            <select name="rule_key" class="form-select" required>
+                                <option value="">{{ __('Select campaign') }}</option>
+                                @if($selectedRuleKey !== '' && ! $hasSelectedCampaign)
+                                    <option value="{{ $selectedRuleKey }}" selected>{{ __('Unmatched campaign key') }} · {{ $selectedRuleKey }}</option>
+                                @endif
+                                @foreach($campaigns as $campaign)
+                                    <option value="{{ $campaign->campaign_key }}" @selected($selectedRuleKey === (string) $campaign->campaign_key)>
+                                        {{ $campaign->name }} · {{ $campaign->campaign_key }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="form-text">{{ __('Each campaign uses one automation rule with the same key. Linking it here prevents rules that can never run.') }}</div>
                         </div>
 
                         <div class="col-md-4">

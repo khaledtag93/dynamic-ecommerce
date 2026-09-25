@@ -4,6 +4,11 @@
 @php
     $activeCampaigns = $campaigns->where('is_active', true)->count();
     $pendingDeliveries = $deliveries->where('status', 'pending')->count();
+    $activeRuleKeys = $rules->where('is_active', true)->pluck('rule_key')->filter();
+    $campaignsMissingRule = $campaigns
+        ->where('is_active', true)
+        ->filter(fn ($campaign) => ! $activeRuleKeys->contains($campaign->campaign_key))
+        ->count();
 @endphp
 
 <div class="gm-grid">
@@ -46,6 +51,7 @@
                 [__('Automation rules'), $rules->count(), __('Rules controlling eligibility, timing, priority, and cooldowns.')],
                 [__('Templates'), $templates->count(), __('Reusable localized message content.')],
                 [__('Pending deliveries'), $pendingDeliveries, __('Messages still waiting to be processed or sent.')],
+                [__('Campaigns needing a rule'), $campaignsMissingRule, __('Active campaigns that do not have an active linked automation rule.')],
             ] as [$label, $value, $hint])
                 <div class="gm-box d-flex justify-content-between gap-3 align-items-start">
                     <div><strong>{{ $label }}</strong><div class="gm-help">{{ $hint }}</div></div>
@@ -53,6 +59,11 @@
                 </div>
             @endforeach
         </div>
+        @if($campaignsMissingRule > 0)
+            <div class="gm-alert gm-alert--warning mt-3">
+                {{ __('Some active campaigns cannot run because they do not have an active linked rule. Open Content & Journeys to fix the linkage.') }}
+            </div>
+        @endif
     </section>
 
     <section class="gm-panel">
@@ -86,28 +97,48 @@
             @csrf
             @method('PUT')
 
-            <div class="form-check form-switch gm-toggle-row">
-                <input class="form-check-input" type="checkbox" name="growth_engine_enabled" value="1" id="growth-engine-enabled" @checked($engineOn)>
-                <label class="form-check-label" for="growth-engine-enabled"><strong>{{ __('Enable growth engine') }}</strong></label>
-                <div class="admin-helper-text">{{ __('Runs behavior detection, segmentation, and trigger processing.') }}</div>
+            <input type="hidden" name="growth_engine_enabled" value="0">
+            <div class="gm-setting-row">
+                <div class="gm-setting-copy">
+                    <label class="gm-setting-title" for="growth-engine-enabled">{{ __('Enable growth engine') }}</label>
+                    <div class="admin-helper-text">{{ __('Runs behavior detection, segmentation, and trigger processing.') }}</div>
+                </div>
+                <div class="form-check form-switch gm-setting-switch">
+                    <input class="form-check-input" type="checkbox" name="growth_engine_enabled" value="1" id="growth-engine-enabled" @checked($engineOn)>
+                </div>
             </div>
 
-            <div class="form-check form-switch gm-toggle-row">
-                <input class="form-check-input" type="checkbox" name="growth_messaging_enabled" value="1" id="growth-messaging-enabled" @checked($messagingOn)>
-                <label class="form-check-label" for="growth-messaging-enabled"><strong>{{ __('Enable campaign messaging') }}</strong></label>
-                <div class="admin-helper-text">{{ __('Keep this off while validating journeys that should not contact customers yet.') }}</div>
+            <input type="hidden" name="growth_messaging_enabled" value="0">
+            <div class="gm-setting-row">
+                <div class="gm-setting-copy">
+                    <label class="gm-setting-title" for="growth-messaging-enabled">{{ __('Enable campaign messaging') }}</label>
+                    <div class="admin-helper-text">{{ __('Keep this off while validating journeys that should not contact customers yet.') }}</div>
+                </div>
+                <div class="form-check form-switch gm-setting-switch">
+                    <input class="form-check-input" type="checkbox" name="growth_messaging_enabled" value="1" id="growth-messaging-enabled" @checked($messagingOn)>
+                </div>
             </div>
 
-            <div class="form-check form-switch gm-toggle-row">
-                <input class="form-check-input" type="checkbox" name="growth_real_email_enabled" value="1" id="growth-email-enabled" @checked($realEmailOn)>
-                <label class="form-check-label" for="growth-email-enabled"><strong>{{ __('Enable real email sending') }}</strong></label>
-                <div class="admin-helper-text">{{ __('When disabled, email behavior can be tested without sending a real email.') }}</div>
+            <input type="hidden" name="growth_real_email_enabled" value="0">
+            <div class="gm-setting-row">
+                <div class="gm-setting-copy">
+                    <label class="gm-setting-title" for="growth-email-enabled">{{ __('Enable real email sending') }}</label>
+                    <div class="admin-helper-text">{{ __('When disabled, email behavior can be tested without sending a real email.') }}</div>
+                </div>
+                <div class="form-check form-switch gm-setting-switch">
+                    <input class="form-check-input" type="checkbox" name="growth_real_email_enabled" value="1" id="growth-email-enabled" @checked($realEmailOn)>
+                </div>
             </div>
 
-            <div class="form-check form-switch gm-toggle-row">
-                <input class="form-check-input" type="checkbox" name="growth_experiments_enabled" value="1" id="growth-experiments-enabled" @checked($experimentsOn)>
-                <label class="form-check-label" for="growth-experiments-enabled"><strong>{{ __('Enable offer experiments') }}</strong></label>
-                <div class="admin-helper-text">{{ __('Allows active A/B variants to affect campaign content and offers.') }}</div>
+            <input type="hidden" name="growth_experiments_enabled" value="0">
+            <div class="gm-setting-row">
+                <div class="gm-setting-copy">
+                    <label class="gm-setting-title" for="growth-experiments-enabled">{{ __('Enable offer experiments') }}</label>
+                    <div class="admin-helper-text">{{ __('Allows active A/B variants to affect campaign content and offers.') }}</div>
+                </div>
+                <div class="form-check form-switch gm-setting-switch">
+                    <input class="form-check-input" type="checkbox" name="growth_experiments_enabled" value="1" id="growth-experiments-enabled" @checked($experimentsOn)>
+                </div>
             </div>
 
             <div class="pt-1">

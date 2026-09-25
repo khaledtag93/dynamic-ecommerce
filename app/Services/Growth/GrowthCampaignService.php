@@ -37,7 +37,7 @@ class GrowthCampaignService
 
         if (Schema::hasTable('growth_audience_segments')) {
             foreach ($this->defaultSegments() as $segment) {
-                GrowthAudienceSegment::query()->updateOrCreate(
+                GrowthAudienceSegment::query()->firstOrCreate(
                     ['segment_key' => $segment['segment_key']],
                     $segment
                 );
@@ -51,14 +51,14 @@ class GrowthCampaignService
         }
 
         foreach ($this->defaultCampaigns() as $campaign) {
-            GrowthCampaign::query()->updateOrCreate(
+            GrowthCampaign::query()->firstOrCreate(
                 ['campaign_key' => $campaign['campaign_key']],
                 $campaign
             );
         }
 
         foreach ($this->defaultRules() as $rule) {
-            GrowthAutomationRule::query()->updateOrCreate(
+            GrowthAutomationRule::query()->firstOrCreate(
                 ['rule_key' => $rule['rule_key']],
                 $rule
             );
@@ -66,7 +66,7 @@ class GrowthCampaignService
 
         if (Schema::hasTable('growth_experiments')) {
             foreach ($this->defaultExperiments() as $experiment) {
-                GrowthExperiment::query()->updateOrCreate(
+                GrowthExperiment::query()->firstOrCreate(
                     ['experiment_key' => $experiment['experiment_key']],
                     $experiment
                 );
@@ -237,18 +237,36 @@ class GrowthCampaignService
 
     public function updateSettings(array $payload): void
     {
-        WebsiteSetting::setValue('growth_engine_enabled', ! empty($payload['growth_engine_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_messaging_enabled', ! empty($payload['growth_messaging_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_real_email_enabled', ! empty($payload['growth_real_email_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_experiments_enabled', ! empty($payload['growth_experiments_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_delivery_provider', Arr::get($payload, 'growth_delivery_provider', 'smtp'), 'growth', 'string');
-        WebsiteSetting::setValue('growth_ai_selection_enabled', ! empty($payload['growth_ai_selection_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_smart_timing_enabled', ! empty($payload['growth_smart_timing_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_dynamic_coupons_enabled', ! empty($payload['growth_dynamic_coupons_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_predictive_enabled', ! empty($payload['growth_predictive_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_winback_enabled', ! empty($payload['growth_winback_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_adaptive_learning_enabled', ! empty($payload['growth_adaptive_learning_enabled']) ? '1' : '0', 'growth', 'boolean');
-        WebsiteSetting::setValue('growth_smarter_winback_enabled', ! empty($payload['growth_smarter_winback_enabled']) ? '1' : '0', 'growth', 'boolean');
+        $booleanSettings = [
+            'growth_engine_enabled',
+            'growth_messaging_enabled',
+            'growth_real_email_enabled',
+            'growth_experiments_enabled',
+            'growth_ai_selection_enabled',
+            'growth_smart_timing_enabled',
+            'growth_dynamic_coupons_enabled',
+            'growth_predictive_enabled',
+            'growth_winback_enabled',
+            'growth_adaptive_learning_enabled',
+            'growth_smarter_winback_enabled',
+        ];
+
+        foreach ($booleanSettings as $key) {
+            if (! array_key_exists($key, $payload)) {
+                continue;
+            }
+
+            WebsiteSetting::setValue($key, ! empty($payload[$key]) ? '1' : '0', 'growth', 'boolean');
+        }
+
+        if (array_key_exists('growth_delivery_provider', $payload)) {
+            WebsiteSetting::setValue(
+                'growth_delivery_provider',
+                (string) ($payload['growth_delivery_provider'] ?: config('growth.email_provider', 'smtp')),
+                'growth',
+                'string'
+            );
+        }
     }
 
     public function toggleCampaign(GrowthCampaign $campaign): void
@@ -281,7 +299,15 @@ class GrowthCampaignService
         $this->ensureDefaults();
 
         if (! $this->engineEnabled()) {
-            return ['processed' => 0, 'triggered' => 0, 'messages' => 0, 'skipped' => 0, 'note' => __('Growth engine is currently disabled.')];
+            return [
+                'processed' => 0,
+                'triggered' => 0,
+                'messages' => 0,
+                'scheduled' => 0,
+                'due' => 0,
+                'skipped' => 0,
+                'note' => __('Growth engine is currently disabled.'),
+            ];
         }
 
         if ($this->predictiveEnabled()) {
@@ -885,7 +911,7 @@ class GrowthCampaignService
         }
 
         try {
-            GrowthMessageTemplate::query()->updateOrCreate($attributes, $template);
+            GrowthMessageTemplate::query()->firstOrCreate($attributes, $template);
 
             return;
         } catch (QueryException $exception) {
@@ -900,8 +926,6 @@ class GrowthCampaignService
             ->first();
 
         if ($existing) {
-            $existing->fill($template)->save();
-
             return;
         }
 
@@ -909,10 +933,6 @@ class GrowthCampaignService
             $legacyExisting = GrowthMessageTemplate::query()->where('template_key', $template['template_key'])->first();
 
             if ($legacyExisting) {
-                if ($legacyExisting->locale === $template['locale']) {
-                    $legacyExisting->fill($template)->save();
-                }
-
                 return;
             }
         }
