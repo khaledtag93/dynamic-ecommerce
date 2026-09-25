@@ -75,7 +75,7 @@
         <div class="small text-muted mb-3 d-none" data-return-live-status role="status" aria-live="polite"></div>
 
         @if($returnRequest->status === $returnRequest::STATUS_REQUESTED)
-            <form method="POST" action="{{ route('returns.cancel', $returnRequest) }}" data-confirm-message="{{ __('Cancel this return request?') }}" data-return-cancel-live>
+            <form method="POST" action="{{ route('returns.cancel', $returnRequest) }}" data-confirm-message="{{ __('Cancel this return request?') }}" data-submit-loading data-return-cancel-live>
                 @csrf
                 @method('PATCH')
                 <button class="btn btn-outline-danger">{{ __('Cancel return request') }}</button>
