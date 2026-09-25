@@ -124,11 +124,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
     Route::patch('/orders/{order}/cancel', [CheckoutController::class, 'cancelOrder'])->name('orders.cancel');
 
-    Route::get('/returns', [FrontendReturnController::class, 'index'])->name('returns.index');
-    Route::get('/orders/{order}/returns/new', [FrontendReturnController::class, 'create'])->name('returns.create');
-    Route::post('/orders/{order}/returns', [FrontendReturnController::class, 'store'])->name('returns.store');
-    Route::get('/returns/{returnRequest}', [FrontendReturnController::class, 'show'])->name('returns.show');
-    Route::patch('/returns/{returnRequest}/cancel', [FrontendReturnController::class, 'cancel'])->name('returns.cancel');
     Route::get('/order-success/{order}', [CheckoutController::class, 'success'])->name('orders.success');
 
     Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
