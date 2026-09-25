@@ -4590,5 +4590,9 @@
     "Staff role :role was updated.": "Staff role :role was updated.",
     "Staff role updated for :staff.": "Staff role updated for :staff.",
     "Change this staff role? The account permissions will change immediately.": "Change this staff role? The account permissions will change immediately.",
-    "Delivery updated for order :order.": "Delivery updated for order :order."
+    "Delivery updated for order :order.": "Delivery updated for order :order.",
+    "Send test notification": "Send test notification",
+    "Send this test notification now?": "Send this test notification now?",
+    "The selected channel will be contacted immediately using the chosen order context and destination rules.": "The selected channel will be contacted immediately using the chosen order context and destination rules.",
+    "Send test now": "Send test now"
 }
