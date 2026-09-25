@@ -60,12 +60,13 @@
             ['label' => __('Latest update'), 'value' => $latestNotification['created_at_human'] ?? __('No updates yet'), 'copy' => $latestNotification['title'] ?? __('Waiting for the first notification to arrive.'), 'icon' => 'mdi-timeline-clock-outline'],
         ] as $card)
             <div class="col-12 col-md-6 col-xl-3">
-                <div class="admin-card admin-stat-card admin-inbox-summary-card">
-                    <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                    <div class="admin-stat-label">{{ $card['label'] }}</div>
-                    <div class="admin-stat-value">{{ $card['value'] }}</div>
-                    <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-                </div>
+                <x-admin.stat-card
+                    :label="$card['label']"
+                    :value="$card['value']"
+                    :icon="$card['icon']"
+                    :help="$card['copy']"
+                    class="admin-inbox-summary-card"
+                />
             </div>
         @endforeach
     </div>
