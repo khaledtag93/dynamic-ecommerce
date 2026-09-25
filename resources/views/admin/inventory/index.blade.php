@@ -11,36 +11,42 @@
 <div class="admin-page-shell" data-live-list>
 <div class="row g-3 mb-4">
     <div class="col-md-6 col-xl-3">
-        <div class="admin-card admin-stat-card h-100">
-            <span class="admin-stat-icon"><i class="mdi mdi-archive-outline"></i></span>
-            <div class="admin-stat-label">{{ __('Movements') }}</div>
-            <div class="admin-stat-value">{{ $inventoryStats['total_movements'] }}</div>
-            <div class="text-muted small mt-2">{{ __('Recorded stock movement entries.') }}</div>
-        </div>
+        <x-admin.stat-card
+            :label="__('Movements')"
+            :value="$inventoryStats['total_movements']"
+            icon="mdi-archive-outline"
+            :help="__('Recorded stock movement entries.')"
+            class="h-100"
+        />
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="admin-card admin-stat-card h-100">
-            <span class="admin-stat-icon"><i class="mdi mdi-alert-outline"></i></span>
-            <div class="admin-stat-label">{{ __('Low stock') }}</div>
-            <div class="admin-stat-value">{{ $lowStockProducts->count() }}</div>
-            <div class="text-muted small mt-2">{{ __('Products that need replenishment attention.') }}</div>
-        </div>
+        <x-admin.stat-card
+            :label="__('Low stock')"
+            :value="$lowStockProducts->count()"
+            icon="mdi-alert-outline"
+            tone="warning"
+            :help="__('Products that need replenishment attention.')"
+            class="h-100"
+        />
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="admin-card admin-stat-card h-100">
-            <span class="admin-stat-icon"><i class="mdi mdi-calendar-clock-outline"></i></span>
-            <div class="admin-stat-label">{{ __('Near expiry') }}</div>
-            <div class="admin-stat-value">{{ $nearExpiryProducts->count() }}</div>
-            <div class="text-muted small mt-2">{{ __('Products expiring within the next 30 days.') }}</div>
-        </div>
+        <x-admin.stat-card
+            :label="__('Near expiry')"
+            :value="$nearExpiryProducts->count()"
+            icon="mdi-calendar-clock-outline"
+            tone="warning"
+            :help="__('Products expiring within the next 30 days.')"
+            class="h-100"
+        />
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="admin-card admin-stat-card h-100">
-            <span class="admin-stat-icon"><i class="mdi mdi-format-list-bulleted-type"></i></span>
-            <div class="admin-stat-label">{{ __('Movement types') }}</div>
-            <div class="admin-stat-value">{{ $inventoryStats['movement_types'] }}</div>
-            <div class="text-muted small mt-2">{{ __('Movement categories currently recorded in the inventory ledger.') }}</div>
-        </div>
+        <x-admin.stat-card
+            :label="__('Movement types')"
+            :value="$inventoryStats['movement_types']"
+            icon="mdi-format-list-bulleted-type"
+            :help="__('Movement categories currently recorded in the inventory ledger.')"
+            class="h-100"
+        />
     </div>
 </div>
 
