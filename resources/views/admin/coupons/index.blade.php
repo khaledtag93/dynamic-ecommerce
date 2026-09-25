@@ -3,14 +3,13 @@
 @section('title', __('Coupons') . ' | ' . __('Admin Dashboard'))
 
 @section('content')
-<div class="admin-page-header">
-    <div>
-        <div class="admin-kicker">{{ __('Promotions') }}</div>
-        <h1 class="admin-page-title">{{ __('Coupons') }}</h1>
-        <p class="admin-page-description">{{ __('Manage discount rules, monitor usage, and keep promotional offers within safe business limits.') }}</p>
-    </div>
+<x-admin.page-header
+    :kicker="__('Promotions')"
+    :title="__('Coupons')"
+    :description="__('Manage discount rules, monitor usage, and keep promotional offers within safe business limits.')"
+>
     <a href="{{ route('admin.coupons.create') }}" class="btn btn-primary">{{ __('Create coupon') }}</a>
-</div>
+</x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>
 <div class="row g-3 mb-4">
@@ -22,12 +21,7 @@
         ['label' => __('Limit reached'), 'value' => $stats['limit_reached'], 'copy' => __('Coupons that exhausted their usage allowance.'), 'icon' => 'mdi-ticket-confirmation-outline'],
     ] as $card)
         <div class="col-md-6 col-xl">
-            <div class="admin-card admin-stat-card h-100">
-                <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                <div class="admin-stat-label">{{ $card['label'] }}</div>
-                <div class="admin-stat-value">{{ $card['value'] }}</div>
-                <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-            </div>
+            <x-admin.stat-card :label="$card['label']" :value="$card['value']" :icon="$card['icon']" :help="$card['copy']" class="h-100" />
         </div>
     @endforeach
 </div>
