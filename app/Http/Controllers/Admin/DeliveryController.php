@@ -7,6 +7,7 @@ use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Services\Commerce\DeliveryService;
+use App\Services\Commerce\AdminActivityLogService;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -14,6 +15,7 @@ class DeliveryController extends Controller
 {
     public function __construct(
         protected DeliveryService $deliveryService,
+        protected AdminActivityLogService $adminActivityLogService,
     ) {
     }
 
@@ -85,11 +87,33 @@ class DeliveryController extends Controller
             'delivery_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $oldStatus = $order->delivery_status;
+        $oldProvider = $order->shipping_provider;
+        $oldTracking = $order->tracking_number;
+
         try {
             $result = $this->deliveryService->update($order, $validated);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         }
+
+        $updatedOrder = $result['order'];
+
+        $this->adminActivityLogService->log(
+            'delivery',
+            $result['status_changed'] ? 'delivery_status_updated' : 'delivery_details_updated',
+            __('Delivery updated for order :order.', ['order' => $updatedOrder->order_number]),
+            $request->user()?->id,
+            $updatedOrder,
+            [
+                'old_status' => $oldStatus,
+                'new_status' => $updatedOrder->delivery_status,
+                'old_provider' => $oldProvider,
+                'new_provider' => $updatedOrder->shipping_provider,
+                'old_tracking' => $oldTracking,
+                'new_tracking' => $updatedOrder->tracking_number,
+            ]
+        );
 
         return back()->with(
             'success',
