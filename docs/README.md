@@ -93,3 +93,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Admin UI Consistency V2
 - [Admin UI Consistency V2](ADMIN_UI_CONSISTENCY_V2_2026-09-25.md)
+
+
+### 2026-09-25 — Analytics Workspace V2
+- [Analytics Workspace V2](ANALYTICS_WORKSPACE_V2_2026-09-25.md)
