@@ -27,8 +27,8 @@
                     <td><strong>{{ $campaign->name }}</strong><div class="gm-mini">{{ $campaign->campaign_key }}</div></td>
                     <td>{{ strtoupper((string) $campaign->channel) }}</td>
                     <td>{{ $campaign->priority }}</td>
-                    <td>{{ $campaign->is_active ? __('Active') : __('Inactive') }}</td>
-                    <td><div class="gm-actions"><a href="{{ route('admin.growth.campaigns.edit', $campaign) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a><form method="POST" action="{{ route('admin.growth.campaigns.toggle', $campaign) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary">{{ $campaign->is_active ? __('Disable') : __('Enable') }}</button></form></div></td>
+                    <td><span data-growth-state>{{ $campaign->is_active ? __('Active') : __('Inactive') }}</span></td>
+                    <td><div class="gm-actions"><a href="{{ route('admin.growth.campaigns.edit', $campaign) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a><form method="POST" action="{{ route('admin.growth.campaigns.toggle', $campaign) }}" data-growth-async>@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary" data-growth-action>{{ $campaign->is_active ? __('Disable') : __('Enable') }}</button></form></div></td>
                 </tr>
             @endforeach
             </tbody></table></div>
@@ -55,8 +55,8 @@
                     <td><strong>{{ $rule->name }}</strong><div class="gm-mini">{{ $rule->rule_key }}</div></td>
                     <td>{{ $rule->trigger_event ?? '—' }}</td>
                     <td>{{ $rule->priority }}</td>
-                    <td>{{ $rule->is_active ? __('Active') : __('Inactive') }}</td>
-                    <td><div class="gm-actions"><a href="{{ route('admin.growth.rules.edit', $rule) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a><form method="POST" action="{{ route('admin.growth.rules.toggle', $rule) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary">{{ $rule->is_active ? __('Disable') : __('Enable') }}</button></form></div></td>
+                    <td><span data-growth-state>{{ $rule->is_active ? __('Active') : __('Inactive') }}</span></td>
+                    <td><div class="gm-actions"><a href="{{ route('admin.growth.rules.edit', $rule) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a><form method="POST" action="{{ route('admin.growth.rules.toggle', $rule) }}" data-growth-async>@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary" data-growth-action>{{ $rule->is_active ? __('Disable') : __('Enable') }}</button></form></div></td>
                 </tr>
             @endforeach
             </tbody></table></div>
@@ -127,8 +127,8 @@
                     <td><strong>{{ $experiment->name }}</strong><div class="gm-mini">{{ $experiment->experiment_key }}</div></td>
                     <td>{{ $experiment->campaign?->name ?? '—' }}</td>
                     <td>{{ $experiment->priority }}</td>
-                    <td>{{ $experiment->is_active ? __('Active') : __('Inactive') }}</td>
-                    <td><div class="gm-actions"><a href="{{ route('admin.growth.experiments.edit', $experiment) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a><form method="POST" action="{{ route('admin.growth.experiments.toggle', $experiment) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary">{{ $experiment->is_active ? __('Disable') : __('Enable') }}</button></form></div></td>
+                    <td><span data-growth-state>{{ $experiment->is_active ? __('Active') : __('Inactive') }}</span></td>
+                    <td><div class="gm-actions"><a href="{{ route('admin.growth.experiments.edit', $experiment) }}" class="btn btn-sm btn-outline-dark">{{ __('Edit') }}</a><form method="POST" action="{{ route('admin.growth.experiments.toggle', $experiment) }}" data-growth-async>@csrf @method('PATCH')<button class="btn btn-sm btn-outline-primary" data-growth-action>{{ $experiment->is_active ? __('Disable') : __('Enable') }}</button></form></div></td>
                 </tr>
             @endforeach
             </tbody></table></div>
