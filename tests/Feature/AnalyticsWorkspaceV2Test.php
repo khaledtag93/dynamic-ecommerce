@@ -48,6 +48,32 @@ class AnalyticsWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('data-admin-section-panel="offers"', $source);
     }
 
+    public function test_analytics_translation_catalogs_cover_all_workspace_literal_keys(): void
+    {
+        $sources = [
+            resource_path('views/admin/analytics/index.blade.php'),
+            resource_path('views/admin/analytics/growth.blade.php'),
+            resource_path('views/admin/analytics/offers.blade.php'),
+        ];
+
+        $keys = [];
+
+        foreach ($sources as $sourcePath) {
+            $source = file_get_contents($sourcePath);
+            preg_match_all("/__\\('([^']+)'/", $source, $matches);
+            $keys = array_merge($keys, $matches[1] ?? []);
+        }
+
+        $keys = array_values(array_unique($keys));
+        $english = json_decode(file_get_contents(base_path('lang/en.json')), true, 512, JSON_THROW_ON_ERROR);
+        $arabic = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        foreach ($keys as $key) {
+            $this->assertArrayHasKey($key, $english, "Missing English analytics translation key: {$key}");
+            $this->assertArrayHasKey($key, $arabic, "Missing Arabic analytics translation key: {$key}");
+        }
+    }
+
     public function test_arabic_analytics_workspace_labels_are_available(): void
     {
         $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
