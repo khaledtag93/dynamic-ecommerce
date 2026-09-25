@@ -588,6 +588,7 @@
         .lc-account-nav a { flex:none; border:1px solid var(--lc-border); border-radius:999px; padding:.6rem 1rem; background:var(--lc-surface); color:var(--lc-text); font-weight:700; }
         .lc-account-nav a:hover, .lc-account-nav a[aria-current="page"] { background:var(--lc-primary); border-color:var(--lc-primary); color:var(--lc-btn-text); }
         .lc-account-nav a:focus-visible, .lc-account-shortcut:focus-visible, .lc-account-order:focus-visible { outline:3px solid var(--lc-primary); outline-offset:3px; }
+        @media (max-width:767.98px) { .lc-account-nav { scroll-snap-type:inline proximity; scroll-padding-inline:.5rem; } .lc-account-nav a { scroll-snap-align:start; } }
         .lc-account-shortcut { display:flex; align-items:center; gap:1rem; padding:1.35rem; color:var(--lc-text); }
         .lc-account-shortcut:hover { color:var(--lc-primary-dark); border-color:var(--lc-primary); }
         .lc-account-shortcut > i:first-child { display:grid; place-items:center; flex:none; width:2.8rem; height:2.8rem; border-radius:.9rem; background:var(--lc-soft); color:var(--lc-primary-dark); font-size:1.2rem; }
@@ -803,6 +804,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return;
         const target = event.target;
         if (target && (target.matches('input, textarea, select') || target.isContentEditable)) return;
+        document.querySelectorAll('.lc-account-nav [aria-current="page"]').forEach((current) => {
+            if (!window.matchMedia('(max-width: 767.98px)').matches) return;
+            window.requestAnimationFrame(() => current.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }));
+        });
+
         const searches = Array.from(document.querySelectorAll('[data-storefront-search]'));
         const search = searches.find((input) => input.offsetParent !== null);
         if (!search) return;
