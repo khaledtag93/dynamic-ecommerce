@@ -22,6 +22,19 @@ class SharedShellTranslationIntegrityTest extends TestCase
             resource_path('views/admin/customers/_results.blade.php'),
             resource_path('views/admin/customers/show.blade.php'),
             resource_path('views/admin/permissions/index.blade.php'),
+            resource_path('views/admin/workforce/attendance/index.blade.php'),
+            resource_path('views/admin/workforce/attendance/_results.blade.php'),
+            resource_path('views/admin/workforce/corrections/index.blade.php'),
+            resource_path('views/admin/workforce/corrections/_results.blade.php'),
+            resource_path('views/admin/workforce/corrections/create.blade.php'),
+            resource_path('views/admin/workforce/employees/index.blade.php'),
+            resource_path('views/admin/workforce/employees/_results.blade.php'),
+            resource_path('views/admin/workforce/employees/_form.blade.php'),
+            resource_path('views/admin/workforce/leave/index.blade.php'),
+            resource_path('views/admin/workforce/leave/_results.blade.php'),
+            resource_path('views/admin/workforce/leave/my-leave.blade.php'),
+            resource_path('views/admin/workforce/my-schedule.blade.php'),
+            resource_path('views/admin/workforce/time-clock.blade.php'),
         ];
 
         $keys = [];
