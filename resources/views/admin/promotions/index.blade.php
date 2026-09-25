@@ -3,16 +3,13 @@
 @section('title', __('Promotions') . ' | Admin')
 
 @section('content')
-<div class="admin-page-header">
-    <div>
-        <div class="admin-kicker">{{ __('Sales') }}</div>
-        <h1 class="admin-page-title">{{ __('Promotions') }}</h1>
-        <p class="admin-page-description">{{ __('Automatic discount rules for orders, categories, and buy X get Y.') }}</p>
-    </div>
-    <div class="admin-page-actions">
-        <a href="{{ route('admin.promotions.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-plus-circle-outline"></i><span>{{ __('Add promotion') }}</span></a>
-    </div>
-</div>
+<x-admin.page-header
+    :kicker="__('Sales')"
+    :title="__('Promotions')"
+    :description="__('Automatic discount rules for orders, categories, and buy X get Y.')"
+>
+    <a href="{{ route('admin.promotions.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-plus-circle-outline"></i><span>{{ __('Add promotion') }}</span></a>
+</x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>
 <div class="row g-3 mb-4">
@@ -25,12 +22,7 @@
         ['label' => __('Expired'), 'value' => $stats['expired'], 'copy' => __('Promotion schedules that have already ended.'), 'icon' => 'mdi-calendar-remove-outline'],
     ] as $card)
         <div class="col-md-6 col-xl">
-            <div class="admin-card admin-stat-card h-100">
-                <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                <div class="admin-stat-label">{{ $card['label'] }}</div>
-                <div class="admin-stat-value">{{ $card['value'] }}</div>
-                <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-            </div>
+            <x-admin.stat-card :label="$card['label']" :value="$card['value']" :icon="$card['icon']" :help="$card['copy']" class="h-100" />
         </div>
     @endforeach
 </div>
