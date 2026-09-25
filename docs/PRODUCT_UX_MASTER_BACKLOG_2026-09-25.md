@@ -90,3 +90,16 @@ Complete the storefront footer as a configurable production component:
 6. Continue remaining functional modules according to the master roadmap.
 
 The order can be adjusted when dependencies make another sequence safer, but workstreams should not be mixed casually.
+
+
+## Ongoing collaboration and continuity rules
+
+These are permanent project-working rules and should be carried into future sessions:
+
+- Record meaningful product decisions, newly agreed UX standards, workflow rules, discovered gaps, technical risks, and roadmap changes in repository notes instead of relying only on chat history.
+- Keep notes concise and useful: do not record casual conversation or duplicate information that is already documented accurately.
+- Work in medium-to-large coherent batches. Avoid both tiny one-detail commits and giant tool operations that risk hanging; internally split inspection/execution when needed, then deliver a coherent tested batch.
+- Finish the active workstream before opening unrelated major workstreams. New ideas should normally enter the backlog in their proper order unless they are a dependency or blocking defect.
+- Monitor CI after pushes during active work. When waiting for CI, estimate completion time from recent real run durations and report an approximate local ETA, clearly as an estimate rather than a guarantee.
+- Do not deploy QAS or Production automatically. Deployment remains an explicit user decision.
+- When a full workstream is genuinely complete and the project moves to a materially different area, explicitly mark the completed workstream and name the next one. Do not repeat milestone announcements for every small batch.
