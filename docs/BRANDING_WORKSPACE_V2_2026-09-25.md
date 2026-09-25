@@ -51,6 +51,8 @@ tests/Feature/BrandingWorkspaceV2Test.php verifies:
 - Removed the desktop nested-scroll pattern from the media/preview rail; the media card flows naturally and only Live Preview remains sticky on wide screens.
 - Added regression coverage for the expanded preset catalog, saving a complete preset contract, Arabic labels, media controls, accent preview, badge preview, and sticky-preview behavior.
 
+- Translation completeness is now regression-tested against every literal `__()` key used by the Branding workspace for both English and Arabic catalogs, preventing future mixed-language regressions.
+
 ## Release state
 - Source: v42-clean-baseline.
 - CI: pending branch-head verification.
