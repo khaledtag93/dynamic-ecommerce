@@ -49,6 +49,8 @@ class StoreSettingsService
             'footer_show_support' => '1',
             'footer_show_trust' => '1',
             'footer_show_experience_note' => '1',
+            'footer_show_whatsapp' => '1',
+            'footer_show_website' => '1',
             'brand_primary_color' => '#2563eb',
             'brand_secondary_color' => '#0f172a',
             'brand_accent_color' => '#0891b2',
