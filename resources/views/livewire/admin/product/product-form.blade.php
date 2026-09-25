@@ -1087,7 +1087,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Meta {{ __('Description') }}</label>
+                                <label class="form-label">{{ __('Meta Description') }}</label>
                                 <textarea class="form-control @error('meta_description') is-invalid product-error-field @enderror" rows="3" wire:model.defer="meta_description"></textarea>
                                 @error('meta_description') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
