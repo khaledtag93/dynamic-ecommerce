@@ -19,11 +19,15 @@ class AdminMiddleware
      */
    public function handle(Request $request, Closure $next): Response
 {
-    if (Auth::check() && Auth::user()->role_as == 1) {
-        return $next($request); // ✅ allow admin
+    $user = Auth::user();
+
+    if (Auth::check()
+        && $user?->isLegacyAdmin()
+        && $user->roles()->exists()) {
+        return $next($request);
     }
 
-    return redirect('/')->with('status', 'Access denied.');
+    return redirect('/')->with('status', __('Access denied.'));
 }
 
 
