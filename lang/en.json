@@ -4564,5 +4564,9 @@
     "Confirm order cancellation": "Confirm order cancellation",
     "Cancel this order?": "Cancel this order?",
     "Cancelling the order restores reserved stock and records the cancellation in the audit trail. This action should only be used when the order must not continue to fulfillment.": "Cancelling the order restores reserved stock and records the cancellation in the audit trail. This action should only be used when the order must not continue to fulfillment.",
-    "Keep order active": "Keep order active"
+    "Keep order active": "Keep order active",
+    "Confirm refund": "Confirm refund",
+    "The refund is recorded in the order ledger and changes the payment status when the refundable balance is fully consumed.": "The refund is recorded in the order ledger and changes the payment status when the refundable balance is fully consumed.",
+    "Review refund": "Review refund",
+    "Record a refund of :amount?": "Record a refund of :amount?"
 }
