@@ -3635,17 +3635,6 @@ function adminApplyResidualTranslations() {
 document.addEventListener('DOMContentLoaded', function () {
   adminApplyResidualTranslations();
 
-  document.querySelectorAll('#adminToastStack .admin-flash').forEach((toast) => {
-    const isPersistent = toast.classList.contains('admin-flash--danger') || toast.classList.contains('admin-flash--warning');
-    if (isPersistent) return;
-    window.setTimeout(() => {
-      toast.style.transition = 'opacity .2s ease, transform .2s ease';
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(-6px)';
-      window.setTimeout(() => toast.remove(), 220);
-    }, 4200);
-  });
-
   if (window.bootstrap && bootstrap.Tooltip) {
     document.querySelectorAll('[data-bs-toggle="tooltip"], [data-admin-tooltip]').forEach((element) => {
       if (!element.getAttribute('title') && element.dataset.adminTooltip) {
