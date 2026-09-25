@@ -54,7 +54,7 @@
                             <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('value') }}">{{ __('Rule') }} @if($sort === 'value') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                             <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('used_count') }}">{{ __('Usage') }} @if($sort === 'used_count') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                             <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('ends_at') }}">{{ __('Status') }} @if($sort === 'ends_at') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
-                            <th class="text-end">{{ __('Action') }}</th>
+                            <th class="text-end rtl-text-start">{{ __('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,7 +64,7 @@
                                     <div class="fw-bold">{{ $coupon->name ?: $coupon->code }}</div>
                                     <div class="text-muted small">{{ $coupon->code }}</div>
                                     @if($coupon->notes)
-                                        <div class="text-muted small mt-1">{{ IlluminateSupportStr::limit($coupon->notes, 80) }}</div>
+                                        <div class="text-muted small mt-1">{{ \Illuminate\Support\Str::limit($coupon->notes, 80) }}</div>
                                     @endif
                                 </td>
                                 <td>
@@ -73,7 +73,7 @@
                                 </td>
                                 <td>
                                     <div class="fw-semibold">
-                                        @if($coupon->type === AppModelsCoupon::TYPE_PERCENT)
+                                        @if($coupon->type === \App\Models\Coupon::TYPE_PERCENT)
                                             {{ number_format($coupon->value, 2) }}%
                                         @else
                                             EGP {{ number_format($coupon->value, 2) }}
@@ -93,8 +93,8 @@
                                 <td>
                                     <span class="badge admin-status-badge {{ $coupon->isUsable() ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ $coupon->isUsable() ? __('Usable') : __('Limited / inactive') }}</span>
                                 </td>
-                                <td class="text-end">
-                                    <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                                <td class="text-end rtl-text-start">
+                                    <div class="d-inline-flex gap-2 flex-wrap justify-content-end rtl-justify-start">
                                         <a href="{{ route('admin.coupons.edit', $coupon) }}" class="btn-table-icon btn-edit" title="{{ __('Edit Coupon') }}"><i class="mdi mdi-pencil-outline"></i></a>
                                         <form method="POST" action="{{ route('admin.coupons.destroy', $coupon) }}" data-submit-loading data-confirm-message="{{ __('Delete this coupon?') }}">
                                             @csrf
