@@ -4969,5 +4969,7 @@
     "You": "أنت",
     "You have no support requests yet.": "ليس لديك طلبات دعم حتى الآن.",
     "Your reply was added.": "تمت إضافة ردك.",
-    "Your support request has been created.": "تم إنشاء طلب الدعم الخاص بك."
+    "Your support request has been created.": "تم إنشاء طلب الدعم الخاص بك.",
+    "Create a tracked case for a customer, an order, or an internal follow-up.": "أنشئ تذكرة قابلة للتتبع لعميل أو طلب أو متابعة داخلية.",
+    "Support cases can only be assigned to staff members who can view support.": "يمكن إسناد تذاكر الدعم فقط إلى الموظفين الذين لديهم صلاحية عرض الدعم."
 }

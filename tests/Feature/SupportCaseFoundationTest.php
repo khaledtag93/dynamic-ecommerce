@@ -35,6 +35,37 @@ class SupportCaseFoundationTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_admin_create_lists_normal_customers_and_assignment_rejects_staff_without_support_access(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $supportAgent = $this->staffWithRole('support_agent');
+        $cashier = $this->staffWithRole('cashier');
+        $customer = User::factory()->create();
+
+        $this->actingAs($supportAgent)
+            ->get(route('admin.support.create'))
+            ->assertOk()
+            ->assertSee($customer->email);
+
+        $case = SupportCase::query()->create([
+            'case_number' => 'CS-ASSIGN-001',
+            'customer_id' => $customer->id,
+            'subject' => 'Assignment guard',
+            'priority' => SupportCase::PRIORITY_NORMAL,
+            'status' => SupportCase::STATUS_OPEN,
+            'source' => 'admin',
+        ]);
+
+        $this->patch(route('admin.support.update', $case), [
+            'status' => SupportCase::STATUS_OPEN,
+            'priority' => SupportCase::PRIORITY_NORMAL,
+            'assigned_to_user_id' => $cashier->id,
+        ])->assertSessionHasErrors('assigned_to_user_id');
+
+        $this->assertNull($case->fresh()->assigned_to_user_id);
+    }
+
     public function test_customer_can_create_case_only_for_an_order_owned_by_their_account(): void
     {
         $customer = User::factory()->create(['role_as' => 0]);

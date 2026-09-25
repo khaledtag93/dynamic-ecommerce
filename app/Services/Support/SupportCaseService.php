@@ -164,9 +164,9 @@ class SupportCaseService
             if (array_key_exists('assigned_to_user_id', $payload) && filled($payload['assigned_to_user_id'])) {
                 $assignee = User::query()->findOrFail((int) $payload['assigned_to_user_id']);
 
-                if (! $assignee->isLegacyAdmin()) {
+                if (! $assignee->isLegacyAdmin() || ! $assignee->hasPermission('support.view')) {
                     throw ValidationException::withMessages([
-                        'assigned_to_user_id' => __('Support cases can only be assigned to staff accounts.'),
+                        'assigned_to_user_id' => __('Support cases can only be assigned to staff members who can view support.'),
                     ]);
                 }
             }

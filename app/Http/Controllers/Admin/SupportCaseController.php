@@ -74,6 +74,7 @@ class SupportCaseController extends Controller
 
         $staff = User::query()
             ->where('role_as', 1)
+            ->whereHas('roles.permissions', fn ($query) => $query->where('slug', 'support.view'))
             ->orderBy('name')
             ->limit(100)
             ->get(['id', 'name', 'email']);
@@ -84,7 +85,9 @@ class SupportCaseController extends Controller
     public function create()
     {
         $customers = User::query()
-            ->where('role_as', '!=', 1)
+            ->where(function ($query) {
+                $query->whereNull('role_as')->orWhere('role_as', '!=', 1);
+            })
             ->orderBy('name')
             ->limit(100)
             ->get(['id', 'name', 'email']);
@@ -130,6 +133,7 @@ class SupportCaseController extends Controller
 
         $staff = User::query()
             ->where('role_as', 1)
+            ->whereHas('roles.permissions', fn ($query) => $query->where('slug', 'support.view'))
             ->orderBy('name')
             ->limit(100)
             ->get(['id', 'name', 'email']);

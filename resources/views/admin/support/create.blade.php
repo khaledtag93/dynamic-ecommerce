@@ -6,7 +6,7 @@
 <x-admin.page-header
     :kicker="__('Customer service')"
     :title="__('New support case')"
-    :description="__('Create a tracked case for a customer, an order, or an internal follow-up that may later be linked to a customer.')"
+    :description="__('Create a tracked case for a customer, an order, or an internal follow-up.')"
 >
     <a href="{{ route('admin.support.index') }}" class="btn btn-light border">{{ __('Back to support') }}</a>
 </x-admin.page-header>
