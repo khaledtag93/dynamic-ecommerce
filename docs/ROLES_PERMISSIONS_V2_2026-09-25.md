@@ -16,11 +16,13 @@ The page is now split into four focused workspaces using the shared accessible A
    - one staff account per compact assignment card;
    - explicit current role;
    - one role selector and save action;
+   - live staff search by name, email, or assigned role with a visible-result counter;
    - unassigned admins are clearly flagged instead of being treated as Super Admin.
 
 3. **Roles**
    - focused custom-role creation;
    - permissions grouped by access area instead of one flat checkbox wall;
+   - Select all / Clear all helpers speed up large role definitions without bypassing server validation;
    - existing custom roles collapsed by default and expanded only for editing;
    - delete actions use the shared in-app confirmation flow;
    - custom permission creation is separated from normal role editing.
@@ -51,7 +53,7 @@ No relaxation of authorization was introduced:
 
 ## Regression coverage
 tests/Feature/PermissionsWorkspaceV2Test.php verifies:
-- sectioned workspace and searchable matrix markup;
+- sectioned workspace, searchable matrix, live staff-search markup, and bulk permission controls;
 - Arabic role/permission copy;
 - absence of legacy fallback wording;
 - explicit warning/presentation for unassigned admin accounts.
@@ -61,6 +63,6 @@ See EXPLICIT_ADMIN_ROLE_HARDENING_2026-09-25.md.
 
 ## Release state
 - Source: v42-clean-baseline.
-- CI: pending integrated branch-head verification at this checkpoint.
+- CI: Green through UX hardening commit `9a50aa3` (Hardening CI run `36178503073`).
 - QAS: unchanged until the next consolidated deployment.
 - Production: unchanged.
