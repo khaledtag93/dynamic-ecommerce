@@ -4568,5 +4568,10 @@
     "Confirm refund": "Confirm refund",
     "The refund is recorded in the order ledger and changes the payment status when the refundable balance is fully consumed.": "The refund is recorded in the order ledger and changes the payment status when the refundable balance is fully consumed.",
     "Review refund": "Review refund",
-    "Record a refund of :amount?": "Record a refund of :amount?"
+    "Record a refund of :amount?": "Record a refund of :amount?",
+    "Mark these items received and apply the entered restock quantities? Inventory will increase for every unit marked for restock.": "Mark these items received and apply the entered restock quantities? Inventory will increase for every unit marked for restock.",
+    "Confirm return completion": "Confirm return completion",
+    "Completing the return closes its lifecycle. Any refund entered here is recorded through the canonical order refund ledger.": "Completing the return closes its lifecycle. Any refund entered here is recorded through the canonical order refund ledger.",
+    "Review return": "Review return",
+    "Complete this return with a refund of :amount?": "Complete this return with a refund of :amount?"
 }
