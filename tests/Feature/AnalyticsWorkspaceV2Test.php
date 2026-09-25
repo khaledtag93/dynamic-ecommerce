@@ -107,6 +107,23 @@ class AnalyticsWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("new URLSearchParams(window.location.search).get('section')", $tabsScript);
     }
 
+    public function test_shared_analytics_shell_is_mobile_safe_and_theme_aware(): void
+    {
+        $nav = file_get_contents(resource_path('views/admin/analytics/_nav.blade.php'));
+        $toolbar = file_get_contents(resource_path('views/admin/analytics/_report_toolbar.blade.php'));
+        $trust = file_get_contents(resource_path('views/admin/analytics/_trust_panel.blade.php'));
+
+        $this->assertStringContainsString('.analytics-nav{flex-wrap:nowrap;overflow-x:auto', $nav);
+        $this->assertStringContainsString('scroll-snap-type:x proximity', $nav);
+        $this->assertStringContainsString('.analytics-toolbar-actions{display:grid;grid-template-columns:1fr;width:100%}', $toolbar);
+        $this->assertStringContainsString('role="status" aria-live="polite"', $toolbar);
+        $this->assertStringContainsString("__('Copy failed. Copy the current browser address manually.')", $toolbar);
+        $this->assertStringContainsString('var(--admin-success-soft)', $trust);
+        $this->assertStringContainsString('var(--admin-warning-soft)', $trust);
+        $this->assertStringContainsString('var(--admin-danger-soft)', $trust);
+        $this->assertStringNotContainsString('#f8fff9', $trust);
+    }
+
     public function test_arabic_analytics_workspace_labels_are_available(): void
     {
         $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
