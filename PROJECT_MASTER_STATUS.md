@@ -5,7 +5,7 @@
 
 ## Current state
 
-- **Growth Workspace V2 (2026-09-25):** source head `f32fba8a` starts the focused Growth Engine redesign: reusable Admin page-help modal, shared KPI cards and RTL-safe switches, calmer navigation, collapsible journey setup, cleaner Operations/Insights hierarchy, removal of developer CLI copy, and complete Arabic coverage for all 375 translation keys currently used by the 10 Growth Blade views. Regression coverage: `GrowthWorkspaceV2Test`. CI/QAS visual acceptance pending; Production unchanged. See `docs/GROWTH_WORKSPACE_V2_2026-09-25.md`.
+- **Growth Workspace V2.4 (2026-09-25):** Growth is now split into focused Overview / Content / Operations / Insights workspaces with no-reload safe mutations, GET-side recomputation removed, experiment-performance batching, and real server-side pagination for large campaigns/rules/templates/segments/experiments/deliveries/logs. Overview health uses targeted counts instead of loading full datasets. Hardening CI #1372 passed at `0f1317d` with 368 tests / 2487 assertions plus clean MySQL migration, routes, Blade compilation and frontend production build. Authenticated QAS EN/AR/RTL/responsive acceptance remains separate; Production unchanged. See `docs/GROWTH_WORKSPACE_V2_2026-09-25.md`.
 - **Dynamic product-direction addendum (2026-09-25):** multi-vertical configurable-platform vision, global no-reload/readability principles, reusable in-product Help, customer UX modernization, legacy-data Migration Center, scalability measurement rules and target-business examples are now explicit project requirements. See `docs/PRODUCT_DIRECTION_ADDENDUM_2026-09-25.md`.
 - **Online Order Receipt V1 (2026-09-25):** source now provides a shared A4/browser-print order receipt for authenticated customers and `orders.view` staff, using persisted order/item/payment/refund/delivery values and the order's real currency. The document is explicitly non-tax/non-fiscal until merchant/jurisdiction tax policy exists. Customer/Admin order detail currency hard-coding was also removed. See `docs/ONLINE_ORDER_RECEIPT_V1_2026-09-25.md`. CI/QAS acceptance pending; Production unchanged.
 
@@ -28,6 +28,20 @@
 - **Workforce Foundation V1 (2026-09-25):** application revision `b0fc6d20` adds employee profiles, attendance sessions, scoped workforce permissions, manager Employee Directory / Attendance Review, personal Time Clock, transaction-safe attendance guards, activity auditing and POS cash-shift identity integration. Attendance and POS cash shifts remain separate concepts; checkout is not blocked by attendance. CI verification is pending; QAS remains `0a08253` and Production is unchanged. See `docs/WORKFORCE_FOUNDATION_2026-09-25.md`.
 - **Workforce Shift Scheduling V1 (2026-09-25):** application revision `ff423286` adds Draft/Published/Cancelled employee work shifts, transaction-safe overlap protection, live manager schedule, employee My Schedule and Schedule-vs-Actual attendance comparison. Cancelled shifts are retained historically; published-only visibility is enforced for employees. CI pending; QAS stays `0a08253`; Production unchanged. See `docs/WORKFORCE_SHIFT_SCHEDULING_V1_2026-09-25.md`.
 
+
+## Completion Pass decision — 2026-09-25
+
+The current product-development mode is now **completion before expansion**.
+
+- Do not start nonessential new modules while existing implemented areas still have correctness, security, performance, bilingual, responsive, testing, QAS or release gaps.
+- A feature is considered source-complete when its agreed scope has stable business logic, authorization/data isolation, validation/error states, bounded performance behavior, EN/AR/RTL coverage, responsive/mobile-web behavior, automated regression coverage and clear documentation.
+- QAS acceptance is a separate required gate: authenticated desktop/mobile EN/AR workflows must be exercised against realistic records and any findings fixed before Production consideration.
+- New ideas are recorded in the backlog and deferred unless they are a blocker, security issue, direct dependency, or implementing them now clearly prevents near-term rework.
+- Future Android/iPhone readiness is a permanent architecture constraint, but the native app itself remains deferred until this pass is closed.
+- Current sequence: close active source gaps → reconcile stale project status → consolidated QAS acceptance → defect closure → release-readiness review → only then resume roadmap expansion.
+
+See `docs/COMPLETION_PASS_2026-09-25.md`.
+
 ## Latest working-line update — 2026-09-23
 - An admin daily-work UX batch is CI-verified in source, pending QAS review: the default dashboard now shows four clearly defined 30-day metrics, permission-scoped priorities, workspaces and recent records. Its controller no longer computes the unused deep-dive panels. The sidebar no longer queries order/coupon/supplier counts on every render. Topbar/search and order actions respect route permissions.
 - **Branding & Appearance V2 (2026-09-24):** source implementation now adds the `professional_commerce` neutral default direction, visual preset cards, reapply-preset behavior, a focused core palette with Advanced controls, a more representative live preview, unsaved-change state/protection, semantic admin success/warning/danger colors, supported badge-style choices, and Arabic/English strings. During the pass, homepage visibility handling was repaired for Featured categories, Manual featured products and Trust blocks. Automated coverage was added in `tests/Feature/BrandingSettingsExperienceTest.php`. Detailed scope/QAS checks: `docs/BRANDING_APPEARANCE_V2_2026-09-24.md`. Final branch-head CI, authenticated QAS review and Production deployment remain separate gates.
@@ -37,7 +51,7 @@
 - The product page no longer creates synthetic ratings, reviews, sales, viewer and save counts; repeated unverified reassurance blocks were removed. The purchase/variant controls remain, and the initial stock note uses the selected variant stock.
 - Growth validation demo seed/clear is now restricted to local, testing and QAS/staging at the HTTP and service layers; its operations controls are hidden in Production. Existing demo records have not been audited or removed.
 - Focused promotion/demotion, permission-boundary and Production demo-guard regression tests were added. Code revision `f7ff4e8` passed [Hardening CI run 35916058338](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/35916058338): PHP syntax, clean MySQL migration, Blade compilation, 45 PHPUnit tests and frontend build. **QAS visual verification and Production deployment are still pending**; neither environment is recorded as running this batch.
-- The pre-existing roleless-admin Super Admin fallback is still active. This is a **partial authorization fix**; inventory current admins, designate and explicitly assign the owner, then remove the fallback with migration/rollback tests. Other P0 release gates in the audits remain open.
+- **Explicit Admin Role Hardening is source-closed:** the legacy roleless-admin Super Admin fallback has been removed. Existing legacy admins are migrated to explicit roles; `User::isSuperAdmin()` now requires `super_admin`, and `AdminMiddleware` requires an explicit staff role. QAS/Production acceptance remains a separate release gate.
 - The source audit and UI review are dated baselines, and their later implementation states are tracked in the [documentation guide](docs/README.md). Update this section and the ledger for every subsequent batch.
 
 ## QAS Workforce migration recovery — 2026-09-25
@@ -59,6 +73,7 @@
 - Future provider callbacks are explicitly forbidden from silently merging into an existing Dynamic account based only on matching email; existing-email users must authenticate normally and link from account settings.
 - Focused regression coverage: `ConnectedIdentityFoundationTest`. Arabic validation copy is included.
 - OAuth redirect/callback UI is intentionally deferred until `laravel/socialite` is added with a real Composer lock update; Production and QAS remain unchanged.
+- Hardening CI #1368 passed at `8fb4667`, covering the Connected Identity foundation and its collision / verified-email / no-silent-merge tests.
 - See `docs/CONNECTED_IDENTITY_FOUNDATION_2026-09-25.md`.
 
 ## New customer-platform roadmap requirements — 2026-09-25
@@ -430,14 +445,14 @@
 8. Promote V42 to `main` only after verification.
 
 ## Planned / not yet closed
-- WhatsApp/SMS multi-channel expansion
-- deeper analytics/dashboard polish
-- broader Arabic/English consistency pass
-- HR/POS/barcode/receipt capabilities
-- wishlist/comparison/smart search/customer feature closure
+- WhatsApp/SMS multi-channel expansion beyond the current WhatsApp foundation
+- remaining measured analytics/dashboard polish discovered through QAS, not broad redesign for its own sake
+- final cross-product Arabic/English/RTL acceptance and defect closure
+- wishlist/comparison/smart-search/customer feature expansion after the completion pass
 - subscription/trial/renewal controls
 - deeper AI personalization
-- SaaS multi-tenancy and mobile-app path
+- SaaS multi-tenancy
+- native Android/iPhone application implementation after the web completion pass; current work must remain mobile-app ready
 
 ## Release rule
 No commercial handoff or Production deployment is considered complete until the production-hardening priorities are closed or explicitly accepted with documented risk.
