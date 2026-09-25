@@ -5022,5 +5022,9 @@
     "Support settings": "إعدادات الدعم",
     "Targets start from case creation. V2 does not pause the clock while waiting for the customer; pause calendars and business hours remain future policy work.": "تبدأ الأهداف من وقت إنشاء التذكرة. في V2 لا يتوقف العداد أثناء انتظار العميل؛ تقاويم الإيقاف وساعات العمل ستبقى ضمن سياسة مستقبلية.",
     "Templates only prefill the reply composer. Staff can always edit the text before sending or saving an internal note.": "تقوم القوالب فقط بتعبئة محرر الرد مسبقًا، ويمكن للموظف تعديل النص دائمًا قبل الإرسال أو حفظ ملاحظة داخلية.",
-    "Write without a template": "الكتابة بدون قالب"
+    "Write without a template": "الكتابة بدون قالب",
+    "Due": "ضمن المهلة",
+    "Met": "تم الالتزام",
+    "Breached": "تم التجاوز",
+    "Not tracked": "غير متابع"
 }
