@@ -26,6 +26,47 @@ class BrandingSettingsExperienceTest extends TestCase
             ->assertSee('brandingSaveState', false);
     }
 
+    public function test_extended_professional_theme_catalog_is_available(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->get(route('admin.settings.branding'))
+            ->assertOk()
+            ->assertViewHas('presets', fn (array $presets) =>
+                ($presets['royal_navy']['brand_primary_color'] ?? null) === '#1d4ed8'
+                && ($presets['emerald_studio']['brand_primary_color'] ?? null) === '#047857'
+                && ($presets['plum_editorial']['brand_primary_color'] ?? null) === '#7e22ce'
+                && ($presets['royal_navy']['customer_badge_style'] ?? null) === 'outline'
+                && ($presets['emerald_studio']['customer_badge_style'] ?? null) === 'soft'
+                && ($presets['plum_editorial']['customer_badge_style'] ?? null) === 'pill'
+            )
+            ->assertSee('data-theme-preset-choice="royal_navy"', false)
+            ->assertSee('data-theme-preset-choice="emerald_studio"', false)
+            ->assertSee('data-theme-preset-choice="plum_editorial"', false);
+    }
+
+    public function test_extended_theme_can_be_saved_with_its_complete_visual_contract(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'royal_navy',
+                'default_locale' => 'en',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('royal_navy', WebsiteSetting::getValue('theme_preset'));
+        $this->assertSame('#1d4ed8', WebsiteSetting::getValue('brand_primary_color'));
+        $this->assertSame('#172554', WebsiteSetting::getValue('brand_secondary_color'));
+        $this->assertSame('#f59e0b', WebsiteSetting::getValue('brand_accent_color'));
+        $this->assertSame('16', (string) WebsiteSetting::getValue('customer_card_radius'));
+        $this->assertSame('outline', WebsiteSetting::getValue('customer_badge_style'));
+    }
+
     public function test_professional_theme_can_be_saved_and_homepage_toggles_normalize(): void
     {
         $owner = $this->createSuperAdmin();
