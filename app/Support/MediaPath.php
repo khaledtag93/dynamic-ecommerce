@@ -11,10 +11,16 @@ class MediaPath
 
     public static function publicRootPath(?string $path = null): string
     {
-        $splitPublicRoot = dirname(base_path()) . DIRECTORY_SEPARATOR . 'public_html';
-        $defaultPublicRoot = public_path();
+        $configuredRoot = trim((string) config('store.public_root_path', ''));
 
-        $root = is_dir($splitPublicRoot) ? $splitPublicRoot : $defaultPublicRoot;
+        if ($configuredRoot !== '') {
+            $root = rtrim($configuredRoot, '/\\');
+        } else {
+            $splitPublicRoot = dirname(base_path()) . DIRECTORY_SEPARATOR . 'public_html';
+            $defaultPublicRoot = public_path();
+
+            $root = is_dir($splitPublicRoot) ? $splitPublicRoot : $defaultPublicRoot;
+        }
 
         if (blank($path)) {
             return $root;
