@@ -113,3 +113,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Admin Consistency Sweep V2
 - [Admin Consistency Sweep V2](ADMIN_CONSISTENCY_SWEEP_V2_2026-09-25.md)
+
+
+### 2026-09-25 — Admin Form Workspace V2
+- [Admin Form Workspace V2](ADMIN_FORM_WORKSPACE_V2_2026-09-25.md)
