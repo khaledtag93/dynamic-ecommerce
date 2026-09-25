@@ -107,9 +107,9 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("paginate(12, ['*'], 'trigger_page')", $service);
         $this->assertStringContainsString("paginate(15, ['*'], 'message_page')", $service);
         $this->assertStringContainsString("paginate(8, ['*'], 'insight_experiment_page')", $service);
-        $this->assertStringContainsString("'overview_health' => $overviewHealth", $service);
-        $this->assertStringContainsString("'operations_summary' => $operationsSummary", $service);
-        $this->assertStringNotContainsString("'campaigns' => collect($snapshot", $controller);
+        $this->assertStringContainsString("'overview_health' => \$overviewHealth", $service);
+        $this->assertStringContainsString("'operations_summary' => \$operationsSummary", $service);
+        $this->assertStringNotContainsString("'campaigns' => collect(\$snapshot", $controller);
         $this->assertStringContainsString('$overviewHealth[', $overview);
         $this->assertStringNotContainsString('$campaigns->take(12)', $content);
         $this->assertStringNotContainsString('$rules->take(12)', $content);
