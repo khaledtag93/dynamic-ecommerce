@@ -76,9 +76,9 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertSame(5, substr_count($layout, 'data-admin-toast-close aria-label='));
         $this->assertStringContainsString("querySelectorAll('[data-admin-toast-close]')", $layout);
         $this->assertSame(5, substr_count($layout, 'class="admin-flash-content"'));
-        $this->assertSame(2, substr_count($layout, 'admin-flash--success'));
-        $this->assertSame(1, substr_count($layout, 'admin-flash--warning'));
-        $this->assertSame(2, substr_count($layout, 'admin-flash--danger'));
+        $this->assertSame(2, preg_match_all('/<div class="alert alert-success admin-flash admin-flash--success">/', $layout));
+        $this->assertSame(1, preg_match_all('/<div class="alert alert-warning admin-flash admin-flash--warning">/', $layout));
+        $this->assertSame(2, preg_match_all('/<div class="alert alert-danger admin-flash admin-flash--danger">/', $layout));
     }
 
     public function test_admin_topbar_search_has_keyboard_and_clear_controls(): void
