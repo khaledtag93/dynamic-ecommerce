@@ -692,4 +692,31 @@ class StorefrontExperienceTest extends TestCase
         $arabic->assertOk()->assertSee('مدفوعات محمية');
     }
 
+
+    public function test_storefront_footer_renders_only_configured_social_channels_when_enabled(): void
+    {
+        \App\Models\WebsiteSetting::setValue('footer_show_social', '1', 'content');
+        \App\Models\WebsiteSetting::setValue('store_social_facebook', 'https://www.facebook.com/tagmarketplace', 'content');
+        \App\Models\WebsiteSetting::setValue('store_social_instagram', '', 'content');
+        \App\Models\WebsiteSetting::setValue('store_social_linkedin', 'https://www.linkedin.com/company/tagmarketplace', 'content');
+
+        $enabled = $this->get(route('frontend.home'));
+
+        $enabled
+            ->assertOk()
+            ->assertSee('https://www.facebook.com/tagmarketplace', false)
+            ->assertSee('https://www.linkedin.com/company/tagmarketplace', false)
+            ->assertDontSee('bi-instagram', false)
+            ->assertSee('rel="noopener noreferrer"', false);
+
+        \App\Models\WebsiteSetting::setValue('footer_show_social', '0', 'content');
+
+        $hidden = $this->get(route('frontend.home'));
+
+        $hidden
+            ->assertOk()
+            ->assertDontSee('https://www.facebook.com/tagmarketplace', false)
+            ->assertDontSee('https://www.linkedin.com/company/tagmarketplace', false);
+    }
+
 }
