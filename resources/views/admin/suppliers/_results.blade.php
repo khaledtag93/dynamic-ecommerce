@@ -51,7 +51,7 @@
                         <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('items_count') }}">{{ __('Linked items') }} @if($sort === 'items_count') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                         <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('is_active') }}">{{ __('Status') }} @if($sort === 'is_active') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                         <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('updated_at') }}">{{ __('Updated') }} @if($sort === 'updated_at') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
-                        <th class="text-end">{{ __('Actions') }}</th>
+                        <th class="text-end rtl-text-start">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,8 +80,8 @@
                             <div class="fw-semibold">{{ optional($supplier->updated_at)->format('d M Y') }}</div>
                             <div class="text-muted small">{{ optional($supplier->updated_at)->format('h:i A') }}</div>
                         </td>
-                        <td class="text-end">
-                            <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                        <td class="text-end rtl-text-start">
+                            <div class="d-inline-flex gap-2 flex-wrap justify-content-end rtl-justify-start">
                                 <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="btn-table-icon btn-edit" title="{{ __('Edit Supplier') }}"><i class="mdi mdi-pencil-outline"></i></a>
                                 @if($supplier->purchases_count === 0)
                                     <form method="POST" action="{{ route('admin.suppliers.destroy', $supplier) }}" data-confirm-message="{{ __('Delete this supplier?') }}">
