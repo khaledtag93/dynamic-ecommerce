@@ -72,6 +72,21 @@
                         </div>
                     </div>
                 @endforeach
+                <div class="col-12"><hr class="my-1"></div>
+                <div class="col-12">
+                    <h5 class="mb-1">{{ __('Trust highlights') }}</h5>
+                    <p class="text-muted mb-0">{{ __('Keep these short and business-neutral so the footer fits different store types.') }}</p>
+                </div>
+                @foreach([1, 2, 3] as $trustIndex)
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">{{ __('Trust highlight') }} {{ $trustIndex }} · EN</label>
+                        <input class="form-control" maxlength="120" name="footer_trust_{{ $trustIndex }}_text_en" value="{{ old('footer_trust_'.$trustIndex.'_text_en', $settings['footer_trust_'.$trustIndex.'_text_en'] ?? '') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">{{ __('Trust highlight') }} {{ $trustIndex }} · AR</label>
+                        <input class="form-control" maxlength="120" dir="rtl" name="footer_trust_{{ $trustIndex }}_text_ar" value="{{ old('footer_trust_'.$trustIndex.'_text_ar', $settings['footer_trust_'.$trustIndex.'_text_ar'] ?? '') }}">
+                    </div>
+                @endforeach
             </div>
 
             <div class="row g-4 mb-4 admin-settings-section" id="content-panel-checkout" role="tabpanel" aria-labelledby="content-tab-checkout" data-admin-section-panel="checkout">
