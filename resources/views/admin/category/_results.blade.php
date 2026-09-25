@@ -64,7 +64,7 @@
                             <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('products_count') }}">{{ __('Products') }} @if($sort === 'products_count') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                             <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('status') }}">{{ __('Visibility') }} @if($sort === 'status') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                             <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('updated_at') }}">{{ __('Updated') }} @if($sort === 'updated_at') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
-                            <th class="text-end">{{ __('Actions') }}</th>
+                            <th class="text-end rtl-text-start">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,7 +80,7 @@
                                         @endif
                                         <div>
                                             <div class="fw-bold text-dark">{{ $category->name }}</div>
-                                            <div class="text-muted small">{{ IlluminateSupportStr::limit($category->description ?: __('No description yet.'), 70) }}</div>
+                                            <div class="text-muted small">{{ \Illuminate\Support\Str::limit($category->description ?: __('No description yet.'), 70) }}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -94,8 +94,8 @@
                                     @endif
                                 </td>
                                 <td><div class="fw-semibold">{{ optional($category->updated_at)->format('d M Y') }}</div><small class="text-muted">{{ optional($category->updated_at)->format('h:i A') }}</small></td>
-                                <td class="text-end">
-                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                <td class="text-end rtl-text-start">
+                                    <div class="d-flex justify-content-end rtl-justify-start gap-2 flex-wrap">
                                         <a href="{{ route('admin.categories.edit', $category) }}" class="btn-table-icon btn-edit" title="{{ __('Edit category') }}"><i class="mdi mdi-pencil-outline"></i></a>
                                         <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline-block" data-confirm-message="{{ __('Are you sure you want to delete this category?') }}">
                                             @csrf @method('DELETE')
