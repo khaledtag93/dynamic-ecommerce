@@ -53,6 +53,6 @@ tests/Feature/AnalyticsWorkspaceV2Test.php verifies:
 
 ## Release state
 - Source: v42-clean-baseline.
-- CI: pending branch-head verification.
+- CI: passed on branch head `d43c359` (Hardening CI run 36187091347).
 - QAS: unchanged for this slice.
 - Production: unchanged.
