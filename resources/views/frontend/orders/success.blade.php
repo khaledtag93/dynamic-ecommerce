@@ -6,6 +6,7 @@
 <section class="py-5 lc-page-shell">
     <div class="container">
         @php($latestPayment = $order->payments->sortByDesc('id')->first())
+        @php($currency = $order->currency ?: 'EGP')
         <div class="lc-card p-4 p-lg-5 mb-4 overflow-hidden" style="background:radial-gradient(circle at top right, color-mix(in srgb,var(--lc-primary) 16%,transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb,var(--lc-soft) 46%,var(--lc-surface)) 0%, var(--lc-surface) 62%);">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-7">
@@ -22,6 +23,7 @@
                     </div>
                     <div class="d-flex gap-3 flex-wrap">
                         <a href="{{ route('orders.show', $order) }}" class="btn lc-btn-primary">{{ __('Order details') }}</a>
+                        <a href="{{ route('orders.receipt', $order) }}" class="btn lc-btn-soft" target="_blank" rel="noopener"><i class="bi bi-printer me-2"></i>{{ __('Print receipt') }}</a>
                         @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
                             <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-soft">{{ __('Pay now securely') }}</a>
                         @endif
@@ -36,7 +38,7 @@
                         <div class="d-flex justify-content-between mb-3"><span class="text-muted">{{ __('Order') }}</span><strong>{{ $order->order_number }}</strong></div>
                         <div class="d-flex justify-content-between mb-3"><span class="text-muted">{{ __('Payment method') }}</span><strong>{{ $order->payment_method_label }}</strong></div>
                         <div class="d-flex justify-content-between mb-3"><span class="text-muted">{{ __('Delivery method') }}</span><strong>{{ $order->delivery_method_label }}</strong></div>
-                        <div class="d-flex justify-content-between mb-3"><span class="text-muted">{{ __('Grand total') }}</span><strong>EGP {{ number_format($order->grand_total, 2) }}</strong></div>
+                        <div class="d-flex justify-content-between mb-3"><span class="text-muted">{{ __('Grand total') }}</span><strong>{{ $currency }} {{ number_format($order->grand_total, 2) }}</strong></div>
                         <hr>
                         <div class="small text-muted">{{ $paymentInstructions }}</div>
                         @if(!empty($storeSettings['store_support_email']) || !empty($storeSettings['store_support_phone']))
