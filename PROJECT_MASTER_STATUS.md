@@ -854,3 +854,13 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added CommerceSettingsWorkspaceV2Test covering Payment tabs, Paymob callback presence, shared Shipping navigation, Notification Center modularity, and Arabic labels.
 - Detailed note: docs/COMMERCE_SETTINGS_WORKSPACE_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Final Admin V2 cleanup — 2026-09-25
+- Replaced the remaining manual WhatsApp summary KPI cards with the shared Admin Stat Card component.
+- Removed the local WhatsApp switch sizing override so the page follows the global Admin switch contract.
+- Consolidated duplicate primary topbar search CSS declarations in the global Admin layout while preserving final visual behavior and responsive overrides.
+- Confirmed the global Admin layout contains no browser-native confirm()/alert() calls.
+- Added FinalAdminV2CleanupTest covering WhatsApp KPI consistency, switch cleanup, topbar CSS deduplication, and browser-native interaction regression.
+- Admin V2 consistency can now be treated as source-complete for the known high-impact Admin workspaces; future fixes should be targeted regressions or feature-driven UI work rather than another broad consistency pass.
+- Detailed note: docs/FINAL_ADMIN_V2_CLEANUP_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
