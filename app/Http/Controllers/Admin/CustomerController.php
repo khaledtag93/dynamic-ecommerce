@@ -7,15 +7,19 @@ use App\Models\Order;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
+use App\Services\Commerce\CustomerAccountStatementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
-    public function __construct(protected AuthorizationService $authorizationService)
-    {
+    public function __construct(
+        protected AuthorizationService $authorizationService,
+        protected CustomerAccountStatementService $statementService,
+    ) {
     }
 
     public function index(Request $request)
@@ -95,6 +99,75 @@ class CustomerController extends Controller
         ];
 
         return view('admin.customers.show', compact('user', 'summary', 'staffRoles'));
+    }
+
+    public function statement(Request $request, User $user)
+    {
+        $filters = $this->statementFilters($request);
+        $statement = $this->statementService->build($user, $filters);
+
+        return view('admin.customers.statement', compact('user', 'filters', 'statement'));
+    }
+
+    public function statementPrint(Request $request, User $user)
+    {
+        $filters = $this->statementFilters($request);
+        $statement = $this->statementService->build($user, $filters);
+
+        return view('admin.customers.statement-print', compact('user', 'filters', 'statement'));
+    }
+
+    public function statementExport(Request $request, User $user): StreamedResponse
+    {
+        $filters = $this->statementFilters($request);
+        $statement = $this->statementService->build($user, $filters);
+        $fileName = 'customer-statement-'.$user->id.'-'.now()->format('Ymd-His').'.csv';
+
+        return response()->streamDownload(function () use ($statement) {
+            $handle = fopen('php://output', 'w');
+
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, [
+                __('Date'),
+                __('Type'),
+                __('Reference'),
+                __('Status'),
+                __('Amount'),
+                __('Currency'),
+                __('Details'),
+            ]);
+
+            foreach ($statement['movements'] as $movement) {
+                fputcsv($handle, [
+                    $movement['occurred_at']->format('Y-m-d H:i:s'),
+                    $movement['type_label'],
+                    $movement['reference'],
+                    $movement['status_label'],
+                    $movement['amount'] === null ? '' : number_format((float) $movement['amount'], 2, '.', ''),
+                    $movement['currency'] ?? '',
+                    $movement['details'],
+                ]);
+            }
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    private function statementFilters(Request $request): array
+    {
+        $validated = $request->validate([
+            'type' => ['nullable', Rule::in(['order', 'payment', 'refund', 'return'])],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+        ]);
+
+        return [
+            'type' => (string) ($validated['type'] ?? ''),
+            'date_from' => $validated['date_from'] ?? now()->subYear()->toDateString(),
+            'date_to' => $validated['date_to'] ?? now()->toDateString(),
+        ];
     }
 
     public function updateRole(Request $request, User $user): RedirectResponse
