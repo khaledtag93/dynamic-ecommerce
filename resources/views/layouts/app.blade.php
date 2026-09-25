@@ -931,12 +931,14 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             @endif
 
-            @if(($storeSettings['footer_show_support'] ?? '1') === '1' && (!empty($storeSettings['store_support_email']) || !empty($storeSettings['store_support_phone']) || !empty($storeSettings['store_contact_address'])))
+            @if(($storeSettings['footer_show_support'] ?? '1') === '1' && (!empty($storeSettings['store_support_email']) || !empty($storeSettings['store_support_phone']) || !empty($storeSettings['store_contact_address']) || (($storeSettings['footer_show_whatsapp'] ?? '1') === '1' && !empty($storeSettings['store_support_whatsapp'])) || (($storeSettings['footer_show_website'] ?? '1') === '1' && !empty($storeSettings['store_business_website']))))
             <div class="storefront-footer__column storefront-footer__contact">
                 <h6>{{ __('Support') }}</h6>
-                @if(!empty($storeSettings['store_support_email']))<span>{{ $storeSettings['store_support_email'] }}</span>@endif
-                @if(!empty($storeSettings['store_support_phone']))<span>{{ $storeSettings['store_support_phone'] }}</span>@endif
-                @if(!empty($storeSettings['store_contact_address']))<span>{{ $storeSettings['store_contact_address'] }}</span>@endif
+                @if(!empty($storeSettings['store_support_email']))<a href="mailto:{{ $storeSettings['store_support_email'] }}"><i class="bi bi-envelope"></i><span>{{ $storeSettings['store_support_email'] }}</span></a>@endif
+                @if(!empty($storeSettings['store_support_phone']))<a href="tel:{{ preg_replace('/[^0-9+]/', '', $storeSettings['store_support_phone']) }}"><i class="bi bi-telephone"></i><span>{{ $storeSettings['store_support_phone'] }}</span></a>@endif
+                @if(($storeSettings['footer_show_whatsapp'] ?? '1') === '1' && !empty($storeSettings['store_support_whatsapp']))<a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $storeSettings['store_support_whatsapp']) }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i><span>{{ __('WhatsApp') }}</span></a>@endif
+                @if(($storeSettings['footer_show_website'] ?? '1') === '1' && !empty($storeSettings['store_business_website']))<a href="{{ $storeSettings['store_business_website'] }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-globe2"></i><span>{{ __('Website') }}</span></a>@endif
+                @if(!empty($storeSettings['store_contact_address']))<span><i class="bi bi-geo-alt"></i>{{ $storeSettings['store_contact_address'] }}</span>@endif
             </div>
             @endif
         </div>
