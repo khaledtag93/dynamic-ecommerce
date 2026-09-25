@@ -13,6 +13,7 @@ class OrderActionService
     public function __construct(
         protected OrderNotificationService $orderNotificationService,
         protected InventoryService $inventoryService,
+        protected StockReservationService $stockReservationService,
     ) {
     }
 
@@ -36,8 +37,26 @@ class OrderActionService
                 ]);
             }
 
-            foreach ($lockedOrder->items()->with(['product', 'variant'])->get() as $item) {
+            if ($lockedOrder->payment_method === Order::PAYMENT_METHOD_ONLINE) {
+                $this->stockReservationService->releaseForOrder(
+                    $lockedOrder,
+                    'order_cancelled'
+                );
+            }
+
+            foreach ($lockedOrder->items()->with(['product', 'variant', 'stockReservation'])->get() as $item) {
                 if (! $item->product) {
+                    continue;
+                }
+
+                if (
+                    $lockedOrder->payment_method === Order::PAYMENT_METHOD_ONLINE
+                    && $item->stockReservation
+                    && in_array($item->stockReservation->status, [
+                        \App\Models\OrderStockReservation::STATUS_RELEASED,
+                        \App\Models\OrderStockReservation::STATUS_EXPIRED,
+                    ], true)
+                ) {
                     continue;
                 }
 
