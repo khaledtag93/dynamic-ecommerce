@@ -4573,5 +4573,8 @@
     "Confirm return completion": "Confirm return completion",
     "Completing the return closes its lifecycle. Any refund entered here is recorded through the canonical order refund ledger.": "Completing the return closes its lifecycle. Any refund entered here is recorded through the canonical order refund ledger.",
     "Review return": "Review return",
-    "Complete this return with a refund of :amount?": "Complete this return with a refund of :amount?"
+    "Complete this return with a refund of :amount?": "Complete this return with a refund of :amount?",
+    "Undo verified unit": "Undo verified unit",
+    "Remove one verified unit from this purchase line?": "Remove one verified unit from this purchase line?",
+    "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.": "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt."
 }
