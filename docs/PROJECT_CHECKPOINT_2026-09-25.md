@@ -98,7 +98,9 @@ Admin V2 consistency is source-complete for the known high-impact workspaces:
 - This area should be treated as an active QAS finding rather than completed polish.
 
 
-## Open QAS finding: media root isolation
-- Broken category images were confirmed visually in QAS.
-- Source fix isolates QAS media under `public_html/v42/uploads` via `PUBLIC_ROOT_PATH`.
-- QAS requires redeploy plus one-time existing-media synchronization before this finding can be marked verified.
+## QAS finding resolved: media root isolation
+- Broken category images were confirmed visually in QAS and then fixed.
+- QAS media is now isolated under `public_html/v42/uploads` via `PUBLIC_ROOT_PATH`.
+- Existing public uploads were synchronized once into the QAS uploads directory so cloned database media paths resolve correctly.
+- Operator confirmed category list/edit images now render correctly.
+- This finding is **verified resolved in QAS**.
