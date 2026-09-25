@@ -1,17 +1,14 @@
 <div>
-    <div class="admin-page-header">
-        <div>
-            <span class="admin-eyebrow">{{ __('Catalog / Attributes / Values') }}</span>
-            <h1 class="admin-page-title">{{ $attribute->name }} {{ __('Values') }}</h1>
-            <p class="admin-page-description">{{ __('Add and edit the reusable values for this attribute.') }}</p>
-        </div>
-        <div class="admin-page-actions">
-            <a href="{{ route('admin.attributes.index') }}" class="btn btn-light admin-btn-soft">
-                <i class="mdi mdi-arrow-left"></i>
-                {{ __('Back to Attributes') }}
-            </a>
-        </div>
-    </div>
+    <x-admin.page-header
+        :kicker="__('Catalog management')"
+        :title="$attribute->name . ' ' . __('Values')"
+        :description="__('Add and edit the reusable values for this attribute.')"
+    >
+        <a href="{{ route('admin.attributes.index') }}" class="btn btn-light admin-btn-soft">
+            <i class="mdi mdi-arrow-left"></i>
+            {{ __('Back to Attributes') }}
+        </a>
+    </x-admin.page-header>
 
     @if (session()->has('message'))
         <div class="alert alert-success">{{ session('message') }}</div>
@@ -27,12 +24,7 @@
             ['label' => __('Unused'), 'value' => $stats['unused'], 'copy' => __('Values available for cleanup or future variants.'), 'icon' => 'mdi-link-variant-off'],
         ] as $card)
             <div class="col-md-4">
-                <div class="admin-card admin-stat-card h-100">
-                    <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                    <div class="admin-stat-label">{{ $card['label'] }}</div>
-                    <div class="admin-stat-value">{{ $card['value'] }}</div>
-                    <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-                </div>
+                <x-admin.stat-card :label="$card['label']" :value="$card['value']" :icon="$card['icon']" :help="$card['copy']" class="h-100" />
             </div>
         @endforeach
     </div>
@@ -73,7 +65,7 @@
                         <tr>
                             <th>{{ __('Value') }}</th>
                             <th style="width: 180px;">{{ __('Variant usage') }}</th>
-                            <th style="width: 160px;">{{ __('Actions') }}</th>
+                            <th style="width: 160px;" class="rtl-text-start">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,8 +84,8 @@
                                         <span class="badge badge-soft-secondary">{{ __('Unused') }}</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <div class="d-flex gap-2">
+                                <td class="rtl-text-start">
+                                    <div class="d-flex gap-2 rtl-justify-start">
                                         <button wire:click="edit({{ $val->id }})" class="btn btn-sm btn-outline-primary btn-action" title="{{ $val->variant_usage_count > 0 ? __('Used values cannot be renamed') : __('Edit value') }}" @disabled($val->variant_usage_count > 0)>
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </button>
