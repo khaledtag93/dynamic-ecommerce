@@ -23,7 +23,16 @@
 - Shared Admin Page Header / Stat Card / Section Tabs / switch / RTL / confirmation contracts.
 
 ### Current objective
-Deploy the latest `v42-clean-baseline` to QAS and run one consolidated authenticated acceptance pass instead of continuing to defer manual verification.
+Run the consolidated authenticated QAS acceptance pass on the operator-confirmed QAS deployment of `v42-clean-baseline`.
+
+### QAS deployment checkpoint
+- QAS deployment is operator-confirmed complete on 2026-09-25.
+- Deployed source commit: `899e6410331543fa3c2a807c788ccf4d066a25f5` (`899e6410`).
+- QAS URL: `https://v42.tag-marketplace.com`.
+- First deployment attempt stopped safely during route verification because duplicate invalid frontend return routes referenced a non-imported `FrontendReturnController`; source was fixed before retry.
+- Second attempt stopped safely during the Blade namespace preflight because Inventory, Payment details, and Purchases still contained corrupted namespace references; all were corrected before the successful deployment.
+- Added `BladeNamespacePreflightTest` to guard against recurrence of the corrupted Blade namespace pattern.
+- Production remains unchanged.
 
 ### QAS acceptance priorities
 1. Admin shell/navigation, EN/AR/RTL, responsive layout.
@@ -48,7 +57,7 @@ Deploy the latest `v42-clean-baseline` to QAS and run one consolidated authentic
 - Later Laravel/platform modernization and broader E2E/static-analysis coverage.
 
 ### Release rule
-- QAS may be updated from `v42-clean-baseline`.
+- QAS is now refreshed to `899e6410` for consolidated acceptance.
 - Production stays unchanged until consolidated QAS acceptance and remaining operational release gates are explicitly cleared.
 
 ### Reference
