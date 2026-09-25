@@ -54,6 +54,7 @@ class AnalyticsWorkspaceV2Test extends TestCase
             resource_path('views/admin/analytics/index.blade.php'),
             resource_path('views/admin/analytics/growth.blade.php'),
             resource_path('views/admin/analytics/offers.blade.php'),
+            resource_path('views/admin/analytics/product.blade.php'),
         ];
 
         $keys = [];
@@ -122,6 +123,16 @@ class AnalyticsWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('var(--admin-warning-soft)', $trust);
         $this->assertStringContainsString('var(--admin-danger-soft)', $trust);
         $this->assertStringNotContainsString('#f8fff9', $trust);
+    }
+
+    public function test_product_drilldown_uses_shared_theme_tokens_and_mobile_navigation(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/analytics/product.blade.php'));
+
+        $this->assertStringContainsString('background:var(--admin-surface);border:1px solid var(--admin-border)', $source);
+        $this->assertStringContainsString('.analytics-anchor-nav{flex-wrap:nowrap;overflow-x:auto', $source);
+        $this->assertStringContainsString('.analytics-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--admin-primary),var(--admin-primary-dark))', $source);
+        $this->assertStringNotContainsString('background:#fff;border:1px solid rgba(15,23,42,.06)', $source);
     }
 
     public function test_arabic_analytics_workspace_labels_are_available(): void
