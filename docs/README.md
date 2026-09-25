@@ -121,3 +121,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Commerce Settings Workspace V2
 - [Commerce Settings Workspace V2](COMMERCE_SETTINGS_WORKSPACE_V2_2026-09-25.md)
+
+
+### 2026-09-25 — Final Admin V2 Cleanup
+- [Final Admin V2 Cleanup](FINAL_ADMIN_V2_CLEANUP_2026-09-25.md)
