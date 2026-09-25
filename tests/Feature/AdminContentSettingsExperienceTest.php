@@ -24,13 +24,15 @@ class AdminContentSettingsExperienceTest extends TestCase
 
         $html = $response->getContent();
 
-        $this->assertSame(13, substr_count($html, 'class="form-check form-switch m-0 flex-nowrap"'));
+        $this->assertSame(15, substr_count($html, 'class="form-check form-switch m-0 flex-nowrap"'));
         $this->assertStringContainsString('id="contact_show_email"', $html);
         $this->assertStringContainsString('id="contact_show_hours"', $html);
         $this->assertStringContainsString('id="orders_allow_customer_cancellation"', $html);
         $this->assertStringContainsString('id="footer_show_shop"', $html);
         $this->assertStringContainsString('id="footer_show_support"', $html);
         $this->assertStringContainsString('id="footer_show_trust"', $html);
+        $this->assertStringContainsString('id="footer_show_whatsapp"', $html);
+        $this->assertStringContainsString('id="footer_show_website"', $html);
         $this->assertStringNotContainsString('form-check admin-switch-card h-100 d-block', $html);
     }
     public function test_footer_visibility_settings_are_persisted(): void
@@ -42,6 +44,7 @@ class AdminContentSettingsExperienceTest extends TestCase
                 'footer_show_shop' => '1',
                 'footer_show_support' => '1',
                 'footer_show_trust' => '1',
+                'footer_show_whatsapp' => '1',
             ])
             ->assertRedirect();
 
@@ -49,6 +52,8 @@ class AdminContentSettingsExperienceTest extends TestCase
         $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_policies', 'value' => '0']);
         $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_support', 'value' => '1']);
         $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_experience_note', 'value' => '0']);
+        $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_whatsapp', 'value' => '1']);
+        $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_website', 'value' => '0']);
     }
 
 }
