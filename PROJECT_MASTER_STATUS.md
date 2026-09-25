@@ -906,3 +906,14 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
   - Production behavior stays unchanged when `PUBLIC_ROOT_PATH` is unset.
 - Added `MediaPublicRootIsolationTest`.
 - Existing public media must be copied once into the isolated QAS uploads directory so cloned database records can resolve their current relative image paths.
+
+
+## QAS verification — media root fix resolved
+- Operator-confirmed on 2026-09-25 that the broken-image regression is resolved on QAS.
+- Category images now render correctly in both the category list and category edit preview.
+- Resolution was completed by:
+  - deploying the environment-specific `PUBLIC_ROOT_PATH` / `MediaPath` fix;
+  - keeping QAS media isolated under `public_html/v42/uploads`;
+  - synchronizing existing public uploads into the QAS uploads directory for cloned database records.
+- The media-root finding is now **verified resolved in QAS**.
+- Production behavior remains unchanged; no Production media migration was performed.
