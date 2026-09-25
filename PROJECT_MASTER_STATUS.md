@@ -734,3 +734,15 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Focused regression coverage: `ReturnRequestWorkflowTest` for lifecycle/restock/refund linkage, RMA over-refund prevention, and cross-customer exchange prevention.
 - Detailed implementation note: `docs/RETURNS_RMA_V1_2026-09-25.md`.
 - Source is on `v42-clean-baseline`; final integrated CI verification is pending at this checkpoint. QAS and Production are unchanged until the normal consolidated review/deployment gate.
+
+
+## Explicit admin role hardening — 2026-09-25
+- Closed the legacy roleless-admin Super Admin fallback.
+- Existing `role_as = 1` accounts without a staff role are converted by migration to an explicit `super_admin` assignment before fallback removal.
+- The migration self-heals the Super Admin system role on older databases and attaches current permissions when available.
+- `User::isSuperAdmin()` now requires explicit `super_admin`; missing role data no longer equals full access.
+- `AdminMiddleware` now requires an explicit staff role in addition to the admin flag.
+- Roleless admins are labeled `Unassigned admin` and receive no implicit permissions.
+- Focused regression coverage: `ExplicitAdminRoleHardeningTest`.
+- Detailed note: `docs/EXPLICIT_ADMIN_ROLE_HARDENING_2026-09-25.md`.
+- CI/QAS verification remains pending for this new head; Production is unchanged.
