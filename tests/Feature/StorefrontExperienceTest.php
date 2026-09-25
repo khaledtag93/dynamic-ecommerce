@@ -583,4 +583,15 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("bootstrap.Collapse.getOrCreateInstance(retailNav).hide()", $layout);
     }
 
+    public function test_storefront_search_has_accessible_keyboard_shortcut(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertSame(2, substr_count($layout, 'data-storefront-search'));
+        $this->assertStringContainsString("event.key !== '/'", $layout);
+        $this->assertStringContainsString("target.matches('input, textarea, select')", $layout);
+        $this->assertStringContainsString("search.focus()", $layout);
+        $this->assertStringContainsString("search.select()", $layout);
+    }
+
 }
