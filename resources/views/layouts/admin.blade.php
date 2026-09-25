@@ -463,6 +463,34 @@
             border-color: color-mix(in srgb, var(--admin-primary) 18%, white);
         }
 
+        .admin-sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 1040;
+            border: 0;
+            padding: 0;
+            background: color-mix(in srgb, var(--admin-sidebar) 38%, transparent);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity .18s ease, visibility .18s ease;
+        }
+
+        .admin-sidebar-backdrop.is-active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 991.98px) {
+            body.admin-sidebar-open {
+                overflow: hidden;
+                overscroll-behavior: none;
+            }
+        }
+
         .admin-toast-stack {
             position: fixed;
             top: 5.5rem;
