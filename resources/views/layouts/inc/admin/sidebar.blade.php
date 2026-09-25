@@ -39,7 +39,7 @@
     @endif
 
     @if($can('dashboard.view') || $can('growth.view'))
-    <details class="sidebar-group" {{ $overviewOpen ? 'open' : '' }}>
+    <details class="sidebar-group" data-admin-sidebar-group {{ $overviewOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-monitor-dashboard"></i></span>
@@ -70,7 +70,7 @@
     @endif
 
     @if($can('catalog.manage') || $can('reviews.manage'))
-    <details class="sidebar-group" {{ $catalogOpen ? 'open' : '' }}>
+    <details class="sidebar-group" data-admin-sidebar-group {{ $catalogOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-package-variant"></i></span>
@@ -107,7 +107,7 @@
     @endif
 
     @if($can('pos.manage') || $can('pos.shifts.review') || $can('orders.view') || $can('customers.manage') || $can('support.view') || $can('payments.view') || $can('delivery.view'))
-    <details class="sidebar-group" {{ $operationsOpen ? 'open' : '' }}>
+    <details class="sidebar-group" data-admin-sidebar-group {{ $operationsOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-clipboard-text-clock-outline"></i></span>
@@ -163,7 +163,7 @@
     @endif
 
     @if($can('inventory.manage'))
-    <details class="sidebar-group" {{ $inventoryOpen ? 'open' : '' }}>
+    <details class="sidebar-group" data-admin-sidebar-group {{ $inventoryOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-warehouse"></i></span>
@@ -193,7 +193,7 @@
     @endif
 
     @if($can('promotions.manage'))
-    <details class="sidebar-group" {{ $marketingOpen ? 'open' : '' }}>
+    <details class="sidebar-group" data-admin-sidebar-group {{ $marketingOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-bullhorn-outline"></i></span>
@@ -217,7 +217,7 @@
     @endif
 
     @if($can('settings.manage') || $can('deploy.manage') || $can('payments.settings') || $can('imports.manage'))
-    <details class="sidebar-group" {{ $channelsOpen ? 'open' : '' }}>
+    <details class="sidebar-group" data-admin-sidebar-group {{ $channelsOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-cog-outline"></i></span>
@@ -267,7 +267,7 @@
     @endif
 
     @if($can('workforce.view') || $can('workforce.clock') || $can('workforce.payroll.self') || $can('workforce.payroll.view') || $can('notifications.view') || $can('permissions.manage'))
-    <details class="sidebar-group sidebar-group-last" {{ $teamOpen ? 'open' : '' }}>
+    <details class="sidebar-group sidebar-group-last" data-admin-sidebar-group {{ $teamOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-account-supervisor-circle-outline"></i></span>
@@ -347,3 +347,29 @@
         <form id="sidebar-logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
     </div>
 </nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    const groups = Array.from(sidebar.querySelectorAll('[data-admin-sidebar-group]'));
+    const mobileQuery = window.matchMedia('(max-width: 991.98px)');
+
+    groups.forEach((group) => {
+        group.addEventListener('toggle', function () {
+            if (!this.open || !mobileQuery.matches) return;
+            groups.forEach((other) => {
+                if (other !== this) other.open = false;
+            });
+        });
+    });
+
+    const current = sidebar.querySelector('.sidebar-current .nav-link, .sidebar-quick-chip.active');
+    if (current) {
+        window.requestAnimationFrame(() => {
+            current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        });
+    }
+});
+</script>
