@@ -33,7 +33,7 @@ class CategoryWorkspaceV2Test extends TestCase
     {
         $source = file_get_contents(resource_path('views/admin/category/_form.blade.php'));
 
-        $this->assertStringContainsString("$translationDirection = $locale === 'ar' ? 'rtl' : 'ltr'", $source);
+        $this->assertStringContainsString('$translationDirection = $locale === \'ar\' ? \'rtl\' : \'ltr\'', $source);
         $this->assertStringContainsString('dir="{{ $translationDirection }}" lang="{{ $locale }}"', $source);
         $this->assertStringContainsString('category-translation-pane', $source);
         $this->assertStringContainsString('dir="ltr"', $source);
