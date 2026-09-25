@@ -36,6 +36,18 @@ class BrandingWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("__('Trust block')", $source);
     }
 
+    public function test_branding_media_can_be_compacted_without_removing_preview_or_upload_controls(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/settings/branding.blade.php'));
+
+        $this->assertStringContainsString('data-media-density-toggle', $source);
+        $this->assertStringContainsString('data-media-editor', $source);
+        $this->assertStringContainsString('branding-panel-preview', $source);
+        $this->assertStringContainsString('name="logo_file"', $source);
+        $this->assertStringContainsString('name="hero_banner_file"', $source);
+        $this->assertStringContainsString('data-preview-badge', $source);
+    }
+
     public function test_arabic_branding_cleanup_labels_are_available(): void
     {
         $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
@@ -46,5 +58,10 @@ class BrandingWorkspaceV2Test extends TestCase
         $this->assertSame('محتوى الثقة والمحتوى القديم', $translations['Trust & legacy content'] ?? null);
         $this->assertSame('بانر بدون عنوان', $translations['Untitled banner'] ?? null);
         $this->assertSame('عنصر ثقة بدون عنوان', $translations['Untitled trust block'] ?? null);
+        $this->assertSame('كحلي ملكي', $translations['Royal Navy'] ?? null);
+        $this->assertSame('استوديو زمردي', $translations['Emerald Studio'] ?? null);
+        $this->assertSame('برقوقي تحريري', $translations['Plum Editorial'] ?? null);
+        $this->assertSame('طي الوسائط', $translations['Compact media'] ?? null);
+        $this->assertSame('توسيع الوسائط', $translations['Expand media'] ?? null);
     }
 }
