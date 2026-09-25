@@ -10,6 +10,7 @@ use App\Services\Commerce\PaymentService;
 use App\Services\Payments\PaymobGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class PaymobController extends Controller
 {
@@ -99,6 +100,9 @@ class PaymobController extends Controller
                     ->with('success', __('This order is already marked as paid.'));
             }
 
+            $payment = $this->paymentService->prepareOnlineRetry($order, $payment);
+            $order = $order->fresh();
+
             $reusedUrl = $this->gateway->reuseCheckoutUrlIfAvailable($payment);
 
             if ($reusedUrl) {
@@ -121,6 +125,17 @@ class PaymobController extends Controller
             ]);
 
             return redirect()->away($url);
+        } catch (ValidationException $e) {
+            $this->logWarning('Paymob redirect blocked by stock reservation validation', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number ?? null,
+                'user_id' => auth()->id(),
+                'errors' => $e->errors(),
+            ]);
+
+            return redirect()
+                ->route('payments.paymob.result', $order)
+                ->with('error', $e->errors()['payment'][0] ?? __('Stock is no longer available for this order. Please review the order or contact support.'));
         } catch (\Throwable $e) {
             $payment = $order->payments()->latest('id')->first();
 
