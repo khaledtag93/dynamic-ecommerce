@@ -594,4 +594,15 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("search.select()", $layout);
     }
 
+    public function test_storefront_dropdowns_expose_menu_semantics(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertGreaterThanOrEqual(2, substr_count($layout, 'aria-haspopup="menu"'));
+        $this->assertGreaterThanOrEqual(2, substr_count($layout, 'role="menu"'));
+        $this->assertGreaterThanOrEqual(6, substr_count($layout, 'role="menuitem"'));
+        $this->assertStringContainsString('retail-account-menu dropdown-menu-end" role="menu"', $layout);
+        $this->assertStringContainsString('retail-mega-menu" role="menu"', $layout);
+    }
+
 }
