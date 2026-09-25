@@ -69,10 +69,19 @@
                                                 </form>
                                             @endif
                                             @if($review->status !== \App\Models\ProductReview::STATUS_REJECTED)
-                                                <form method="POST" action="{{ route('admin.reviews.moderate', $review) }}" data-submit-loading>
+                                                <form method="POST" action="{{ route('admin.reviews.moderate', $review) }}" class="d-flex gap-2 align-items-center flex-wrap justify-content-end" data-submit-loading>
                                                     @csrf
                                                     @method('PATCH')
                                                     <input type="hidden" name="status" value="{{ \App\Models\ProductReview::STATUS_REJECTED }}">
+                                                    <input
+                                                        type="text"
+                                                        name="moderation_note"
+                                                        class="form-control form-control-sm"
+                                                        style="max-width:220px"
+                                                        maxlength="1000"
+                                                        placeholder="{{ __('Optional rejection note') }}"
+                                                        aria-label="{{ __('Optional rejection note') }}"
+                                                    >
                                                     <button type="submit" class="btn btn-sm btn-outline-danger" data-loading-text="{{ __('Rejecting...') }}">{{ __('Reject') }}</button>
                                                 </form>
                                             @endif
