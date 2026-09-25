@@ -783,3 +783,16 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added AnalyticsWorkspaceV2Test covering the three analytics workspaces, removal of old anchor navigation, shared KPI usage, and Arabic labels.
 - Detailed note: docs/ANALYTICS_WORKSPACE_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Branding workspace V2 — 2026-09-25
+- Reduced the White-label / Branding page height without changing settings keys, upload behavior, theme application, or the update endpoint.
+- Replaced the three top summary cards with the shared Admin Stat Card component.
+- Split Homepage CMS into focused collapsible sections: Visibility & order, Hero content, Merchandising sections, Manual featured products, and Trust & legacy content.
+- Isolated legacy promo fields from current homepage merchandising settings instead of mixing them into one flat form.
+- Converted all three promo banner editors into collapsible cards with title and active-state summaries.
+- Converted all four trust block editors into the same collapsible pattern.
+- Kept the shared RTL-safe switch presentation for homepage visibility and active-state controls.
+- Added EN/AR labels for the new Branding workspace structure.
+- Added BrandingWorkspaceV2Test covering shared KPI adoption, Homepage CMS sections, promo/trust collapse behavior, and Arabic labels.
+- Detailed note: docs/BRANDING_WORKSPACE_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
