@@ -138,4 +138,13 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString("? 'page' : 'false' }}", $sidebar);
     }
 
+    public function test_mobile_admin_navigation_uses_one_primary_sidebar_trigger(): void
+    {
+        $navbar = file_get_contents(resource_path('views/layouts/inc/admin/navbar.blade.php'));
+
+        $this->assertSame(1, substr_count($navbar, 'data-toggle="offcanvas"'));
+        $this->assertStringContainsString('admin-mobile-sidebar-toggle-inline', $navbar);
+        $this->assertStringNotContainsString('class="admin-mobile-sidebar-toggle d-lg-none"', $navbar);
+    }
+
 }
