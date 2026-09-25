@@ -38,12 +38,14 @@ use App\Http\Controllers\Admin\WhatsAppSettingsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ReturnRequestController as AdminReturnRequestController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\AccountController;
 use App\Http\Controllers\Frontend\AddressBookController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
+use App\Http\Controllers\Frontend\ProductReviewController as FrontendProductReviewController;
 use App\Http\Controllers\Frontend\NotificationController as FrontendNotificationController;
 use App\Http\Controllers\Frontend\PaymobController;
 use App\Http\Controllers\Frontend\ReturnController;
@@ -116,6 +118,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/addresses/{address}/edit', [AddressBookController::class, 'edit'])->name('account.addresses.edit');
     Route::patch('/account/addresses/{address}', [AddressBookController::class, 'update'])->name('account.addresses.update');
     Route::delete('/account/addresses/{address}', [AddressBookController::class, 'destroy'])->name('account.addresses.destroy');
+
+    Route::post('/products/{product:slug}/review', [FrontendProductReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/products/{product:slug}/review', [FrontendProductReviewController::class, 'destroy'])->name('reviews.destroy');
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/shipping-quote', [CheckoutController::class, 'shippingQuote'])->name('checkout.shipping-quote');
@@ -264,6 +269,11 @@ Route::prefix('admin')
 
             Route::get('/attributes', AttributeIndex::class)->name('attributes.index');
             Route::get('/attributes/{id}/values', AttributeValues::class)->name('attributes.values');
+        });
+
+        Route::middleware('permission:reviews.manage')->controller(ProductReviewController::class)->group(function () {
+            Route::get('/reviews', 'index')->name('reviews.index');
+            Route::patch('/reviews/{review}/moderate', 'moderate')->name('reviews.moderate');
         });
 
         Route::middleware('permission:orders.view')->group(function () {
