@@ -4586,5 +4586,8 @@
     "This coupon will be usable in checkout according to its limits and schedule. Review the value, caps, usage limit, and dates before saving.": "This coupon will be usable in checkout according to its limits and schedule. Review the value, caps, usage limit, and dates before saving.",
     "Save active coupon": "Save active coupon",
     "Grant admin staff access to this account? The selected staff role will control its admin permissions.": "Grant admin staff access to this account? The selected staff role will control its admin permissions.",
-    "Return this account to customer access? Any assigned staff roles will be removed.": "Return this account to customer access? Any assigned staff roles will be removed."
+    "Return this account to customer access? Any assigned staff roles will be removed.": "Return this account to customer access? Any assigned staff roles will be removed.",
+    "Staff role :role was updated.": "Staff role :role was updated.",
+    "Staff role updated for :staff.": "Staff role updated for :staff.",
+    "Change this staff role? The account permissions will change immediately.": "Change this staff role? The account permissions will change immediately."
 }
