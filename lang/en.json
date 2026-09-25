@@ -4533,5 +4533,10 @@
     "Last attempt": "Last attempt",
     "Retry secure payment": "Retry secure payment",
     "Offers": "Offers",
-    "Quick view": "Quick view"
+    "Quick view": "Quick view",
+    "Link an existing staff account to a workforce profile without changing its login or role permissions.": "Link an existing staff account to a workforce profile without changing its login or role permissions.",
+    "Maintain employment details while preserving the linked staff identity and attendance history.": "Maintain employment details while preserving the linked staff identity and attendance history.",
+    "Deductions": "Deductions",
+    "Net pay": "Net pay",
+    "Edit": "Edit"
 }
