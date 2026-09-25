@@ -91,6 +91,22 @@ class AnalyticsWorkspaceV2Test extends TestCase
         $this->assertStringNotContainsString('border:1px solid rgba(249,115,22,.12)', $offers);
     }
 
+    public function test_analytics_workspaces_preserve_active_section_in_the_url(): void
+    {
+        foreach ([
+            'resources/views/admin/analytics/index.blade.php',
+            'resources/views/admin/analytics/growth.blade.php',
+            'resources/views/admin/analytics/offers.blade.php',
+        ] as $view) {
+            $source = file_get_contents(base_path($view));
+            $this->assertStringContainsString('data-admin-section-history="true"', $source);
+        }
+
+        $tabsScript = file_get_contents(public_path('admin/js/admin-section-tabs.js'));
+        $this->assertStringContainsString("url.searchParams.set('section', key)", $tabsScript);
+        $this->assertStringContainsString("new URLSearchParams(window.location.search).get('section')", $tabsScript);
+    }
+
     public function test_arabic_analytics_workspace_labels_are_available(): void
     {
         $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
