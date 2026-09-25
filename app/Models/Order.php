@@ -248,6 +248,16 @@ class Order extends Model
 
     public function getDeliveryMethodLabelAttribute(): string
     {
+        $snapshot = $this->shipping_snapshot ?? [];
+
+        if (app()->getLocale() === 'ar' && ! empty($snapshot['method_name_ar_snapshot'])) {
+            return (string) $snapshot['method_name_ar_snapshot'];
+        }
+
+        if (! empty($snapshot['method_name_snapshot'])) {
+            return (string) $snapshot['method_name_snapshot'];
+        }
+
         return static::deliveryMethodOptions()[$this->delivery_method] ?? Str::headline((string) $this->delivery_method);
     }
 
