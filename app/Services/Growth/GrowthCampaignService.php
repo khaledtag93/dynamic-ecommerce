@@ -87,46 +87,76 @@ class GrowthCampaignService
         WebsiteSetting::setValue('growth_smarter_winback_enabled', WebsiteSetting::getValue('growth_smarter_winback_enabled', config('growth.smarter_winback_default', true) ? '1' : '0'), 'growth', 'boolean');
     }
 
-    public function dashboardSnapshot(): array
+    public function dashboardSnapshot(string $page = 'full'): array
     {
         $this->ensureDefaults();
 
-        $campaigns = Schema::hasTable('growth_campaigns')
+        $page = in_array($page, ['full', 'overview', 'content', 'operations', 'insights'], true)
+            ? $page
+            : 'overview';
+
+        $isFull = $page === 'full';
+        $isOverview = $page === 'overview';
+        $isContent = $page === 'content';
+        $isOperations = $page === 'operations';
+        $isInsights = $page === 'insights';
+
+        $campaigns = ($isFull || $isOverview || $isContent) && Schema::hasTable('growth_campaigns')
             ? GrowthCampaign::query()->with(['segment', 'experiments'])->orderBy('priority')->orderBy('id')->get()
             : collect();
 
-        $rules = Schema::hasTable('growth_automation_rules')
+        $rules = ($isFull || $isOverview || $isContent) && Schema::hasTable('growth_automation_rules')
             ? GrowthAutomationRule::query()->with('segment')->orderBy('priority')->orderBy('id')->get()
             : collect();
 
-        $templates = Schema::hasTable('growth_message_templates')
+        $templates = ($isFull || $isOverview || $isContent) && Schema::hasTable('growth_message_templates')
             ? GrowthMessageTemplate::query()->orderBy('template_key')->orderBy('locale')->orderBy('priority')->get()
             : collect();
 
-        $segments = Schema::hasTable('growth_audience_segments')
+        $segments = ($isFull || $isContent) && Schema::hasTable('growth_audience_segments')
             ? GrowthAudienceSegment::query()->orderBy('priority')->orderBy('name')->get()
             : collect();
 
-        $triggerLogs = Schema::hasTable('growth_trigger_logs')
+        $triggerLogs = ($isFull || $isOperations) && Schema::hasTable('growth_trigger_logs')
             ? GrowthTriggerLog::query()->with(['campaign', 'user'])->latest('triggered_at')->latest('id')->limit(20)->get()
             : collect();
 
-        $messageLogs = Schema::hasTable('growth_message_logs')
+        $messageLogs = ($isFull || $isOperations) && Schema::hasTable('growth_message_logs')
             ? GrowthMessageLog::query()->with(['campaign', 'user', 'experiment'])->latest('sent_at')->latest('id')->limit(20)->get()
             : collect();
 
-        $deliveries = Schema::hasTable('growth_deliveries')
+        $deliveries = ($isFull || $isOverview || $isOperations) && Schema::hasTable('growth_deliveries')
             ? GrowthDelivery::query()->with(['campaign', 'user', 'experiment'])->latest('created_at')->latest('id')->limit(30)->get()
             : collect();
 
-        $experiments = Schema::hasTable('growth_experiments')
+        $experiments = ($isFull || $isContent || $isInsights) && Schema::hasTable('growth_experiments')
             ? GrowthExperiment::query()->with('campaign')->orderBy('priority')->orderBy('id')->get()
             : collect();
 
-        $attributionSummary = app(GrowthAttributionService::class)->summary();
-        $attributionBreakdown = app(GrowthAttributionService::class)->campaignBreakdown();
-        $cohortSummary = app(GrowthCohortRetentionService::class)->summary();
-        $cohortRows = app(GrowthCohortRetentionService::class)->latestRows();
+        $attributionSummary = ($isFull || $isOverview || $isInsights)
+            ? app(GrowthAttributionService::class)->summary()
+            : [];
+        $attributionBreakdown = ($isFull || $isInsights)
+            ? app(GrowthAttributionService::class)->campaignBreakdown()
+            : collect();
+        $cohortSummary = ($isFull || $isOverview || $isInsights)
+            ? app(GrowthCohortRetentionService::class)->summary()
+            : [];
+        $cohortRows = ($isFull || $isInsights)
+            ? app(GrowthCohortRetentionService::class)->latestRows()
+            : collect();
+        $predictiveSummary = ($isFull || $isOverview || $isInsights)
+            ? app(GrowthPredictiveIntelligenceService::class)->summary()
+            : [];
+        $predictiveRows = ($isFull || $isInsights)
+            ? app(GrowthPredictiveIntelligenceService::class)->topRows()
+            : collect();
+        $adaptiveLearningSummary = ($isFull || $isInsights)
+            ? app(GrowthAdaptiveLearningService::class)->summary()
+            : [];
+        $adaptiveLearningRows = ($isFull || $isInsights)
+            ? app(GrowthAdaptiveLearningService::class)->topRows()
+            : collect();
 
         return [
             'settings' => [
@@ -150,18 +180,20 @@ class GrowthCampaignService
             'segments' => $segments,
             'experiments' => $experiments,
             'deliveries' => $deliveries,
-            'performance' => $this->buildPerformance(),
+            'performance' => $isFull ? $this->buildPerformance() : [],
             'trigger_logs' => $triggerLogs,
             'message_logs' => $messageLogs,
-            'experiment_performance' => $this->experimentPerformanceSummary($experiments),
+            'experiment_performance' => ($isFull || $isInsights)
+                ? $this->experimentPerformanceSummary($experiments)
+                : collect(),
             'attribution_summary' => $attributionSummary,
             'attribution_breakdown' => $attributionBreakdown,
             'cohort_summary' => $cohortSummary,
             'cohort_rows' => $cohortRows,
-            'predictive_summary' => app(GrowthPredictiveIntelligenceService::class)->summary(),
-            'predictive_rows' => app(GrowthPredictiveIntelligenceService::class)->topRows(),
-            'adaptive_learning_summary' => app(GrowthAdaptiveLearningService::class)->summary(),
-            'adaptive_learning_rows' => app(GrowthAdaptiveLearningService::class)->topRows(),
+            'predictive_summary' => $predictiveSummary,
+            'predictive_rows' => $predictiveRows,
+            'adaptive_learning_summary' => $adaptiveLearningSummary,
+            'adaptive_learning_rows' => $adaptiveLearningRows,
         ];
     }
 
