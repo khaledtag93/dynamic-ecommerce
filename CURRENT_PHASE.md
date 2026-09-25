@@ -549,6 +549,20 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - The deploy also validates Workforce route registration before touching the database.
 - This hardening was added after the QAS 500 incident so similar source corruption is caught during deployment rather than after release.
 
+### Shipping Engine V1 — 2026-09-25
+- Application source checkpoint `97dc443d` replaces zero/hardcoded shipping behavior with configurable Shipping Methods, Zones/Cities and Rates.
+- Stable method codes remain Standard / Express / Store Pickup to preserve Delivery V2 transition compatibility.
+- Rates support optional free-shipping threshold with explicit Before-discount or After-discount basis; Store Pickup quotes zero without a rate.
+- Checkout now requests server-authoritative shipping quotes without reload, updates Shipping/Total/Zone/ETA, aborts stale requests and disables Place Order until a valid quote is confirmed.
+- Final order shipping is re-quoted inside the checkout transaction; browser values cannot override server pricing.
+- Orders persist method/zone/rate IDs plus an immutable `shipping_snapshot`; historical delivery labels prefer snapshot names. ETA max is persisted as the current calendar-day estimated delivery date.
+- Disconnected hardcoded EGP 600 shipping-goal messaging was removed. Cart now says Shipping is calculated at checkout and shows Total before shipping.
+- Shipping Setup is split into Methods / Zones & Cities / Rates under `settings.manage`, with audited mutations and duplicate-city protection.
+- Regression coverage: `ShippingEngineTest`; `CheckoutIdempotencyTest` updated for ShippingService.
+- Detailed checkpoint: `docs/SHIPPING_ENGINE_V1_2026-09-25.md`.
+- CI pending; no workflow/status visible for `97dc443d`. Not yet on QAS. Production unchanged.
+- Next critical-commerce slice: **Online-payment stock reservation / expiry / release V1**. Tax/VAT remains deferred pending explicit merchant/legal policy.
+
 ### Workforce Payroll Foundation V1 — 2026-09-25
 - Application source checkpoint `b51a93e6` adds scoped payroll permissions, current employee compensation profiles, non-overlapping payroll periods, Draft/Approved/Paid payroll runs, frozen employee payroll entries, explicit pay components and printable/self-owned payslips.
 - Sensitive payroll access is separate from ordinary `workforce.manage`: Finance Manager receives payroll view/manage/self; Operations Manager, Cashier and Support Agent receive self-payslip access only; Super Admin inherits all.
