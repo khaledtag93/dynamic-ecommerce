@@ -19,6 +19,9 @@
     ]"
 >
     <div class="d-flex flex-wrap gap-2">
+        <a href="{{ route('admin.returns.index') }}" class="btn btn-light border btn-text-icon">
+            <i class="mdi mdi-keyboard-return"></i><span>{{ __('Returns & RMA') }}</span>
+        </a>
         @if(auth()->user()?->hasPermission('customers.manage'))
         <a href="{{ route('admin.customers.index') }}" class="btn btn-light border btn-text-icon">
             <i class="mdi mdi-account-group-outline"></i><span>{{ __('Customers') }}</span>
