@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('analytics:aggregate --date=' . now()->toDateString())->hourlyAt(10);
         $schedule->command('growth:run')->everyFifteenMinutes()->withoutOverlapping();
         $schedule->command('notifications:scan-escalations')->everyTenMinutes()->withoutOverlapping();
+        $schedule->command('payments:expire-stock-reservations')->everyFiveMinutes()->withoutOverlapping();
     }
 
     /**
