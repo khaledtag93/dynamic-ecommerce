@@ -63,6 +63,21 @@
 - Treat this as integration/page-load success only; full functional acceptance still requires consolidated EN/AR, responsive, permission and workflow validation.
 - Production unchanged.
 
+## Online-payment Stock Reservation V1 — 2026-09-25
+- Added `order_stock_reservations` ledger with Reserved / Committed / Released / Expired lifecycle and one reservation per Order Item.
+- New inventory movement types: `order_reservation` and `reservation_release`.
+- Online checkout reserves inventory atomically; successful payment commits without another decrement; failed/expired/cancelled reservations release inventory idempotently.
+- Configurable reservation TTL under Payment Settings: 5–1440 minutes, default 30.
+- Paymob redirect/retry verifies inventory before opening the gateway and re-reserves released/expired stock only when available.
+- Scheduled expiry command runs every five minutes and moves pending online payment to Failed after releasing expired stock.
+- Late Paid callback after expiry preserves Paid financial truth; if stock cannot be re-reserved, no negative inventory is created and a `paid_without_fulfillable_reservation` exception is surfaced to Admin and customer UI for review.
+- Online cancellation is reservation-aware and avoids double-restock.
+- Inventory movement labels now distinguish reservations/releases from committed sales.
+- Blade namespace preflight/test coverage expanded project-wide after an existing Inventory view corruption was found.
+- Regression coverage: `OnlineStockReservationTest`; updated `CheckoutIdempotencyTest` and `BusinessIntegrityHardeningTest`.
+- Application source: `e58e82e9`; CI pending; not yet on QAS; Production unchanged.
+- Next critical-commerce slice: Returns / RMA V1.
+
 ## Shipping Engine V1 — 2026-09-25
 - Added `shipping_methods`, `shipping_zones`, `shipping_zone_cities`, `shipping_rates` and explicit shipping snapshot references on Orders.
 - Existing Standard / Express / Store Pickup method codes stay stable for Delivery V2 compatibility. Names, availability, ETA and sort order are configurable.
