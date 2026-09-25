@@ -129,3 +129,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Current Project Checkpoint
 - [Dynamic Project Checkpoint](PROJECT_CHECKPOINT_2026-09-25.md)
+
+
+### 2026-09-25 — New Chat Handoff
+- [Dynamic New Chat Handoff](NEW_CHAT_HANDOFF_2026-09-25.md)
