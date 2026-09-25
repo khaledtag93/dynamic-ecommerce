@@ -4572,5 +4572,19 @@
     "Category added successfully.": "تمت إضافة التصنيف بنجاح.",
     "Category updated successfully.": "تم تحديث التصنيف بنجاح.",
     "Category deleted successfully.": "تم حذف التصنيف بنجاح.",
-    "This category still has linked products. Move or delete them first.": "لا يزال هذا التصنيف مرتبطًا بمنتجات. انقل هذه المنتجات أو احذفها أولًا."
+    "This category still has linked products. Move or delete them first.": "لا يزال هذا التصنيف مرتبطًا بمنتجات. انقل هذه المنتجات أو احذفها أولًا.",
+    "Linked": "مرتبطة",
+    "Brands with no linked products and ready for cleanup review.": "علامات تجارية غير مرتبطة بمنتجات وجاهزة للمراجعة أو التنظيف.",
+    "Edit brand": "تعديل العلامة التجارية",
+    "Hide brand": "إخفاء العلامة التجارية",
+    "Attributes that still need reusable values.": "خصائص لا تزال بحاجة إلى قيم قابلة لإعادة الاستخدام.",
+    "Attributes already referenced by product variants.": "خصائص مستخدمة بالفعل بواسطة متغيرات المنتجات.",
+    "All attributes": "كل الخصائص",
+    "Catalog update": "تحديث الكتالوج",
+    "Activate selected products?": "هل تريد تفعيل المنتجات المحددة؟",
+    "Selected products will become visible on the storefront where their other catalog requirements allow it.": "ستصبح المنتجات المحددة ظاهرة في واجهة المتجر متى كانت بقية متطلبات الكتالوج مستوفاة.",
+    "Activate selected": "تفعيل المحدد",
+    "Hide selected products?": "هل تريد إخفاء المنتجات المحددة؟",
+    "Selected products will be removed from customer-facing catalog visibility until they are activated again.": "ستتم إزالة المنتجات المحددة من ظهور الكتالوج للعملاء حتى يتم تفعيلها مرة أخرى.",
+    "Hide selected": "إخفاء المحدد"
 }
