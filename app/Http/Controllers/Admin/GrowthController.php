@@ -11,6 +11,7 @@ use App\Models\GrowthExperiment;
 use App\Models\GrowthMessageTemplate;
 use App\Services\Growth\GrowthCampaignService;
 use App\Services\Growth\GrowthValidationDemoService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -116,7 +117,7 @@ class GrowthController extends Controller
         return array_merge($pages[$page] ?? $pages['overview'], ['key' => $page]);
     }
 
-    public function updateSettings(Request $request): RedirectResponse
+    public function updateSettings(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'growth_engine_enabled' => ['sometimes', 'boolean'],
@@ -135,42 +136,115 @@ class GrowthController extends Controller
 
         $this->growthCampaignService->updateSettings($validated);
 
-        return back()->with('success', __('Growth workspace settings were saved successfully.'));
+        return $this->mutationResponse(
+            $request,
+            __('Growth workspace settings were saved successfully.'),
+            [
+                'settings' => [
+                    'engine' => $this->growthCampaignService->engineEnabled(),
+                    'messaging' => $this->growthCampaignService->messagingEnabled(),
+                    'real_email' => $this->growthCampaignService->realEmailEnabled(),
+                    'experiments' => $this->growthCampaignService->experimentsEnabled(),
+                ],
+            ]
+        );
     }
 
-    public function toggleCampaign(GrowthCampaign $campaign): RedirectResponse
+    public function toggleCampaign(Request $request, GrowthCampaign $campaign): RedirectResponse|JsonResponse
     {
         $this->growthCampaignService->toggleCampaign($campaign);
+        $campaign->refresh();
 
-        return back()->with('success', __('Campaign status was updated successfully.'));
+        return $this->mutationResponse(
+            $request,
+            __('Campaign status was updated successfully.'),
+            [
+                'enabled' => (bool) $campaign->is_active,
+                'status_label' => $campaign->is_active ? __('Active') : __('Inactive'),
+                'action_label' => $campaign->is_active ? __('Disable') : __('Enable'),
+            ]
+        );
     }
 
-    public function toggleCampaignMessaging(GrowthCampaign $campaign): RedirectResponse
+    public function toggleCampaignMessaging(Request $request, GrowthCampaign $campaign): RedirectResponse|JsonResponse
     {
         $this->growthCampaignService->toggleCampaignMessaging($campaign);
+        $campaign->refresh();
 
-        return back()->with('success', __('Campaign messaging status was updated successfully.'));
+        return $this->mutationResponse(
+            $request,
+            __('Campaign messaging status was updated successfully.'),
+            [
+                'enabled' => (bool) $campaign->is_messaging_enabled,
+                'status_label' => $campaign->is_messaging_enabled ? __('Enabled') : __('Disabled'),
+                'action_label' => $campaign->is_messaging_enabled ? __('Disable') : __('Enable'),
+            ]
+        );
     }
 
-    public function toggleRule(GrowthAutomationRule $rule): RedirectResponse
+    public function toggleRule(Request $request, GrowthAutomationRule $rule): RedirectResponse|JsonResponse
     {
         $this->growthCampaignService->toggleRule($rule);
+        $rule->refresh();
 
-        return back()->with('success', __('Automation rule status was updated successfully.'));
+        return $this->mutationResponse(
+            $request,
+            __('Automation rule status was updated successfully.'),
+            [
+                'enabled' => (bool) $rule->is_active,
+                'status_label' => $rule->is_active ? __('Active') : __('Inactive'),
+                'action_label' => $rule->is_active ? __('Disable') : __('Enable'),
+            ]
+        );
     }
 
-    public function toggleExperiment(GrowthExperiment $experiment): RedirectResponse
+    public function toggleExperiment(Request $request, GrowthExperiment $experiment): RedirectResponse|JsonResponse
     {
         $this->growthCampaignService->toggleExperiment($experiment);
+        $experiment->refresh();
 
-        return back()->with('success', __('Experiment status was updated successfully.'));
+        return $this->mutationResponse(
+            $request,
+            __('Experiment status was updated successfully.'),
+            [
+                'enabled' => (bool) $experiment->is_active,
+                'status_label' => $experiment->is_active ? __('Active') : __('Inactive'),
+                'action_label' => $experiment->is_active ? __('Disable') : __('Enable'),
+            ]
+        );
     }
 
-    public function retryDelivery(GrowthDelivery $delivery): RedirectResponse
+    public function retryDelivery(Request $request, GrowthDelivery $delivery): RedirectResponse|JsonResponse
     {
         $this->growthCampaignService->retryDelivery($delivery);
+        $delivery->refresh();
 
-        return back()->with('success', __('Delivery retry was queued successfully.'));
+        $statusLabels = [
+            'pending' => __('Pending'),
+            'sent' => __('Sent'),
+            'delivered' => __('Delivered'),
+            'failed' => __('Failed'),
+            'simulated' => __('Simulated'),
+        ];
+
+        return $this->mutationResponse(
+            $request,
+            __('Delivery retry was queued successfully.'),
+            [
+                'status' => (string) $delivery->status,
+                'status_label' => $statusLabels[$delivery->status] ?? ucfirst((string) $delivery->status),
+                'can_retry' => $delivery->status === 'failed',
+            ]
+        );
+    }
+
+    protected function mutationResponse(Request $request, string $message, array $data = []): RedirectResponse|JsonResponse
+    {
+        if ($request->expectsJson()) {
+            return response()->json(array_merge(['message' => $message], $data));
+        }
+
+        return back()->with('success', $message);
     }
 
     public function runNow(Request $request): RedirectResponse
