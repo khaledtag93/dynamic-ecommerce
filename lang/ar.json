@@ -333,7 +333,7 @@
     "Badge style": "شكل الشارات",
     "Balance": "الرصيد",
     "Balance variant weights": "وازن أوزان المتغيرات",
-    "Bank transfer": "تحويل بنكي",
+    "Bank transfer": "التحويل البنكي",
     "Bank Transfer": "تحويل بنكي",
     "Bank transfer instructions (AR)": "تعليمات التحويل البنكي (AR)",
     "Bank transfer instructions (EN)": "تعليمات التحويل البنكي (EN)",
@@ -1899,7 +1899,7 @@
     "Payment instructions": "تعليمات الدفع",
     "Payment method": "طريقة الدفع",
     "Payment method shown clearly": "طريقة الدفع موضحة بوضوح",
-    "Payment methods": "وسائل الدفع",
+    "Payment methods": "طرق الدفع",
     "Payment operations": "عمليات المدفوعات",
     "Payment outcome split": "توزيع نتائج المدفوعات",
     "Payment record": "سجل الدفع",
@@ -4589,5 +4589,8 @@
     "Hide selected": "إخفاء المحدد",
     "Limits & eligibility": "الحدود وشروط الاستحقاق",
     "Schedule & notes": "الجدولة والملاحظات",
-    "Schedule & status": "الجدولة والحالة"
+    "Schedule & status": "الجدولة والحالة",
+    "Gateway & stock": "بوابة الدفع والمخزون",
+    "Paymob setup": "إعداد Paymob",
+    "Shipping settings": "إعدادات الشحن"
 }
