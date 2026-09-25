@@ -11,7 +11,7 @@
     };
 
     $overviewOpen = $isRoute('admin.dashboard', 'admin.analytics.*', 'admin.growth.*');
-    $catalogOpen = $isRoute('admin.categories.*', 'admin.products.*', 'admin.attributes.*', 'admin.brands.*');
+    $catalogOpen = $isRoute('admin.categories.*', 'admin.products.*', 'admin.attributes.*', 'admin.brands.*', 'admin.reviews.*');
     $operationsOpen = $isRoute('admin.pos.*', 'admin.orders.*', 'admin.returns.*', 'admin.customers.*', 'admin.deliveries.*', 'admin.payments.*');
     $inventoryOpen = $isRoute('admin.purchases.*', 'admin.inventory.*', 'admin.suppliers.*', 'admin.cost-calculator.*');
     $marketingOpen = $isRoute('admin.coupons.*', 'admin.promotions.*');
@@ -69,7 +69,7 @@
     </details>
     @endif
 
-    @if($can('catalog.manage'))
+    @if($can('catalog.manage') || $can('reviews.manage'))
     <details class="sidebar-group" {{ $catalogOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
@@ -82,6 +82,7 @@
         </summary>
         <div class="sidebar-group-body">
             <ul class="nav flex-column">
+                @if($can('catalog.manage'))
                 <li class="nav-item {{ $isRoute('admin.categories.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.categories.index') }}"><i class="mdi mdi-shape-outline menu-icon"></i><span class="menu-title">{{ __('Categories') }}</span></a>
                 </li>
@@ -94,6 +95,12 @@
                 <li class="nav-item {{ $isRoute('admin.brands.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.brands.index') }}"><i class="mdi mdi-tag-outline menu-icon"></i><span class="menu-title">{{ __('Brands') }}</span></a>
                 </li>
+                @endif
+                @if($can('reviews.manage'))
+                <li class="nav-item {{ $isRoute('admin.reviews.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.reviews.index') }}"><i class="mdi mdi-message-star-outline menu-icon"></i><span class="menu-title">{{ __('Product Reviews') }}</span></a>
+                </li>
+                @endif
             </ul>
         </div>
     </details>
