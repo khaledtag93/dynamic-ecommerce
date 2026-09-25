@@ -63,7 +63,7 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 6. Verified real reviews/moderation.
 7. Saved customer addresses.
 8. Real CSV import pipeline.
-9. Invoice/receipt generation for online orders with printable/PDF-friendly detail.
+9. **Online Order Receipt V1 implemented in source — 2026-09-25:** shared customer/Admin A4/browser-print receipt from persisted order snapshots, order-currency fidelity, refund/payment/delivery detail and explicit non-tax/non-fiscal labeling. See `ONLINE_ORDER_RECEIPT_V1_2026-09-25.md`. Tax/fiscal invoice compliance remains policy-gated.
 
 ## Phase 3 — inventory, barcode and retail readiness
 
@@ -121,7 +121,7 @@ Core:
 
 **Payroll Foundation V1 implemented in source — 2026-09-25:** `b51a93e6` adds scoped payroll permissions, compensation profiles, payroll periods/runs, immutable employee payroll snapshots, explicit overtime/allowance/bonus/deduction components, currency-separated totals and self-owned printable payslips. Salary partial-period processing is blocked until an explicit proration policy exists; tax/social insurance/leave monetization remain configurable future policy. See `WORKFORCE_PAYROLL_FOUNDATION_V1_2026-09-25.md`. CI verification is pending and this slice is not claimed on QAS.
 
-**Next implementation order:** Returns / RMA V1 → online invoice/receipt → Tax/VAT only after explicit merchant/legal policy → Payroll V2 only after actual operating policy is defined.
+**Next implementation order:** Online Order Receipt V1 is now implemented in source after Returns/RMA and stock reservation → Tax/VAT only after explicit merchant/legal policy → Payroll V2 only after actual operating policy is defined.
 
 
 Keep workforce identity related to, but not overloaded into, the customer account model.

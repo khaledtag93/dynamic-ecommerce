@@ -7,6 +7,7 @@
 
 - **Growth Workspace V2 (2026-09-25):** source head `f32fba8a` starts the focused Growth Engine redesign: reusable Admin page-help modal, shared KPI cards and RTL-safe switches, calmer navigation, collapsible journey setup, cleaner Operations/Insights hierarchy, removal of developer CLI copy, and complete Arabic coverage for all 375 translation keys currently used by the 10 Growth Blade views. Regression coverage: `GrowthWorkspaceV2Test`. CI/QAS visual acceptance pending; Production unchanged. See `docs/GROWTH_WORKSPACE_V2_2026-09-25.md`.
 - **Dynamic product-direction addendum (2026-09-25):** multi-vertical configurable-platform vision, global no-reload/readability principles, reusable in-product Help, customer UX modernization, legacy-data Migration Center, scalability measurement rules and target-business examples are now explicit project requirements. See `docs/PRODUCT_DIRECTION_ADDENDUM_2026-09-25.md`.
+- **Online Order Receipt V1 (2026-09-25):** source now provides a shared A4/browser-print order receipt for authenticated customers and `orders.view` staff, using persisted order/item/payment/refund/delivery values and the order's real currency. The document is explicitly non-tax/non-fiscal until merchant/jurisdiction tax policy exists. Customer/Admin order detail currency hard-coding was also removed. See `docs/ONLINE_ORDER_RECEIPT_V1_2026-09-25.md`. CI/QAS acceptance pending; Production unchanged.
 
 - **Expanded product direction (2026-09-24):** UI/UX/design-system modernization, POS/cashier, barcode scanning, invoice/receipt, employee attendance/shifts/leave/payroll, and expanded delivery operations are now tracked in `docs/PRODUCT_ROADMAP_2026-09-24.md`. These are phased roadmap items; they are not yet deployed features.
 - **Official application baseline:** V42
@@ -51,7 +52,7 @@
 - Fixes are not yet claimed on QAS; a clean schema recovery + successful deploy is required before feature acceptance.
 
 ## Deferred cross-product UX backlog — 2026-09-25
-- Roles & Permissions is a confirmed redesign target: too long, mixed EN/AR, weak UI hierarchy and poor UX. Future pass should split the workspace, complete EN/AR + RTL parity, improve permission discoverability/search/filtering and reduce repetitive visual density.
+- Roles & Permissions V2 is source-complete: the long legacy surface was split into Overview / Staff assignments / Roles / Permission matrix with EN/AR/RTL coverage and live permission discovery. Remaining work is consolidated authenticated QAS acceptance, not another source redesign. See `docs/ROLES_PERMISSIONS_V2_2026-09-25.md`.
 - Global action UX must preserve context: avoid unnecessary full-page reloads and scroll-to-top jumps across Admin and Customer surfaces. POS add-product / quantity increment is a confirmed example. Migrate suitable safe inline mutations to reusable server-confirmed async interactions while preserving focus/scroll and explicit error/success feedback; sensitive mutations remain backend-authoritative.
 
 ## QAS Workforce FK-name recovery — 2026-09-25
@@ -940,3 +941,11 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Completed experiment-performance batching: Insights now loads eligible experiment deliveries once and matching orders once per experiment, then evaluates each delivery conversion window in memory instead of issuing Order queries inside the delivery loop.
 - Regression coverage verifies overlapping delivery windows preserve conversion counts/rates and revenue while guarding the batched query contract.
 - Next Growth performance target: measure real QAS response/query counts and add pagination or bounded result windows where campaigns, templates, deliveries, scores, or analytics datasets can grow beyond comfortable Admin-page sizes.
+
+## Online Order Receipt V1 — 2026-09-25
+- Added customer-owned and `orders.view` Admin printable Order Receipt routes using one shared read-only A4 view.
+- Receipt reference is the persisted order number and content comes from order/item/payment/refund/delivery snapshots; no receipt action mutates business data.
+- Added an explicit non-tax/non-fiscal disclaimer. Tax/VAT invoice compliance remains policy-gated.
+- Fixed hard-coded EGP presentation on touched customer/admin order detail surfaces so persisted order currency is respected; customer line totals now use persisted `line_total`.
+- Regression coverage: `OnlineOrderReceiptTest`.
+- Source/QAS/Production remain separate gates; consolidated EN/AR print review is still required.
