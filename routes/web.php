@@ -37,6 +37,7 @@ use App\Http\Controllers\Admin\ShippingSettingsController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\WhatsAppSettingsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ReturnRequestController as AdminReturnRequestController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\AccountController;
@@ -46,6 +47,7 @@ use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
 use App\Http\Controllers\Frontend\NotificationController as FrontendNotificationController;
 use App\Http\Controllers\Frontend\PaymobController;
+use App\Http\Controllers\Frontend\ReturnController;
 use App\Http\Controllers\Frontend\ReturnController as FrontendReturnController;
 use App\Http\Controllers\Frontend\ContentPageController;
 use App\Http\Controllers\Admin\ContentSettingsController;
@@ -130,6 +132,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/returns/{returnRequest}', [FrontendReturnController::class, 'show'])->name('returns.show');
     Route::patch('/returns/{returnRequest}/cancel', [FrontendReturnController::class, 'cancel'])->name('returns.cancel');
     Route::get('/order-success/{order}', [CheckoutController::class, 'success'])->name('orders.success');
+
+    Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
+    Route::get('/orders/{order}/return', [ReturnController::class, 'create'])->name('returns.create');
+    Route::post('/orders/{order}/return', [ReturnController::class, 'store'])->name('returns.store');
+    Route::get('/returns/{returnRequest}', [ReturnController::class, 'show'])->name('returns.show');
+    Route::patch('/returns/{returnRequest}/cancel', [ReturnController::class, 'cancel'])->name('returns.cancel');
 
     Route::get('/notifications', [FrontendNotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/read-all', [FrontendNotificationController::class, 'markAllRead'])->name('notifications.read-all');
