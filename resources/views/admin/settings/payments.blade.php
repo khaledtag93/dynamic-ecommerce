@@ -8,11 +8,18 @@
 <div class="admin-page-shell settings-page">
 <div class="admin-card">
     <div class="admin-card-body">
-        <form class="admin-form-shell" method="POST" action="{{ route('admin.settings.payments.update') }}">
+        <form class="admin-form-shell" method="POST" action="{{ route('admin.settings.payments.update') }}" data-admin-section-tabs="payment-settings">
             @csrf
             @method('PUT')
 
-            
+            <x-admin.section-tabs id="payment-settings" :sections="[
+                'methods' => __('Payment methods'),
+                'gateway' => __('Gateway & stock'),
+                'paymob' => __('Paymob setup'),
+                'bank' => __('Bank transfer'),
+            ]" />
+
+            <div id="payment-settings-panel-methods" role="tabpanel" aria-labelledby="payment-settings-tab-methods" data-admin-section-panel="methods">
             <div class="row g-4 mb-4 admin-settings-section">
                 <div class="col-12">
                     <div class="rounded-4 border p-4 bg-light-subtle">
@@ -61,6 +68,9 @@
                 </div>
             </div>
 
+            </div>
+
+            <div id="payment-settings-panel-gateway" role="tabpanel" aria-labelledby="payment-settings-tab-gateway" data-admin-section-panel="gateway">
             <div class="row g-4 mb-4 admin-settings-section">
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">{{ __('Gateway provider') }}</label>
@@ -96,6 +106,9 @@
             </div>
 
 
+            </div>
+
+            <div id="payment-settings-panel-paymob" role="tabpanel" aria-labelledby="payment-settings-tab-paymob" data-admin-section-panel="paymob">
             <div class="row g-4 mb-4 admin-settings-section">
                 <div class="col-12">
                     <div class="rounded-4 border p-4 bg-light-subtle">
@@ -124,6 +137,9 @@
                 </div>
             </div>
 
+            </div>
+
+            <div id="payment-settings-panel-bank" role="tabpanel" aria-labelledby="payment-settings-tab-bank" data-admin-section-panel="bank">
             <div class="row g-4 mb-4 admin-settings-section">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">{{ __('Bank transfer instructions (EN)') }}</label>
@@ -133,6 +149,8 @@
                     <label class="form-label fw-semibold">{{ __('Bank transfer instructions (AR)') }}</label>
                     <textarea name="bank_transfer_instructions_ar" rows="6" class="form-control">{{ old('bank_transfer_instructions_ar', $storeSettings['bank_transfer_instructions_ar'] ?? 'حوّل المبلغ على الحساب البنكي الخاص بالمتجر ثم احتفظ برقم التحويل للتأكيد مع الدعم.') }}</textarea>
                 </div>
+            </div>
+
             </div>
 
             <div class="admin-form-actions mt-4">
