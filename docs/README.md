@@ -97,3 +97,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Analytics Workspace V2
 - [Analytics Workspace V2](ANALYTICS_WORKSPACE_V2_2026-09-25.md)
+
+
+### 2026-09-25 — Branding Workspace V2
+- [Branding Workspace V2](BRANDING_WORKSPACE_V2_2026-09-25.md)
