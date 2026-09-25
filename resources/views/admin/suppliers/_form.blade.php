@@ -64,12 +64,6 @@
         border-radius:1rem;
         background:color-mix(in srgb, var(--admin-surface) 76%, white);
     }
-    .admin-switch-wrap .form-check-input {
-        float:none;
-        margin:0;
-        width:3rem;
-        height:1.55rem;
-    }
     .admin-back-btn {
         border-radius:0.95rem;
         padding-inline:1rem;
