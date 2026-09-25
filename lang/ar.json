@@ -2089,7 +2089,7 @@
     "Limited offers on phones, laptops, accessories, and everyday tech.": "عروض محدودة على الموبايلات واللابتوبات والإكسسوارات والأجهزة اليومية.",
     "Limited-time offer": "عرض لفترة محدودة",
     "Limits": "الحدود",
-    "Limits & eligibility": "الحدود وشروط الاستحقاق",
+    "Limits & eligibility": "الحدود والأهلية",
     "Line discount": "خصم السطر",
     "Line discounts": "خصومات السطور",
     "Line total": "إجمالي البند",
@@ -5440,5 +5440,12 @@
     "Try clearing the filters or create a supplier for a new sourcing relationship.": "جرّب مسح عوامل التصفية أو أنشئ موردًا لعلاقة توريد جديدة.",
     "Supplier profile": "ملف المورد",
     "Keep core contact, business, and sourcing information aligned across purchases and supplier listings.": "حافظ على اتساق بيانات التواصل والنشاط والتوريد الأساسية عبر المشتريات وقوائم الموردين.",
-    "Pause or reactivate the supplier without removing historical records.": "أوقف المورد مؤقتًا أو أعد تفعيله دون حذف السجلات التاريخية."
+    "Pause or reactivate the supplier without removing historical records.": "أوقف المورد مؤقتًا أو أعد تفعيله دون حذف السجلات التاريخية.",
+    "Deleting...": "جارٍ الحذف...",
+    "No coupons found": "لم يتم العثور على كوبونات",
+    "Try clearing the filters or create a new coupon.": "جرّب مسح عوامل التصفية أو أنشئ كوبونًا جديدًا.",
+    "SAVE10": "SAVE10",
+    "Review the coupon rule, limits, schedule, and notes before saving it to the promotions workspace.": "راجع قاعدة الكوبون والحدود والجدولة والملاحظات قبل حفظه في مساحة العروض الترويجية.",
+    "No categories available yet. The promotion can still apply at order level.": "لا توجد تصنيفات متاحة حتى الآن. لا يزال من الممكن تطبيق العرض على مستوى الطلب.",
+    "Review the promotion type, discount values, schedule, and activation status before saving this rule.": "راجع نوع العرض وقيم الخصم والجدولة وحالة التفعيل قبل حفظ هذه القاعدة."
 }
