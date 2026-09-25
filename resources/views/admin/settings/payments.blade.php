@@ -56,7 +56,7 @@
                     <label class="form-check admin-switch-card h-100 d-block p-3 rounded-4 border">
                         <input type="checkbox" class="form-check-input me-2" name="payment_online_enabled" value="1" @checked(($storeSettings['payment_online_enabled'] ?? '1') === '1')>
                         <span class="fw-bold">{{ __('Online Payment') }}</span>
-                        <div class="text-muted small mt-2">{{ __('Foundation-only mode until the provider is connected.') }}</div>
+                        <div class="text-muted small mt-2">{{ __('Use the configured hosted gateway for secure online payment.') }}</div>
                     </label>
                 </div>
             </div>
