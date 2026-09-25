@@ -1094,35 +1094,56 @@ class GrowthCampaignService
     {
         $windowHours = max(1, (int) config('growth.conversion_window_hours', 168));
 
-        return collect($experiment->variants ?? [])->map(function ($variant) use ($experiment, $windowHours) {
+        $deliveries = GrowthDelivery::query()
+            ->where('experiment_id', $experiment->id)
+            ->whereIn('status', ['sent', 'delivered', 'simulated'])
+            ->get();
+
+        $validDeliveries = $deliveries
+            ->filter(fn (GrowthDelivery $delivery) => $delivery->user_id && $delivery->sent_at)
+            ->values();
+
+        $ordersByUser = collect();
+
+        if ($validDeliveries->isNotEmpty()) {
+            $userIds = $validDeliveries->pluck('user_id')->unique()->values();
+            $firstSentAt = $validDeliveries->min(fn (GrowthDelivery $delivery) => $delivery->sent_at);
+            $lastWindowEnd = $validDeliveries->max(
+                fn (GrowthDelivery $delivery) => $delivery->sent_at->copy()->addHours($windowHours)
+            );
+
+            $ordersByUser = Order::query()
+                ->whereIn('user_id', $userIds)
+                ->whereBetween('created_at', [$firstSentAt, $lastWindowEnd])
+                ->orderBy('created_at')
+                ->get(['user_id', 'created_at', 'grand_total'])
+                ->groupBy('user_id');
+        }
+
+        return collect($experiment->variants ?? [])->map(function ($variant) use ($deliveries, $ordersByUser, $windowHours) {
             $variantKey = Arr::get($variant, 'key');
-
-            $deliveries = GrowthDelivery::query()
-                ->where('experiment_id', $experiment->id)
-                ->where('experiment_variant', $variantKey)
-                ->whereIn('status', ['sent', 'delivered', 'simulated'])
-                ->get();
-
+            $variantDeliveries = $deliveries->where('experiment_variant', $variantKey)->values();
             $converted = 0;
             $revenue = 0.0;
 
-            foreach ($deliveries as $delivery) {
+            foreach ($variantDeliveries as $delivery) {
                 if (! $delivery->user_id || ! $delivery->sent_at) {
                     continue;
                 }
 
-                $orderQuery = Order::query()
-                    ->where('user_id', $delivery->user_id)
-                    ->where('created_at', '>=', $delivery->sent_at)
-                    ->where('created_at', '<=', $delivery->sent_at->copy()->addHours($windowHours));
+                $windowEnd = $delivery->sent_at->copy()->addHours($windowHours);
+                $matchingOrders = collect($ordersByUser->get($delivery->user_id, []))
+                    ->filter(fn (Order $order) => $order->created_at
+                        && $order->created_at->greaterThanOrEqualTo($delivery->sent_at)
+                        && $order->created_at->lessThanOrEqualTo($windowEnd));
 
-                if ($orderQuery->exists()) {
+                if ($matchingOrders->isNotEmpty()) {
                     $converted++;
-                    $revenue += (float) $orderQuery->sum('grand_total');
+                    $revenue += (float) $matchingOrders->sum('grand_total');
                 }
             }
 
-            $sent = max(0, $deliveries->count());
+            $sent = max(0, $variantDeliveries->count());
 
             return [
                 'key' => $variantKey,
