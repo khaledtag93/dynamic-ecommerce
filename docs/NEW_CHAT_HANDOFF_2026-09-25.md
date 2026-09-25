@@ -63,3 +63,17 @@ Do not do another broad Admin consistency sweep. Admin V2 is source-complete for
 
 ### Production rule
 Production stays unchanged until consolidated QAS acceptance and remaining operational release gates are explicitly cleared.
+
+
+## Explicit open issue — Growth Engine
+- The Growth Engine / Growth Automation page is **not considered finished** from a product-quality perspective.
+- It needs a dedicated pass for:
+  - better sectioning and page decomposition;
+  - stronger UI/UX hierarchy;
+  - consistency with Admin V2;
+  - Arabic/English completeness and mixed-language cleanup;
+  - RTL behavior;
+  - responsive layout;
+  - possible functional problems to be identified during QAS.
+- Treat this as a combined functional + UX review, not just visual polish.
+- Keep it in the near-term QAS backlog and do not assume the earlier Growth workspace restructuring means the page is accepted.
