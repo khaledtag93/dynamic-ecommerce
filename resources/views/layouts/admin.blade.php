@@ -3263,6 +3263,18 @@ document.addEventListener('submit', function (event) {
   const form = event.target;
   if (!form.matches('[data-confirm-message]')) return;
   if (form.dataset.confirmed === '1') { form.dataset.confirmed = '0'; return; }
+
+  const confirmWhenField = form.getAttribute('data-confirm-when-field');
+  if (confirmWhenField) {
+    const field = form.elements.namedItem(confirmWhenField);
+    const expectedValue = form.getAttribute('data-confirm-when-value');
+    const currentValue = field?.type === 'checkbox'
+      ? (field.checked ? (field.value || '1') : '0')
+      : field?.value;
+
+    if (String(currentValue ?? '') !== String(expectedValue ?? '1')) return;
+  }
+
   event.preventDefault();
   adminConfirmAction((typedValue) => {
     const targetSelector = form.getAttribute('data-confirm-input-target');
