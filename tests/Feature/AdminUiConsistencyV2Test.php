@@ -85,4 +85,15 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString("['input', 'textarea', 'select'].includes(activeTag)", $navbar);
     }
 
+    public function test_mobile_admin_sidebar_keeps_navigation_focused(): void
+    {
+        $sidebar = file_get_contents(resource_path('views/layouts/inc/admin/sidebar.blade.php'));
+
+        $this->assertGreaterThanOrEqual(6, substr_count($sidebar, 'data-admin-sidebar-group'));
+        $this->assertStringContainsString("window.matchMedia('(max-width: 991.98px)')", $sidebar);
+        $this->assertStringContainsString("if (other !== this) other.open = false", $sidebar);
+        $this->assertStringContainsString("sidebar.querySelector('.sidebar-current .nav-link, .sidebar-quick-chip.active')", $sidebar);
+        $this->assertStringContainsString("current.scrollIntoView({ block: 'nearest', inline: 'nearest' })", $sidebar);
+    }
+
 }
