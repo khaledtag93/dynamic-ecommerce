@@ -73,4 +73,16 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString('.admin-flash.is-leaving', $layout);
     }
 
+    public function test_admin_topbar_search_has_keyboard_and_clear_controls(): void
+    {
+        $navbar = file_get_contents(resource_path('views/layouts/inc/admin/navbar.blade.php'));
+
+        $this->assertStringContainsString("aria-label=\"{{ __('Search admin workspace') }}\"", $navbar);
+        $this->assertStringContainsString('class="admin-topbar-search-clear"', $navbar);
+        $this->assertStringContainsString('class="admin-topbar-search-shortcut"', $navbar);
+        $this->assertStringContainsString("event.key === '/'", $navbar);
+        $this->assertStringContainsString("searchInput.focus()", $navbar);
+        $this->assertStringContainsString("['input', 'textarea', 'select'].includes(activeTag)", $navbar);
+    }
+
 }
