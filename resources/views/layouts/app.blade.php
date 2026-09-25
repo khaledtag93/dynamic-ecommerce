@@ -571,6 +571,14 @@
             body[dir="rtl"] .retail-quick-tile { grid-template-columns: minmax(0, 1fr) 44px; }
         }
 
+        .lc-toast-stack { position:fixed; top:1rem; inset-inline-end:1rem; z-index:1090; display:grid; gap:.65rem; width:min(420px,calc(100vw - 2rem)); pointer-events:none; }
+        .lc-flash-toast { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:.75rem; padding:.85rem 1rem; border:1px solid var(--lc-border); border-radius:1rem; background:var(--lc-surface); box-shadow:var(--lc-shadow-strong); pointer-events:auto; transition:opacity .18s ease, transform .18s ease; }
+        .lc-flash-toast--success > i { color:#15803d; } .lc-flash-toast--info > i { color:var(--lc-primary-dark); }
+        .lc-flash-toast__close { border:0; background:transparent; color:var(--lc-muted); padding:.25rem; line-height:1; border-radius:.5rem; }
+        .lc-flash-toast__close:focus-visible { outline:3px solid var(--lc-primary); outline-offset:2px; }
+        .lc-flash-toast.is-leaving { opacity:0; transform:translateY(-8px); }
+        @media (max-width:575.98px) { .lc-toast-stack { top:.75rem; inset-inline:.75rem; width:auto; } }
+
         .lc-account-nav { display:flex; gap:.55rem; overflow-x:auto; padding:.35rem 0 .75rem; scrollbar-width:thin; }
         .lc-account-nav a { flex:none; border:1px solid var(--lc-border); border-radius:999px; padding:.6rem 1rem; background:var(--lc-surface); color:var(--lc-text); font-weight:700; }
         .lc-account-nav a:hover, .lc-account-nav a[aria-current="page"] { background:var(--lc-primary); border-color:var(--lc-primary); color:var(--lc-btn-text); }
@@ -742,29 +750,50 @@
     </nav>
 </header>
 
-@if (session('success') || session('message') || session('status') || $errors->any())
-    <div class="container mt-4">
-        @if (session('success'))
-            <div class="alert alert-success border-0 shadow-sm rounded-4">{{ session('success') }}</div>
-        @endif
-        @if (session('message'))
-            <div class="alert alert-success border-0 shadow-sm rounded-4">{{ session('message') }}</div>
-        @endif
-        @if (session('status'))
-            <div class="alert alert-info border-0 shadow-sm rounded-4">{{ session('status') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-0">
-                <div class="fw-bold mb-2">{{ __('Please review the highlighted fields.') }}</div>
-                <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+@if (session('success') || session('message') || session('status'))
+    <div class="lc-toast-stack" id="storefrontToastStack" aria-live="polite" aria-atomic="true">
+        @foreach (['success' => 'success', 'message' => 'success', 'status' => 'info'] as $flashKey => $flashTone)
+            @if (session($flashKey))
+                <div class="lc-flash-toast lc-flash-toast--{{ $flashTone }}" role="status" data-storefront-toast>
+                    <i class="bi {{ $flashTone === 'success' ? 'bi-check-circle-fill' : 'bi-info-circle-fill' }}" aria-hidden="true"></i>
+                    <span>{{ session($flashKey) }}</span>
+                    <button type="button" class="lc-flash-toast__close" data-storefront-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+                </div>
+            @endif
+        @endforeach
     </div>
 @endif
+@if ($errors->any())
+    <div class="container mt-4">
+        <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-0" role="alert">
+            <div class="fw-bold mb-2">{{ __('Please review the highlighted fields.') }}</div>
+            <ul class="mb-0 ps-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stack = document.getElementById('storefrontToastStack');
+    if (!stack) return;
+    const dismiss = (toast) => {
+        if (!toast || toast.classList.contains('is-leaving')) return;
+        toast.classList.add('is-leaving');
+        window.setTimeout(() => toast.remove(), 180);
+    };
+    stack.addEventListener('click', (event) => {
+        const close = event.target.closest('[data-storefront-toast-close]');
+        if (close) dismiss(close.closest('[data-storefront-toast]'));
+    });
+    stack.querySelectorAll('[data-storefront-toast]').forEach((toast) => {
+        window.setTimeout(() => dismiss(toast), 4200);
+    });
+});
+</script>
 
 <div class="alert alert-success border-0 shadow rounded-4 position-fixed m-3 d-none"
      style="inset-inline-end:0;bottom:0;z-index:1080;max-width:min(420px,calc(100vw - 2rem));"
