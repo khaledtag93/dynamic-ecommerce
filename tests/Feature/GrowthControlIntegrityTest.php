@@ -65,6 +65,27 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertFalse((bool) $experiment->fresh()->is_active);
     }
 
+    public function test_growth_dashboard_snapshot_does_not_recompute_heavy_analytics_on_get(): void
+    {
+        $serviceSource = file_get_contents(app_path('Services/Growth/GrowthCampaignService.php'));
+        $commandSource = file_get_contents(app_path('Console/Commands/RunGrowthAutomationCommand.php'));
+
+        $snapshotStart = strpos($serviceSource, 'public function dashboardSnapshot(): array');
+        $snapshotEnd = strpos($serviceSource, 'public function engineEnabled(): bool', $snapshotStart);
+        $snapshotSource = substr($serviceSource, $snapshotStart, $snapshotEnd - $snapshotStart);
+
+        $this->assertStringNotContainsString('syncRecentAttribution()', $snapshotSource);
+        $this->assertStringNotContainsString('refreshSnapshots((int) config(\'growth.cohort_months\'', $snapshotSource);
+        $this->assertStringNotContainsString('refreshScores()', $snapshotSource);
+        $this->assertStringNotContainsString('GrowthAdaptiveLearningService::class)->refreshSnapshots()', $snapshotSource);
+
+        $this->assertStringContainsString('growth:run', file_get_contents(app_path('Console/Kernel.php')));
+        $this->assertStringContainsString('syncRecentAttribution()', $commandSource);
+        $this->assertStringContainsString('GrowthCohortRetentionService', $commandSource);
+        $this->assertStringNotContainsString('GrowthPredictiveIntelligenceService', $commandSource);
+        $this->assertStringNotContainsString('GrowthAdaptiveLearningService', $commandSource);
+    }
+
     public function test_disabled_growth_run_returns_a_complete_result_shape(): void
     {
         WebsiteSetting::setValue('growth_engine_enabled', '0', 'growth', 'boolean');
