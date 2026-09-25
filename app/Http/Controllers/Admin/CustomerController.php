@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
 use App\Services\Commerce\CustomerAccountStatementService;
+use App\Services\Commerce\AdminActivityLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -19,6 +20,7 @@ class CustomerController extends Controller
     public function __construct(
         protected AuthorizationService $authorizationService,
         protected CustomerAccountStatementService $statementService,
+        protected AdminActivityLogService $adminActivityLogService,
     ) {
     }
 
@@ -190,6 +192,9 @@ class CustomerController extends Controller
             // Owner changes require a separate, audited transfer path.
             abort_if($account->isSuperAdmin() || $account->id === $request->user()->id, 403);
 
+            $oldRoleAs = (int) $account->role_as;
+            $oldRoleId = $account->roles()->value('roles.id');
+
             if ((int) $validated['role_as'] === 1) {
                 $account->roles()->sync([(int) $validated['role_id']]);
                 $account->update(['role_as' => 1]);
@@ -197,6 +202,20 @@ class CustomerController extends Controller
                 $account->update(['role_as' => 0]);
                 $account->roles()->detach();
             }
+
+            $this->adminActivityLogService->log(
+                'account_access',
+                'customer_access_updated',
+                __('Account access updated for :customer.', ['customer' => $account->email]),
+                $request->user()->id,
+                $account,
+                [
+                    'old_role_as' => $oldRoleAs,
+                    'new_role_as' => (int) $validated['role_as'],
+                    'old_role_id' => $oldRoleId,
+                    'new_role_id' => (int) $validated['role_as'] === 1 ? (int) $validated['role_id'] : null,
+                ]
+            );
         });
 
         return back()->with('success', __('Account access updated successfully.'));
