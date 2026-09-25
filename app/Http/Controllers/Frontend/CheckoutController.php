@@ -16,6 +16,7 @@ use App\Services\Commerce\StoreSettingsService;
 use App\Services\Commerce\ProductRecommendationService;
 use App\Services\Commerce\SmartMerchandisingService;
 use App\Services\Commerce\ShippingService;
+use App\Services\Commerce\ReturnRequestService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,6 +36,7 @@ class CheckoutController extends Controller
         protected OfferAutomationService $offerAutomationService,
         protected AIRecommendationEngine $aiRecommendationEngine,
         protected ShippingService $shippingService,
+        protected ReturnRequestService $returnRequestService,
     ) {
     }
 
@@ -245,10 +247,19 @@ public function store(Request $request): RedirectResponse
     {
         abort_unless((int) $order->user_id === (int) auth()->id(), 403);
 
-        $order->load(['items', 'refunds', 'payments']);
+        $order->load(['items', 'refunds', 'payments', 'returnRequests.items']);
         $paymentInstructions = $this->paymentService->checkoutInstructionsFor($order);
+        $canRequestReturn = $this->returnRequestService->canCustomerRequest($order, auth()->user());
+        $remainingReturnableTotal = $order->items->sum(
+            fn ($item) => $this->returnRequestService->remainingReturnableQuantity($item)
+        );
 
-        return view('frontend.orders.show', compact('order', 'paymentInstructions'));
+        return view('frontend.orders.show', compact(
+            'order',
+            'paymentInstructions',
+            'canRequestReturn',
+            'remainingReturnableTotal'
+        ));
     }
 
     public function cancelOrder(Request $request, Order $order): RedirectResponse
