@@ -514,7 +514,8 @@
             </div>
         </div>
 
-        <div class="col-xl-4">
+        <div class="col-xl-4 branding-side-column">
+            <div class="branding-side-stack">
             <div class="admin-card mb-4" id="branding-panel-media" role="tabpanel" aria-labelledby="branding-tab-media" data-admin-section-panel="media">
                 <div class="admin-card-body">
                     <h4 class="mb-3">{{ __('Images') }}</h4>
@@ -624,6 +625,7 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     </div>
 
@@ -649,6 +651,10 @@
 
 @push('styles')
 <style>
+.admin-section-columns{align-items:flex-start}
+.branding-side-stack{display:grid;gap:1rem}
+.branding-side-stack>.admin-card{margin-bottom:0!important}
+@media(min-width:1200px){.branding-side-column{align-self:stretch}.branding-side-stack{position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow:auto;padding-inline-end:.2rem;scrollbar-width:thin}}
 .theme-preset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
 .theme-preset-card{appearance:none;width:100%;padding:0;overflow:hidden;text-align:start;border:1px solid var(--admin-border);border-radius:1.15rem;background:var(--admin-surface);color:var(--admin-text);box-shadow:0 12px 28px color-mix(in srgb,var(--admin-text) 5%,transparent);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
 .theme-preset-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--admin-primary) 42%,var(--admin-border));box-shadow:0 16px 34px color-mix(in srgb,var(--admin-primary) 11%,transparent)}
