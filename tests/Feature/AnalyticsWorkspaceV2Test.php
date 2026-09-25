@@ -74,6 +74,23 @@ class AnalyticsWorkspaceV2Test extends TestCase
         }
     }
 
+    public function test_analytics_workspaces_keep_mobile_filter_and_theme_token_contracts(): void
+    {
+        $overview = file_get_contents(resource_path('views/admin/analytics/index.blade.php'));
+        $growth = file_get_contents(resource_path('views/admin/analytics/growth.blade.php'));
+        $offers = file_get_contents(resource_path('views/admin/analytics/offers.blade.php'));
+
+        $this->assertStringContainsString('.analytics-pills{flex-wrap:nowrap;overflow-x:auto', $overview);
+        $this->assertStringContainsString('.analytics-form{display:grid;grid-template-columns:1fr 1fr', $overview);
+        $this->assertStringContainsString('@media(max-width:480px){.analytics-form{grid-template-columns:1fr}', $overview);
+
+        $this->assertStringContainsString('.growth-filter{display:grid;grid-template-columns:minmax(0,1fr) auto', $growth);
+        $this->assertStringContainsString('@media (max-width: 480px){.growth-filter{grid-template-columns:1fr}', $growth);
+
+        $this->assertStringContainsString('.offers-lane-card{padding:20px;border-radius:22px;border:1px solid var(--admin-border);background:var(--admin-surface)', $offers);
+        $this->assertStringNotContainsString('border:1px solid rgba(249,115,22,.12)', $offers);
+    }
+
     public function test_arabic_analytics_workspace_labels_are_available(): void
     {
         $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
