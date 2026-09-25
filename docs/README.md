@@ -85,3 +85,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Explicit admin role hardening
 - [Explicit admin role hardening](EXPLICIT_ADMIN_ROLE_HARDENING_2026-09-25.md)
+
+
+### 2026-09-25 — Roles & Permissions V2
+- [Roles & Permissions V2](ROLES_PERMISSIONS_V2_2026-09-25.md)
