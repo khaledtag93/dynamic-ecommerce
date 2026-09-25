@@ -4317,5 +4317,16 @@
     "Try clearing the filters or create a supplier for a new sourcing relationship.": "Try clearing the filters or create a supplier for a new sourcing relationship.",
     "Supplier profile": "Supplier profile",
     "Keep core contact, business, and sourcing information aligned across purchases and supplier listings.": "Keep core contact, business, and sourcing information aligned across purchases and supplier listings.",
-    "Pause or reactivate the supplier without removing historical records.": "Pause or reactivate the supplier without removing historical records."
+    "Pause or reactivate the supplier without removing historical records.": "Pause or reactivate the supplier without removing historical records.",
+    "Deleting...": "Deleting...",
+    "No coupons found": "No coupons found",
+    "Try clearing the filters or create a new coupon.": "Try clearing the filters or create a new coupon.",
+    "Offer": "Offer",
+    "Limits & eligibility": "Limits & eligibility",
+    "Schedule & notes": "Schedule & notes",
+    "SAVE10": "SAVE10",
+    "Review the coupon rule, limits, schedule, and notes before saving it to the promotions workspace.": "Review the coupon rule, limits, schedule, and notes before saving it to the promotions workspace.",
+    "Schedule & status": "Schedule & status",
+    "No categories available yet. The promotion can still apply at order level.": "No categories available yet. The promotion can still apply at order level.",
+    "Review the promotion type, discount values, schedule, and activation status before saving this rule.": "Review the promotion type, discount values, schedule, and activation status before saving this rule."
 }
