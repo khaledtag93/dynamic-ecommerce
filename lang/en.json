@@ -3950,5 +3950,8 @@
     "Default / simple product": "Default / simple product",
     "No order mix data yet.": "No order mix data yet.",
     "Dismiss notification": "Dismiss notification",
-    "Search admin workspace": "Search admin workspace"
+    "Search admin workspace": "Search admin workspace",
+  "Social channels": "Social channels",
+  "Only configured channels are shown in the storefront footer.": "Only configured channels are shown in the storefront footer.",
+  "Show social links": "Show social links"
 }
