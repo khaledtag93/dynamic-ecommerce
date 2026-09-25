@@ -47,6 +47,16 @@ class SupportCaseService
             $customerId = filled($payload['customer_id'] ?? null) ? (int) $payload['customer_id'] : null;
             $order = filled($payload['order_id'] ?? null) ? Order::query()->find((int) $payload['order_id']) : null;
 
+            if ($customerId) {
+                $customer = User::query()->findOrFail($customerId);
+
+                if ($customer->isLegacyAdmin()) {
+                    throw ValidationException::withMessages([
+                        'customer_id' => __('Support customers must use customer accounts, not staff accounts.'),
+                    ]);
+                }
+            }
+
             if ($order && $customerId && (int) $order->user_id !== $customerId) {
                 throw ValidationException::withMessages([
                     'order_id' => __('The selected order does not belong to the selected customer.'),
@@ -67,7 +77,7 @@ class SupportCaseService
                 'priority' => $payload['priority'] ?? SupportCase::PRIORITY_NORMAL,
                 'status' => SupportCase::STATUS_OPEN,
                 'source' => 'admin',
-                'first_response_at' => now(),
+                'first_response_at' => ($payload['visibility'] ?? SupportCaseMessage::VISIBILITY_CUSTOMER) === SupportCaseMessage::VISIBILITY_CUSTOMER ? now() : null,
                 'last_staff_message_at' => now(),
             ]);
 
