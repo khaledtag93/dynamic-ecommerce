@@ -145,6 +145,8 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertSame(1, substr_count($navbar, 'data-toggle="offcanvas"'));
         $this->assertStringContainsString('admin-mobile-sidebar-toggle-inline', $navbar);
         $this->assertStringNotContainsString('class="admin-mobile-sidebar-toggle d-lg-none"', $navbar);
+        $this->assertSame(1, substr_count($navbar, ".admin-mobile-sidebar-toggle-inline {"));
+        $this->assertSame(1, substr_count($navbar, ".admin-mobile-sidebar-toggle-inline .mdi {"));
     }
 
 }
