@@ -226,7 +226,7 @@
         <div class="admin-card mb-4">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Update Status') }}</h4>
-                <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" data-submit-loading>
+                <form method="POST" action="{{ route('admin.orders.update-status', $order) }}" data-submit-loading data-order-status-form data-current-status="{{ $order->status }}" data-cancel-status="{{ \App\Models\Order::STATUS_CANCELLED }}">
                     @csrf
                     @method('PATCH')
                     <div class="mb-3">
@@ -240,6 +240,27 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-check-circle-outline"></i><span>{{ __('Save status') }}</span></button>
                 </form>
+            </div>
+        </div>
+        @endif
+
+        @if($can('orders.manage'))
+        <div class="modal fade" id="orderCancelConfirmModal" tabindex="-1" aria-labelledby="orderCancelConfirmTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="orderCancelConfirmTitle">{{ __('Confirm order cancellation') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">{{ __('Cancel this order?') }}</p>
+                        <p class="text-muted small mb-0">{{ __('Cancelling the order restores reserved stock and records the cancellation in the audit trail. This action should only be used when the order must not continue to fulfillment.') }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">{{ __('Keep order active') }}</button>
+                        <button type="button" class="btn btn-danger" data-confirm-order-cancel>{{ __('Cancel order') }}</button>
+                    </div>
+                </div>
             </div>
         </div>
         @endif
@@ -387,6 +408,40 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const orderStatusForm = document.querySelector('[data-order-status-form]');
+    const orderCancelModalElement = document.getElementById('orderCancelConfirmModal');
+
+    if (orderStatusForm && orderCancelModalElement && typeof bootstrap !== 'undefined') {
+        const orderStatusSelect = orderStatusForm.querySelector('[name="status"]');
+        const orderCancelConfirmButton = orderCancelModalElement.querySelector('[data-confirm-order-cancel]');
+        const orderCancelModal = bootstrap.Modal.getOrCreateInstance(orderCancelModalElement);
+        let orderCancelConfirmed = false;
+
+        orderStatusForm.addEventListener('submit', function (event) {
+            const isNewCancellation = orderStatusSelect
+                && orderStatusSelect.value === orderStatusForm.dataset.cancelStatus
+                && orderStatusSelect.value !== orderStatusForm.dataset.currentStatus;
+
+            if (orderCancelConfirmed || !isNewCancellation) {
+                return;
+            }
+
+            event.preventDefault();
+            orderCancelModal.show();
+        });
+
+        orderCancelConfirmButton?.addEventListener('click', function () {
+            orderCancelConfirmed = true;
+            orderCancelModal.hide();
+
+            if (typeof orderStatusForm.requestSubmit === 'function') {
+                orderStatusForm.requestSubmit();
+            } else {
+                orderStatusForm.submit();
+            }
+        });
+    }
+
     const form = document.querySelector('[data-delivery-form]');
     const modalElement = document.getElementById('deliveryStatusConfirmModal');
 
