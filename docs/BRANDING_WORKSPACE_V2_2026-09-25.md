@@ -42,6 +42,15 @@ tests/Feature/BrandingWorkspaceV2Test.php verifies:
 - collapsible promo/trust editors;
 - Arabic labels for the new workspace copy.
 
+## Professional theme and preview polish
+- Expanded the built-in professional catalog with Royal Navy, Emerald Studio, and Plum Editorial while preserving every existing preset and saved custom theme.
+- Added Arabic labels for the new built-in themes to prevent mixed-language preset names in Arabic mode.
+- The customer live preview now reflects primary, secondary, accent, background, soft, border, button text, card radius, and badge style.
+- Badge previews visibly distinguish Soft, Pill, and Outline.
+- Media controls can be compacted to reduce visual weight without removing upload/manual-path capabilities.
+- Removed the desktop nested-scroll pattern from the media/preview rail; the media card flows naturally and only Live Preview remains sticky on wide screens.
+- Added regression coverage for the expanded preset catalog, saving a complete preset contract, Arabic labels, media controls, accent preview, badge preview, and sticky-preview behavior.
+
 ## Release state
 - Source: v42-clean-baseline.
 - CI: pending branch-head verification.
