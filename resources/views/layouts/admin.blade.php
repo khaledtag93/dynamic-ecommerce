@@ -481,6 +481,35 @@
             animation: adminToastIn .22s ease-out;
         }
 
+        .admin-flash-close {
+            width: 2rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            padding: 0;
+            border: 0;
+            border-radius: 999px;
+            background: transparent;
+            color: currentColor;
+            opacity: .58;
+            cursor: pointer;
+        }
+
+        .admin-flash-close:hover,
+        .admin-flash-close:focus-visible {
+            opacity: 1;
+            background: color-mix(in srgb, currentColor 8%, transparent);
+            outline: none;
+        }
+
+        .admin-flash.is-leaving {
+            opacity: 0;
+            transform: translateY(-8px) scale(.98);
+            transition: opacity .18s ease, transform .18s ease;
+        }
+
         @keyframes adminToastIn {
             from { opacity: 0; transform: translateY(-8px) scale(.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -3003,6 +3032,8 @@ select option {
                                     <div class="admin-flash-title">{{ __('Update completed') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('message') }}</div>
                                 </div>
+                                <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
+                            </div>
                             </div>
                         @endif
                         @if (session('success'))
@@ -3012,6 +3043,8 @@ select option {
                                     <div class="admin-flash-title">{{ __('Changes saved successfully') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('success') }}</div>
                                 </div>
+                                <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
+                            </div>
                             </div>
                         @endif
                         @if (session('warning'))
@@ -3021,6 +3054,8 @@ select option {
                                     <div class="admin-flash-title">{{ __('Please review this note') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('warning') }}</div>
                                 </div>
+                                <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
+                            </div>
                             </div>
                         @endif
                         @if (session('error'))
@@ -3030,6 +3065,8 @@ select option {
                                     <div class="admin-flash-title">{{ __('Action needs attention') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('error') }}</div>
                                 </div>
+                                <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
+                            </div>
                             </div>
                         @endif
                         @if ($errors->any())
@@ -3044,6 +3081,8 @@ select option {
                                         @endforeach
                                     </ul>
                                 </div>
+                                </div>
+                                <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
                             </div>
                         @endif
     
@@ -3072,6 +3111,27 @@ select option {
 
     @livewireScripts
     @stack('scripts')
+
+    <script>
+    (function () {
+        const stack = document.getElementById('adminToastStack');
+        if (!stack) return;
+
+        function dismissToast(toast) {
+            if (!toast || toast.classList.contains('is-leaving')) return;
+            toast.classList.add('is-leaving');
+            window.setTimeout(() => toast.remove(), 190);
+        }
+
+        stack.querySelectorAll('[data-admin-toast-close]').forEach((button) => {
+            button.addEventListener('click', () => dismissToast(button.closest('.admin-flash')));
+        });
+
+        stack.querySelectorAll('.admin-flash--success').forEach((toast) => {
+            window.setTimeout(() => dismissToast(toast), 4200);
+        });
+    })();
+    </script>
 
     <div class="admin-confirm-backdrop" id="adminConfirmBackdrop"></div>
     <div class="admin-confirm-modal" id="adminConfirmModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="adminConfirmTitle" aria-describedby="adminConfirmMessage">
