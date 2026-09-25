@@ -124,6 +124,19 @@ Still deferred after V2:
 
 SLA targets/breach indicators and reusable bilingual reply templates moved into V2 below. Future channels should feed this same case timeline rather than introduce parallel support records.
 
+
+## V2.1 — Permission-aware commerce context
+
+- Added a dedicated `SupportCaseContextService` so commerce context is prepared outside Blade and can later be reused by an authenticated API/mobile client.
+- Linked cases now surface canonical customer, order and delivery context directly in the Admin case sidebar.
+- Staff with `customers.manage` can jump to the customer's account statement.
+- Staff with `orders.view` can open the linked order and see up to five recent return requests with status and drill-through links.
+- Staff with `delivery.view` can jump to the Delivery workspace pre-filtered by the linked order.
+- Latest payment details and the Payment drill-through are included only for staff with `payments.view`; Support agents without that permission do not receive payment-specific reference/amount context.
+- The context layer is read-only and does not create or mutate Orders, Payments, Deliveries, Returns, or Support cases.
+- Added regression coverage proving payment context remains permission-scoped while order/return context stays available to the Support Agent role.
+- Added the new commerce-context copy in Arabic.
+
 ## Release state
 
 - Branch: `v42-clean-baseline`

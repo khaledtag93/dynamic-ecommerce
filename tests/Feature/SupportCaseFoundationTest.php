@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\Payment;
+use App\Models\ReturnRequest;
 use App\Models\Role;
 use App\Models\SupportCase;
 use App\Models\SupportCaseMessage;
@@ -262,6 +264,66 @@ class SupportCaseFoundationTest extends TestCase
         ]);
     }
 
+
+    public function test_helpdesk_commerce_context_is_permission_aware(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $customer = User::factory()->create(['role_as' => 0]);
+        $order = $this->orderFor($customer, 'SUP-CONTEXT-001');
+
+        $payment = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'paymob',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'PAY-SUPPORT-001',
+            'amount' => 100,
+            'currency' => 'EGP',
+            'paid_at' => now(),
+        ]);
+
+        $returnRequest = ReturnRequest::query()->create([
+            'reference' => 'RET-SUPPORT-001',
+            'order_id' => $order->id,
+            'user_id' => $customer->id,
+            'status' => ReturnRequest::STATUS_REQUESTED,
+            'requested_at' => now(),
+        ]);
+
+        $case = SupportCase::query()->create([
+            'case_number' => 'CS-CONTEXT-001',
+            'customer_id' => $customer->id,
+            'order_id' => $order->id,
+            'subject' => 'Commerce context',
+            'priority' => SupportCase::PRIORITY_NORMAL,
+            'status' => SupportCase::STATUS_OPEN,
+            'source' => 'customer_portal',
+        ]);
+
+        $manager = $this->staffWithRole('operations_manager');
+
+        $this->actingAs($manager)
+            ->get(route('admin.support.show', $case))
+            ->assertOk()
+            ->assertSee('SUP-CONTEXT-001')
+            ->assertSee('PAY-SUPPORT-001')
+            ->assertSee('RET-SUPPORT-001')
+            ->assertSee(route('admin.orders.show', $order), false)
+            ->assertSee(route('admin.payments.show', $payment), false)
+            ->assertSee(route('admin.returns.show', $returnRequest), false);
+
+        $supportAgent = $this->staffWithRole('support_agent');
+
+        $this->actingAs($supportAgent)
+            ->get(route('admin.support.show', $case))
+            ->assertOk()
+            ->assertSee('SUP-CONTEXT-001')
+            ->assertSee('RET-SUPPORT-001')
+            ->assertDontSee('PAY-SUPPORT-001')
+            ->assertDontSee(route('admin.payments.show', $payment), false);
+    }
+
     private function staffWithRole(string $slug): User
     {
         $user = User::factory()->create(['role_as' => 1]);
@@ -276,6 +338,12 @@ class SupportCaseFoundationTest extends TestCase
         return Order::query()->create([
             'user_id' => $customer->id,
             'order_number' => $orderNumber,
+            'status' => Order::STATUS_PROCESSING,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'delivery_status' => Order::DELIVERY_STATUS_SHIPPED,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'currency' => 'EGP',
             'grand_total' => 100,
             'customer_name' => $customer->name,
             'customer_email' => $customer->email,

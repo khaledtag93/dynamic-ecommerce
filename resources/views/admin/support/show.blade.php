@@ -101,17 +101,101 @@
         <div class="col-xl-4">
             <div class="admin-card mb-4">
                 <div class="admin-card-body">
-                    <h4 class="mb-3">{{ __('Case context') }}</h4>
+                    <h4 class="mb-3">{{ __('Commerce context') }}</h4>
+
                     <div class="small text-muted">{{ __('Customer') }}</div>
-                    <div class="fw-semibold mb-3">{{ $supportCase->customer?->name ?? __('Guest / unlinked') }}</div>
-                    @if($supportCase->customer)<div class="text-muted small mb-3">{{ $supportCase->customer->email }}</div>@endif
+                    <div class="fw-semibold">{{ $commerceContext['customer']['name'] ?? __('Guest / unlinked') }}</div>
+                    @if(!empty($commerceContext['customer']['email']))
+                        <div class="text-muted small">{{ $commerceContext['customer']['email'] }}</div>
+                    @endif
+                    @if(!empty($commerceContext['customer']['statement_url']))
+                        <div class="mt-2 mb-3"><a href="{{ $commerceContext['customer']['statement_url'] }}" class="btn btn-sm btn-outline-secondary">{{ __('Open customer statement') }}</a></div>
+                    @else
+                        <div class="mb-3"></div>
+                    @endif
+
                     <div class="small text-muted">{{ __('Order') }}</div>
-                    @if($supportCase->order)
-                        <div class="fw-semibold">{{ $supportCase->order->order_number }}</div>
-                        <div class="text-muted small mb-3">{{ $supportCase->order->status }} · {{ $supportCase->order->payment_status }} · {{ $supportCase->order->delivery_status }}</div>
+                    @if($commerceContext['order'])
+                        <div class="d-flex justify-content-between gap-2 align-items-start">
+                            <div>
+                                <div class="fw-semibold">{{ $commerceContext['order']['number'] }}</div>
+                                <div class="text-muted small">
+                                    {{ $commerceContext['order']['status_label'] }} ·
+                                    {{ $commerceContext['order']['payment_status_label'] }} ·
+                                    {{ $commerceContext['order']['delivery_status_label'] }}
+                                </div>
+                                <div class="text-muted small">{{ __('Order value') }}: {{ $commerceContext['order']['currency'] }} {{ number_format((float) $commerceContext['order']['grand_total'], 2) }}</div>
+                            </div>
+                            @if($commerceContext['order']['url'])
+                                <a href="{{ $commerceContext['order']['url'] }}" class="btn btn-sm btn-outline-primary">{{ __('Open order') }}</a>
+                            @endif
+                        </div>
                     @else
                         <div class="text-muted mb-3">{{ __('No order linked') }}</div>
                     @endif
+
+                    @if($commerceContext['delivery'])
+                        <hr>
+                        <div class="small text-muted mb-1">{{ __('Delivery context') }}</div>
+                        <div class="fw-semibold">{{ $commerceContext['delivery']['status_label'] }} · {{ $commerceContext['delivery']['method_label'] }}</div>
+                        @if($commerceContext['delivery']['provider'])
+                            <div class="text-muted small">{{ __('Provider') }}: {{ $commerceContext['delivery']['provider'] }}</div>
+                        @endif
+                        @if($commerceContext['delivery']['tracking_number'])
+                            <div class="text-muted small">{{ __('Tracking number') }}: {{ $commerceContext['delivery']['tracking_number'] }}</div>
+                        @endif
+                        @if($commerceContext['delivery']['estimated_delivery_date'])
+                            <div class="text-muted small">{{ __('Estimated delivery date') }}: {{ $commerceContext['delivery']['estimated_delivery_date'] }}</div>
+                        @endif
+                        @if($commerceContext['delivery']['url'])
+                            <div class="mt-2"><a href="{{ $commerceContext['delivery']['url'] }}" class="btn btn-sm btn-outline-secondary">{{ __('Open delivery workspace') }}</a></div>
+                        @endif
+                    @endif
+
+                    @if($commerceContext['payment_visible'])
+                        <hr>
+                        <div class="small text-muted mb-1">{{ __('Latest payment') }}</div>
+                        @if($commerceContext['payment'])
+                            <div class="d-flex justify-content-between gap-2 align-items-start">
+                                <div>
+                                    <span class="badge admin-status-badge {{ $commerceContext['payment']['status_badge_class'] }}">{{ $commerceContext['payment']['status_label'] }}</span>
+                                    <div class="mt-1 fw-semibold">{{ $commerceContext['payment']['currency'] }} {{ number_format((float) $commerceContext['payment']['amount'], 2) }}</div>
+                                    <div class="text-muted small">{{ $commerceContext['payment']['method_label'] }}</div>
+                                    @if($commerceContext['payment']['reference'])
+                                        <div class="text-muted small">{{ __('Payment reference') }}: {{ $commerceContext['payment']['reference'] }}</div>
+                                    @endif
+                                </div>
+                                <a href="{{ $commerceContext['payment']['url'] }}" class="btn btn-sm btn-outline-primary">{{ __('Open payment') }}</a>
+                            </div>
+                        @else
+                            <div class="text-muted small">{{ __('No payment record linked to this order.') }}</div>
+                        @endif
+                    @endif
+
+                    @if($commerceContext['returns_visible'] && $commerceContext['order'])
+                        <hr>
+                        <div class="small text-muted mb-2">{{ __('Return requests') }}</div>
+                        @if($commerceContext['returns']->isEmpty())
+                            <div class="text-muted small">{{ __('No return requests linked to this order.') }}</div>
+                        @else
+                            <div class="d-grid gap-2">
+                                @foreach($commerceContext['returns'] as $returnContext)
+                                    <a href="{{ $returnContext['url'] }}" class="text-decoration-none d-flex justify-content-between gap-2 align-items-center border rounded-3 p-2">
+                                        <span>
+                                            <strong>{{ $returnContext['reference'] }}</strong>
+                                            @if($returnContext['requested_at'])<span class="text-muted small d-block">{{ $returnContext['requested_at'] }}</span>@endif
+                                        </span>
+                                        <span class="badge admin-status-badge {{ $returnContext['status_badge_class'] }}">{{ $returnContext['status_label'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                            @if($commerceContext['return_total'] > $commerceContext['returns']->count())
+                                <div class="text-muted small mt-2">{{ __('Showing latest :shown of :total return requests.', ['shown' => $commerceContext['returns']->count(), 'total' => $commerceContext['return_total']]) }}</div>
+                            @endif
+                        @endif
+                    @endif
+
+                    <hr>
                     <div class="small text-muted">{{ __('First staff response') }}</div>
                     <div class="mb-3">{{ $supportCase->first_response_at?->format('Y-m-d H:i') ?? __('Not yet') }}</div>
                     <div class="small text-muted">{{ __('First response due') }}</div>

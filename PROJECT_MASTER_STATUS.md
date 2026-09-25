@@ -996,7 +996,13 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added `SupportCaseFoundationTest` covering role boundaries, order ownership, cross-customer isolation, internal-note privacy, first-response behavior, reopen/closed lifecycle behavior, staff-customer rejection, and audit trail.
 - Source commits in this slice: `b0116d0`, `d342153`, `09da0c0`, `7054729`, `74eba22`, `4c6ab52`, `a1b0ee2`.
 - Production unchanged. QAS deployment and authenticated EN/AR/RTL/responsive acceptance remain separate gates.
-- Remaining Helpdesk scope after V2: attachments with safe file policy, richer customer/order/payment/delivery/return context, customer-service analytics, business-hours/SLA pause policy, and channel ingestion for email/WhatsApp/chat into the same case timeline.
+- Remaining Helpdesk expansion after V2.1: attachments with safe file policy, customer-service analytics, business-hours/SLA pause policy, and channel ingestion for email/WhatsApp/chat into the same case timeline. Core customer/order/payment/delivery/return commerce context is now source-complete and permission-aware.
+
+## Helpdesk V2.1 commerce context — 2026-09-25
+- Added a reusable permission-aware support commerce context service for linked Customer / Order / Delivery / Payment / Return data.
+- Order/return drill-through respects `orders.view`, delivery drill-through respects `delivery.view`, customer statement respects `customers.manage`, and payment-specific context is withheld unless the viewer has `payments.view`.
+- The context is read-only and designed outside Blade so a future mobile/API client can reuse the same authorization-aware contract.
+- Regression coverage added in `SupportCaseFoundationTest`; QAS acceptance remains separate.
 
 ## Customer Account Statement V1 — 2026-09-25
 - Added an Admin customer statement built only from canonical Orders, captured Payments, Order Refunds and Return Requests.

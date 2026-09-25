@@ -9,6 +9,7 @@ use App\Models\SupportCaseMessage;
 use App\Models\SupportReplyTemplate;
 use App\Models\User;
 use App\Models\WebsiteSetting;
+use App\Services\Support\SupportCaseContextService;
 use App\Services\Support\SupportCaseService;
 use App\Services\Support\SupportSlaService;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,7 @@ class SupportCaseController extends Controller
     public function __construct(
         protected SupportCaseService $supportCaseService,
         protected SupportSlaService $supportSlaService,
+        protected SupportCaseContextService $supportCaseContextService,
     ) {
     }
 
@@ -140,14 +142,15 @@ class SupportCaseController extends Controller
             ->with('success', __('Support case created.'));
     }
 
-    public function show(SupportCase $supportCase)
+    public function show(Request $request, SupportCase $supportCase)
     {
         $supportCase->load([
             'customer:id,name,email',
-            'order:id,order_number,status,payment_status,delivery_status,grand_total,currency',
             'assignee:id,name,email',
             'messages.author:id,name,email',
         ]);
+
+        $commerceContext = $this->supportCaseContextService->build($supportCase, $request->user());
 
         $staff = User::query()
             ->where('role_as', 1)
@@ -169,7 +172,7 @@ class SupportCaseController extends Controller
             ],
         ])->all();
 
-        return view('admin.support.show', compact('supportCase', 'staff', 'replyTemplates', 'replyTemplatePayload'));
+        return view('admin.support.show', compact('supportCase', 'staff', 'replyTemplates', 'replyTemplatePayload', 'commerceContext'));
     }
 
     public function settings()
