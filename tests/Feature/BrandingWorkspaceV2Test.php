@@ -50,6 +50,10 @@ class BrandingWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("set('--preview-accent', 'brand_accent_color'", $source);
         $this->assertStringContainsString('.branding-side-stack>#branding-panel-preview{position:sticky', $source);
         $this->assertStringNotContainsString('max-height:calc(100vh - 2rem);overflow:auto', $source);
+        $this->assertStringContainsString('id="save_as_custom_theme"', $source);
+        $this->assertStringContainsString('for="save_as_custom_theme"', $source);
+        $this->assertStringContainsString('@media(max-width:767.98px){.branding-side-stack{grid-template-columns:1fr}', $source);
+        $this->assertStringContainsString("setAttribute('data-applied-preset', key)", $source);
     }
 
     public function test_arabic_branding_cleanup_labels_are_available(): void
