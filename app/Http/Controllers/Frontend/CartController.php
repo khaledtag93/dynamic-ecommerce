@@ -42,7 +42,7 @@ class CartController extends Controller
             'product_ids' => $cart['items']->pluck('product_id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all(),
         ]);
         $upsellProducts = $this->recommendationService->forCart($cart['items'], 3);
-        $shippingGoal = $this->recommendationService->shippingProgress((float) $cart['subtotal']);
+        $shippingGoal = null;
         $merchandising = $this->smartMerchandisingService->forCart($cart['items'], 4);
         $behavioralOffers = $this->offerAutomationService->forCart($cart['items'], (float) $cart['subtotal']);
         $aiRecommendations = $this->aiRecommendationEngine->forCart($cart['items'], 4);
