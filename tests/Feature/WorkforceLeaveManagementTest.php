@@ -317,6 +317,8 @@ class WorkforceLeaveManagementTest extends TestCase
             ->get(route('admin.workforce.leave.index'))
             ->assertForbidden();
 
+        $this->withoutExceptionHandling();
+
         $this->get(route('admin.workforce.my-leave'))
             ->assertOk();
     }
