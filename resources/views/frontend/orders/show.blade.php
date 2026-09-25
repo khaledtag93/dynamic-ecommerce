@@ -204,9 +204,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }),
             });
 
-            if (!response.ok) throw new Error('order-cancel-failed');
-
-            const payload = await response.json();
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const firstError = Object.values(payload.errors || {}).flat()[0];
+                throw new Error(firstError || payload.message || @json(__('Could not cancel this order. Please try again.')));
+            }
             const order = payload.order || {};
             const status = document.querySelector('[data-order-status]');
             const payment = document.querySelector('[data-order-payment-status]');
@@ -217,7 +219,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 status.textContent = order.status_label || status.textContent;
                 status.className = 'lc-status-badge lc-badge-danger';
             }
-            if (payment) payment.textContent = order.payment_status_label || payment.textContent;
+            if (payment) {
+                payment.textContent = order.payment_status_label || payment.textContent;
+                payment.className = 'lc-status-badge ' + (order.payment_status === 'paid' || order.payment_status === 'refunded' ? 'lc-badge-success' : (order.payment_status === 'failed' ? 'lc-badge-danger' : 'lc-badge-unpaid'));
+            }
             if (delivery) {
                 delivery.textContent = order.delivery_status_label || delivery.textContent;
                 delivery.className = 'lc-status-badge lc-badge-danger';
@@ -229,7 +234,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             form.remove();
         } catch (error) {
-            form.submit();
+            const liveStatus = document.querySelector('[data-order-live-status]');
+            if (liveStatus) {
+                liveStatus.textContent = error.message;
+                liveStatus.classList.remove('d-none', 'text-success');
+                liveStatus.classList.add('text-danger');
+            }
+            if (button) button.disabled = false;
         }
     }, true);
 });

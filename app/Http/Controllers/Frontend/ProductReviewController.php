@@ -45,6 +45,10 @@ class ProductReviewController extends Controller
                 ->route('frontend.products.show', $product)
                 ->with('success', $message);
         } catch (ValidationException $exception) {
+            if ($request->expectsJson() || $request->header('X-Review-Live') === '1') {
+                throw $exception;
+            }
+
             return back()->withErrors($exception->errors())->withInput();
         }
     }

@@ -102,6 +102,10 @@ class ReturnController extends Controller
                 ->route('returns.show', $returnRequest)
                 ->with('success', $message);
         } catch (ValidationException $exception) {
+            if ($request->expectsJson() || $request->header('X-Return-Live') === '1') {
+                throw $exception;
+            }
+
             return back()->withErrors($exception->errors())->withInput();
         }
     }
@@ -138,6 +142,10 @@ class ReturnController extends Controller
 
             return back()->with('success', $message);
         } catch (ValidationException $exception) {
+            if ($request->expectsJson() || $request->header('X-Return-Cancel-Live') === '1') {
+                throw $exception;
+            }
+
             return back()->withErrors($exception->errors());
         }
     }

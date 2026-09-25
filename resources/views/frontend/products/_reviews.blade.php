@@ -53,12 +53,12 @@
                 <div class="border rounded-4 p-3 p-lg-4 h-100" data-review-workspace>
                     @auth
                         @if($currentUserReview)
-                            <div class="d-flex justify-content-between gap-3 align-items-start mb-3">
+                            <div class="d-flex justify-content-between gap-3 align-items-start mb-3" data-review-summary>
                                 <div>
                                     <div class="fw-bold">{{ __('Your review') }}</div>
                                     <div class="text-muted small">{{ __('Edits are moderated again before they are published.') }}</div>
                                 </div>
-                                <span class="lc-status-badge {{ $currentUserReview->status === \App\Models\ProductReview::STATUS_APPROVED ? 'lc-badge-success' : ($currentUserReview->status === \App\Models\ProductReview::STATUS_REJECTED ? 'lc-badge-danger' : 'lc-badge-processing') }}">
+                                <span data-review-status class="lc-status-badge {{ $currentUserReview->status === \App\Models\ProductReview::STATUS_APPROVED ? 'lc-badge-success' : ($currentUserReview->status === \App\Models\ProductReview::STATUS_REJECTED ? 'lc-badge-danger' : 'lc-badge-processing') }}">
                                     <span data-review-status-label>{{ $currentUserReview->status_label }}</span>
                                 </span>
                             </div>
@@ -201,8 +201,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            let summary = workspace.querySelector('[data-review-summary]');
+            if (!summary && payload.review) {
+                summary = document.createElement('div');
+                summary.className = 'd-flex justify-content-between gap-3 align-items-start mb-3';
+                summary.dataset.reviewSummary = '';
+                summary.innerHTML = '<div><div class="fw-bold">' + @json(__('Your review')) + '</div><div class="text-muted small">' + @json(__('Edits are moderated again before they are published.')) + '</div></div><span data-review-status class="lc-status-badge lc-badge-processing"><span data-review-status-label></span></span>';
+                form.before(summary);
+            }
             const label = workspace.querySelector('[data-review-status-label]');
+            const badge = workspace.querySelector('[data-review-status]');
             if (label && payload.review?.status_label) label.textContent = payload.review.status_label;
+            if (badge && payload.review?.status) {
+                badge.className = 'lc-status-badge ' + (payload.review.status === 'approved' ? 'lc-badge-success' : (payload.review.status === 'rejected' ? 'lc-badge-danger' : 'lc-badge-processing'));
+            }
             if (button) button.disabled = false;
         } catch (error) {
             if (button) button.disabled = false;

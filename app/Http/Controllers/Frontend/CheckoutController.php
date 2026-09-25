@@ -282,7 +282,13 @@ public function store(Request $request): RedirectResponse
         abort_unless((int) $order->user_id === (int) auth()->id(), 403);
 
         if (($this->storeSettingsService->all()['orders_allow_customer_cancellation'] ?? '1') !== '1') {
-            return back()->with('error', __('Customer-side cancellation is disabled right now. Please contact support.'));
+            $message = __('Customer-side cancellation is disabled right now. Please contact support.');
+
+            if ($request->expectsJson() || $request->header('X-Order-Cancel-Live') === '1') {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return back()->with('error', $message);
         }
 
         $data = $request->validate([
@@ -312,6 +318,10 @@ public function store(Request $request): RedirectResponse
                 ->route('orders.show', $order)
                 ->with('success', $message);
         } catch (ValidationException $e) {
+            if ($request->expectsJson() || $request->header('X-Order-Cancel-Live') === '1') {
+                throw $e;
+            }
+
             return back()->withErrors($e->errors());
         }
     }
