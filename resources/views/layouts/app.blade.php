@@ -782,20 +782,21 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const stack = document.getElementById('storefrontToastStack');
-    if (!stack) return;
-    const dismiss = (toast) => {
-        if (!toast || toast.classList.contains('is-leaving')) return;
-        toast.classList.add('is-leaving');
-        window.setTimeout(() => toast.remove(), 180);
-    };
-    stack.addEventListener('click', (event) => {
-        const close = event.target.closest('[data-storefront-toast-close]');
-        if (close) dismiss(close.closest('[data-storefront-toast]'));
-    });
-    stack.querySelectorAll('[data-storefront-toast]').forEach((toast) => {
-        window.setTimeout(() => dismiss(toast), 4200);
-    });
-});
+    if (stack) {
+        const dismiss = (toast) => {
+            if (!toast || toast.classList.contains('is-leaving')) return;
+            toast.classList.add('is-leaving');
+            window.setTimeout(() => toast.remove(), 180);
+        };
+        stack.addEventListener('click', (event) => {
+            const close = event.target.closest('[data-storefront-toast-close]');
+            if (close) dismiss(close.closest('[data-storefront-toast]'));
+        });
+        stack.querySelectorAll('[data-storefront-toast]').forEach((toast) => {
+            window.setTimeout(() => dismiss(toast), 4200);
+        });
+    }
+
     const retailNav = document.getElementById('retailNav');
     if (retailNav) {
         retailNav.addEventListener('shown.bs.collapse', () => {
