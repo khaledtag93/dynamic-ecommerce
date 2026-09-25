@@ -63,13 +63,15 @@ class ContentSettingsController extends Controller
             'footer_show_support' => ['nullable', 'boolean'],
             'footer_show_trust' => ['nullable', 'boolean'],
             'footer_show_experience_note' => ['nullable', 'boolean'],
+            'footer_show_whatsapp' => ['nullable', 'boolean'],
+            'footer_show_website' => ['nullable', 'boolean'],
             'orders_allow_customer_cancellation' => ['nullable', 'boolean'],
             'orders_customer_cancellation_note' => ['nullable', 'string', 'max:1000'],
         ]);
 
         foreach ([
             'contact_show_email', 'contact_show_phone', 'contact_show_whatsapp', 'contact_show_address', 'contact_show_hours', 'contact_show_map',
-            'footer_show_shop', 'footer_show_policies', 'footer_show_categories', 'footer_show_support', 'footer_show_trust', 'footer_show_experience_note',
+            'footer_show_shop', 'footer_show_policies', 'footer_show_categories', 'footer_show_support', 'footer_show_trust', 'footer_show_experience_note', 'footer_show_whatsapp', 'footer_show_website',
             'orders_allow_customer_cancellation',
         ] as $booleanKey) {
             WebsiteSetting::setValue($booleanKey, $request->boolean($booleanKey) ? '1' : '0', 'content');
