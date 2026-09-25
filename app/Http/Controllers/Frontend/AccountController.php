@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +23,7 @@ class AccountController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request): RedirectResponse
+    public function updateProfile(Request $request): RedirectResponse|JsonResponse
     {
         $user = $request->user();
         $emailChanged = $request->input('email') !== $user->email;
@@ -38,11 +39,20 @@ class AccountController extends Controller
             $user->email_verified_at = null;
         }
         $user->save();
+        $message = __('Profile updated.');
 
-        return back()->with('success', __('Profile updated.'));
+        if ($request->expectsJson() || $request->header('X-Account-Live') === '1') {
+            return response()->json([
+                'message' => $message,
+                'user' => ['name' => $user->name, 'email' => $user->email],
+                'email_verification_required' => $emailChanged,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(Request $request): RedirectResponse|JsonResponse
     {
         $data = $request->validateWithBag('passwordUpdate', [
             'current_password' => ['required', 'current_password'],
@@ -50,7 +60,12 @@ class AccountController extends Controller
         ]);
 
         $request->user()->update(['password' => Hash::make($data['password'])]);
+        $message = __('Password updated.');
 
-        return back()->with('success', __('Password updated.'));
+        if ($request->expectsJson() || $request->header('X-Account-Live') === '1') {
+            return response()->json(['message' => $message]);
+        }
+
+        return back()->with('success', $message);
     }
 }

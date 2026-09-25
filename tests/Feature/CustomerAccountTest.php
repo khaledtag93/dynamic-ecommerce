@@ -54,6 +54,39 @@ class CustomerAccountTest extends TestCase
         $this->assertSame(0, (int) $user->fresh()->role_as);
     }
 
+
+    public function test_profile_and_password_can_be_updated_through_live_account_endpoints(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'old@example.test',
+            'email_verified_at' => now(),
+        ]);
+
+        $profile = $this->actingAs($user)->patchJson(route('account.profile.update'), [
+            'name' => 'Live Account Name',
+            'email' => 'live@example.test',
+            'current_password' => 'password',
+        ], ['X-Account-Live' => '1']);
+
+        $profile->assertOk()
+            ->assertJsonPath('message', 'Profile updated.')
+            ->assertJsonPath('user.name', 'Live Account Name')
+            ->assertJsonPath('user.email', 'live@example.test')
+            ->assertJsonPath('email_verification_required', true);
+
+        $this->assertSame('live@example.test', $user->fresh()->email);
+        $this->assertNull($user->fresh()->email_verified_at);
+
+        $password = $this->actingAs($user)->patchJson(route('account.password.update'), [
+            'current_password' => 'password',
+            'password' => 'new-live-password-123',
+            'password_confirmation' => 'new-live-password-123',
+        ], ['X-Account-Live' => '1']);
+
+        $password->assertOk()->assertJsonPath('message', 'Password updated.');
+        $this->assertTrue(Hash::check('new-live-password-123', $user->fresh()->password));
+    }
+
     public function test_addresses_are_private_and_defaults_fall_back_after_deletion(): void
     {
         $user = User::factory()->create();

@@ -15,12 +15,14 @@
             <div class="col-md-6 col-xl-3"><a href="{{ route('support.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-headset"></i><span><strong>{{ __('Help & Support') }}</strong><small>{{ __('Open and track support requests') }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
         </div>
 
+        <div class="small mb-3 d-none" role="status" aria-live="polite" data-account-live-status></div>
+
         <div class="row g-4 align-items-start">
             <div class="col-lg-7">
                 <div class="lc-card p-4 mb-4">
                     <h2 class="h4 fw-bold mb-1">{{ __('Profile details') }}</h2>
                     <p class="text-muted mb-4">{{ __('Update your name or email. Confirm your password when changing your email.') }}</p>
-                    <form method="POST" action="{{ route('account.profile.update') }}" class="d-grid gap-3" data-submit-loading>
+                    <form method="POST" action="{{ route('account.profile.update') }}" class="d-grid gap-3" data-submit-loading data-account-live="profile">
                         @csrf @method('PATCH')
                         <div>
                             <label for="accountName" class="form-label fw-bold">{{ __('Full name') }}</label>
@@ -44,7 +46,7 @@
                 <div class="lc-card p-4">
                     <h2 class="h4 fw-bold mb-1">{{ __('Change password') }}</h2>
                     <p class="text-muted mb-4">{{ __('Use your current password to protect account changes.') }}</p>
-                    <form method="POST" action="{{ route('account.password.update') }}" class="d-grid gap-3" data-submit-loading>
+                    <form method="POST" action="{{ route('account.password.update') }}" class="d-grid gap-3" data-submit-loading data-account-live="password">
                         @csrf @method('PATCH')
                         <div>
                             <label for="passwordCurrent" class="form-label fw-bold">{{ __('Current password') }}</label>
@@ -85,3 +87,61 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof window.fetch !== 'function') return;
+    const statusNode = document.querySelector('[data-account-live-status]');
+
+    const setStatus = (message, isError = false) => {
+        if (!statusNode) return;
+        statusNode.textContent = message || '';
+        statusNode.classList.toggle('d-none', !message);
+        statusNode.classList.toggle('text-danger', isError);
+        statusNode.classList.toggle('text-success', !isError && Boolean(message));
+    };
+
+    document.querySelectorAll('form[data-account-live]').forEach(function (form) {
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            const button = event.submitter || form.querySelector('button[type="submit"]');
+            if (button) button.disabled = true;
+            setStatus('');
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'PATCH',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Account-Live': '1',
+                        'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                    },
+                    body: new FormData(form),
+                });
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const firstError = Object.values(payload.errors || {}).flat()[0];
+                    throw new Error(firstError || payload.message || @json(__('Could not save your changes. Please try again.')));
+                }
+
+                setStatus(payload.message || @json(__('Changes saved.')));
+                if (form.dataset.accountLive === 'password') form.reset();
+                if (form.dataset.accountLive === 'profile') {
+                    const password = form.querySelector('[name="current_password"]');
+                    if (password) password.value = '';
+                }
+            } catch (error) {
+                setStatus(error.message, true);
+            } finally {
+                if (button) button.disabled = false;
+            }
+        }, true);
+    });
+});
+</script>
+@endpush
