@@ -93,7 +93,7 @@
                 <div class="gm-mini">{{ __('Turn major Growth capabilities on or off without changing campaign setup.') }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('admin.growth.settings.update') }}" class="gm-toggle-list" data-submit-loading>
+        <form method="POST" action="{{ route('admin.growth.settings.update') }}" class="gm-toggle-list" data-growth-async>
             @csrf
             @method('PUT')
 
