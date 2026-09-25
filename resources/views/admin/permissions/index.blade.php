@@ -146,7 +146,7 @@
                                 </div>
                             </div>
                             <div class="col-lg-7">
-                                <form method="POST" action="{{ route('admin.permissions.users.role', $admin) }}" class="d-flex gap-2 align-items-end flex-wrap" data-submit-loading>
+                                <form method="POST" action="{{ route('admin.permissions.users.role', $admin) }}" class="d-flex gap-2 align-items-end flex-wrap" data-submit-loading data-staff-role-form data-current-role="{{ optional($currentRole)->id }}">
                                     @csrf
                                     @method('PATCH')
                                     <div class="flex-grow-1">
@@ -305,7 +305,8 @@
                                               data-confirm-message="{{ __('Delete this custom role?') }}"
                                               data-confirm-subtitle="{{ __('Assigned roles cannot be deleted until every staff account is reassigned.') }}"
                                               data-confirm-ok="{{ __('Delete role') }}"
-                                              data-confirm-cancel="{{ __('Keep role') }}">
+                                              data-confirm-cancel="{{ __('Keep role') }}"
+                            data-submit-loading>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-outline-danger btn-sm">{{ __('Delete role') }}</button>
@@ -455,6 +456,20 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const workspace = document.querySelector('[data-permissions-workspace]');
+
+            workspace?.querySelectorAll('[data-staff-role-form]').forEach((form) => {
+                form.addEventListener('submit', (event) => {
+                    const select = form.querySelector('[name="role_id"]');
+                    if (!select || select.value === form.dataset.currentRole || form.dataset.roleConfirmed === '1') return;
+
+                    if (!window.confirm(@json(__('Change this staff role? The account permissions will change immediately.')))) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    form.dataset.roleConfirmed = '1';
+                });
+            });
     if (!workspace) return;
 
     const staffInput = workspace.querySelector('[data-staff-search]');
