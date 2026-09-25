@@ -892,3 +892,17 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
   - functional issues or broken/unclear actions discovered during QAS.
 - Treat this as both a **UI/UX audit and functional audit**, not a cosmetic-only task.
 - Do not mark Growth Engine accepted until it is reviewed in authenticated QAS in EN/AR and any discovered issues are fixed.
+
+
+## QAS regression — public media root isolation
+- Operator reported broken category images in QAS list and edit preview after the consolidated deployment.
+- Root cause: `MediaPath::publicRootPath()` auto-detected the sibling Production `public_html` directory from the QAS application path, while the QAS virtual host serves `public_html/v42`.
+- Result: media writes/path resolution and browser URLs could target different public roots.
+- Fix:
+  - added optional `PUBLIC_ROOT_PATH` configuration;
+  - `MediaPath` now honors that explicit environment root before legacy split-root auto-detection;
+  - `deploy-qas.sh` sets QAS `PUBLIC_ROOT_PATH` to `/home/u637857322/domains/tag-marketplace.com/public_html/v42`;
+  - deploy creates/preserves the QAS `uploads` directory while the normal rsync still excludes uploads;
+  - Production behavior stays unchanged when `PUBLIC_ROOT_PATH` is unset.
+- Added `MediaPublicRootIsolationTest`.
+- Existing public media must be copied once into the isolated QAS uploads directory so cloned database records can resolve their current relative image paths.
