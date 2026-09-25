@@ -19,7 +19,7 @@
     <div class="muted">{{ $user->name }} · {{ $user->email }}</div>
     <div class="meta">
         <strong>{{ __('Period') }}:</strong> {{ $statement['from']->format('Y-m-d') }} → {{ $statement['to']->format('Y-m-d') }}
-        @if($filters['type']) · <strong>{{ __('Movement type') }}:</strong> {{ ucfirst($filters['type']) }} @endif
+        @if($filters['type']) · <strong>{{ __('Movement type') }}:</strong> {{ ['order' => __('Orders'), 'payment' => __('Payments'), 'refund' => __('Refunds'), 'return' => __('Returns')][$filters['type']] ?? $filters['type'] }} @endif
     </div>
     <div class="no-balance">{{ __('This statement lists recorded commercial activity. It does not calculate a running customer balance.') }}</div>
 

@@ -93,7 +93,7 @@ class CustomerAccountStatementService
             ->whereHas('order', fn ($query) => $query->where('user_id', $customer->id))
             ->whereNotNull('paid_at')
             ->whereBetween('paid_at', [$from, $to])
-            ->with('order:id,user_id,order_number')
+            ->with('order:id,user_id,order_number,currency')
             ->orderBy('paid_at')
             ->get()
             ->map(fn (Payment $payment) => [

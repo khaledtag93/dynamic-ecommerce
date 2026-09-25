@@ -157,7 +157,7 @@ class CustomerAccountStatementTest extends TestCase
 
         $this->actingAs($regularUser)
             ->get('/admin/customers/'.$customer->id.'/statement')
-            ->assertRedirect('/login');
+            ->assertForbidden();
     }
 
     private function orderFor(User $customer, string $number, float $total, string $currency): Order

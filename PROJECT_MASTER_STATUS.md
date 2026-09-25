@@ -973,3 +973,14 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Production unchanged. QAS deployment and authenticated EN/AR/RTL/responsive acceptance remain separate gates.
 - Deferred Helpdesk V2 scope: attachments with safe file policy, SLA targets/breach indicators, reusable reply templates, richer customer/order/payment/delivery/return context, and channel ingestion for email/WhatsApp/chat into the same case timeline.
 
+## Customer Account Statement V1 — 2026-09-25
+- Added an Admin customer statement built only from canonical Orders, captured Payments, Order Refunds and Return Requests.
+- Added date/type filters, source-record drill-through, print view and UTF-8 CSV export.
+- Kept totals separated by recorded currency; no FX conversion is invented.
+- Explicitly does not calculate debit/credit or a running balance because Dynamic does not yet have a formal customer financial ledger.
+- Default statement window is the last 12 months.
+- Access stays behind `customers.manage`.
+- Regression coverage: `CustomerAccountStatementTest`.
+- Source currently isolated on `wip/customer-account-statement-v1` pending a green base CI before merge.
+- Production unchanged; QAS/Production remain separate gates.
+

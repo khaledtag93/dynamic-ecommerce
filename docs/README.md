@@ -150,3 +150,7 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Customer Support / Helpdesk Foundation V1
 - [Customer Support / Helpdesk Foundation V1](CUSTOMER_SUPPORT_HELPDESK_V1_2026-09-25.md)
+
+### 2026-09-25 — Customer Account Statement V1
+- [Customer Account Statement V1](CUSTOMER_ACCOUNT_STATEMENT_V1_2026-09-25.md)
+
