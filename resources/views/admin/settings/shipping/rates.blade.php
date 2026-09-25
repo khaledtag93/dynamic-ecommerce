@@ -5,9 +5,9 @@
 @section('content')
 <div class="admin-page-shell">
     <x-admin.page-header :kicker="__('Commerce setup')" :title="__('Shipping rates')" :description="__('Set one server-authoritative rate per shipping method and zone. Free-shipping thresholds are optional and require an explicit calculation basis.')">
-        <a href="{{ route('admin.settings.shipping.methods') }}" class="btn btn-light border">{{ __('Shipping methods') }}</a>
-        <a href="{{ route('admin.settings.shipping.zones') }}" class="btn btn-light border">{{ __('Zones & cities') }}</a>
     </x-admin.page-header>
+
+    @include('admin.settings.shipping._nav', ['shippingSection' => 'rates'])
 
     <div class="alert alert-info border-0 rounded-4">
         {{ __('Store pickup does not need a rate and is always quoted as zero shipping. Standard and Express shipping require an active zone rate before checkout can use them.') }}
