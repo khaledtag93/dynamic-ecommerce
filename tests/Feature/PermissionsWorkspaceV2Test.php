@@ -29,6 +29,10 @@ class PermissionsWorkspaceV2Test extends TestCase
         $response->assertSee('data-admin-section-panel="roles"', false);
         $response->assertSee('data-admin-section-panel="matrix"', false);
         $response->assertSee('data-permission-search', false);
+        $response->assertSee('data-staff-search', false);
+        $response->assertSee('data-staff-card', false);
+        $response->assertSee('data-permission-bulk="select"', false);
+        $response->assertSee('data-permission-bulk="clear"', false);
         $response->assertSee('data-permission-row', false);
         $response->assertDontSee('Legacy fallback');
         $response->assertDontSee('Full legacy fallback');
@@ -53,6 +57,9 @@ class PermissionsWorkspaceV2Test extends TestCase
         $response->assertSee('عرض لوحة التحكم');
         $response->assertSee('إدارة الطلبات');
         $response->assertSee('البحث في الصلاحيات');
+        $response->assertSee('ابحث عن الموظفين بالاسم أو البريد الإلكتروني أو الدور');
+        $response->assertSee('تحديد الكل');
+        $response->assertSee('إلغاء تحديد الكل');
     }
 
     public function test_roleless_admin_is_not_presented_as_super_admin_in_workspace_data(): void

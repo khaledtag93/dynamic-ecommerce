@@ -5059,5 +5059,10 @@
     "Order placed successfully. Redirecting to secure payment...": "تم تسجيل الطلب بنجاح. جارٍ تحويلك إلى الدفع الآمن...",
     "Order placed successfully.": "تم تسجيل الطلب بنجاح.",
     "العربية": "العربية",
-    "Unable to update the cart right now.": "تعذر تحديث سلة التسوق الآن. حاول مرة أخرى."
+    "Unable to update the cart right now.": "تعذر تحديث سلة التسوق الآن. حاول مرة أخرى.",
+    "Search staff by name, email, or role": "ابحث عن الموظفين بالاسم أو البريد الإلكتروني أو الدور",
+    "No staff match your search": "لا يوجد موظفون يطابقون بحثك",
+    "Try a staff name, email address, or role name.": "جرّب اسم موظف أو بريده الإلكتروني أو اسم الدور.",
+    "Select all": "تحديد الكل",
+    "Clear all": "إلغاء تحديد الكل"
 }

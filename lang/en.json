@@ -3604,5 +3604,10 @@
     "Maintain trust-section headings and legacy promo content only when still required.": "Maintain trust-section headings and legacy promo content only when still required.",
     "Untitled banner": "Untitled banner",
     "Trust block": "Trust block",
-    "Untitled trust block": "Untitled trust block"
+    "Untitled trust block": "Untitled trust block",
+    "Search staff by name, email, or role": "Search staff by name, email, or role",
+    "No staff match your search": "No staff match your search",
+    "Try a staff name, email address, or role name.": "Try a staff name, email address, or role name.",
+    "Select all": "Select all",
+    "Clear all": "Clear all"
 }
