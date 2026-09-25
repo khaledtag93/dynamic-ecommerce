@@ -55,20 +55,20 @@
                         <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('discount_value') }}">{{ __('Discount') }} @if($sort === 'discount_value') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                         <th><a class="table-sort-btn" data-live-link href="{{ $sortLink('priority') }}">{{ __('Priority') }} @if($sort === 'priority') <i class="mdi {{ $direction === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}"></i> @endif</a></th>
                         <th>{{ __('Status') }}</th>
-                        <th class="text-end">{{ __('Actions') }}</th>
+                        <th class="text-end rtl-text-start">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                 @forelse($promotions as $promotion)
                     <tr>
                         <td class="fw-semibold">{{ $promotion->name }}</td>
-                        <td>{{ __(IlluminateSupportStr::headline(str_replace('_', ' ', $promotion->type))) }}</td>
+                        <td>{{ __(\Illuminate\Support\Str::headline(str_replace('_', ' ', $promotion->type))) }}</td>
                         <td>{{ $promotion->category?->name ?: __('All') }}</td>
                         <td>{{ number_format((float) $promotion->discount_value, 2) }}</td>
                         <td>{{ $promotion->priority }}</td>
                         <td><span class="badge admin-status-badge {{ $promotion->is_active ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ $promotion->is_active ? __('Active') : __('Inactive') }}</span></td>
-                        <td class="text-end">
-                            <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                        <td class="text-end rtl-text-start">
+                            <div class="d-inline-flex gap-2 flex-wrap justify-content-end rtl-justify-start">
                                 <a href="{{ route('admin.promotions.edit', $promotion) }}" class="btn-table-icon btn-edit" title="{{ __('Edit promotion') }}"><i class="mdi mdi-pencil-outline"></i></a>
                                 <form method="POST" action="{{ route('admin.promotions.destroy', $promotion) }}" data-submit-loading data-confirm-message="{{ __('Delete this promotion rule?') }}">
                                     @csrf
