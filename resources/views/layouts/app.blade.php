@@ -633,7 +633,7 @@
 
                 <form class="retail-search d-none d-lg-flex" action="{{ route('frontend.search') }}" method="GET" role="search">
                     <i class="bi bi-search"></i>
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products, categories, and offers') }}">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products, categories, and offers') }}" aria-label="{{ __('Search products, categories, and offers') }}" data-storefront-search>
                     <button type="submit">{{ __('Search') }}</button>
                 </form>
 
@@ -745,7 +745,7 @@
 
                 <form class="retail-search retail-search--mobile d-lg-none" action="{{ route('frontend.search') }}" method="GET" role="search">
                     <i class="bi bi-search"></i>
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products') }}">
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ __('Search products') }}" aria-label="{{ __('Search products') }}" data-storefront-search>
                     <button type="submit">{{ __('Search') }}</button>
                 </form>
             </div>
@@ -796,6 +796,18 @@ document.addEventListener('DOMContentLoaded', function () {
             window.setTimeout(() => dismiss(toast), 4200);
         });
     }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return;
+        const target = event.target;
+        if (target && (target.matches('input, textarea, select') || target.isContentEditable)) return;
+        const searches = Array.from(document.querySelectorAll('[data-storefront-search]'));
+        const search = searches.find((input) => input.offsetParent !== null);
+        if (!search) return;
+        event.preventDefault();
+        search.focus();
+        search.select();
+    });
 
     const retailNav = document.getElementById('retailNav');
     if (retailNav) {
