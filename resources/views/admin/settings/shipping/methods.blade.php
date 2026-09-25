@@ -5,9 +5,9 @@
 @section('content')
 <div class="admin-page-shell">
     <x-admin.page-header :kicker="__('Commerce setup')" :title="__('Shipping methods')" :description="__('Control delivery methods, storefront names, availability, and ETA without changing their stable system codes.')">
-        <a href="{{ route('admin.settings.shipping.zones') }}" class="btn btn-light border">{{ __('Zones & cities') }}</a>
-        <a href="{{ route('admin.settings.shipping.rates') }}" class="btn btn-light border">{{ __('Shipping rates') }}</a>
     </x-admin.page-header>
+
+    @include('admin.settings.shipping._nav', ['shippingSection' => 'methods'])
 
     <div class="row g-4">
         @foreach($methods as $method)
