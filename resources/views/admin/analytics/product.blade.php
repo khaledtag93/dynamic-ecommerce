@@ -152,14 +152,15 @@
     'exportRows' => $exportRows,
 ])
 
-<div class="analytics-shell">
-    <div class="analytics-anchor-nav">
-        <a href="#product-operator-summary" class="analytics-anchor">{{ __('Operator summary') }}</a>
-        <a href="#product-kpis" class="analytics-anchor">{{ __('KPI hierarchy') }}</a>
-        <a href="#product-charts" class="analytics-anchor">{{ __('Chart suite') }}</a>
-        <a href="#product-variants" class="analytics-anchor">{{ __('Variant mix') }}</a>
-    </div>
+<div class="analytics-shell" data-admin-section-tabs="product-analytics" data-admin-section-history="true">
+    <x-admin.section-tabs id="product-analytics" :sections="[
+        'summary' => __('Operator summary'),
+        'performance' => __('Performance'),
+        'trends' => __('Trends'),
+        'variants' => __('Variant mix'),
+    ]" />
 
+    <section id="product-analytics-panel-summary" role="tabpanel" aria-labelledby="product-analytics-tab-summary" data-admin-section-panel="summary">
     <div class="analytics-mini-grid" id="product-operator-summary">
         @foreach ($productOperatorReads as $item)
             <div class="analytics-mini">
@@ -169,7 +170,9 @@
             </div>
         @endforeach
     </div>
+    </section>
 
+    <section id="product-analytics-panel-performance" role="tabpanel" aria-labelledby="product-analytics-tab-performance" data-admin-section-panel="performance">
     <div class="analytics-grid-4" id="product-kpis">
         <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Product views') }}</div><div class="fs-3 fw-bold">{{ number_format((int) ($totals['views'] ?? 0)) }}</div></div></div>
         <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Add-to-cart actions') }}</div><div class="fs-3 fw-bold">{{ number_format((int) ($totals['add_to_cart_count'] ?? 0)) }}</div></div></div>
@@ -182,7 +185,9 @@
         <div class="analytics-mini"><div class="text-muted small">{{ __('View → purchase') }}</div><div class="fs-4 fw-bold">{{ number_format(((float) ($totals['conversion_rate'] ?? 0)) * 100, 1) }}%</div><div class="text-muted small mt-2">{{ __('End-to-end product conversion from view to purchase.') }}</div></div>
         <div class="analytics-mini"><div class="text-muted small">{{ __('Cart → purchase') }}</div><div class="fs-4 fw-bold">{{ number_format(((float) ($totals['cart_to_purchase_rate'] ?? 0)) * 100, 1) }}%</div><div class="text-muted small mt-2">{{ __('Whether this product closes cleanly after intent exists.') }}</div></div>
     </div>
+    </section>
 
+    <section id="product-analytics-panel-trends" role="tabpanel" aria-labelledby="product-analytics-tab-trends" data-admin-section-panel="trends">
     @if ($uiState['show_charts'] ?? false)
     <div class="analytics-chart-grid" id="product-charts">
         <div class="analytics-chart-card">
@@ -255,7 +260,9 @@
             </div>
         </div>
     </div>
+    </section>
 
+    <section id="product-analytics-panel-variants" role="tabpanel" aria-labelledby="product-analytics-tab-variants" data-admin-section-panel="variants">
     @if ($uiState['show_variants'] ?? false)
     <div class="analytics-card" id="product-variants">
         <div class="card-body">
@@ -289,5 +296,6 @@
         </div>
     </div>
     @endif
+    </section>
 </div>
 @endsection
