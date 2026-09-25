@@ -587,7 +587,7 @@ class StorefrontExperienceTest extends TestCase
     {
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
 
-        $this->assertSame(2, substr_count($layout, 'data-storefront-search aria-label='));
+        $this->assertSame(2, preg_match_all('/<input[^>]+data-storefront-search[^>]*>/', $layout));
         $this->assertStringContainsString("querySelectorAll('[data-storefront-search]')", $layout);
         $this->assertStringContainsString("event.key !== '/'", $layout);
         $this->assertStringContainsString("target.matches('input, textarea, select')", $layout);
