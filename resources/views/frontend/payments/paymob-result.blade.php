@@ -34,6 +34,13 @@
                 <span class="lc-status-badge lc-badge-processing">{{ $order->order_number }}</span>
             </div>
 
+            @if(data_get($order->meta, 'stock_reservation_exception'))
+                <div class="alert alert-warning rounded-4 text-start mb-4">
+                    <div class="fw-semibold mb-1">{{ __('Payment received — fulfillment review required') }}</div>
+                    <div class="small">{{ __('Your payment was confirmed, but one or more items need an inventory review before fulfillment. Your payment record is preserved; support can help with the next step.') }}</div>
+                </div>
+            @endif
+
             @if($hasCheckoutFailure)
                 <div class="alert alert-warning rounded-4 text-start mb-4">
                     <div class="fw-semibold mb-1">{{ __('Secure payment page could not be opened') }}</div>
