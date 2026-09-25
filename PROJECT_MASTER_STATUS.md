@@ -931,4 +931,7 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Fixed the disabled-engine Run Now path so the UI shows the disabled note instead of an incomplete metrics message.
 - Filled the remaining Growth workspace Arabic copy gaps for page metadata, CRUD feedback, validation/demo feedback, and the new integrity labels.
 - Added source-level and database regression coverage for selective settings updates, preservation of admin Growth customizations, rule-link UX, and disabled-run result shape.
-- Follow-up audit item: `dashboardSnapshot()` still refreshes attribution, cohorts, predictive scores, and adaptive-learning snapshots during Growth page GET requests. Review caching/scheduled refresh so Growth navigation remains fast as data volume grows.
+- Added Growth V2.1 progressive no-reload mutations for the four Overview engine controls, campaign/rule/experiment toggles, and failed-delivery Retry. Server responses now support JSON for enhanced requests while preserving redirect/flash fallbacks.
+- Added in-place state/status updates plus bilingual non-disruptive feedback; broad mutations such as Run Engine and demo-data seed/clear intentionally continue to reload because they change wider page state.
+- Added regression coverage for the no-reload source contract and Arabic error feedback.
+- Follow-up audit item: `dashboardSnapshot()` still refreshes attribution, cohorts, predictive scores, and adaptive-learning snapshots during Growth page GET requests. This is now the next Growth performance slice: move expensive refresh work behind a cache/scheduled or explicit-refresh boundary so normal navigation remains fast as data volume grows.
