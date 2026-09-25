@@ -124,7 +124,7 @@
     'exportRows' => $exportRows,
 ])
 
-<div class="analytics-shell" data-admin-section-tabs="offers-analytics">
+<div class="analytics-shell" data-admin-section-tabs="offers-analytics" data-admin-section-history="true">
     <x-admin.section-tabs id="offers-analytics" :sections="[
         'summary' => __('Summary'),
         'charts' => __('Coupon charts'),
