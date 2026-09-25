@@ -85,11 +85,11 @@
 
                 <div class="admin-custom-menu" id="quick-create-menu" role="menu" hidden>
                     @if($canAdmin('catalog.manage'))
-                        <a class="admin-custom-menu__item" href="{{ route('admin.products.create') }}"><i class="mdi mdi-package-variant-closed"></i><span>{{ __('New product') }}</span></a>
-                        <a class="admin-custom-menu__item" href="{{ route('admin.categories.create') }}"><i class="mdi mdi-shape-outline"></i><span>{{ __('New category') }}</span></a>
+                        <a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.products.create') }}"><i class="mdi mdi-package-variant-closed"></i><span>{{ __('New product') }}</span></a>
+                        <a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.categories.create') }}"><i class="mdi mdi-shape-outline"></i><span>{{ __('New category') }}</span></a>
                     @endif
-                    @if($canAdmin('promotions.manage'))<a class="admin-custom-menu__item" href="{{ route('admin.coupons.create') }}"><i class="mdi mdi-ticket-percent-outline"></i><span>{{ __('New coupon') }}</span></a>@endif
-                    @if($canAdmin('orders.view'))<a class="admin-custom-menu__item" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline"></i><span>{{ __('Review orders') }}</span></a>@endif
+                    @if($canAdmin('promotions.manage'))<a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.coupons.create') }}"><i class="mdi mdi-ticket-percent-outline"></i><span>{{ __('New coupon') }}</span></a>@endif
+                    @if($canAdmin('orders.view'))<a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline"></i><span>{{ __('Review orders') }}</span></a>@endif
                 </div>
             </li>
             @endif
@@ -112,14 +112,14 @@
                     <div class="admin-custom-menu__divider"></div>
 
                     @if($canAdmin('dashboard.view'))
-                    <a class="admin-custom-menu__item" href="{{ route('admin.dashboard') }}">
+                    <a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.dashboard') }}">
                         <i class="mdi mdi-view-dashboard-outline"></i>
                         <span>{{ __('Admin dashboard') }}</span>
                     </a>
                     @endif
 
                     @if($canAdmin('notifications.view'))
-                    <a class="admin-custom-menu__item" href="{{ route('admin.notifications.index') }}">
+                    <a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.notifications.index') }}">
                         <i class="mdi mdi-bell-outline"></i>
                         <span>{{ __('Notifications') }}</span>
                         @if($authNotificationCount > 0)
@@ -129,27 +129,27 @@
                     @endif
 
                     @if($canAdmin('settings.manage'))
-                    <a class="admin-custom-menu__item" href="{{ route('admin.settings.notifications') }}">
+                    <a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.settings.notifications') }}">
                         <i class="mdi mdi-bell-cog-outline"></i>
                         <span>{{ __('Notification Center') }}</span>
                     </a>
                     @endif
 
                     @if($canAdmin('deploy.manage'))
-                    <a class="admin-custom-menu__item" href="{{ route('admin.settings.deploy-center') }}">
+                    <a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.settings.deploy-center') }}">
                         <i class="mdi mdi-rocket-launch-outline"></i>
                         <span>{{ __('Deploy Center') }}</span>
                     </a>
                     @endif
 
-                    <a class="admin-custom-menu__item" href="{{ Route::has('frontend.home') ? route('frontend.home') : url('/') }}" target="_blank" rel="noopener">
+                    <a class="admin-custom-menu__item" role="menuitem" href="{{ Route::has('frontend.home') ? route('frontend.home') : url('/') }}" target="_blank" rel="noopener">
                             <i class="mdi mdi-storefront-outline"></i>
                             <span>{{ __('View storefront') }}</span>
                         </a>
 
 
                     @if($canAdmin('orders.view'))
-                        <a class="admin-custom-menu__item" href="{{ route('admin.orders.index') }}">
+                        <a class="admin-custom-menu__item" role="menuitem" href="{{ route('admin.orders.index') }}">
                             <i class="mdi mdi-cart-outline"></i>
                             <span>{{ __('Orders') }}</span>
                         </a>
@@ -161,7 +161,7 @@
 
                     <div class="admin-custom-menu__divider"></div>
 
-                    <a class="admin-custom-menu__item admin-custom-menu__item--danger" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a class="admin-custom-menu__item admin-custom-menu__item--danger" role="menuitem" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="mdi mdi-logout"></i>
                         <span>{{ __('Sign out') }}</span>
                     </a>
