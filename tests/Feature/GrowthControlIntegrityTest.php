@@ -73,7 +73,7 @@ class GrowthControlIntegrityTest extends TestCase
         $serviceSource = file_get_contents(app_path('Services/Growth/GrowthCampaignService.php'));
         $commandSource = file_get_contents(app_path('Console/Commands/RunGrowthAutomationCommand.php'));
 
-        $snapshotStart = strpos($serviceSource, 'public function dashboardSnapshot(): array');
+        $snapshotStart = strpos($serviceSource, 'public function dashboardSnapshot(');
         $snapshotEnd = strpos($serviceSource, 'public function engineEnabled(): bool', $snapshotStart);
         $snapshotSource = substr($serviceSource, $snapshotStart, $snapshotEnd - $snapshotStart);
 
@@ -85,7 +85,7 @@ class GrowthControlIntegrityTest extends TestCase
         $controllerSource = file_get_contents(app_path('Http/Controllers/Admin/GrowthController.php'));
 
         $this->assertStringContainsString('dashboardSnapshot($page)', $controllerSource);
-        $this->assertStringContainsString("public function dashboardSnapshot(string $page = 'full'): array", $serviceSource);
+        $this->assertStringContainsString('public function dashboardSnapshot(string $page = \'full\'): array', $serviceSource);
         $this->assertStringContainsString('growth:run', file_get_contents(app_path('Console/Kernel.php')));
         $this->assertStringContainsString('syncRecentAttribution()', $commandSource);
         $this->assertStringContainsString('GrowthCohortRetentionService', $commandSource);
