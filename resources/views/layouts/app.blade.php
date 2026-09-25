@@ -640,25 +640,25 @@
                 <div class="retail-actions">
                     @auth
                         <div class="dropdown retail-account-dropdown d-none d-md-inline-flex">
-                            <button class="retail-action retail-action--account dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="retail-action retail-action--account dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="menu">
                                 <i class="bi bi-person-circle"></i>
                                 <span>{{ auth()->user()->name ?? __('My account') }}</span>
                             </button>
-                            <div class="dropdown-menu retail-account-menu dropdown-menu-end">
+                            <div class="dropdown-menu retail-account-menu dropdown-menu-end" role="menu">
                                 <div class="retail-account-menu__head">
                                     <strong>{{ auth()->user()->name ?? __('My account') }}</strong>
                                     <small>{{ auth()->user()->email ?? '' }}</small>
                                 </div>
-                                <a class="dropdown-item" href="{{ route('account.index') }}"><i class="bi bi-person"></i>{{ __('My account') }}</a>
-                                <a class="dropdown-item" href="{{ route('orders.index') }}"><i class="bi bi-receipt"></i>{{ __('My Orders') }}</a>
-                                <a class="dropdown-item" href="{{ route('account.addresses.index') }}"><i class="bi bi-geo-alt"></i>{{ __('Address book') }}</a>
-                                <a class="dropdown-item" href="{{ route('notifications.index') }}"><i class="bi bi-bell"></i>{{ __('Notifications') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('account.index') }}"><i class="bi bi-person"></i>{{ __('My account') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('orders.index') }}"><i class="bi bi-receipt"></i>{{ __('My Orders') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('account.addresses.index') }}"><i class="bi bi-geo-alt"></i>{{ __('Address book') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('notifications.index') }}"><i class="bi bi-bell"></i>{{ __('Notifications') }}</a>
                                 @if((int) auth()->user()->role_as === 1)
-                                    <a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i>{{ __('Admin Dashboard') }}</a>
+                                    <a class="dropdown-item" role="menuitem" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i>{{ __('Admin Dashboard') }}</a>
                                 @endif
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button class="dropdown-item retail-account-menu__logout" type="submit"><i class="bi bi-box-arrow-right"></i>{{ __('Logout') }}</button>
+                                    <button class="dropdown-item retail-account-menu__logout" role="menuitem" type="submit"><i class="bi bi-box-arrow-right"></i>{{ __('Logout') }}</button>
                                 </form>
                             </div>
                         </div>
@@ -683,22 +683,22 @@
             <div class="collapse retail-nav-collapse" id="retailNav">
                 <div class="retail-nav-row">
                     <div class="dropdown retail-mega-dropdown">
-                        <button class="retail-category-button" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                        <button class="retail-category-button" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-haspopup="menu">
                             <i class="bi bi-grid-3x3-gap-fill"></i>
                             <span>{{ __('All categories') }}</span>
                             <i class="bi bi-chevron-down retail-category-button__chevron"></i>
                         </button>
-                        <div class="dropdown-menu retail-mega-menu">
+                        <div class="dropdown-menu retail-mega-menu" role="menu">
                             <div class="retail-mega-menu__head">
                                 <div>
                                     <strong>{{ __('Shop by department') }}</strong>
                                     <span>{{ __('Choose a category and start browsing faster.') }}</span>
                                 </div>
-                                <a href="#categories">{{ __('View all') }} <i class="bi bi-arrow-up-right"></i></a>
+                                <a href="#categories" role="menuitem">{{ __('View all') }} <i class="bi bi-arrow-up-right"></i></a>
                             </div>
                             <div class="retail-mega-menu__grid">
                                 @forelse($layoutCategories as $category)
-                                    <a class="retail-mega-category" href="{{ route('category.products', $category->id) }}">
+                                    <a class="retail-mega-category" role="menuitem" href="{{ route('category.products', $category->id) }}">
                                         <span class="retail-mega-category__icon">
                                             @if($category->image_url)
                                                 <img src="{{ $category->image_url }}" alt="{{ $category->name }}">
