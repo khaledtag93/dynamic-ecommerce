@@ -63,6 +63,7 @@
 .gm-empty{padding:16px;border:1px dashed var(--admin-border);border-radius:16px;background:var(--admin-surface-alt);color:var(--admin-muted);font-size:14px;line-height:1.7}.gm-box{padding:14px;border:1px solid var(--admin-border);border-radius:16px;background:var(--admin-surface-alt)}.gm-stack{display:grid;gap:12px}.gm-alert{padding:14px 16px;border-radius:16px;background:var(--admin-primary-soft);color:var(--admin-primary-dark);font-size:13px;line-height:1.7;border:1px solid color-mix(in srgb,var(--admin-primary) 18%,var(--admin-border))}.gm-alert--warning{background:color-mix(in srgb,#f59e0b 12%,var(--admin-surface));border-color:color-mix(in srgb,#f59e0b 28%,var(--admin-border));color:var(--admin-text)}
 .gm-toggle-list{display:grid;gap:.75rem}.gm-setting-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1rem;padding:.9rem 1rem;border:1px solid var(--admin-border);border-radius:14px;background:var(--admin-surface-alt)}.gm-setting-copy{min-width:0}.gm-setting-title{display:block;margin:0 0 .18rem;color:var(--admin-text);font-weight:800;cursor:pointer}.gm-setting-switch{padding:0!important;margin:0!important;min-height:0}.gm-setting-switch .form-check-input{float:none!important;margin:0!important;cursor:pointer}.gm-module{padding:0;overflow:hidden}.gm-module>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.1rem;cursor:pointer}.gm-module>summary::-webkit-details-marker{display:none}.gm-module>summary:hover{background:var(--admin-surface-alt)}
 .gm-module-summary{display:flex;align-items:center;gap:.75rem;min-width:0}.gm-module-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:var(--admin-primary-soft);color:var(--admin-primary-dark);flex:0 0 auto}.gm-module-title{font-weight:800;color:var(--admin-text)}.gm-count{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:.2rem .48rem;border-radius:999px;background:var(--admin-surface-alt);border:1px solid var(--admin-border);font-size:.75rem;font-weight:800;color:var(--admin-text)}.gm-module-body{padding:0 1.1rem 1.1rem;border-top:1px solid var(--admin-border)}
+.gm-live-feedback{position:fixed;inset-block-start:86px;inset-inline-end:24px;z-index:1100;max-width:min(420px,calc(100vw - 32px));padding:.82rem 1rem;border-radius:14px;border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-text);box-shadow:0 18px 46px rgba(15,23,42,.16);font-size:13px;font-weight:700;line-height:1.5}.gm-live-feedback.is-success{background:var(--admin-success-bg);color:var(--admin-success-text);border-color:color-mix(in srgb,var(--admin-success-text) 24%,var(--admin-border))}.gm-live-feedback.is-error{background:var(--admin-danger-bg);color:var(--admin-danger-text);border-color:color-mix(in srgb,var(--admin-danger-text) 24%,var(--admin-border))}
 @media (max-width:1200px){.gm-grid,.gm-grid--three,.gm-two{grid-template-columns:repeat(2,minmax(0,1fr))}.gm-statusbar{grid-template-columns:repeat(2,minmax(0,1fr))}}
 html[dir="rtl"] .gm-setting-row{text-align:right}
 @media (max-width:768px){.gm-grid,.gm-grid--three,.gm-two,.gm-statusbar{grid-template-columns:1fr}.gm-title{font-size:25px}.gm-hero{padding:1rem}.gm-hero-top{align-items:flex-start}.gm-actions{align-items:stretch}.gm-actions .btn{width:100%;justify-content:center}.gm-nav{top:64px;margin-inline:-.2rem}.gm-section-heading{align-items:flex-start;flex-direction:column}.gm-setting-row{gap:.75rem}}
@@ -88,14 +89,14 @@ html[dir="rtl"] .gm-setting-row{text-align:right}
 
         <div class="gm-statusbar" aria-label="{{ __('Growth status') }}">
             @foreach([
-                [__('Engine'), $engineOn],
-                [__('Messaging'), $messagingOn],
-                [__('Real email'), $realEmailOn],
-                [__('Experiments'), $experimentsOn],
-            ] as [$label, $enabled])
+                ['engine', __('Engine'), $engineOn],
+                ['messaging', __('Messaging'), $messagingOn],
+                ['real_email', __('Real email'), $realEmailOn],
+                ['experiments', __('Experiments'), $experimentsOn],
+            ] as [$statusKey, $label, $enabled])
                 <div class="gm-status">
                     <strong>{{ $label }}</strong>
-                    <span class="{{ $enabled ? 'is-on' : 'is-off' }}">{{ $enabled ? __('Enabled') : __('Disabled') }}</span>
+                    <span data-growth-status="{{ $statusKey }}" class="{{ $enabled ? 'is-on' : 'is-off' }}">{{ $enabled ? __('Enabled') : __('Disabled') }}</span>
                 </div>
             @endforeach
         </div>
@@ -108,6 +109,134 @@ html[dir="rtl"] .gm-setting-row{text-align:right}
         <a href="{{ $quickLinks['insights'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'insights' ? 'active' : '' }}"><i class="mdi mdi-chart-box-outline"></i>{{ __('Insights') }}</a>
     </nav>
 
+    <div
+        class="gm-live-feedback"
+        data-growth-feedback
+        data-growth-error="{{ __('The change could not be completed. Please refresh and try again.') }}"
+        role="status"
+        aria-live="polite"
+        hidden></div>
+
     @yield('growth-module-content')
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    'use strict';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const shell = document.querySelector('.gm-shell');
+        if (!shell) return;
+
+        const feedback = shell.querySelector('[data-growth-feedback]');
+        const enabledText = @json(__('Enabled'));
+        const disabledText = @json(__('Disabled'));
+        let feedbackTimer = null;
+
+        function showFeedback(message, type = 'success') {
+            if (!feedback || !message) return;
+
+            window.clearTimeout(feedbackTimer);
+            feedback.textContent = message;
+            feedback.classList.toggle('is-success', type === 'success');
+            feedback.classList.toggle('is-error', type === 'error');
+            feedback.hidden = false;
+
+            feedbackTimer = window.setTimeout(() => {
+                feedback.hidden = true;
+            }, 4500);
+        }
+
+        function updateHeaderStatuses(settings) {
+            if (!settings || typeof settings !== 'object') return;
+
+            Object.entries(settings).forEach(([key, enabled]) => {
+                const badge = shell.querySelector('[data-growth-status="' + key + '"]');
+                if (!badge) return;
+
+                const isEnabled = Boolean(enabled);
+                badge.textContent = isEnabled ? enabledText : disabledText;
+                badge.classList.toggle('is-on', isEnabled);
+                badge.classList.toggle('is-off', !isEnabled);
+            });
+        }
+
+        shell.addEventListener('submit', async (event) => {
+            const form = event.target.closest('form[data-growth-async]');
+            if (!form || !window.fetch || event.defaultPrevented) return;
+
+            event.preventDefault();
+
+            if (form.dataset.growthBusy === '1') return;
+            form.dataset.growthBusy = '1';
+
+            const submitter = event.submitter || form.querySelector('[data-growth-action], button[type="submit"], button:not([type])');
+            const originalButtonHtml = submitter ? submitter.innerHTML : null;
+            const formData = new FormData(form);
+
+            if (submitter) {
+                submitter.disabled = true;
+                submitter.setAttribute('aria-busy', 'true');
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: (form.method || 'POST').toUpperCase(),
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: formData,
+                });
+
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const validationMessage = payload.errors
+                        ? Object.values(payload.errors).flat().find(Boolean)
+                        : null;
+                    throw new Error(validationMessage || payload.message || feedback?.dataset.growthError);
+                }
+
+                updateHeaderStatuses(payload.settings);
+
+                const row = form.closest('tr');
+                const state = row?.querySelector('[data-growth-state]');
+                if (state && payload.status_label) {
+                    state.textContent = payload.status_label;
+                }
+
+                if (submitter && payload.action_label) {
+                    submitter.textContent = payload.action_label;
+                }
+
+                if (form.matches('[data-growth-retry]') && payload.can_retry === false) {
+                    const replacement = document.createElement('span');
+                    replacement.className = 'gm-mini';
+                    replacement.textContent = '—';
+                    form.replaceWith(replacement);
+                }
+
+                showFeedback(payload.message, 'success');
+            } catch (error) {
+                showFeedback(error.message || feedback?.dataset.growthError, 'error');
+            } finally {
+                form.dataset.growthBusy = '0';
+
+                if (submitter && submitter.isConnected) {
+                    submitter.disabled = false;
+                    submitter.removeAttribute('aria-busy');
+
+                    if (!submitter.hasAttribute('data-growth-action') && originalButtonHtml !== null) {
+                        submitter.innerHTML = originalButtonHtml;
+                    }
+                }
+            }
+        });
+    });
+})();
+</script>
+@endpush
