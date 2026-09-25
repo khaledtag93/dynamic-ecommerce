@@ -583,6 +583,16 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("bootstrap.Collapse.getOrCreateInstance(retailNav).hide()", $layout);
     }
 
+    public function test_account_navigation_keeps_current_section_visible_on_mobile(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('scroll-snap-type:inline proximity', $layout);
+        $this->assertStringContainsString(".lc-account-nav [aria-current=\"page\"]", $layout);
+        $this->assertStringContainsString("window.matchMedia('(max-width: 767.98px)').matches", $layout);
+        $this->assertStringContainsString("current.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })", $layout);
+    }
+
     public function test_storefront_search_has_accessible_keyboard_shortcut(): void
     {
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
