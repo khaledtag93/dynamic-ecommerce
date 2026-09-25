@@ -1485,6 +1485,76 @@ select option {
             justify-content: flex-end;
         }
 
+        /* Unified admin switches */
+        .form-check.form-switch {
+            display: grid !important;
+            grid-template-columns: 2.5rem minmax(0, 1fr);
+            align-items: center;
+            column-gap: .65rem;
+            row-gap: .3rem;
+            min-height: 2.75rem;
+            padding: .55rem .7rem !important;
+            margin: 0;
+            border-radius: .9rem;
+            background: color-mix(in srgb, var(--admin-surface) 92%, var(--admin-bg));
+            border: 1px solid color-mix(in srgb, var(--admin-border) 88%, transparent);
+        }
+
+        .form-check.form-switch .form-check-input {
+            grid-column: 1;
+            grid-row: 1;
+            float: none !important;
+            margin: 0 !important;
+            justify-self: start;
+            align-self: center;
+            width: 2.35rem;
+            height: 1.3rem;
+            cursor: pointer;
+        }
+
+        .form-check.form-switch .form-check-label {
+            grid-column: 2;
+            grid-row: 1;
+            margin: 0 !important;
+            min-width: 0;
+            line-height: 1.35;
+            cursor: pointer;
+        }
+
+        .form-check.form-switch > .form-text,
+        .form-check.form-switch > .admin-helper-text {
+            grid-column: 2;
+            grid-row: 2;
+            width: auto;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        body[dir='rtl'] .form-check.form-switch,
+        html[dir='rtl'] .form-check.form-switch {
+            direction: rtl;
+            text-align: right;
+        }
+
+        body[dir='rtl'] .form-check.form-switch .form-check-input,
+        html[dir='rtl'] .form-check.form-switch .form-check-input {
+            justify-self: start;
+        }
+
+        .form-check.form-switch.form-check-reverse {
+            grid-template-columns: minmax(0, 1fr) 2.5rem;
+        }
+
+        .form-check.form-switch.form-check-reverse .form-check-input {
+            grid-column: 2;
+        }
+
+        .form-check.form-switch.form-check-reverse .form-check-label,
+        .form-check.form-switch.form-check-reverse > .form-text,
+        .form-check.form-switch.form-check-reverse > .admin-helper-text {
+            grid-column: 1;
+        }
+
         .required-star {
             color: var(--admin-danger-text);
         }
@@ -1758,6 +1828,62 @@ select option {
             border-top: 1px solid color-mix(in srgb, var(--admin-border) 76%, transparent);
             line-height: 1.5;
         }
+        .admin-stat-card--v2 {
+            grid-template-columns: auto minmax(0, 1fr);
+            grid-template-rows: auto auto auto auto;
+            align-content: center;
+            min-height: 132px;
+            padding: 1rem 1.05rem;
+        }
+
+        .admin-stat-card--v2.admin-stat-card--no-icon {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .admin-stat-card--v2.admin-stat-card--no-icon .admin-stat-label,
+        .admin-stat-card--v2.admin-stat-card--no-icon .admin-stat-value,
+        .admin-stat-card--v2.admin-stat-card--no-icon .admin-stat-meta,
+        .admin-stat-card--v2.admin-stat-card--no-icon .admin-stat-help {
+            grid-column: 1;
+        }
+
+        .admin-stat-card--v2 .admin-stat-meta,
+        .admin-stat-card--v2 .admin-stat-help {
+            grid-column: 1 / -1;
+            min-width: 0;
+        }
+
+        .admin-stat-card--v2 .admin-stat-meta {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+            margin-top: .65rem;
+            padding-top: .65rem;
+            border-top: 1px solid color-mix(in srgb, var(--admin-border) 76%, transparent);
+            color: var(--admin-muted);
+            font-size: .82rem;
+        }
+
+        .admin-stat-card--v2 .admin-stat-help {
+            margin-top: .42rem;
+            color: var(--admin-muted);
+            font-size: .8rem;
+            line-height: 1.5;
+        }
+
+        .admin-stat-card--success::before {
+            background: linear-gradient(90deg, var(--admin-success-text), var(--admin-primary));
+        }
+
+        .admin-stat-card--warning::before {
+            background: linear-gradient(90deg, var(--admin-warning-text), var(--admin-primary));
+        }
+
+        .admin-stat-card--danger::before {
+            background: linear-gradient(90deg, var(--admin-danger-text), var(--admin-accent));
+        }
+
         .admin-filter-grid {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr auto;
