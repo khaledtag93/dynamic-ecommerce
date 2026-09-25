@@ -38,7 +38,7 @@
                     <label class="form-label fw-semibold">{{ __('Status') }}</label>
                     <select name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
-                        @foreach(AppModelsPurchase::statusOptions() as $value => $label)
+                        @foreach(\App\Models\Purchase::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ __($label) }}</option>
                         @endforeach
                     </select>
