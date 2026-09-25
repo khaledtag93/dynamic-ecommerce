@@ -36,6 +36,18 @@ class AnalyticsWorkspaceV2Test extends TestCase
         $this->assertStringNotContainsString('admin-card admin-stat-card offers-trend-card', $source);
     }
 
+    public function test_growth_analytics_uses_focused_section_tabs(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/analytics/growth.blade.php'));
+
+        $this->assertStringContainsString('data-admin-section-tabs="growth-analytics"', $source);
+        $this->assertStringContainsString('<x-admin.section-tabs id="growth-analytics"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="overview"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="campaigns"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="products"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="offers"', $source);
+    }
+
     public function test_arabic_analytics_workspace_labels_are_available(): void
     {
         $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
@@ -48,5 +60,9 @@ class AnalyticsWorkspaceV2Test extends TestCase
         $this->assertSame('مخططات الكوبونات', $translations['Coupon charts'] ?? null);
         $this->assertSame('عرض الإدارة', $translations['Management view'] ?? null);
         $this->assertSame('الجدول التفصيلي', $translations['Detailed table'] ?? null);
+        $this->assertSame('نظرة عامة على النمو', $translations['Growth overview'] ?? null);
+        $this->assertSame('الحملات والأتمتة', $translations['Campaigns & automation'] ?? null);
+        $this->assertSame('إشارات المنتجات', $translations['Product signals'] ?? null);
+        $this->assertSame('العروض والكوبونات', $translations['Offers & coupons'] ?? null);
     }
 }
