@@ -45,7 +45,7 @@ class GrowthController extends Controller
 
     protected function renderModulePage(string $page): View
     {
-        $snapshot = $this->growthCampaignService->dashboardSnapshot();
+        $snapshot = $this->growthCampaignService->dashboardSnapshot($page);
         $settings = $snapshot['settings'] ?? [];
 
         $viewPage = $page === 'overview' ? 'index' : $page;
