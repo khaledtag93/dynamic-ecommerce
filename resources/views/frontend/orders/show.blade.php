@@ -6,6 +6,7 @@
 <section class="py-5 lc-page-shell">
     <div class="container">
         @php($latestPayment = $order->latestPayment)
+        @php($currency = $order->currency ?: 'EGP')
         <div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
             <div>
                 <div class="text-uppercase small text-muted fw-bold mb-1">{{ __('Order details') }}</div>
@@ -13,6 +14,7 @@
             </div>
             <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('orders.index') }}" class="btn lc-btn-soft"><i class="bi bi-arrow-left me-2"></i>{{ __('My Orders') }}</a>
+                <a href="{{ route('orders.receipt', $order) }}" class="btn lc-btn-soft" target="_blank" rel="noopener"><i class="bi bi-printer me-2"></i>{{ __('Print receipt') }}</a>
                 @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
                     <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-primary">{{ __('Pay now securely') }}</a>
                 @endif
@@ -79,9 +81,9 @@
                                                 <div class="small text-muted">SKU: {{ $item->sku }}</div>
                                             @endif
                                         </td>
-                                        <td>EGP {{ number_format($item->unit_price, 2) }}</td>
+                                        <td>{{ $currency }} {{ number_format($item->unit_price, 2) }}</td>
                                         <td>{{ $item->quantity }}</td>
-                                        <td class="text-end fw-semibold">EGP {{ number_format($item->total_price, 2) }}</td>
+                                        <td class="text-end fw-semibold">{{ $currency }} {{ number_format($item->line_total, 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -92,12 +94,12 @@
                 <div class="lc-card p-4 mb-4">
                     <h4 class="fw-bold mb-3">{{ __('Order summary') }}</h4>
                     <div class="lc-summary-list">
-                        <div class="row-item"><span class="text-muted">{{ __('Subtotal') }}</span><strong>EGP {{ number_format($order->subtotal, 2) }}</strong></div>
-                        <div class="row-item"><span class="text-muted">{{ __('Discount') }}</span><strong>- EGP {{ number_format($order->discount_total, 2) }}</strong></div>
-                        <div class="row-item"><span class="text-muted">{{ __('Shipping') }}</span><strong>EGP {{ number_format($order->shipping_total, 2) }}</strong></div>
-                        <div class="row-item"><span class="text-muted">{{ __('Tax') }}</span><strong>EGP {{ number_format($order->tax_total, 2) }}</strong></div>
+                        <div class="row-item"><span class="text-muted">{{ __('Subtotal') }}</span><strong>{{ $currency }} {{ number_format($order->subtotal, 2) }}</strong></div>
+                        <div class="row-item"><span class="text-muted">{{ __('Discount') }}</span><strong>-{{ $currency }} {{ number_format($order->discount_total, 2) }}</strong></div>
+                        <div class="row-item"><span class="text-muted">{{ __('Shipping') }}</span><strong>{{ $currency }} {{ number_format($order->shipping_total, 2) }}</strong></div>
+                        <div class="row-item"><span class="text-muted">{{ __('Tax') }}</span><strong>{{ $currency }} {{ number_format($order->tax_total, 2) }}</strong></div>
                         <hr>
-                        <div class="row-item fs-5"><span class="fw-bold">{{ __('Grand total') }}</span><strong>EGP {{ number_format($order->grand_total, 2) }}</strong></div>
+                        <div class="row-item fs-5"><span class="fw-bold">{{ __('Grand total') }}</span><strong>{{ $currency }} {{ number_format($order->grand_total, 2) }}</strong></div>
                     </div>
                 </div>
 
