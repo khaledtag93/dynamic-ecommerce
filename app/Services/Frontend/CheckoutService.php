@@ -12,6 +12,7 @@ use App\Services\Channels\WhatsApp\WhatsAppManager;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\ShippingService;
+use App\Services\Commerce\StockReservationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -26,6 +27,7 @@ class CheckoutService
         protected ProfitService $profitService,
         protected WhatsAppManager $whatsAppManager,
         protected ShippingService $shippingService,
+        protected StockReservationService $stockReservationService,
     ) {
     }
 
@@ -149,7 +151,7 @@ class CheckoutService
                 $expiresAt = $item->variant?->expiration_date ?? $item->product?->expiration_date;
                 $lineProfit = ((float) $item->unit_price - $unitCost) * (int) $item->quantity;
 
-                $order->items()->create([
+                $orderItem = $order->items()->create([
                     'product_id' => $item->product_id,
                     'product_variant_id' => $item->product_variant_id,
                     'product_name' => $item->product_name,
@@ -165,22 +167,27 @@ class CheckoutService
                     'meta' => $item->meta,
                 ]);
 
-                if ($item->variant) {
-                    $this->inventoryService->decrease($item->product, $item->variant, (int) $item->quantity, InventoryMovement::TYPE_ORDER_OUT, [
-                        'order_id' => $order->id,
-                        'reason' => 'Customer order placed',
-                        'unit_cost' => $unitCost,
-                        'expiration_date' => $expiresAt,
-                        'meta' => ['order_number' => $order->order_number],
-                    ]);
+                if ($paymentMethod === Order::PAYMENT_METHOD_ONLINE) {
+                    $this->stockReservationService->reserveOrderItem(
+                        $order,
+                        $orderItem,
+                        $item->product,
+                        $item->variant,
+                    );
                 } else {
-                    $this->inventoryService->decrease($item->product, null, (int) $item->quantity, InventoryMovement::TYPE_ORDER_OUT, [
-                        'order_id' => $order->id,
-                        'reason' => 'Customer order placed',
-                        'unit_cost' => $unitCost,
-                        'expiration_date' => $expiresAt,
-                        'meta' => ['order_number' => $order->order_number],
-                    ]);
+                    $this->inventoryService->decrease(
+                        $item->product,
+                        $item->variant,
+                        (int) $item->quantity,
+                        InventoryMovement::TYPE_ORDER_OUT,
+                        [
+                            'order_id' => $order->id,
+                            'reason' => 'Customer order placed',
+                            'unit_cost' => $unitCost,
+                            'expiration_date' => $expiresAt,
+                            'meta' => ['order_number' => $order->order_number],
+                        ]
+                    );
                 }
             }
 
