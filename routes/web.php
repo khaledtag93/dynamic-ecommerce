@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/orders', [CheckoutController::class, 'orders'])->name('orders.index');
     Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
+    Route::get('/orders/{order}/receipt', [CheckoutController::class, 'receipt'])->name('orders.receipt');
     Route::patch('/orders/{order}/cancel', [CheckoutController::class, 'cancelOrder'])->name('orders.cancel');
 
     Route::get('/order-success/{order}', [CheckoutController::class, 'success'])->name('orders.success');
@@ -269,6 +270,7 @@ Route::prefix('admin')
             Route::controller(AdminOrderController::class)->group(function () {
                 Route::get('/orders', 'index')->name('orders.index');
                 Route::get('/orders/{order}', 'show')->name('orders.show');
+                Route::get('/orders/{order}/receipt', 'receipt')->name('orders.receipt');
             });
             Route::get('/returns', [AdminReturnRequestController::class, 'index'])->name('returns.index');
             Route::get('/returns/{returnRequest}', [AdminReturnRequestController::class, 'show'])->name('returns.show');
