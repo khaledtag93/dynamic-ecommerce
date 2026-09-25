@@ -40,7 +40,7 @@
 
     @if($can('dashboard.view') || $can('growth.view'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $overviewOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $overviewOpen ? 'true' : 'false' }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-monitor-dashboard"></i></span>
                 <span>
@@ -71,7 +71,7 @@
 
     @if($can('catalog.manage') || $can('reviews.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $catalogOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $catalogOpen ? 'true' : 'false' }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-package-variant"></i></span>
                 <span>
@@ -108,7 +108,7 @@
 
     @if($can('pos.manage') || $can('pos.shifts.review') || $can('orders.view') || $can('customers.manage') || $can('support.view') || $can('payments.view') || $can('delivery.view'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $operationsOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $operationsOpen ? 'true' : 'false' }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-clipboard-text-clock-outline"></i></span>
                 <span>
@@ -164,7 +164,7 @@
 
     @if($can('inventory.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $inventoryOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $inventoryOpen ? 'true' : 'false' }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-warehouse"></i></span>
                 <span>
@@ -194,7 +194,7 @@
 
     @if($can('promotions.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $marketingOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $marketingOpen ? 'true' : 'false' }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-bullhorn-outline"></i></span>
                 <span>
@@ -218,7 +218,7 @@
 
     @if($can('settings.manage') || $can('deploy.manage') || $can('payments.settings') || $can('imports.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $channelsOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $channelsOpen ? 'true' : 'false' }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-cog-outline"></i></span>
                 <span>
@@ -268,7 +268,7 @@
 
     @if($can('workforce.view') || $can('workforce.clock') || $can('workforce.payroll.self') || $can('workforce.payroll.view') || $can('notifications.view') || $can('permissions.manage'))
     <details class="sidebar-group sidebar-group-last" data-admin-sidebar-group {{ $teamOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $teamOpen ? 'true' : 'false' }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-account-supervisor-circle-outline"></i></span>
                 <span>
@@ -358,6 +358,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     groups.forEach((group) => {
         group.addEventListener('toggle', function () {
+            const summary = this.querySelector(':scope > .sidebar-group-summary');
+            if (summary) summary.setAttribute('aria-expanded', this.open ? 'true' : 'false');
             if (!this.open || !mobileQuery.matches) return;
             groups.forEach((other) => {
                 if (other !== this) other.open = false;
