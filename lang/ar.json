@@ -5594,5 +5594,9 @@
     "Staff role updated for :staff.": "تم تحديث دور الموظف للحساب :staff.",
     "Change this staff role? The account permissions will change immediately.": "هل تريد تغيير دور هذا الموظف؟ ستتغير صلاحيات الحساب فورًا.",
     "Delivery updated for order :order.": "تم تحديث بيانات التسليم للطلب :order.",
-    "Import job draft created successfully.": "تم إنشاء مسودة مهمة الاستيراد بنجاح."
+    "Import job draft created successfully.": "تم إنشاء مسودة مهمة الاستيراد بنجاح.",
+    "Send test notification": "إرسال إشعار تجريبي",
+    "Send this test notification now?": "هل تريد إرسال هذا الإشعار التجريبي الآن؟",
+    "The selected channel will be contacted immediately using the chosen order context and destination rules.": "سيتم استخدام القناة المختارة فورًا وفقًا لبيانات الطلب المحدد وقواعد وجهة الإرسال.",
+    "Send test now": "إرسال الاختبار الآن"
 }
