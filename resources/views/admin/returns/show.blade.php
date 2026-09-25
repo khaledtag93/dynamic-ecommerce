@@ -107,7 +107,7 @@
             <div class="admin-card">
                 <div class="admin-card-body">
                     <h4 class="mb-2">{{ __('Reject return') }}</h4>
-                    <form method="POST" action="{{ route('admin.returns.reject', $returnRequest) }}" data-confirm-message="{{ __('Reject this return request?') }}">
+                    <form method="POST" action="{{ route('admin.returns.reject', $returnRequest) }}" data-confirm-message="{{ __('Reject this return request?') }}" data-submit-loading>
                         @csrf
                         @method('PATCH')
                         <textarea name="review_notes" rows="3" minlength="3" maxlength="2000" class="form-control mb-3" placeholder="{{ __('Reason for rejection') }}" required>{{ old('review_notes') }}</textarea>
@@ -120,7 +120,7 @@
                 <div class="admin-card-body">
                     <h4 class="mb-2">{{ __('Receive returned items') }}</h4>
                     <p class="text-muted small">{{ __('V1 requires the full approved quantity to be received in one step. Restock is explicit and can be lower than received quantity for damaged or unsellable items.') }}</p>
-                    <form method="POST" action="{{ route('admin.returns.receive', $returnRequest) }}" data-submit-loading>
+                    <form method="POST" action="{{ route('admin.returns.receive', $returnRequest) }}" data-submit-loading data-confirm-message="{{ __('Mark these items received and apply the entered restock quantities? Inventory will increase for every unit marked for restock.') }}">
                         @csrf
                         @method('PATCH')
                         @foreach($returnRequest->items as $item)
@@ -148,7 +148,7 @@
                 <div class="admin-card-body">
                     <h4 class="mb-2">{{ __('Complete return') }}</h4>
                     <p class="text-muted small">{{ __('Refund amount is explicit and uses the canonical order refund ledger. Exchange order is optional and must be a different order.') }}</p>
-                    <form method="POST" action="{{ route('admin.returns.complete', $returnRequest) }}" data-submit-loading>
+                    <form method="POST" action="{{ route('admin.returns.complete', $returnRequest) }}" data-submit-loading data-return-complete-form data-return-currency="{{ $returnRequest->order?->currency ?? 'EGP' }}">
                         @csrf
                         @method('PATCH')
                         <div class="mb-3">
@@ -167,9 +167,64 @@
                     </form>
                 </div>
             </div>
+        @if($returnRequest->status === $returnRequest::STATUS_RECEIVED)
+            <div class="modal fade" id="returnCompleteConfirmModal" tabindex="-1" aria-labelledby="returnCompleteConfirmTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="returnCompleteConfirmTitle">{{ __('Confirm return completion') }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-2" data-return-complete-copy></p>
+                            <p class="text-muted small mb-0">{{ __('Completing the return closes its lifecycle. Any refund entered here is recorded through the canonical order refund ledger.') }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">{{ __('Review return') }}</button>
+                            <button type="button" class="btn btn-primary" data-confirm-return-complete>{{ __('Complete return') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @else
             <div class="admin-card"><div class="admin-card-body"><h4>{{ __('Return lifecycle closed') }}</h4><p class="text-muted mb-0">{{ __('This return is read-only in its current status.') }}</p></div></div>
         @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('[data-return-complete-form]');
+    const modalElement = document.getElementById('returnCompleteConfirmModal');
+    if (!form || !modalElement || typeof bootstrap === 'undefined') return;
+
+    const amountInput = form.querySelector('[name="refund_amount"]');
+    const copy = modalElement.querySelector('[data-return-complete-copy]');
+    const confirmButton = modalElement.querySelector('[data-confirm-return-complete]');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    let confirmed = false;
+
+    form.addEventListener('submit', function (event) {
+        if (confirmed) return;
+        event.preventDefault();
+        const amount = amountInput?.value || '0';
+        if (copy) {
+            copy.textContent = @json(__('Complete this return with a refund of :amount?', ['amount' => '__AMOUNT__']))
+                .replace('__AMOUNT__', form.dataset.returnCurrency + ' ' + amount);
+        }
+        modal.show();
+    });
+
+    confirmButton?.addEventListener('click', function () {
+        confirmed = true;
+        modal.hide();
+        if (typeof form.requestSubmit === 'function') form.requestSubmit();
+        else form.submit();
+    });
+});
+</script>
+@endpush
