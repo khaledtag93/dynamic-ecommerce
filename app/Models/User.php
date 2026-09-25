@@ -32,6 +32,11 @@ class User extends Authenticatable
         'role_as' => 'integer',
     ];
 
+    public function productReviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
