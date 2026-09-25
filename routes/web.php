@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\ShippingSettingsController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\WhatsAppSettingsController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -115,6 +116,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/account/addresses/{address}', [AddressBookController::class, 'destroy'])->name('account.addresses.destroy');
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/shipping-quote', [CheckoutController::class, 'shippingQuote'])->name('checkout.shipping-quote');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/orders', [CheckoutController::class, 'orders'])->name('orders.index');
     Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
@@ -367,6 +369,15 @@ Route::prefix('admin')
             Route::put('/branding', [SettingController::class, 'update'])->name('settings.branding.update');
             Route::get('/content', [ContentSettingsController::class, 'edit'])->name('settings.content');
             Route::put('/content', [ContentSettingsController::class, 'update'])->name('settings.content.update');
+            Route::get('/settings/shipping/methods', [ShippingSettingsController::class, 'methods'])->name('settings.shipping.methods');
+            Route::put('/settings/shipping/methods/{shippingMethod}', [ShippingSettingsController::class, 'updateMethod'])->name('settings.shipping.methods.update');
+            Route::get('/settings/shipping/zones', [ShippingSettingsController::class, 'zones'])->name('settings.shipping.zones');
+            Route::post('/settings/shipping/zones', [ShippingSettingsController::class, 'storeZone'])->name('settings.shipping.zones.store');
+            Route::put('/settings/shipping/zones/{shippingZone}', [ShippingSettingsController::class, 'updateZone'])->name('settings.shipping.zones.update');
+            Route::post('/settings/shipping/zones/{shippingZone}/cities', [ShippingSettingsController::class, 'storeCity'])->name('settings.shipping.cities.store');
+            Route::delete('/settings/shipping/cities/{shippingZoneCity}', [ShippingSettingsController::class, 'destroyCity'])->name('settings.shipping.cities.destroy');
+            Route::get('/settings/shipping/rates', [ShippingSettingsController::class, 'rates'])->name('settings.shipping.rates');
+            Route::post('/settings/shipping/rates', [ShippingSettingsController::class, 'upsertRate'])->name('settings.shipping.rates.upsert');
             Route::get('/settings/whatsapp', [WhatsAppSettingsController::class, 'edit'])->name('settings.whatsapp');
             Route::get('/settings/notifications', [NotificationCenterController::class, 'edit'])->name('settings.notifications');
             Route::get('/settings/notifications/logs', [NotificationCenterController::class, 'logs'])->name('settings.notifications.logs');
