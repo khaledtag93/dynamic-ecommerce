@@ -478,7 +478,7 @@
                                 </button>
                             </th>
 
-                            <th style="width: 190px;" class="text-end">{{ __('Actions') }}</th>
+                            <th style="width: 190px;" class="text-end rtl-text-start">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
 
@@ -815,8 +815,8 @@
                                     </div>
                                 </td>
 
-                                <td class="text-end">
-                                    <div class="action-group justify-content-end">
+                                <td class="text-end rtl-text-start">
+                                    <div class="action-group justify-content-end rtl-justify-start">
                                         <a
                                             href="{{ route('admin.products.edit', $product->id) }}"
                                             class="btn btn-light btn-action"
