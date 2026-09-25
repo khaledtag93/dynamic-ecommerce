@@ -22,7 +22,7 @@ class NotificationController extends Controller
         return view('frontend.notifications.index', compact('notifications', 'unreadCount'));
     }
 
-    public function markRead(DatabaseNotification $notification): RedirectResponse
+    public function markRead(Request $request, DatabaseNotification $notification)
     {
         abort_unless((int) $notification->notifiable_id === (int) auth()->id(), 403);
 
@@ -30,12 +30,30 @@ class NotificationController extends Controller
             $notification->markAsRead();
         }
 
-        return redirect($notification->data['action_url'] ?? route('notifications.index'));
+        $actionUrl = $notification->data['action_url'] ?? null;
+
+        if ($request->expectsJson() || $request->header('X-Notification-Live') === '1') {
+            return response()->json([
+                'message' => __('Notification marked as read.'),
+                'notification_id' => (string) $notification->id,
+                'unread_count' => (int) $request->user()->unreadNotifications()->count(),
+                'action_url' => $actionUrl,
+            ]);
+        }
+
+        return redirect($actionUrl ?: route('notifications.index'));
     }
 
-    public function markAllRead(): RedirectResponse
+    public function markAllRead(Request $request)
     {
-        auth()->user()->unreadNotifications->markAsRead();
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
+
+        if ($request->expectsJson() || $request->header('X-Notification-Live') === '1') {
+            return response()->json([
+                'message' => __('All notifications marked as read.'),
+                'unread_count' => 0,
+            ]);
+        }
 
         return back()->with('success', __('All notifications marked as read.'));
     }
