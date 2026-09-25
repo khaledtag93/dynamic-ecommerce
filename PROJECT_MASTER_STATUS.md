@@ -5,6 +5,21 @@
 
 ## Current state
 
+## Current completion-pass ledger — 2026-09-25
+
+- **Working branch HEAD before this reconciliation:** `18b37ec` on `v42-clean-baseline`.
+- **Latest integrated green application checkpoint:** Hardening CI #1374 passed at `3645bdd` with **369 tests / 2499 assertions**, clean MySQL migration, Laravel routes, Blade compilation and frontend production build. The later `18b37ec` change is documentation-only.
+- **Growth Workspace V2.4:** source/CI complete for the agreed completion-pass scope; authenticated QAS EN/AR/RTL/responsive and measured response/query review remain release gates, not another source redesign.
+- **Helpdesk V2.1:** core support case lifecycle, SLA/reply templates and permission-aware customer/order/payment/delivery/return context are source/CI complete. Attachments, omnichannel ingestion, business-hours SLA calendars and support analytics remain backlog expansion items.
+- **Customer Account Statement V1:** source/CI complete for canonical movement reporting, filtering, drill-through, print and CSV without inventing a financial balance.
+- **Connected Identity Foundation:** collision-safe provider-neutral account-linking foundation is source/CI complete. Real Google/Facebook OAuth UI remains intentionally blocked until `laravel/socialite` is added through a legitimate Composer dependency/lock update.
+- **Roles & Permissions V2 and Admin V2 workspaces:** source redesign work is complete for this pass; remaining work is consolidated authenticated QAS acceptance and defect closure.
+- **Online Order Receipt V1:** source implementation and regression coverage are included in the later integrated green branch state; remaining work is consolidated EN/AR print/QAS acceptance and jurisdiction-specific tax/fiscal policy, not receipt reimplementation.
+- **QAS:** code integration has been performed during the 2026-09-25 consolidation/recovery sequence, including the later media-root isolation fix. Authenticated functional acceptance is still deliberately deferred to the consolidated completion-pass review.
+- **Production:** unchanged by the 2026-09-25 completion-pass work. Do not infer Production readiness from source/CI or QAS page-load success.
+- **Operating rule:** treat older “CI pending”, “next slice”, and old QAS-HEAD notes below as dated historical checkpoints unless repeated in this ledger or a newer dated section.
+
+
 - **Growth Workspace V2.4 (2026-09-25):** Growth is now split into focused Overview / Content / Operations / Insights workspaces with no-reload safe mutations, GET-side recomputation removed, experiment-performance batching, and real server-side pagination for large campaigns/rules/templates/segments/experiments/deliveries/logs. Overview health uses targeted counts instead of loading full datasets. Hardening CI #1372 passed at `0f1317d` with 368 tests / 2487 assertions plus clean MySQL migration, routes, Blade compilation and frontend production build. Authenticated QAS EN/AR/RTL/responsive acceptance remains separate; Production unchanged. See `docs/GROWTH_WORKSPACE_V2_2026-09-25.md`.
 - **Dynamic product-direction addendum (2026-09-25):** multi-vertical configurable-platform vision, global no-reload/readability principles, reusable in-product Help, customer UX modernization, legacy-data Migration Center, scalability measurement rules and target-business examples are now explicit project requirements. See `docs/PRODUCT_DIRECTION_ADDENDUM_2026-09-25.md`.
 - **Online Order Receipt V1 (2026-09-25):** source now provides a shared A4/browser-print order receipt for authenticated customers and `orders.view` staff, using persisted order/item/payment/refund/delivery values and the order's real currency. The document is explicitly non-tax/non-fiscal until merchant/jurisdiction tax policy exists. Customer/Admin order detail currency hard-coding was also removed. See `docs/ONLINE_ORDER_RECEIPT_V1_2026-09-25.md`. CI/QAS acceptance pending; Production unchanged.
