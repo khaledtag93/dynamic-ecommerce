@@ -99,6 +99,7 @@ These are permanent project-working rules and should be carried into future sess
 - Record meaningful product decisions, newly agreed UX standards, workflow rules, discovered gaps, technical risks, and roadmap changes in repository notes instead of relying only on chat history.
 - Keep notes concise and useful: do not record casual conversation or duplicate information that is already documented accurately.
 - Work in medium-to-large coherent batches. Avoid both tiny one-detail commits and giant tool operations that risk hanging; internally split inspection/execution when needed, then deliver a coherent tested batch.
+- Use a fast-but-safe batching model: do not stop development for every intermediate CI run. Continue independent low-risk work within the same coherent batch, then use the latest branch-head CI as the primary verification gate. Stop and fix immediately only when a failure or dependency makes continuing unsafe.
 - Finish the active workstream before opening unrelated major workstreams. New ideas should normally enter the backlog in their proper order unless they are a dependency or blocking defect.
 - Monitor CI after pushes during active work. When waiting for CI, estimate completion time from recent real run durations and report an approximate local ETA, clearly as an estimate rather than a guarantee.
 - Do not deploy QAS or Production automatically. Deployment remains an explicit user decision.
