@@ -25,13 +25,11 @@ class ProductReviewController extends Controller
         ]);
 
         try {
-            $review = $this->productReviewService->submit($request->user(), $product, $validated);
+            $this->productReviewService->submit($request->user(), $product, $validated);
 
             return redirect()
                 ->route('frontend.products.show', $product)
-                ->with('success', $review->wasRecentlyCreated
-                    ? __('Your review was submitted for moderation.')
-                    : __('Your review was updated and returned to moderation.'));
+                ->with('success', __('Your review was submitted for moderation.'));
         } catch (ValidationException $exception) {
             return back()->withErrors($exception->errors())->withInput();
         }
