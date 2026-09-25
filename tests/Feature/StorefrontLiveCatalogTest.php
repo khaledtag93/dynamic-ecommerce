@@ -82,6 +82,9 @@ class StorefrontLiveCatalogTest extends TestCase
             'name' => $name,
             'slug' => 'category-'.$token,
             'description' => 'Visible category',
+            'meta_title' => $name,
+            'meta_keyword' => Str::lower($name),
+            'meta_description' => 'Visible category test fixture',
             'status' => 0,
         ]);
     }
