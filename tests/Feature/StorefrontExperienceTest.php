@@ -636,4 +636,20 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("routeIs('checkout.*')", $layout);
     }
 
+    public function test_live_cart_feedback_uses_shared_storefront_toast_contract(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+        $script = file_get_contents(public_path('js/storefront-cart-actions.js'));
+
+        $this->assertStringContainsString('lc-toast-stack--live', $layout);
+        $this->assertStringContainsString('data-live-cart-feedback-message', $layout);
+        $this->assertStringContainsString('data-live-cart-feedback-close', $layout);
+        $this->assertStringContainsString('lc-flash-toast--danger', $layout);
+        $this->assertStringNotContainsString('alert alert-success border-0 shadow rounded-4 position-fixed', $layout);
+        $this->assertStringContainsString("node.classList.toggle('lc-flash-toast--success'", $script);
+        $this->assertStringContainsString("node.classList.toggle('lc-flash-toast--danger'", $script);
+        $this->assertStringContainsString("data-live-cart-feedback-close", $script);
+        $this->assertStringContainsString('4200', $script);
+    }
+
 }
