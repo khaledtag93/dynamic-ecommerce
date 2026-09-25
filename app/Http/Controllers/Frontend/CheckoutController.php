@@ -47,7 +47,7 @@ class CheckoutController extends Controller
         if ($cart['items']->isEmpty()) {
             return redirect()
                 ->route('cart.index')
-                ->with('status', 'Your cart is empty.');
+                ->with('status', __('Your cart is empty.'));
         }
 
         $paymentOptions = $this->paymentService->paymentOptionsForCheckout();
@@ -194,12 +194,12 @@ public function store(Request $request): RedirectResponse
         if ($order->payment_method === Order::PAYMENT_METHOD_ONLINE) {
             return redirect()
                 ->route('payments.paymob.redirect', $order)
-                ->with('success', 'Order placed successfully. Redirecting to secure payment...');
+                ->with('success', __('Order placed successfully. Redirecting to secure payment...'));
         }
 
         return redirect()
             ->route('orders.success', $order)
-            ->with('success', 'Order placed successfully.');
+            ->with('success', __('Order placed successfully.'));
     } catch (ValidationException $e) {
         $errors = $e->errors();
 

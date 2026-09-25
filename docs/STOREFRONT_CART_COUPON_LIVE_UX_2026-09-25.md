@@ -36,7 +36,7 @@ Close the remaining cart coupon reload/localization gap without moving coupon bu
 ## Release status
 
 - Source: prepared for `v42-clean-baseline`.
-- CI: branch-head verification required.
+- CI: Hardening CI #1404 passed at `c0855b9` with 386 tests / 2624 assertions plus clean migration, routes, Blade compilation and frontend production build.
 - QAS: not yet claimed.
 - Production: unchanged.
 

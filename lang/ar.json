@@ -5055,6 +5055,9 @@
     "This coupon has reached its usage limit.": "وصل هذا الكوبون إلى الحد الأقصى للاستخدام.",
     "Order subtotal must be at least :amount to use this coupon.": "يجب ألا يقل المجموع الفرعي للطلب عن :amount لاستخدام هذا الكوبون.",
     "This coupon does not apply to the current cart.": "هذا الكوبون لا ينطبق على سلة التسوق الحالية.",
+    "Your cart is empty.": "سلة التسوق فارغة.",
+    "Order placed successfully. Redirecting to secure payment...": "تم تسجيل الطلب بنجاح. جارٍ تحويلك إلى الدفع الآمن...",
+    "Order placed successfully.": "تم تسجيل الطلب بنجاح.",
     "العربية": "العربية",
     "Unable to update the cart right now.": "تعذر تحديث سلة التسوق الآن. حاول مرة أخرى."
 }

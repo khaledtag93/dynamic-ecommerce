@@ -163,6 +163,7 @@ Test at minimum Super Admin/owner-equivalent explicit role, Operations Manager, 
 - [ ] Coupon Apply/Remove updates coupon state and server-calculated totals without reload; invalid/inactive/expired/usage-limit/minimum-subtotal messages are correct in EN/AR.
 - [ ] Product-card/Product-detail/Category Quick View Add to Cart updates the header cart count without reload; Buy Now still navigates to Checkout.
 - [ ] Checkout uses honest shipping totals and recorded currency.
+- [ ] Checkout empty-cart/order-success/payment-handoff feedback is localized in EN/AR; confirm the current EGP domain behavior is unchanged until a formal currency policy is implemented.
 - [ ] My Orders pagination and order detail are bilingual/responsive.
 - [ ] Notifications pagination/read actions behave correctly.
 - [ ] Account navigation exposes Orders, Notifications, Support and available profile/address functions consistently.
