@@ -174,8 +174,9 @@ class CategoryController extends Controller
             return redirect()->route('admin.categories.index')->with('error', __('This category still has linked products. Move or delete them first.'));
         }
 
-        $this->deleteImage($category->image);
+        $image = $category->image;
         $category->delete();
+        $this->deleteImage($image);
 
         return redirect()
             ->route('admin.categories.index')
