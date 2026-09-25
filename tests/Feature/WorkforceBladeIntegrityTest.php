@@ -8,9 +8,9 @@ use Tests\TestCase;
 
 class WorkforceBladeIntegrityTest extends TestCase
 {
-    public function test_workforce_blades_do_not_contain_corrupted_php_class_namespaces(): void
+    public function test_all_blades_do_not_contain_corrupted_php_class_namespaces(): void
     {
-        $root = resource_path('views/admin/workforce');
+        $root = resource_path('views');
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root));
 
         $invalid = [];
