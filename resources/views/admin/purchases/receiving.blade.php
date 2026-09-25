@@ -226,7 +226,7 @@
                                 </td>
                                 <td class="text-end">
                                     @if($purchase->status === \App\Models\Purchase::STATUS_ORDERED && $verified > 0)
-                                        <form method="POST" action="{{ route('admin.purchases.receiving.undo', ['purchase' => $purchase->id, 'purchaseItem' => $item->id]) }}" class="d-inline" data-submit-loading>
+                                        <form method="POST" action="{{ route('admin.purchases.receiving.undo', ['purchase' => $purchase->id, 'purchaseItem' => $item->id]) }}" class="d-inline" data-submit-loading data-confirm-title="{{ __('Undo verified unit') }}" data-confirm-message="{{ __('Remove one verified unit from this purchase line?') }}" data-confirm-subtitle="{{ __('Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.') }}" data-confirm-ok="{{ __('Undo one') }}">
                                             @csrf
                                             <button class="btn btn-sm btn-light border">{{ __('Undo one') }}</button>
                                         </form>
