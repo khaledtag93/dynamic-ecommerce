@@ -127,6 +127,23 @@ class ShippingSettingsController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
+        $targetCountryCode = $data['country_code'];
+        if ($targetCountryCode !== $shippingZone->country_code) {
+            $cityKeys = $shippingZone->cities()->pluck('normalized_name');
+
+            $conflict = ShippingZoneCity::query()
+                ->where('country_code', $targetCountryCode)
+                ->whereIn('normalized_name', $cityKeys)
+                ->where('shipping_zone_id', '!=', $shippingZone->id)
+                ->exists();
+
+            if ($conflict) {
+                return back()->withErrors([
+                    'country_code' => __('One or more cities in this zone already belong to another zone in the target country.'),
+                ]);
+            }
+        }
+
         $shippingZone->update([
             ...$data,
             'is_active' => $request->boolean('is_active'),
@@ -157,6 +174,17 @@ class ShippingSettingsController extends Controller
 
         if ($normalized === '') {
             return back()->withErrors(['name' => __('Enter a valid city name.')]);
+        }
+
+        $duplicate = ShippingZoneCity::query()
+            ->where('country_code', $shippingZone->country_code)
+            ->where('normalized_name', $normalized)
+            ->first();
+
+        if ($duplicate) {
+            return back()->withErrors([
+                'name' => __('This city is already assigned to a shipping zone for the selected country.'),
+            ]);
         }
 
         $city = ShippingZoneCity::query()->create([
