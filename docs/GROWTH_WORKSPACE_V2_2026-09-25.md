@@ -53,6 +53,13 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 - The legacy no-argument full snapshot remains available for compatibility, while Admin navigation explicitly requests the active workspace slice.
 - Added regression coverage to prevent heavy recomputation from returning to GET rendering and to verify irrelevant workspace datasets stay unloaded.
 
+## V2.3 Insights experiment-performance batching
+
+- Replaced per-delivery Order queries inside experiment variant performance with two batched reads per experiment: eligible Growth deliveries plus matching customer orders across the combined conversion window.
+- Preserved the existing attribution semantics for each delivery window: a delivery counts as converted when at least one matching user order exists after send time and inside the configured conversion window; revenue remains the sum of matching orders for that delivery.
+- Variant delivery counts still include eligible sent/delivered/simulated deliveries even when a delivery cannot be matched because it has no user or send timestamp.
+- Added regression coverage with overlapping delivery windows to verify conversion count, conversion rate, revenue, and the one-delivery-query / one-order-query implementation contract.
+
 ## Product rules reinforced by this batch
 
 - Readability and simplicity beat showing every control at once.
@@ -75,4 +82,4 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 
 ## Next Growth slice
 
-Next, profile the Insights experiment-performance path. Its current variant conversion calculation still walks deliveries and checks matching orders per delivery; replace that N+1-style path with batched/order-window aggregation before Growth data volume becomes large.
+Next, profile remaining read paths with realistic QAS data volume. Prioritize query counts, response time, and pagination for large campaigns, templates, deliveries, customer scores, and analytics tables before adding more Growth surface area.
