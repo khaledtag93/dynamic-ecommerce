@@ -4,40 +4,23 @@
 
 @section('content')
 <div class="admin-page-shell" data-live-list>
-<div class="admin-page-header">
-    <div>
-        <div class="admin-kicker">{{ __('Data tools') }}</div>
-        <h1 class="admin-page-title">{{ __('Import Jobs') }}</h1>
-        <p class="admin-page-description">{{ __('Prepare CSV import drafts with safer validation feedback and cleaner empty states.') }}</p>
-    </div>
-</div>
+<x-admin.page-header
+    :kicker="__('Data tools')"
+    :title="__('Import Jobs')"
+    :description="__('Prepare CSV import drafts with safer validation feedback and cleaner empty states.')"
+/>
 
 <form method="GET" action="{{ route('admin.imports.index') }}" data-live-filter class="d-none"></form>
 
 <div class="row g-3 mb-4">
     <div class="col-md-6 col-xl-3">
-        <div class="admin-card admin-stat-card h-100">
-            <span class="admin-stat-icon"><i class="mdi mdi-database-import-outline"></i></span>
-            <div class="admin-stat-label">{{ __('Total jobs') }}</div>
-            <div class="admin-stat-value">{{ $stats['total'] }}</div>
-            <div class="text-muted small mt-2">{{ __('Import drafts created in the system.') }}</div>
-        </div>
+        <x-admin.stat-card :label="__('Total jobs')" :value="$stats['total']" icon="mdi-database-import-outline" :help="__('Import drafts created in the system.')" class="h-100" />
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="admin-card admin-stat-card h-100">
-            <span class="admin-stat-icon"><i class="mdi mdi-file-document-edit-outline"></i></span>
-            <div class="admin-stat-label">{{ __('Draft jobs') }}</div>
-            <div class="admin-stat-value">{{ $stats['draft'] }}</div>
-            <div class="text-muted small mt-2">{{ __('Drafts waiting for future processing logic.') }}</div>
-        </div>
+        <x-admin.stat-card :label="__('Draft jobs')" :value="$stats['draft']" icon="mdi-file-document-edit-outline" :help="__('Drafts waiting for future processing logic.')" class="h-100" />
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="admin-card admin-stat-card h-100">
-            <span class="admin-stat-icon"><i class="mdi mdi-file-check-outline"></i></span>
-            <div class="admin-stat-label">{{ __('Named files') }}</div>
-            <div class="admin-stat-value">{{ $stats['named_files'] }}</div>
-            <div class="text-muted small mt-2">{{ __('Drafts with a source file name recorded for later processing.') }}</div>
-        </div>
+        <x-admin.stat-card :label="__('Named files')" :value="$stats['named_files']" icon="mdi-file-check-outline" :help="__('Drafts with a source file name recorded for later processing.')" class="h-100" />
     </div>
 </div>
 
