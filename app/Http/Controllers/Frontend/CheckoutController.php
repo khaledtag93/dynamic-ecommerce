@@ -14,6 +14,7 @@ use App\Services\Frontend\CheckoutService;
 use App\Services\Commerce\StoreSettingsService;
 use App\Services\Commerce\ProductRecommendationService;
 use App\Services\Commerce\SmartMerchandisingService;
+use App\Services\Commerce\ShippingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -32,6 +33,7 @@ class CheckoutController extends Controller
         protected BehaviorTrackingService $behaviorTrackingService,
         protected OfferAutomationService $offerAutomationService,
         protected AIRecommendationEngine $aiRecommendationEngine,
+        protected ShippingService $shippingService,
     ) {
     }
 
@@ -55,9 +57,9 @@ class CheckoutController extends Controller
                 $savedAddresses->firstWhere('id', (int) $requestedAddress));
         abort_if($requestedAddress !== null && $requestedAddress !== 'new' && ! $selectedShippingAddress, 404);
         $defaultBillingAddress = $savedAddresses->firstWhere('is_default_billing', true);
-        $deliveryOptions = Order::deliveryMethodOptions();
+        $deliveryOptions = $this->shippingService->methodOptions();
         $upsellProducts = $this->recommendationService->forCart($cart['items'], 3);
-        $shippingGoal = $this->recommendationService->shippingProgress((float) $cart['subtotal']);
+        $shippingGoal = null;
         $merchandising = $this->smartMerchandisingService->forCart($cart['items'], 4);
         $this->behaviorTrackingService->track(BehaviorTrackingService::EVENT_CHECKOUT_START, null, [
             'items_count' => (int) $cart['items_count'],
@@ -87,6 +89,53 @@ class CheckoutController extends Controller
             'aiRecommendationInsight' => $aiRecommendations['insight'],
         ]);
     }
+    public function shippingQuote(Request $request)
+    {
+        $data = $request->validate([
+            'delivery_method' => ['required', 'string', 'max:60'],
+            'shipping_city' => ['nullable', 'string', 'max:255'],
+            'shipping_country' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $cart = $this->cartService->summary();
+
+        if ($cart['items']->isEmpty()) {
+            throw ValidationException::withMessages([
+                'cart' => __('Your cart is empty.'),
+            ]);
+        }
+
+        $quote = $this->shippingService->quote(
+            $data['delivery_method'],
+            (string) ($data['shipping_city'] ?? ''),
+            (string) ($data['shipping_country'] ?? ''),
+            (float) $cart['subtotal'],
+            (float) $cart['discount'],
+        );
+
+        $total = round(max(
+            0,
+            (float) $cart['subtotal']
+                + (float) $quote['amount']
+                + (float) $cart['tax']
+                - (float) $cart['discount']
+        ), 2);
+
+        return response()->json([
+            'shipping' => (float) $quote['amount'],
+            'total' => $total,
+            'currency' => 'EGP',
+            'method_name' => $quote['method_name'],
+            'zone_name' => $quote['zone_name'],
+            'eta_label' => $quote['eta_label'],
+            'pickup' => $quote['pickup'],
+            'free_shipping_threshold' => $quote['free_shipping_threshold'],
+            'free_shipping_remaining' => $quote['free_shipping_remaining'],
+            'free_shipping_progress' => $quote['free_shipping_progress'],
+            'free_shipping_qualified' => $quote['free_shipping_qualified'],
+        ]);
+    }
+
 public function store(Request $request): RedirectResponse
 {
     $billingSameAsShipping = $request->boolean('billing_same_as_shipping', true);
