@@ -12,6 +12,7 @@ use App\Services\Commerce\InventoryService;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\ShippingService;
+use App\Services\Commerce\StockReservationService;
 use App\Services\Commerce\PromotionEngine;
 use App\Services\Frontend\CartService;
 use App\Services\Frontend\CheckoutService;
@@ -117,6 +118,7 @@ class CheckoutIdempotencyTest extends TestCase
             app(ProfitService::class),
             app(WhatsAppManager::class),
             app(ShippingService::class),
+            app(StockReservationService::class),
         );
 
         $data = [
