@@ -57,19 +57,26 @@ class ContentSettingsController extends Controller
             'checkout_cod_note' => ['nullable', 'string', 'max:1000'],
             'checkout_bank_transfer_note' => ['nullable', 'string', 'max:1000'],
             'checkout_online_note' => ['nullable', 'string', 'max:1000'],
+            'footer_show_shop' => ['nullable', 'boolean'],
+            'footer_show_policies' => ['nullable', 'boolean'],
+            'footer_show_categories' => ['nullable', 'boolean'],
+            'footer_show_support' => ['nullable', 'boolean'],
+            'footer_show_trust' => ['nullable', 'boolean'],
+            'footer_show_experience_note' => ['nullable', 'boolean'],
             'orders_allow_customer_cancellation' => ['nullable', 'boolean'],
             'orders_customer_cancellation_note' => ['nullable', 'string', 'max:1000'],
         ]);
 
         foreach ([
             'contact_show_email', 'contact_show_phone', 'contact_show_whatsapp', 'contact_show_address', 'contact_show_hours', 'contact_show_map',
+            'footer_show_shop', 'footer_show_policies', 'footer_show_categories', 'footer_show_support', 'footer_show_trust', 'footer_show_experience_note',
             'orders_allow_customer_cancellation',
         ] as $booleanKey) {
             WebsiteSetting::setValue($booleanKey, $request->boolean($booleanKey) ? '1' : '0', 'content');
         }
 
         foreach ($data as $key => $value) {
-            if (in_array($key, ['contact_show_email', 'contact_show_phone', 'contact_show_whatsapp', 'contact_show_address', 'contact_show_hours', 'contact_show_map', 'orders_allow_customer_cancellation'], true)) {
+            if (in_array($key, ['contact_show_email', 'contact_show_phone', 'contact_show_whatsapp', 'contact_show_address', 'contact_show_hours', 'contact_show_map', 'footer_show_shop', 'footer_show_policies', 'footer_show_categories', 'footer_show_support', 'footer_show_trust', 'footer_show_experience_note', 'orders_allow_customer_cancellation'], true)) {
                 continue;
             }
 
