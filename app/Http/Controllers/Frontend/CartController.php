@@ -169,16 +169,39 @@ class CartController extends Controller
         }
     }
 
-    public function update(Request $request, CartItem $cartItem): RedirectResponse
+    public function update(Request $request, CartItem $cartItem)
     {
         $data = $request->validate([
             'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
-        $this->cartService->updateQuantity(
+        $updatedItem = $this->cartService->updateQuantity(
             $cartItem->load(['product', 'variant']),
             (int) $data['quantity']
         );
+
+        if ($request->expectsJson() || $request->header('X-Cart-Live') === '1') {
+            $summary = $this->cartService->summary();
+
+            return response()->json([
+                'message' => __('Cart updated successfully.'),
+                'item' => [
+                    'id' => (int) $updatedItem->id,
+                    'quantity' => (int) $updatedItem->quantity,
+                    'line_total' => round((float) $updatedItem->line_total, 2),
+                ],
+                'cart' => [
+                    'items_count' => (int) $summary['items_count'],
+                    'subtotal' => (float) $summary['subtotal'],
+                    'coupon_discount' => (float) ($summary['coupon_discount'] ?? 0),
+                    'promotion_discount' => (float) ($summary['promotion_discount'] ?? 0),
+                    'discount' => (float) $summary['discount'],
+                    'shipping' => (float) $summary['shipping'],
+                    'tax' => (float) $summary['tax'],
+                    'total' => (float) $summary['total'],
+                ],
+            ]);
+        }
 
         return back()->with('success', __('Cart updated successfully.'));
     }
