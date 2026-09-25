@@ -102,6 +102,9 @@ class CheckoutService
                 'shipping_zone_id' => $shippingQuote['zone_id'],
                 'shipping_rate_id' => $shippingQuote['rate_id'],
                 'shipping_snapshot' => $shippingQuote,
+                'estimated_delivery_date' => $shippingQuote['eta_max_days'] !== null
+                    ? now()->addDays((int) $shippingQuote['eta_max_days'])->toDateString()
+                    : null,
                 'currency' => 'EGP',
                 'subtotal' => $summary['subtotal'],
                 'discount_total' => $summary['discount'],
