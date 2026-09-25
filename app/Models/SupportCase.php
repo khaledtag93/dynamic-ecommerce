@@ -33,6 +33,8 @@ class SupportCase extends Model
         'priority',
         'status',
         'source',
+        'first_response_due_at',
+        'resolution_due_at',
         'first_response_at',
         'last_customer_message_at',
         'last_staff_message_at',
@@ -41,6 +43,8 @@ class SupportCase extends Model
     ];
 
     protected $casts = [
+        'first_response_due_at' => 'datetime',
+        'resolution_due_at' => 'datetime',
         'first_response_at' => 'datetime',
         'last_customer_message_at' => 'datetime',
         'last_staff_message_at' => 'datetime',
@@ -125,5 +129,33 @@ class SupportCase extends Model
             self::PRIORITY_LOW => 'badge-soft-secondary',
             default => 'badge-soft-info',
         };
+    }
+
+    public function getFirstResponseSlaStateAttribute(): string
+    {
+        if (! $this->first_response_due_at) {
+            return 'not_tracked';
+        }
+
+        if ($this->first_response_at) {
+            return $this->first_response_at->gt($this->first_response_due_at) ? 'breached' : 'met';
+        }
+
+        return now()->gt($this->first_response_due_at) ? 'breached' : 'due';
+    }
+
+    public function getResolutionSlaStateAttribute(): string
+    {
+        if (! $this->resolution_due_at) {
+            return 'not_tracked';
+        }
+
+        $completedAt = $this->closed_at ?: $this->resolved_at;
+
+        if ($completedAt) {
+            return $completedAt->gt($this->resolution_due_at) ? 'breached' : 'met';
+        }
+
+        return now()->gt($this->resolution_due_at) ? 'breached' : 'due';
     }
 }

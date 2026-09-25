@@ -25,6 +25,14 @@
                             </div>
                             <h3 class="mb-1">{{ $supportCase->subject }}</h3>
                             <div class="text-muted small">{{ __('Created') }} {{ $supportCase->created_at?->format('Y-m-d H:i') }}</div>
+                            <div class="d-flex gap-2 flex-wrap mt-2">
+                                <span class="badge admin-status-badge {{ $supportCase->first_response_sla_state === 'breached' ? 'badge-soft-danger' : ($supportCase->first_response_sla_state === 'met' ? 'badge-soft-success' : 'badge-soft-info') }}">
+                                    {{ __('First response SLA') }}: {{ __(ucfirst(str_replace('_', ' ', $supportCase->first_response_sla_state))) }}
+                                </span>
+                                <span class="badge admin-status-badge {{ $supportCase->resolution_sla_state === 'breached' ? 'badge-soft-danger' : ($supportCase->resolution_sla_state === 'met' ? 'badge-soft-success' : 'badge-soft-info') }}">
+                                    {{ __('Resolution SLA') }}: {{ __(ucfirst(str_replace('_', ' ', $supportCase->resolution_sla_state))) }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -58,15 +66,26 @@
                         <form method="POST" action="{{ route('admin.support.reply', $supportCase) }}" data-submit-loading>
                             @csrf
                             <div class="row g-3">
+                                @if($replyTemplates->isNotEmpty())
+                                <div class="col-md-8">
+                                    <label class="form-label fw-semibold">{{ __('Reply template') }}</label>
+                                    <select class="form-select" data-support-template>
+                                        <option value="">{{ __('Write without a template') }}</option>
+                                        @foreach($replyTemplates as $template)
+                                            <option value="{{ $template->id }}">{{ $template->displayName() }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @endif
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">{{ __('Visibility') }}</label>
-                                    <select name="visibility" class="form-select">
+                                    <select name="visibility" class="form-select" data-support-visibility>
                                         <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
                                         <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}">{{ __('Internal note') }}</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
-                                    <textarea name="message" rows="6" class="form-control @error('message') is-invalid @enderror" maxlength="5000" required>{{ old('message') }}</textarea>
+                                    <textarea name="message" rows="6" class="form-control @error('message') is-invalid @enderror" maxlength="5000" required data-support-message>{{ old('message') }}</textarea>
                                     @error('message')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-12 text-end">
@@ -95,6 +114,10 @@
                     @endif
                     <div class="small text-muted">{{ __('First staff response') }}</div>
                     <div class="mb-3">{{ $supportCase->first_response_at?->format('Y-m-d H:i') ?? __('Not yet') }}</div>
+                    <div class="small text-muted">{{ __('First response due') }}</div>
+                    <div class="mb-3">{{ $supportCase->first_response_due_at?->format('Y-m-d H:i') ?? '—' }}</div>
+                    <div class="small text-muted">{{ __('Resolution due') }}</div>
+                    <div>{{ $supportCase->resolution_due_at?->format('Y-m-d H:i') ?? '—' }}</div>
                 </div>
             </div>
 
@@ -138,3 +161,32 @@
     </div>
 </div>
 @endsection
+
+
+@if(auth()->user()?->hasPermission('support.manage') && isset($replyTemplates) && $replyTemplates->isNotEmpty())
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.querySelector('[data-support-template]');
+    const message = document.querySelector('[data-support-message]');
+    const visibility = document.querySelector('[data-support-visibility]');
+    const templates = @json($replyTemplates->mapWithKeys(fn ($template) => [
+        (string) $template->id => [
+            'body' => $template->displayBody(),
+            'visibility' => $template->visibility,
+        ],
+    ]));
+
+    if (!select || !message) return;
+
+    select.addEventListener('change', function () {
+        const template = templates[this.value];
+        if (!template) return;
+        message.value = template.body || '';
+        if (visibility && template.visibility) visibility.value = template.visibility;
+        message.focus();
+    });
+});
+</script>
+@endpush
+@endif

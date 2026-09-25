@@ -6,16 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\SupportCase;
 use App\Models\SupportCaseMessage;
+use App\Models\SupportReplyTemplate;
 use App\Models\User;
+use App\Models\WebsiteSetting;
 use App\Services\Support\SupportCaseService;
+use App\Services\Support\SupportSlaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class SupportCaseController extends Controller
 {
-    public function __construct(protected SupportCaseService $supportCaseService)
-    {
+    public function __construct(
+        protected SupportCaseService $supportCaseService,
+        protected SupportSlaService $supportSlaService,
+    ) {
     }
 
     public function index(Request $request)
@@ -70,6 +75,19 @@ class SupportCaseController extends Controller
                 SupportCase::STATUS_CLOSED,
             ])->count(),
             'resolved' => SupportCase::query()->where('status', SupportCase::STATUS_RESOLVED)->count(),
+            'sla_breached' => SupportCase::query()
+                ->whereNotIn('status', [SupportCase::STATUS_RESOLVED, SupportCase::STATUS_CLOSED])
+                ->where(function ($query) {
+                    $query->where(function ($firstResponse) {
+                        $firstResponse->whereNull('first_response_at')
+                            ->whereNotNull('first_response_due_at')
+                            ->where('first_response_due_at', '<', now());
+                    })->orWhere(function ($resolution) {
+                        $resolution->whereNotNull('resolution_due_at')
+                            ->where('resolution_due_at', '<', now());
+                    });
+                })
+                ->count(),
         ];
 
         $staff = User::query()
@@ -138,7 +156,100 @@ class SupportCaseController extends Controller
             ->limit(100)
             ->get(['id', 'name', 'email']);
 
-        return view('admin.support.show', compact('supportCase', 'staff'));
+        $replyTemplates = SupportReplyTemplate::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.support.show', compact('supportCase', 'staff', 'replyTemplates'));
+    }
+
+    public function settings()
+    {
+        $templates = SupportReplyTemplate::query()
+            ->with('createdBy:id,name')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $sla = collect(array_keys(SupportCase::priorityOptions()))->mapWithKeys(fn (string $priority) => [
+            $priority => [
+                'first_response_hours' => $this->supportSlaService->firstResponseHours($priority),
+                'resolution_hours' => $this->supportSlaService->resolutionHours($priority),
+            ],
+        ])->all();
+
+        return view('admin.support.settings', compact('templates', 'sla'));
+    }
+
+    public function updateSla(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'sla' => ['required', 'array'],
+            'sla.*.first_response_hours' => ['required', 'integer', 'min:1', 'max:720'],
+            'sla.*.resolution_hours' => ['required', 'integer', 'min:1', 'max:720'],
+        ]);
+
+        foreach (array_keys(SupportCase::priorityOptions()) as $priority) {
+            if (! isset($validated['sla'][$priority])) {
+                continue;
+            }
+
+            WebsiteSetting::setValue(
+                "support_sla_first_response_{$priority}_hours",
+                (string) $validated['sla'][$priority]['first_response_hours'],
+                'support',
+                'integer'
+            );
+            WebsiteSetting::setValue(
+                "support_sla_resolution_{$priority}_hours",
+                (string) $validated['sla'][$priority]['resolution_hours'],
+                'support',
+                'integer'
+            );
+        }
+
+        return back()->with('success', __('Support SLA settings updated.'));
+    }
+
+    public function storeTemplate(Request $request): RedirectResponse
+    {
+        $validated = $this->validateTemplate($request);
+        $validated['created_by_user_id'] = $request->user()->id;
+
+        SupportReplyTemplate::query()->create($validated);
+
+        return back()->with('success', __('Support reply template created.'));
+    }
+
+    public function updateTemplate(Request $request, SupportReplyTemplate $supportReplyTemplate): RedirectResponse
+    {
+        $supportReplyTemplate->update($this->validateTemplate($request));
+
+        return back()->with('success', __('Support reply template updated.'));
+    }
+
+    public function toggleTemplate(SupportReplyTemplate $supportReplyTemplate): RedirectResponse
+    {
+        $supportReplyTemplate->update(['is_active' => ! $supportReplyTemplate->is_active]);
+
+        return back()->with('success', __('Support reply template status updated.'));
+    }
+
+    private function validateTemplate(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:160'],
+            'name_ar' => ['nullable', 'string', 'max:160'],
+            'body' => ['required', 'string', 'max:5000'],
+            'body_ar' => ['nullable', 'string', 'max:5000'],
+            'visibility' => ['required', Rule::in([
+                SupportCaseMessage::VISIBILITY_CUSTOMER,
+                SupportCaseMessage::VISIBILITY_INTERNAL,
+            ])],
+            'sort_order' => ['required', 'integer', 'min:0', 'max:10000'],
+        ]);
     }
 
     public function update(Request $request, SupportCase $supportCase): RedirectResponse

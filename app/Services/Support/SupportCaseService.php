@@ -13,6 +13,9 @@ use Illuminate\Validation\ValidationException;
 
 class SupportCaseService
 {
+    public function __construct(protected SupportSlaService $slaService)
+    {
+    }
     public function createForCustomer(User $customer, array $payload): SupportCase
     {
         return DB::transaction(function () use ($customer, $payload) {
@@ -29,6 +32,8 @@ class SupportCaseService
                 'source' => 'customer_portal',
                 'last_customer_message_at' => now(),
             ]);
+
+            $this->slaService->applyToNewCase($case);
 
             $case->messages()->create([
                 'author_user_id' => $customer->id,
@@ -80,6 +85,8 @@ class SupportCaseService
                 'first_response_at' => ($payload['visibility'] ?? SupportCaseMessage::VISIBILITY_CUSTOMER) === SupportCaseMessage::VISIBILITY_CUSTOMER ? now() : null,
                 'last_staff_message_at' => now(),
             ]);
+
+            $this->slaService->applyToNewCase($case);
 
             $case->messages()->create([
                 'author_user_id' => $actor->id,
@@ -161,6 +168,8 @@ class SupportCaseService
     public function updateCase(SupportCase $case, User $actor, array $payload): SupportCase
     {
         return DB::transaction(function () use ($case, $actor, $payload) {
+            $originalPriority = $case->priority;
+
             if (array_key_exists('assigned_to_user_id', $payload) && filled($payload['assigned_to_user_id'])) {
                 $assignee = User::query()->findOrFail((int) $payload['assigned_to_user_id']);
 
@@ -193,6 +202,10 @@ class SupportCaseService
             }
 
             $case->update($changes);
+
+            if ($case->priority !== $originalPriority) {
+                $this->slaService->recalculateForPriority($case);
+            }
 
             $this->audit($actor, $case, 'support_case_updated', [
                 'status' => $case->status,
