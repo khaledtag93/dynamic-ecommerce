@@ -7,6 +7,9 @@ use App\Models\GrowthAutomationRule;
 use App\Models\GrowthCampaign;
 use App\Models\GrowthExperiment;
 use App\Models\GrowthMessageTemplate;
+use App\Models\GrowthDelivery;
+use App\Models\Order;
+use App\Models\User;
 use App\Models\WebsiteSetting;
 use App\Services\Growth\GrowthCampaignService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -120,6 +123,75 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertTrue($insights['templates']->isEmpty());
         $this->assertTrue($insights['deliveries']->isEmpty());
         $this->assertSame([], $insights['performance']);
+    }
+
+    public function test_growth_experiment_performance_batches_order_windows_without_changing_results(): void
+    {
+        $user = User::factory()->create();
+
+        $experiment = GrowthExperiment::query()->create([
+            'name' => 'Performance test',
+            'experiment_key' => 'performance_test',
+            'variants' => [
+                ['key' => 'a', 'name' => 'A', 'weight' => 1],
+                ['key' => 'b', 'name' => 'B', 'weight' => 1],
+            ],
+            'priority' => 10,
+            'is_active' => true,
+        ]);
+
+        $reference = now()->startOfMinute();
+
+        foreach ([
+            ['variant' => 'a', 'sent_at' => $reference->copy()->subMinutes(120)],
+            ['variant' => 'a', 'sent_at' => $reference->copy()->subMinutes(60)],
+            ['variant' => 'b', 'sent_at' => $reference->copy()->subMinutes(180)],
+        ] as $delivery) {
+            GrowthDelivery::query()->create([
+                'experiment_id' => $experiment->id,
+                'user_id' => $user->id,
+                'channel' => 'in_app',
+                'status' => 'sent',
+                'experiment_variant' => $delivery['variant'],
+                'sent_at' => $delivery['sent_at'],
+            ]);
+        }
+
+        $order = Order::query()->create([
+            'user_id' => $user->id,
+            'order_number' => 'GROWTH-PERF-001',
+            'grand_total' => 120,
+            'customer_name' => 'Growth Test',
+            'customer_email' => 'growth-performance@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+        ]);
+        $order->forceFill([
+            'created_at' => $reference->copy()->subMinutes(90),
+            'updated_at' => $reference->copy()->subMinutes(90),
+        ])->save();
+
+        $result = collect(app(GrowthCampaignService::class)->variantPerformance($experiment))->keyBy('key');
+
+        $this->assertSame(2, $result['a']['deliveries']);
+        $this->assertSame(1, $result['a']['converted']);
+        $this->assertSame(50.0, $result['a']['conversion_rate']);
+        $this->assertSame(120.0, $result['a']['revenue']);
+
+        $this->assertSame(1, $result['b']['deliveries']);
+        $this->assertSame(1, $result['b']['converted']);
+        $this->assertSame(100.0, $result['b']['conversion_rate']);
+        $this->assertSame(120.0, $result['b']['revenue']);
+
+        $serviceSource = file_get_contents(app_path('Services/Growth/GrowthCampaignService.php'));
+        $methodStart = strpos($serviceSource, 'public function variantPerformance(GrowthExperiment $experiment): array');
+        $methodEnd = strpos($serviceSource, 'protected function defaultCampaigns(): array', $methodStart);
+        $methodSource = substr($serviceSource, $methodStart, $methodEnd - $methodStart);
+
+        $this->assertSame(1, substr_count($methodSource, 'GrowthDelivery::query()'));
+        $this->assertSame(1, substr_count($methodSource, 'Order::query()'));
+        $this->assertStringNotContainsString('->exists()', $methodSource);
     }
 
     public function test_disabled_growth_run_returns_a_complete_result_shape(): void
