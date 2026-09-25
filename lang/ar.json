@@ -5571,5 +5571,10 @@
     "Confirm refund": "تأكيد الاسترداد",
     "The refund is recorded in the order ledger and changes the payment status when the refundable balance is fully consumed.": "يُسجل الاسترداد في سجل الطلب ويتغير وضع الدفع عند استهلاك الرصيد القابل للاسترداد بالكامل.",
     "Review refund": "مراجعة الاسترداد",
-    "Record a refund of :amount?": "هل تريد تسجيل استرداد بقيمة :amount؟"
+    "Record a refund of :amount?": "هل تريد تسجيل استرداد بقيمة :amount؟",
+    "Mark these items received and apply the entered restock quantities? Inventory will increase for every unit marked for restock.": "هل تريد تسجيل استلام هذه المنتجات وتطبيق كميات إعادة التخزين المدخلة؟ سيزداد المخزون لكل وحدة محددة لإعادة التخزين.",
+    "Confirm return completion": "تأكيد إكمال المرتجع",
+    "Completing the return closes its lifecycle. Any refund entered here is recorded through the canonical order refund ledger.": "إكمال المرتجع يغلق دورة حياته. أي مبلغ استرداد يتم إدخاله هنا يُسجل من خلال سجل استردادات الطلب المعتمد.",
+    "Review return": "مراجعة المرتجع",
+    "Complete this return with a refund of :amount?": "هل تريد إكمال هذا المرتجع مع تسجيل استرداد بقيمة :amount؟"
 }
