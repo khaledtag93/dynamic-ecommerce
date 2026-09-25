@@ -219,7 +219,7 @@
                                 @if(($cart['promotion_discount'] ?? 0) > 0)
                                     <div class="lc-summary-row"><span class="text-muted">{{ __('Promotion') }}</span><strong class="text-success">- EGP {{ number_format($cart['promotion_discount'], 2) }}</strong></div>
                                 @endif
-                                <div class="lc-summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong>EGP {{ number_format($cart['shipping'], 2) }}</strong></div>
+                                <div class="lc-summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong>{{ __('Calculated at checkout') }}</strong></div>
                             @if(!empty($shippingGoal) && !$shippingGoal['qualified'])
                                 <div class="lc-note-card p-3 mt-3">
                                     <div class="fw-bold mb-1">{{ __('Shipping goal') }}</div>
@@ -228,7 +228,7 @@
                             @endif
                                 <div class="lc-summary-row"><span class="text-muted">{{ __('Tax') }}</span><strong>EGP {{ number_format($cart['tax'], 2) }}</strong></div>
                                 <div class="lc-summary-divider"></div>
-                                <div class="lc-summary-row fs-5"><span class="fw-bold">{{ __('Total') }}</span><span class="fw-bold">EGP {{ number_format($cart['total'], 2) }}</span></div>
+                                <div class="lc-summary-row fs-5"><span class="fw-bold">{{ __('Total before shipping') }}</span><span class="fw-bold">EGP {{ number_format($cart['total'], 2) }}</span></div>
 
                                 <div class="lc-note-card p-3 mb-3">
                                     <div class="fw-bold mb-1">{{ __('Before checkout') }}</div>
