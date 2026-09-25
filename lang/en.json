@@ -4445,5 +4445,18 @@
     "Resolution due": "Resolution due",
     "Ownership & workflow": "Ownership & workflow",
     "Saving case...": "Saving case...",
-    "Save case": "Save case"
+    "Save case": "Save case",
+    "Open a support request and keep every reply connected to the same case.": "Open a support request and keep every reply connected to the same case.",
+    "New support request": "New support request",
+    "You": "You",
+    "Support team": "Support team",
+    "Add a reply": "Add a reply",
+    "Sending reply...": "Sending reply...",
+    "Send reply": "Send reply",
+    "This support case is closed. Open a new request if you need more help.": "This support case is closed. Open a new request if you need more help.",
+    "Case details": "Case details",
+    "Not linked to an order": "Not linked to an order",
+    "Last updated": "Last updated",
+    "Could not send your reply. Please try again.": "Could not send your reply. Please try again.",
+    "Your reply was added.": "Your reply was added."
 }
