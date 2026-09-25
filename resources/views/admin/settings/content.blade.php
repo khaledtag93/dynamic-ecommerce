@@ -14,6 +14,7 @@
 
             <x-admin.section-tabs id="content" :sections="[
                 'contact' => __('Contact page'),
+                'footer' => __('Storefront footer'),
                 'checkout' => __('Checkout trust content'),
                 'cancellation' => __('Customer cancellation'),
                 'privacy' => __('Privacy Policy'),
@@ -41,6 +42,30 @@
                             <label class="fw-bold mb-0" for="{{ $key }}">{{ $label }}</label>
                             <div class="form-check form-switch m-0 flex-nowrap">
                                 <input type="checkbox" role="switch" id="{{ $key }}" class="form-check-input" name="{{ $key }}" value="1" @checked(($settings[$key] ?? '0') === '1')>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="row g-4 mb-4 admin-settings-section" id="content-panel-footer" role="tabpanel" aria-labelledby="content-tab-footer" data-admin-section-panel="footer">
+                <div class="col-12">
+                    <h4 class="mb-1">{{ __('Storefront footer') }}</h4>
+                    <p class="text-muted mb-0">{{ __('Choose which footer sections customers see. Empty support details remain hidden automatically.') }}</p>
+                </div>
+                @foreach([
+                    'footer_show_shop' => __('Show shop links'),
+                    'footer_show_policies' => __('Show policy links'),
+                    'footer_show_categories' => __('Show categories'),
+                    'footer_show_support' => __('Show support details'),
+                    'footer_show_trust' => __('Show trust highlights'),
+                    'footer_show_experience_note' => __('Show experience note'),
+                ] as $key => $label)
+                    <div class="col-md-6 col-xl-4">
+                        <div class="admin-switch-card h-100 p-3 rounded-4 border d-flex align-items-center justify-content-between gap-3">
+                            <label class="fw-bold mb-0" for="{{ $key }}">{{ $label }}</label>
+                            <div class="form-check form-switch m-0 flex-nowrap">
+                                <input type="checkbox" role="switch" id="{{ $key }}" class="form-check-input" name="{{ $key }}" value="1" @checked(($settings[$key] ?? '1') === '1')>
                             </div>
                         </div>
                     </div>
