@@ -133,6 +133,11 @@ class AnalyticsWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('.analytics-anchor-nav{flex-wrap:nowrap;overflow-x:auto', $source);
         $this->assertStringContainsString('.analytics-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--admin-primary),var(--admin-primary-dark))', $source);
         $this->assertStringNotContainsString('background:#fff;border:1px solid rgba(15,23,42,.06)', $source);
+        $this->assertStringContainsString('data-admin-section-tabs="product-analytics" data-admin-section-history="true"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="summary"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="performance"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="trends"', $source);
+        $this->assertStringContainsString('data-admin-section-panel="variants"', $source);
     }
 
     public function test_arabic_analytics_workspace_labels_are_available(): void
