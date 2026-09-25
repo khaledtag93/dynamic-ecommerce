@@ -5581,5 +5581,11 @@
     "Remove one verified unit from this purchase line?": "هل تريد إزالة وحدة واحدة تم التحقق منها من بند الشراء هذا؟",
     "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.": "لم يتم تغيير المخزون بعد. هذا الإجراء يقلل فقط عدد الوحدات التي تم التحقق منها بالباركود بمقدار وحدة واحدة قبل الاستلام النهائي.",
     "Mark this payment as Paid manually? Confirm that the provider or transaction evidence proves the money was received.": "هل تريد تسجيل هذه الدفعة كمدفوعة يدويًا؟ تأكد من أن دليل مزود الدفع أو المعاملة يثبت استلام المبلغ.",
-    "Mark this payment as Failed manually? For online payments this can release the active stock reservation.": "هل تريد تسجيل هذه الدفعة كفاشلة يدويًا؟ في المدفوعات الإلكترونية قد يؤدي ذلك إلى تحرير حجز المخزون النشط."
+    "Mark this payment as Failed manually? For online payments this can release the active stock reservation.": "هل تريد تسجيل هذه الدفعة كفاشلة يدويًا؟ في المدفوعات الإلكترونية قد يؤدي ذلك إلى تحرير حجز المخزون النشط.",
+    "Publish active promotion?": "نشر عرض ترويجي نشط؟",
+    "This promotion will be active in checkout according to its schedule. Review the discount value, eligibility, and dates before saving.": "سيكون هذا العرض الترويجي نشطًا في الدفع وفقًا لجدوله. راجع قيمة الخصم والأهلية والتواريخ قبل الحفظ.",
+    "Save active promotion": "حفظ العرض النشط",
+    "Publish active coupon?": "نشر كوبون نشط؟",
+    "This coupon will be usable in checkout according to its limits and schedule. Review the value, caps, usage limit, and dates before saving.": "سيكون هذا الكوبون قابلاً للاستخدام في الدفع وفقًا لحدوده وجدوله. راجع القيمة والحدود وحد الاستخدام والتواريخ قبل الحفظ.",
+    "Save active coupon": "حفظ الكوبون النشط"
 }
