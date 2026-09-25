@@ -58,7 +58,7 @@ Build Dynamic into a commercially credible, bilingual commerce and retail operat
 1. Real global storefront search with results, pagination, filters, sorting and no-result state.
 2. **Shipping Engine V1 implemented in source — 2026-09-25:** `97dc443d` adds stable delivery methods, zones/cities, rates, explicit free-shipping threshold basis, Store Pickup, ETA, live server-authoritative checkout quoting and immutable order shipping snapshots. Hardcoded/disconnected EGP 600 shipping-goal messaging was removed. See `SHIPPING_ENGINE_V1_2026-09-25.md`. CI pending; not yet claimed on QAS.
 3. Tax/VAT configuration and order tax snapshots after merchant/legal decision.
-4. Online-payment stock reservation/expiry/release policy.
+4. **Online-payment stock reservation / expiry / release V1 implemented in source — 2026-09-25:** `e58e82e9` adds explicit reservation ledger, configurable TTL, Paymob retry re-reservation, scheduled expiry/release, Paid commit and late-paid/no-stock exception handling. See `ONLINE_PAYMENT_STOCK_RESERVATION_V1_2026-09-25.md`. CI pending; not yet claimed on QAS.
 5. Returns/RMA workflow with item quantities, reasons, approval, restock and refund/exchange linkage.
 6. Verified real reviews/moderation.
 7. Saved customer addresses.
@@ -121,7 +121,7 @@ Core:
 
 **Payroll Foundation V1 implemented in source — 2026-09-25:** `b51a93e6` adds scoped payroll permissions, compensation profiles, payroll periods/runs, immutable employee payroll snapshots, explicit overtime/allowance/bonus/deduction components, currency-separated totals and self-owned printable payslips. Salary partial-period processing is blocked until an explicit proration policy exists; tax/social insurance/leave monetization remain configurable future policy. See `WORKFORCE_PAYROLL_FOUNDATION_V1_2026-09-25.md`. CI verification is pending and this slice is not claimed on QAS.
 
-**Next implementation order:** Online-payment stock reservation / expiry / release V1 → Returns/RMA → online invoice/receipt → Tax/VAT only after explicit merchant/legal policy → Payroll V2 only after actual operating policy is defined.
+**Next implementation order:** Returns / RMA V1 → online invoice/receipt → Tax/VAT only after explicit merchant/legal policy → Payroll V2 only after actual operating policy is defined.
 
 
 Keep workforce identity related to, but not overloaded into, the customer account model.
