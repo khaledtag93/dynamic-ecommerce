@@ -16,6 +16,7 @@ class AuthorizationService
             ['group' => 'growth', 'slug' => 'growth.view', 'name' => 'View growth', 'description' => 'Review growth dashboards, operations, content, and insights.'],
             ['group' => 'growth', 'slug' => 'growth.manage', 'name' => 'Manage growth', 'description' => 'Create, update, run, toggle, seed, retry, or delete growth automation resources.'],
             ['group' => 'catalog', 'slug' => 'catalog.manage', 'name' => 'Manage catalog', 'description' => 'Create and edit categories, products, brands, and attributes.'],
+            ['group' => 'reviews', 'slug' => 'reviews.manage', 'name' => 'Manage reviews', 'description' => 'Moderate verified-purchase product reviews before they are published.'],
             ['group' => 'orders', 'slug' => 'orders.view', 'name' => 'View orders', 'description' => 'Review customer orders and order details.'],
             ['group' => 'orders', 'slug' => 'orders.manage', 'name' => 'Manage orders', 'description' => 'Update order statuses and perform order operations.'],
             ['group' => 'pos', 'slug' => 'pos.manage', 'name' => 'Use POS', 'description' => 'Open the cashier workspace, scan items, manage the active register cart, and complete POS sales.'],
@@ -58,6 +59,7 @@ class AuthorizationService
                 'permissions' => [
                     'dashboard.view',
                     'catalog.manage',
+                    'reviews.manage',
                     'orders.view',
                     'orders.manage',
                     'pos.manage',
