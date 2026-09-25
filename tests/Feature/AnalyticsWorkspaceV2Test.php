@@ -98,6 +98,7 @@ class AnalyticsWorkspaceV2Test extends TestCase
             'resources/views/admin/analytics/index.blade.php',
             'resources/views/admin/analytics/growth.blade.php',
             'resources/views/admin/analytics/offers.blade.php',
+            'resources/views/admin/analytics/product.blade.php',
         ] as $view) {
             $source = file_get_contents(base_path($view));
             $this->assertStringContainsString('data-admin-section-history="true"', $source);
