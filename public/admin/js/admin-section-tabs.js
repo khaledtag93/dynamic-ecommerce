@@ -7,7 +7,13 @@
         const tab = tabs.find((item) => item.dataset.adminSectionTab === key);
         if (!tab) return;
 
-        activeSections.set(root.dataset.adminSectionTabs, key);
+        const groupId = root.dataset.adminSectionTabs;
+        activeSections.set(groupId, key);
+        if (root.dataset.adminSectionHistory === 'true') {
+            const url = new URL(window.location.href);
+            url.searchParams.set('section', key);
+            window.history.replaceState({}, '', url);
+        }
         tabs.forEach((item) => {
             const selected = item === tab;
             item.setAttribute('aria-selected', selected ? 'true' : 'false');
@@ -43,8 +49,15 @@
             } catch (_) {
                 // The form still opens its first section if error metadata is unavailable.
             }
+            const requestedSection = group.dataset.adminSectionHistory === 'true'
+                ? new URLSearchParams(window.location.search).get('section')
+                : null;
+            const requestedTab = requestedSection
+                ? group.querySelector('[data-admin-section-tab="' + CSS.escape(requestedSection) + '"]')
+                : null;
             const key = invalid?.closest('[data-admin-section-panel]')?.dataset.adminSectionPanel
                 || serverErrorPanel?.dataset.adminSectionPanel
+                || requestedTab?.dataset.adminSectionTab
                 || activeSections.get(group.dataset.adminSectionTabs)
                 || first.dataset.adminSectionTab;
             activate(group, key);
