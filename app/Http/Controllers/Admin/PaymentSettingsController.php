@@ -23,6 +23,7 @@ class PaymentSettingsController extends Controller
             'payment_online_enabled' => ['nullable', 'boolean'],
             'payment_gateway_provider' => ['nullable', 'string', 'max:120'],
             'payment_gateway_mode' => ['nullable', 'string', 'max:50'],
+            'payment_stock_reservation_minutes' => ['required', 'integer', 'min:5', 'max:1440'],
             'payment_gateway_public_key' => ['nullable', 'string', 'max:255'],
             'paymob_integration_id' => ['nullable', 'string', 'max:255'],
             'paymob_iframe_id' => ['nullable', 'string', 'max:255'],
