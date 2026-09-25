@@ -4555,5 +4555,7 @@
     "Configure featured, latest, best-seller, sale, and category blocks.": "اضبط أقسام المميز والأحدث والأكثر مبيعًا والتخفيضات والتصنيفات.",
     "Trust & legacy content": "محتوى الثقة والمحتوى القديم",
     "Maintain trust-section headings and legacy promo content only when still required.": "احتفظ بعناوين قسم الثقة ومحتوى العروض القديم فقط عند الحاجة إليه.",
-    "Untitled banner": "بانر بدون عنوان"
+    "Untitled banner": "بانر بدون عنوان",
+    "Trust block": "عنصر ثقة",
+    "Untitled trust block": "عنصر ثقة بدون عنوان"
 }
