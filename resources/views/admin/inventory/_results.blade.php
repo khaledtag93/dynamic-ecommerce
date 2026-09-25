@@ -38,7 +38,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge admin-status-badge badge-soft-secondary">{{ __(str_replace('_', ' ', IlluminateSupportStr::headline($movement->type ?? 'unknown'))) }}</span>
+                                <span class="badge admin-status-badge badge-soft-secondary">{{ $movement->type_label }}</span>
                             </td>
                             <td class="{{ (int) $movement->quantity_change >= 0 ? 'text-success' : 'text-danger' }} fw-bold">
                                 {{ (int) $movement->quantity_change >= 0 ? '+' : '' }}{{ (int) $movement->quantity_change }}
