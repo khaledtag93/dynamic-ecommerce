@@ -221,6 +221,11 @@ class Order extends Model
         return $this->hasMany(OrderRefund::class)->latest('id');
     }
 
+    public function returnRequests()
+    {
+        return $this->hasMany(ReturnRequest::class)->latest('id');
+    }
+
     public function payments()
     {
         return $this->hasMany(Payment::class)->latest('id');
