@@ -387,7 +387,24 @@
                             $resolvedPromoPath = AdminBranding::resolveMediaPath($promoPath, 'promo_banner');
                             $promoPreview = AdminBranding::mediaUrl($promoPath, 'promo_banner');
                         @endphp
-                        <div class="admin-promo-card {{ $i < 3 ? 'mb-4' : '' }}">
+                        <details class="admin-promo-card border rounded-4 {{ $i < 3 ? 'mb-3' : '' }}" @if($i === 1) open @endif>
+                            <summary class="p-3 d-flex justify-content-between align-items-center gap-3">
+                                <span>
+                                    <strong>{{ __('Promo banner') }} {{ $i }}</strong>
+                                    <small class="d-block text-muted mt-1">
+                                        {{ old("promo_banner_{$i}_title", $settings["promo_banner_{$i}_title"] ?? '') ?: __('Untitled banner') }}
+                                    </small>
+                                </span>
+                                <span class="d-flex align-items-center gap-2">
+                                    @if(old("promo_banner_{$i}_active", $settings["promo_banner_{$i}_active"] ?? true))
+                                        <span class="badge rounded-pill text-bg-success-subtle border">{{ __('Active') }}</span>
+                                    @else
+                                        <span class="badge rounded-pill text-bg-light border">{{ __('Inactive') }}</span>
+                                    @endif
+                                    <i class="mdi mdi-chevron-down"></i>
+                                </span>
+                            </summary>
+                            <div class="p-3 pt-0">
                             <div class="row g-3 align-items-start">
                                 <div class="col-lg-8">
                                     <div class="row g-3">
@@ -424,7 +441,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                            </div>
+                        </details>
                     @endfor
                 </div>
             </div>
