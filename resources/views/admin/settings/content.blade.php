@@ -62,6 +62,7 @@
                     'footer_show_experience_note' => __('Show experience note'),
                     'footer_show_whatsapp' => __('Show WhatsApp link'),
                     'footer_show_website' => __('Show website link'),
+                    'footer_show_social' => __('Show social links'),
                 ] as $key => $label)
                     <div class="col-md-6 col-xl-4">
                         <div class="admin-switch-card h-100 p-3 rounded-4 border d-flex align-items-center justify-content-between gap-3">
@@ -72,6 +73,24 @@
                         </div>
                     </div>
                 @endforeach
+                <div class="col-12"><hr class="my-1"></div>
+                <div class="col-12">
+                    <h5 class="mb-1">{{ __('Social channels') }}</h5>
+                    <p class="text-muted mb-0">{{ __('Only configured channels are shown in the storefront footer.') }}</p>
+                </div>
+                @foreach([
+                    'store_social_facebook' => 'Facebook',
+                    'store_social_instagram' => 'Instagram',
+                    'store_social_tiktok' => 'TikTok',
+                    'store_social_youtube' => 'YouTube',
+                    'store_social_linkedin' => 'LinkedIn',
+                ] as $key => $label)
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ $key }}">{{ $label }}</label>
+                        <input type="url" class="form-control" id="{{ $key }}" name="{{ $key }}" maxlength="500" placeholder="https://" value="{{ old($key, $settings[$key] ?? '') }}">
+                    </div>
+                @endforeach
+
                 <div class="col-12"><hr class="my-1"></div>
                 <div class="col-12">
                     <h5 class="mb-1">{{ __('Trust highlights') }}</h5>
