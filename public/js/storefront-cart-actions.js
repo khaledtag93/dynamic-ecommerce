@@ -12,14 +12,21 @@
         if (!node) return;
 
         clearTimeout(feedbackTimer);
-        node.textContent = message || node.dataset.error || '';
-        node.classList.toggle('alert-success', !isError);
-        node.classList.toggle('alert-danger', Boolean(isError));
-        node.classList.remove('d-none');
+        const messageNode = node.querySelector('[data-live-cart-feedback-message]');
+        const icon = node.querySelector('[data-live-cart-feedback-icon]');
+        if (messageNode) messageNode.textContent = message || node.dataset.error || '';
+        node.classList.toggle('lc-flash-toast--success', !isError);
+        node.classList.toggle('lc-flash-toast--danger', Boolean(isError));
+        if (icon) icon.className = isError ? 'bi bi-exclamation-circle-fill' : 'bi bi-check-circle-fill';
+        node.classList.remove('d-none', 'is-leaving');
 
-        feedbackTimer = window.setTimeout(() => {
-            node.classList.add('d-none');
-        }, 3200);
+        const hide = () => {
+            node.classList.add('is-leaving');
+            window.setTimeout(() => node.classList.add('d-none'), 180);
+        };
+
+        node.querySelector('[data-live-cart-feedback-close]')?.addEventListener('click', hide, { once: true });
+        feedbackTimer = window.setTimeout(hide, 4200);
     }
 
     function updateCartCount(count) {
