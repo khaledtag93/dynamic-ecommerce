@@ -53,15 +53,15 @@
             <ul class="nav flex-column">
                 @if($can('dashboard.view'))
                 <li class="nav-item {{ $isRoute('admin.dashboard') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.dashboard') }}"><i class="mdi mdi-view-dashboard-outline menu-icon"></i><span class="menu-title">{{ __('Dashboard') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.dashboard') ? 'page' : 'false' }}" href="{{ route('admin.dashboard') }}"><i class="mdi mdi-view-dashboard-outline menu-icon"></i><span class="menu-title">{{ __('Dashboard') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.analytics.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.analytics.index') }}"><i class="mdi mdi-chart-areaspline menu-icon"></i><span class="menu-title">{{ __('Analytics & Insights') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.analytics.*') ? 'page' : 'false' }}" href="{{ route('admin.analytics.index') }}"><i class="mdi mdi-chart-areaspline menu-icon"></i><span class="menu-title">{{ __('Analytics & Insights') }}</span></a>
                 </li>
                 @endif
                 @if($can('growth.view'))
                 <li class="nav-item {{ $isRoute('admin.growth.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.growth.index') }}"><i class="mdi mdi-rocket-launch-outline menu-icon"></i><span class="menu-title">{{ __('Growth Engine') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.growth.*') ? 'page' : 'false' }}" href="{{ route('admin.growth.index') }}"><i class="mdi mdi-rocket-launch-outline menu-icon"></i><span class="menu-title">{{ __('Growth Engine') }}</span></a>
                 </li>
                 @endif
             </ul>
@@ -84,21 +84,21 @@
             <ul class="nav flex-column">
                 @if($can('catalog.manage'))
                 <li class="nav-item {{ $isRoute('admin.categories.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.categories.index') }}"><i class="mdi mdi-shape-outline menu-icon"></i><span class="menu-title">{{ __('Categories') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.categories.*') ? 'page' : 'false' }}" href="{{ route('admin.categories.index') }}"><i class="mdi mdi-shape-outline menu-icon"></i><span class="menu-title">{{ __('Categories') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.products.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.products.index') }}"><i class="mdi mdi-package-variant-closed menu-icon"></i><span class="menu-title">{{ __('Products') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.products.*') ? 'page' : 'false' }}" href="{{ route('admin.products.index') }}"><i class="mdi mdi-package-variant-closed menu-icon"></i><span class="menu-title">{{ __('Products') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.attributes.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.attributes.index') }}"><i class="mdi mdi-tune-variant menu-icon"></i><span class="menu-title">{{ __('Attributes') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.attributes.*') ? 'page' : 'false' }}" href="{{ route('admin.attributes.index') }}"><i class="mdi mdi-tune-variant menu-icon"></i><span class="menu-title">{{ __('Attributes') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.brands.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.brands.index') }}"><i class="mdi mdi-tag-outline menu-icon"></i><span class="menu-title">{{ __('Brands') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.brands.*') ? 'page' : 'false' }}" href="{{ route('admin.brands.index') }}"><i class="mdi mdi-tag-outline menu-icon"></i><span class="menu-title">{{ __('Brands') }}</span></a>
                 </li>
                 @endif
                 @if($can('reviews.manage'))
                 <li class="nav-item {{ $isRoute('admin.reviews.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.reviews.index') }}"><i class="mdi mdi-message-star-outline menu-icon"></i><span class="menu-title">{{ __('Product Reviews') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.reviews.*') ? 'page' : 'false' }}" href="{{ route('admin.reviews.index') }}"><i class="mdi mdi-message-star-outline menu-icon"></i><span class="menu-title">{{ __('Product Reviews') }}</span></a>
                 </li>
                 @endif
             </ul>
@@ -121,40 +121,40 @@
             <ul class="nav flex-column">
                 @if($can('pos.manage'))
                 <li class="nav-item {{ $isRoute('admin.pos.index', 'admin.pos.sales.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.pos.index') }}"><i class="mdi mdi-cash-register menu-icon"></i><span class="menu-title">{{ __('Point of Sale') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.pos.index', 'admin.pos.sales.*') ? 'page' : 'false' }}" href="{{ route('admin.pos.index') }}"><i class="mdi mdi-cash-register menu-icon"></i><span class="menu-title">{{ __('Point of Sale') }}</span></a>
                 </li>
                 @endif
                 @if($can('pos.shifts.review'))
                 <li class="nav-item {{ $isRoute('admin.pos.shifts.index') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.pos.shifts.index') }}"><i class="mdi mdi-cash-sync menu-icon"></i><span class="menu-title">{{ __('Cash Shift Review') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.pos.shifts.index') ? 'page' : 'false' }}" href="{{ route('admin.pos.shifts.index') }}"><i class="mdi mdi-cash-sync menu-icon"></i><span class="menu-title">{{ __('Cash Shift Review') }}</span></a>
                 </li>
                 @endif
                 @if($can('orders.view'))
                 <li class="nav-item {{ $isRoute('admin.orders.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline menu-icon"></i><span class="menu-title">{{ __('Orders') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.orders.*') ? 'page' : 'false' }}" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline menu-icon"></i><span class="menu-title">{{ __('Orders') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.returns.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.returns.index') }}"><i class="mdi mdi-package-variant-closed-remove menu-icon"></i><span class="menu-title">{{ __('Returns & RMA') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.returns.*') ? 'page' : 'false' }}" href="{{ route('admin.returns.index') }}"><i class="mdi mdi-package-variant-closed-remove menu-icon"></i><span class="menu-title">{{ __('Returns & RMA') }}</span></a>
                 </li>
                 @endif
                 @if($can('customers.manage'))
                 <li class="nav-item {{ $isRoute('admin.customers.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.customers.index') }}"><i class="mdi mdi-account-group-outline menu-icon"></i><span class="menu-title">{{ __('Customers') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.customers.*') ? 'page' : 'false' }}" href="{{ route('admin.customers.index') }}"><i class="mdi mdi-account-group-outline menu-icon"></i><span class="menu-title">{{ __('Customers') }}</span></a>
                 </li>
                 @endif
                 @if($can('support.view'))
                 <li class="nav-item {{ $isRoute('admin.support.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.support.index') }}"><i class="mdi mdi-headset menu-icon"></i><span class="menu-title">{{ __('Customer Support') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.support.*') ? 'page' : 'false' }}" href="{{ route('admin.support.index') }}"><i class="mdi mdi-headset menu-icon"></i><span class="menu-title">{{ __('Customer Support') }}</span></a>
                 </li>
                 @endif
                 @if($can('payments.view'))
                 <li class="nav-item {{ $isRoute('admin.payments.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.payments.index') }}"><i class="mdi mdi-credit-card-outline menu-icon"></i><span class="menu-title">{{ __('Payments') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.payments.*') ? 'page' : 'false' }}" href="{{ route('admin.payments.index') }}"><i class="mdi mdi-credit-card-outline menu-icon"></i><span class="menu-title">{{ __('Payments') }}</span></a>
                 </li>
                 @endif
                 @if($can('delivery.view'))
                 <li class="nav-item {{ $isRoute('admin.deliveries.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.deliveries.index') }}"><i class="mdi mdi-truck-fast-outline menu-icon"></i><span class="menu-title">{{ __('Deliveries') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.deliveries.*') ? 'page' : 'false' }}" href="{{ route('admin.deliveries.index') }}"><i class="mdi mdi-truck-fast-outline menu-icon"></i><span class="menu-title">{{ __('Deliveries') }}</span></a>
                 </li>
                 @endif
             </ul>
@@ -176,16 +176,16 @@
         <div class="sidebar-group-body">
             <ul class="nav flex-column">
                 <li class="nav-item {{ $isRoute('admin.inventory.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.inventory.index') }}"><i class="mdi mdi-warehouse menu-icon"></i><span class="menu-title">{{ __('Inventory') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.inventory.*') ? 'page' : 'false' }}" href="{{ route('admin.inventory.index') }}"><i class="mdi mdi-warehouse menu-icon"></i><span class="menu-title">{{ __('Inventory') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.cost-calculator.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.cost-calculator.index') }}"><i class="mdi mdi-calculator-variant-outline menu-icon"></i><span class="menu-title">{{ __('Cost Calculator') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.cost-calculator.*') ? 'page' : 'false' }}" href="{{ route('admin.cost-calculator.index') }}"><i class="mdi mdi-calculator-variant-outline menu-icon"></i><span class="menu-title">{{ __('Cost Calculator') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.purchases.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.purchases.index') }}"><i class="mdi mdi-package-variant-plus menu-icon"></i><span class="menu-title">{{ __('Purchases') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.purchases.*') ? 'page' : 'false' }}" href="{{ route('admin.purchases.index') }}"><i class="mdi mdi-package-variant-plus menu-icon"></i><span class="menu-title">{{ __('Purchases') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.suppliers.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.suppliers.index') }}"><i class="mdi mdi-truck-delivery-outline menu-icon"></i><span class="menu-title">{{ __('Suppliers') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.suppliers.*') ? 'page' : 'false' }}" href="{{ route('admin.suppliers.index') }}"><i class="mdi mdi-truck-delivery-outline menu-icon"></i><span class="menu-title">{{ __('Suppliers') }}</span></a>
                 </li>
             </ul>
         </div>
@@ -206,10 +206,10 @@
         <div class="sidebar-group-body">
             <ul class="nav flex-column">
                 <li class="nav-item {{ $isRoute('admin.promotions.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.promotions.index') }}"><i class="mdi mdi-sale menu-icon"></i><span class="menu-title">{{ __('Promotions') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.promotions.*') ? 'page' : 'false' }}" href="{{ route('admin.promotions.index') }}"><i class="mdi mdi-sale menu-icon"></i><span class="menu-title">{{ __('Promotions') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.coupons.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.coupons.index') }}"><i class="mdi mdi-ticket-percent-outline menu-icon"></i><span class="menu-title">{{ __('Coupons') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.coupons.*') ? 'page' : 'false' }}" href="{{ route('admin.coupons.index') }}"><i class="mdi mdi-ticket-percent-outline menu-icon"></i><span class="menu-title">{{ __('Coupons') }}</span></a>
                 </li>
             </ul>
         </div>
@@ -231,34 +231,34 @@
             <ul class="nav flex-column">
                 @if($can('settings.manage'))
                 <li class="nav-item {{ $isRoute('admin.settings.branding') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.settings.branding') }}"><i class="mdi mdi-palette-outline menu-icon"></i><span class="menu-title">{{ __('Brand & Identity') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.settings.branding') ? 'page' : 'false' }}" href="{{ route('admin.settings.branding') }}"><i class="mdi mdi-palette-outline menu-icon"></i><span class="menu-title">{{ __('Brand & Identity') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.settings.content*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.settings.content') }}"><i class="mdi mdi-file-document-edit-outline menu-icon"></i><span class="menu-title">{{ __('Store content') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.settings.content*') ? 'page' : 'false' }}" href="{{ route('admin.settings.content') }}"><i class="mdi mdi-file-document-edit-outline menu-icon"></i><span class="menu-title">{{ __('Store content') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.settings.shipping.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.settings.shipping.methods') }}"><i class="mdi mdi-truck-cargo-container menu-icon"></i><span class="menu-title">{{ __('Shipping setup') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.settings.shipping.*') ? 'page' : 'false' }}" href="{{ route('admin.settings.shipping.methods') }}"><i class="mdi mdi-truck-cargo-container menu-icon"></i><span class="menu-title">{{ __('Shipping setup') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.settings.whatsapp*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.settings.whatsapp') }}"><i class="mdi mdi-whatsapp menu-icon"></i><span class="menu-title">{{ __('WhatsApp Channel') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.settings.whatsapp*') ? 'page' : 'false' }}" href="{{ route('admin.settings.whatsapp') }}"><i class="mdi mdi-whatsapp menu-icon"></i><span class="menu-title">{{ __('WhatsApp Channel') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.settings.notifications*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.settings.notifications') }}"><i class="mdi mdi-bell-cog-outline menu-icon"></i><span class="menu-title">{{ __('Notification Center') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.settings.notifications*') ? 'page' : 'false' }}" href="{{ route('admin.settings.notifications') }}"><i class="mdi mdi-bell-cog-outline menu-icon"></i><span class="menu-title">{{ __('Notification Center') }}</span></a>
                 </li>
                 @endif
                 @if($can('deploy.manage'))
                 <li class="nav-item {{ $isRoute('admin.settings.deploy-center*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.settings.deploy-center') }}"><i class="mdi mdi-rocket-launch-outline menu-icon"></i><span class="menu-title">{{ __('Deploy Center') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.settings.deploy-center*') ? 'page' : 'false' }}" href="{{ route('admin.settings.deploy-center') }}"><i class="mdi mdi-rocket-launch-outline menu-icon"></i><span class="menu-title">{{ __('Deploy Center') }}</span></a>
                 </li>
                 @endif
                 @if($can('payments.settings'))
                 <li class="nav-item {{ $isRoute('admin.settings.payments*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.settings.payments') }}"><i class="mdi mdi-credit-card-settings-outline menu-icon"></i><span class="menu-title">{{ __('Payment methods') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.settings.payments*') ? 'page' : 'false' }}" href="{{ route('admin.settings.payments') }}"><i class="mdi mdi-credit-card-settings-outline menu-icon"></i><span class="menu-title">{{ __('Payment methods') }}</span></a>
                 </li>
                 @endif
                 @if($can('imports.manage'))
                 <li class="nav-item {{ $isRoute('admin.imports.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.imports.index') }}"><i class="mdi mdi-database-import-outline menu-icon"></i><span class="menu-title">{{ __('Data Imports') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.imports.*') ? 'page' : 'false' }}" href="{{ route('admin.imports.index') }}"><i class="mdi mdi-database-import-outline menu-icon"></i><span class="menu-title">{{ __('Data Imports') }}</span></a>
                 </li>
                 @endif
             </ul>
@@ -281,53 +281,53 @@
             <ul class="nav flex-column mb-3">
                 @if($can('workforce.view'))
                 <li class="nav-item {{ $isRoute('admin.workforce.employees.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.employees.index') }}"><i class="mdi mdi-account-group-outline menu-icon"></i><span class="menu-title">{{ __('Employees') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.employees.*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.employees.index') }}"><i class="mdi mdi-account-group-outline menu-icon"></i><span class="menu-title">{{ __('Employees') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.schedule.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.schedule.index') }}"><i class="mdi mdi-calendar-multiselect-outline menu-icon"></i><span class="menu-title">{{ __('Work schedule') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.schedule.*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.schedule.index') }}"><i class="mdi mdi-calendar-multiselect-outline menu-icon"></i><span class="menu-title">{{ __('Work schedule') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.attendance.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.attendance.index') }}"><i class="mdi mdi-calendar-clock-outline menu-icon"></i><span class="menu-title">{{ __('Attendance') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.attendance.*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.attendance.index') }}"><i class="mdi mdi-calendar-clock-outline menu-icon"></i><span class="menu-title">{{ __('Attendance') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.corrections.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.corrections.index') }}"><i class="mdi mdi-file-document-edit-outline menu-icon"></i><span class="menu-title">{{ __('Attendance corrections') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.corrections.*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.corrections.index') }}"><i class="mdi mdi-file-document-edit-outline menu-icon"></i><span class="menu-title">{{ __('Attendance corrections') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.leave.index', 'admin.workforce.leave-types.*', 'admin.workforce.leave.adjustment') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.leave.index') }}"><i class="mdi mdi-calendar-check-outline menu-icon"></i><span class="menu-title">{{ __('Leave review') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.leave.index', 'admin.workforce.leave-types.*', 'admin.workforce.leave.adjustment') ? 'page' : 'false' }}" href="{{ route('admin.workforce.leave.index') }}"><i class="mdi mdi-calendar-check-outline menu-icon"></i><span class="menu-title">{{ __('Leave review') }}</span></a>
                 </li>
                 @endif
                 @if($can('workforce.payroll.view'))
                 <li class="nav-item {{ $isRoute('admin.workforce.payroll.index', 'admin.workforce.payroll.runs.*', 'admin.workforce.payroll.entries.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.payroll.index') }}"><i class="mdi mdi-cash-multiple menu-icon"></i><span class="menu-title">{{ __('Payroll') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.payroll.index', 'admin.workforce.payroll.runs.*', 'admin.workforce.payroll.entries.*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.payroll.index') }}"><i class="mdi mdi-cash-multiple menu-icon"></i><span class="menu-title">{{ __('Payroll') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.payroll.compensation.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.payroll.compensation.index') }}"><i class="mdi mdi-account-cash-outline menu-icon"></i><span class="menu-title">{{ __('Compensation') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.payroll.compensation.*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.payroll.compensation.index') }}"><i class="mdi mdi-account-cash-outline menu-icon"></i><span class="menu-title">{{ __('Compensation') }}</span></a>
                 </li>
                 @endif
                 @if($can('workforce.clock'))
                 <li class="nav-item {{ $isRoute('admin.workforce.my-schedule') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.my-schedule') }}"><i class="mdi mdi-calendar-account-outline menu-icon"></i><span class="menu-title">{{ __('My schedule') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.my-schedule') ? 'page' : 'false' }}" href="{{ route('admin.workforce.my-schedule') }}"><i class="mdi mdi-calendar-account-outline menu-icon"></i><span class="menu-title">{{ __('My schedule') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.my-leave') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.my-leave') }}"><i class="mdi mdi-beach menu-icon"></i><span class="menu-title">{{ __('My leave') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.my-leave') ? 'page' : 'false' }}" href="{{ route('admin.workforce.my-leave') }}"><i class="mdi mdi-beach menu-icon"></i><span class="menu-title">{{ __('My leave') }}</span></a>
                 </li>
                 <li class="nav-item {{ $isRoute('admin.workforce.time-clock', 'admin.workforce.clock-*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.time-clock') }}"><i class="mdi mdi-clock-check-outline menu-icon"></i><span class="menu-title">{{ __('My time clock') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.time-clock', 'admin.workforce.clock-*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.time-clock') }}"><i class="mdi mdi-clock-check-outline menu-icon"></i><span class="menu-title">{{ __('My time clock') }}</span></a>
                 </li>
                 @endif
                 @if($can('workforce.payroll.self'))
                 <li class="nav-item {{ $isRoute('admin.workforce.payroll.my-payslip*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.workforce.payroll.my-payslips') }}"><i class="mdi mdi-receipt-text-outline menu-icon"></i><span class="menu-title">{{ __('My payslips') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.workforce.payroll.my-payslip*') ? 'page' : 'false' }}" href="{{ route('admin.workforce.payroll.my-payslips') }}"><i class="mdi mdi-receipt-text-outline menu-icon"></i><span class="menu-title">{{ __('My payslips') }}</span></a>
                 </li>
                 @endif
                 @if($can('notifications.view'))
                 <li class="nav-item {{ $isRoute('admin.notifications.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.notifications.index') }}"><i class="mdi mdi-bell-outline menu-icon"></i><span class="menu-title">{{ __('Admin Inbox') }}</span>@if($authNotificationCount > 0)<span class="sidebar-inline-badge sidebar-inline-badge-warn">{{ $authNotificationCount }}</span>@endif</a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.notifications.*') ? 'page' : 'false' }}" href="{{ route('admin.notifications.index') }}"><i class="mdi mdi-bell-outline menu-icon"></i><span class="menu-title">{{ __('Admin Inbox') }}</span>@if($authNotificationCount > 0)<span class="sidebar-inline-badge sidebar-inline-badge-warn">{{ $authNotificationCount }}</span>@endif</a>
                 </li>
                 @endif
                 @if($can('permissions.manage'))
                 <li class="nav-item {{ $isRoute('admin.permissions.*') ? 'sidebar-current active' : '' }}">
-                    <a class="nav-link" href="{{ route('admin.permissions.index') }}"><i class="mdi mdi-shield-account-outline menu-icon"></i><span class="menu-title">{{ __('Roles & Permissions') }}</span></a>
+                    <a class="nav-link" aria-current="{{ $isRoute('admin.permissions.*') ? 'page' : 'false' }}" href="{{ route('admin.permissions.index') }}"><i class="mdi mdi-shield-account-outline menu-icon"></i><span class="menu-title">{{ __('Roles & Permissions') }}</span></a>
                 </li>
                 @endif
             </ul>
