@@ -3,6 +3,10 @@
 return [
     'supported_locales' => ['ar', 'en'],
 
+    // Optional absolute public-root override for split deployments such as QAS.
+    // Production keeps the existing auto-detection when this is unset.
+    'public_root_path' => env('PUBLIC_ROOT_PATH'),
+
     'media_directories' => [
         'categories' => 'category',
         'products' => 'products',
