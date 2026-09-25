@@ -13,6 +13,7 @@ use App\Services\Commerce\InventoryService;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\OrderNotificationService;
 use App\Services\Commerce\PaymentService;
+use App\Services\Commerce\StockReservationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -97,7 +98,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $notifications->shouldReceive('notifyCancelled')->once();
         $notifications->shouldReceive('notifyDeliveryUpdated')->once();
 
-        $service = new OrderActionService($notifications, app(InventoryService::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
 
         $service->cancel($order, 'test cancellation', 1);
         $service->cancel($order->fresh(), 'duplicate cancellation', 1);
@@ -125,7 +126,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $notifications = Mockery::mock(OrderNotificationService::class);
         $notifications->shouldReceive('notifyRefundRecorded')->once();
 
-        $service = new OrderActionService($notifications, app(InventoryService::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
         $service->refund($order, 70, 'partial refund', null, $actor->id);
 
         try {
@@ -150,7 +151,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $notifications = Mockery::mock(OrderNotificationService::class);
         $notifications->shouldReceive('notifyRefundRecorded')->once();
 
-        $service = new OrderActionService($notifications, app(InventoryService::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
         $service->refund($order, 100, 'full refund');
 
         $this->assertSame(100.0, (float) $order->fresh()->refund_total);
@@ -172,7 +173,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $payment = $this->makePayment($order, Payment::STATUS_PENDING);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
-        $service = new OrderActionService($notifications, app(InventoryService::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
 
         $service->updateStatus($order, Order::STATUS_PROCESSING);
         $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
@@ -189,7 +190,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $payment = $this->makePayment($order, Payment::STATUS_PENDING);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
-        $service = new OrderActionService($notifications, app(InventoryService::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
 
         $service->cancel($order, 'cancelled for test');
 
