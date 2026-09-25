@@ -56,6 +56,21 @@ class BrandingWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("setAttribute('data-applied-preset', key)", $source);
     }
 
+    public function test_branding_workspace_translation_catalogs_cover_every_literal_key(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/settings/branding.blade.php'));
+        preg_match_all("/__\\('([^']+)'\\)/", $source, $matches);
+
+        $keys = array_values(array_unique($matches[1] ?? []));
+        $english = json_decode(file_get_contents(base_path('lang/en.json')), true, 512, JSON_THROW_ON_ERROR);
+        $arabic = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        foreach ($keys as $key) {
+            $this->assertArrayHasKey($key, $english, "Missing English branding translation key: {$key}");
+            $this->assertArrayHasKey($key, $arabic, "Missing Arabic branding translation key: {$key}");
+        }
+    }
+
     public function test_arabic_branding_cleanup_labels_are_available(): void
     {
         $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
