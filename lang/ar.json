@@ -5567,5 +5567,9 @@
     "Confirm order cancellation": "تأكيد إلغاء الطلب",
     "Cancel this order?": "هل تريد إلغاء هذا الطلب؟",
     "Cancelling the order restores reserved stock and records the cancellation in the audit trail. This action should only be used when the order must not continue to fulfillment.": "إلغاء الطلب يعيد المخزون المحجوز ويسجل عملية الإلغاء في سجل التدقيق. استخدم هذا الإجراء فقط عندما يجب ألا يستمر الطلب إلى مرحلة التنفيذ.",
-    "Keep order active": "الإبقاء على الطلب نشطًا"
+    "Keep order active": "الإبقاء على الطلب نشطًا",
+    "Confirm refund": "تأكيد الاسترداد",
+    "The refund is recorded in the order ledger and changes the payment status when the refundable balance is fully consumed.": "يُسجل الاسترداد في سجل الطلب ويتغير وضع الدفع عند استهلاك الرصيد القابل للاسترداد بالكامل.",
+    "Review refund": "مراجعة الاسترداد",
+    "Record a refund of :amount?": "هل تريد تسجيل استرداد بقيمة :amount؟"
 }
