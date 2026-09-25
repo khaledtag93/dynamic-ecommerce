@@ -4238,5 +4238,17 @@
     "Opening note": "Opening note",
     "Closing note": "Closing note",
     "No cash shifts match these filters.": "No cash shifts match these filters.",
-    "Try changing the cashier or status filters.": "Try changing the cashier or status filters."
+    "Try changing the cashier or status filters.": "Try changing the cashier or status filters.",
+    "Complete the storefront content, translations, search metadata, media, and visibility from one focused workspace.": "Complete the storefront content, translations, search metadata, media, and visibility from one focused workspace.",
+    "Translations": "Translations",
+    "Media & visibility": "Media & visibility",
+    "Default fallback content used when a localized value is not available.": "Default fallback content used when a localized value is not available.",
+    "Maintain English and Arabic storefront content separately. Arabic fields use RTL direction automatically.": "Maintain English and Arabic storefront content separately. Arabic fields use RTL direction automatically.",
+    "Category preview": "Category preview",
+    "No category image selected yet.": "No category image selected yet.",
+    "Review the category details, translation content, image, and visibility settings before saving your changes.": "Review the category details, translation content, image, and visibility settings before saving your changes.",
+    "Empty": "Empty",
+    "Categories with no linked products yet.": "Categories with no linked products yet.",
+    "Missing a description or category image.": "Missing a description or category image.",
+    "All": "All"
 }
