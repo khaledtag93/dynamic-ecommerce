@@ -879,6 +879,68 @@
 
     <div
         class="modal fade"
+        id="productBulkActivateConfirmationModal"
+        tabindex="-1"
+        aria-labelledby="productBulkActivateConfirmationTitle"
+        aria-hidden="true"
+        wire:ignore.self
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="productBulkActivateConfirmationTitle">{{ __('Activate selected products?') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <p class="mb-3">{{ __('Selected products will become visible in the storefront. Products that still need content review will remain flagged for attention.') }}</p>
+                    <div class="rounded-3 border bg-light p-3 d-flex align-items-center justify-content-between">
+                        <span class="text-muted">{{ __('Products selected') }}</span>
+                        <strong>{{ $this->selectedCount }}</strong>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" wire:click="bulkSetStatus(true)" wire:loading.attr="disabled" wire:target="bulkSetStatus">
+                        {{ __('Activate selected') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade"
+        id="productBulkHideConfirmationModal"
+        tabindex="-1"
+        aria-labelledby="productBulkHideConfirmationTitle"
+        aria-hidden="true"
+        wire:ignore.self
+    >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="productBulkHideConfirmationTitle">{{ __('Hide selected products?') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <p class="mb-3">{{ __('Selected products will be hidden from the storefront without deleting their catalog records.') }}</p>
+                    <div class="rounded-3 border bg-light p-3 d-flex align-items-center justify-content-between">
+                        <span class="text-muted">{{ __('Products selected') }}</span>
+                        <strong>{{ $this->selectedCount }}</strong>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" wire:click="bulkSetStatus(false)" wire:loading.attr="disabled" wire:target="bulkSetStatus">
+                        {{ __('Hide selected') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade"
         id="productBulkDeleteConfirmationModal"
         tabindex="-1"
         aria-labelledby="productBulkDeleteConfirmationTitle"
