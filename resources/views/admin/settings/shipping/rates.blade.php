@@ -51,7 +51,7 @@
                                         <label class="form-label small fw-semibold">{{ __('Threshold basis') }}</label>
                                         <select name="threshold_basis" class="form-select">
                                             <option value="">{{ __('Not applicable') }}</option>
-                                            @foreach(AppModelsShippingRate::thresholdBasisOptions() as $value => $label)
+                                            @foreach(\App\Models\ShippingRate::thresholdBasisOptions() as $value => $label)
                                                 <option value="{{ $value }}" @selected($rate?->threshold_basis === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
