@@ -809,6 +809,35 @@ document.addEventListener('DOMContentLoaded', function () {
         search.select();
     });
 
+    document.querySelectorAll('.retail-account-dropdown, .retail-mega-dropdown').forEach((dropdown) => {
+        const trigger = dropdown.querySelector('[data-bs-toggle="dropdown"]');
+        const menu = dropdown.querySelector('[role="menu"]');
+        if (!trigger || !menu) return;
+
+        dropdown.addEventListener('shown.bs.dropdown', () => {
+            const firstItem = menu.querySelector('[role="menuitem"]:not([disabled])');
+            if (firstItem) firstItem.focus();
+        });
+
+        menu.addEventListener('keydown', (event) => {
+            const items = Array.from(menu.querySelectorAll('[role="menuitem"]:not([disabled])'));
+            if (!items.length) return;
+            const currentIndex = items.indexOf(document.activeElement);
+
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                bootstrap.Dropdown.getOrCreateInstance(trigger).hide();
+                trigger.focus();
+                return;
+            }
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+            event.preventDefault();
+            const step = event.key === 'ArrowDown' ? 1 : -1;
+            const nextIndex = currentIndex < 0 ? 0 : (currentIndex + step + items.length) % items.length;
+            items[nextIndex].focus();
+        });
+    });
+
     const retailNav = document.getElementById('retailNav');
     if (retailNav) {
         retailNav.addEventListener('shown.bs.collapse', () => {
