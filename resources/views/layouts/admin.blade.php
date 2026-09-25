@@ -185,13 +185,16 @@
         }
 
         .admin-topbar-search {
-            width: min(460px, 100%);
+            max-width: 38rem;
+            width: 100%;
+            margin-inline: auto;
             border: 1px solid var(--admin-border);
             border-radius: 999px;
             background: color-mix(in srgb, var(--admin-surface) 88%, white);
-            padding: .45rem .9rem;
+            padding: .45rem .95rem;
             gap: .55rem;
             color: var(--admin-muted);
+            box-shadow: 0 10px 24px color-mix(in srgb, var(--admin-text) 6%, transparent);
         }
 
         .admin-topbar-search input {
@@ -219,11 +222,6 @@
 
         .admin-topbar-start {
             min-width: 0;
-        }
-
-        .admin-topbar-search {
-            width: min(560px, 100%);
-            margin-inline: auto;
         }
 
         .admin-topbar-action {
@@ -275,20 +273,6 @@
             color: var(--admin-muted);
             font-size: .82rem;
             word-break: break-word;
-        }
-
-        .admin-topbar-shell {
-            gap: 1rem;
-        }
-
-        .admin-topbar-search {
-            max-width: 38rem;
-            width: 100%;
-            border-radius: 999px;
-            padding-inline: .95rem;
-            background: color-mix(in srgb, var(--admin-surface) 88%, white);
-            border: 1px solid var(--admin-border);
-            box-shadow: 0 10px 24px color-mix(in srgb, var(--admin-text) 6%, transparent);
         }
 
         .admin-topbar-search .form-control {
