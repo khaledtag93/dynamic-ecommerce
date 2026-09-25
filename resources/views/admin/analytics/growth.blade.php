@@ -69,7 +69,7 @@
 .growth-shell{display:grid;gap:20px}.growth-grid,.growth-signal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.growth-card,.growth-panel,.growth-focus{background:color-mix(in srgb, var(--admin-surface) 98%, white);border:1px solid color-mix(in srgb, var(--admin-border) 88%, white);border-radius:22px;box-shadow:0 18px 45px rgba(15,23,42,.06)}.growth-card,.growth-focus{padding:20px}.growth-kicker{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--admin-muted)}.growth-value{font-size:28px;font-weight:800;color:var(--admin-text);margin-top:6px}.growth-help{color:var(--admin-muted);font-size:13px;margin-top:6px;line-height:1.6}.growth-panel{padding:22px}.growth-panel h4{margin:0 0 14px;font-weight:800}.growth-table{width:100%;min-width:720px}.growth-table th,.growth-table td{padding:10px 12px;border-bottom:1px solid color-mix(in srgb, var(--admin-border) 72%, white);vertical-align:top}.growth-table th{font-size:12px;text-transform:uppercase;color:var(--admin-muted);white-space:nowrap}.pill{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:var(--admin-primary-soft);color:var(--admin-primary-dark)}.pill-success{background:var(--admin-success-bg);color:var(--admin-success-text)}.pill-warn{background:var(--admin-warning-bg);color:var(--admin-warning-text)}.pill-danger{background:var(--admin-danger-bg);color:var(--admin-danger-text)}.growth-two{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.growth-list{display:grid;gap:12px}.growth-item{padding:14px;border:1px solid color-mix(in srgb, var(--admin-border) 84%, white);border-radius:16px;background:color-mix(in srgb, var(--admin-surface-alt) 70%, white)}.growth-item h5{margin:0 0 8px;font-size:16px;font-weight:800}.growth-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.growth-empty{padding:20px;border:1px dashed color-mix(in srgb, var(--admin-border) 76%, white);border-radius:16px;background:color-mix(in srgb, var(--admin-surface-alt) 70%, white);color:var(--admin-muted)}.growth-filter{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.growth-filter .form-control,.growth-filter .form-select{min-width:170px;border-radius:14px}.growth-card,.growth-panel,.growth-item,.growth-two>*,.growth-grid>*,.growth-signal-grid>*{min-width:0}.growth-panel .table-responsive{-webkit-overflow-scrolling:touch}.growth-meta .pill,.growth-panel .text-muted{overflow-wrap:anywhere}.growth-focus{display:grid;gap:14px;background:linear-gradient(135deg, color-mix(in srgb, var(--admin-primary-soft) 70%, white), color-mix(in srgb, var(--admin-surface) 98%, white))}.growth-focus-list{display:grid;gap:10px}.growth-focus-item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.8);border:1px solid color-mix(in srgb, var(--admin-primary) 16%, var(--admin-border))}.growth-signal-card{padding:18px;border-radius:20px;border:1px solid color-mix(in srgb, var(--admin-border) 88%, white);background:color-mix(in srgb, var(--admin-surface) 98%, white);box-shadow:0 16px 35px rgba(15,23,42,.05)}.growth-meter{height:8px;border-radius:999px;background:color-mix(in srgb, var(--admin-surface-alt) 70%, white);overflow:hidden;margin-top:10px}.growth-meter-fill{height:100%;border-radius:999px;background:linear-gradient(90deg, var(--admin-primary), color-mix(in srgb, var(--admin-primary) 55%, white))}.growth-signal-card.success .growth-meter-fill{background:linear-gradient(90deg,var(--admin-success-text),color-mix(in srgb,var(--admin-success-text) 55%,white))}.growth-signal-card.danger .growth-meter-fill{background:linear-gradient(90deg,var(--admin-danger-text),color-mix(in srgb,var(--admin-danger-text) 55%,white))}.growth-signal-card.warn .growth-meter-fill{background:linear-gradient(90deg,var(--admin-warning-text),color-mix(in srgb,var(--admin-warning-text) 55%,white))}.growth-story-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.growth-story-card{padding:22px;border-radius:22px;background:linear-gradient(135deg, var(--admin-sidebar), color-mix(in srgb, var(--admin-sidebar) 76%, var(--admin-primary)));color:#fff;border:1px solid color-mix(in srgb, var(--admin-border) 88%, white);box-shadow:0 20px 45px rgba(15,23,42,.16)}.growth-story-card .eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.72)}.growth-story-card .headline{font-size:1.5rem;font-weight:800;line-height:1.4;margin-top:8px}.growth-story-card .subcopy{font-size:.92rem;line-height:1.75;color:rgba(255,255,255,.82);margin-top:10px}.growth-story-bullets{display:grid;gap:10px;margin-top:16px}.growth-story-bullets div{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}.growth-lane-card{padding:20px;border-radius:22px;background:color-mix(in srgb, var(--admin-surface) 98%, white);border:1px solid color-mix(in srgb, var(--admin-border) 88%, white);box-shadow:0 18px 45px rgba(15,23,42,.05)}.growth-lane-list{display:grid;gap:12px}.growth-lane-item{padding:14px 16px;border-radius:16px;background:color-mix(in srgb, var(--admin-surface-alt) 70%, white);border:1px solid color-mix(in srgb, var(--admin-border) 84%, white)}.growth-lane-label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--admin-muted)}.growth-lane-value{font-weight:800;color:var(--admin-text);margin-top:5px}.growth-lane-help{font-size:.86rem;color:var(--admin-muted);margin-top:7px;line-height:1.6}.growth-signal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.growth-story-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.growth-story-mini{padding:14px;border-radius:16px;background:color-mix(in srgb, var(--admin-surface) 98%, white);border:1px solid color-mix(in srgb, var(--admin-border) 88%, white)}@media (max-width: 1200px){.growth-grid,.growth-two,.growth-signal-grid,.growth-story-kpis{grid-template-columns:1fr 1fr}.growth-story-grid{grid-template-columns:1fr}}@media (max-width: 768px){.growth-grid,.growth-two,.growth-signal-grid,.growth-story-kpis{grid-template-columns:1fr}.growth-panel{padding:16px}.growth-table{min-width:680px}}
 </style>
 
-<div class="growth-shell">
+<div class="growth-shell" data-admin-section-tabs="growth-analytics">
     <x-admin.page-header
         :kicker="__('Revenue intelligence')"
         :title="__('Growth Automation')"
@@ -100,7 +100,14 @@
         'exportRows' => $exportRows,
     ])
 
-    <div class="growth-story-grid">
+    <x-admin.section-tabs id="growth-analytics" :sections="[
+        'overview' => __('Growth overview'),
+        'campaigns' => __('Campaigns & automation'),
+        'products' => __('Product signals'),
+        'offers' => __('Offers & coupons'),
+    ]" />
+
+    <div class="growth-story-grid" id="growth-analytics-panel-overview" role="tabpanel" aria-labelledby="growth-analytics-tab-overview" data-admin-section-panel="overview">
         <div class="growth-story-card">
             <div class="eyebrow">{{ __('Growth focus') }}</div>
             <div class="headline">{{ $focusHeadline }}</div>
@@ -135,7 +142,7 @@
     </div>
 
     @if (!($uiState['empty'] ?? false))
-    <div class="growth-signal-grid">
+    <div class="growth-signal-grid" data-admin-section-panel="overview">
         @foreach ($signalCards as $signal)
             <div class="admin-card admin-stat-card growth-signal-card {{ $signal['theme'] }}">
                 <div class="d-flex justify-content-between align-items-center gap-2">
@@ -148,7 +155,7 @@
         @endforeach
     </div>
 
-    <div class="growth-story-kpis">
+    <div class="growth-story-kpis" data-admin-section-panel="overview">
         <div class="growth-story-mini">
             <div class="small text-muted">{{ __('Campaign blueprints') }}</div>
             <div class="fw-bold fs-4 mt-1">{{ number_format($campaigns->count()) }}</div>
@@ -163,7 +170,7 @@
         </div>
     </div>
 
-    <div class="growth-two">
+    <div class="growth-two" id="growth-analytics-panel-campaigns" role="tabpanel" aria-labelledby="growth-analytics-tab-campaigns" data-admin-section-panel="campaigns">
         <div class="growth-panel">
             <h4>{{ __('Recommended campaigns') }}</h4>
             <div class="growth-list">
@@ -214,7 +221,7 @@
         </div>
     </div>
 
-    <div class="growth-panel">
+    <div class="growth-panel" id="growth-analytics-panel-products" role="tabpanel" aria-labelledby="growth-analytics-tab-products" data-admin-section-panel="products">
         <div class="d-flex justify-content-between align-items-center mb-3" style="gap:12px;">
             <h4 class="mb-0">{{ __('Product opportunity signals') }}</h4>
             <small class="text-muted">{{ __('Focus on products getting attention without enough purchases.') }}</small>
@@ -254,7 +261,7 @@
         </div>
     </div>
 
-    <div class="growth-two">
+    <div class="growth-two" id="growth-analytics-panel-offers" role="tabpanel" aria-labelledby="growth-analytics-tab-offers" data-admin-section-panel="offers">
         <div class="growth-panel">
             <h4>{{ __('Coupon candidates') }}</h4>
             <div class="table-responsive">
