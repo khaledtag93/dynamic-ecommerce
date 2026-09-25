@@ -11,6 +11,7 @@ use App\Services\Commerce\InventoryService;
 use App\Services\Channels\WhatsApp\WhatsAppManager;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
+use App\Services\Commerce\ShippingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -24,6 +25,7 @@ class CheckoutService
         protected PaymentService $paymentService,
         protected ProfitService $profitService,
         protected WhatsAppManager $whatsAppManager,
+        protected ShippingService $shippingService,
     ) {
     }
 
@@ -71,6 +73,23 @@ class CheckoutService
             $paymentMethod = (string) ($data['payment_method'] ?? Order::PAYMENT_METHOD_COD);
             $deliveryMethod = (string) ($data['delivery_method'] ?? Order::DELIVERY_METHOD_STANDARD);
 
+            $shippingQuote = $this->shippingService->quote(
+                $deliveryMethod,
+                (string) ($data['shipping_city'] ?? ''),
+                (string) ($data['shipping_country'] ?? ''),
+                (float) $summary['subtotal'],
+                (float) $summary['discount'],
+            );
+
+            $shippingTotal = (float) $shippingQuote['amount'];
+            $grandTotal = round(max(
+                0,
+                (float) $summary['subtotal']
+                    + $shippingTotal
+                    + (float) $summary['tax']
+                    - (float) $summary['discount']
+            ), 2);
+
             $order = Order::create([
                 'user_id' => $user->id,
                 'order_number' => 'LC-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
@@ -79,12 +98,16 @@ class CheckoutService
                 'payment_method' => $paymentMethod,
                 'delivery_status' => Order::DELIVERY_STATUS_PENDING,
                 'delivery_method' => $deliveryMethod,
+                'shipping_method_id' => $shippingQuote['method_id'],
+                'shipping_zone_id' => $shippingQuote['zone_id'],
+                'shipping_rate_id' => $shippingQuote['rate_id'],
+                'shipping_snapshot' => $shippingQuote,
                 'currency' => 'EGP',
                 'subtotal' => $summary['subtotal'],
                 'discount_total' => $summary['discount'],
-                'shipping_total' => $summary['shipping'],
+                'shipping_total' => $shippingTotal,
                 'tax_total' => $summary['tax'],
-                'grand_total' => $summary['total'],
+                'grand_total' => $grandTotal,
                 'notes' => $data['notes'] ?? null,
 
                 'customer_name' => $data['customer_name'],
