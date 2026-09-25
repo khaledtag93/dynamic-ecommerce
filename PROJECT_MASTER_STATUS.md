@@ -51,6 +51,15 @@
 - The confirmed Blade namespace faults were repaired across Workforce views and a regression guard `WorkforceBladeIntegrityTest` was added.
 - Fixes are not yet claimed on QAS; a clean schema recovery + successful deploy is required before feature acceptance.
 
+
+## Connected Identity Foundation — 2026-09-25
+- Source foundation adds a provider-neutral `connected_identities` ledger for Google/Facebook-ready account linking without changing the existing password login flow.
+- Linking requires a verified provider email matching the already signed-in Dynamic account; provider identity collisions and multiple identities for the same provider/user are blocked.
+- Future provider callbacks are explicitly forbidden from silently merging into an existing Dynamic account based only on matching email; existing-email users must authenticate normally and link from account settings.
+- Focused regression coverage: `ConnectedIdentityFoundationTest`. Arabic validation copy is included.
+- OAuth redirect/callback UI is intentionally deferred until `laravel/socialite` is added with a real Composer lock update; Production and QAS remain unchanged.
+- See `docs/CONNECTED_IDENTITY_FOUNDATION_2026-09-25.md`.
+
 ## New customer-platform roadmap requirements — 2026-09-25
 - **Customer Service / Helpdesk:** add a professional customer-service workspace with support tickets/cases linked to customers, orders, payments, deliveries and returns where relevant; assignment/ownership, priority, status lifecycle, SLA/response tracking, internal notes, customer-visible replies, attachments where safe, searchable history, audit trail, reusable reply templates and permission-scoped access. Design it so email/WhatsApp/chat or other channels can later feed the same case timeline instead of creating separate disconnected tools.
 - **Social Login / Connected identity:** add secure customer sign-in with Google and Facebook first, behind a provider-adapter design that can later support Apple/Microsoft or other providers. Requirements include safe account linking to existing email/password accounts, verified provider identity handling, duplicate-account protection, unlink/recovery rules, clear consent/error states, EN/AR/RTL UX and no silent account merges.

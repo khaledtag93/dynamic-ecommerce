@@ -60,13 +60,14 @@ class ConnectedIdentityFoundationTest extends TestCase
     {
         $service = app(ConnectedIdentityService::class);
         $first = User::factory()->create(['email' => 'first@example.test']);
-        $second = User::factory()->create(['email' => 'first@example.test']);
+        $second = User::factory()->create(['email' => 'second@example.test']);
 
-        $service->linkVerifiedIdentity($first, [
+        ConnectedIdentity::query()->create([
+            'user_id' => $first->id,
             'provider' => ConnectedIdentity::PROVIDER_FACEBOOK,
             'provider_user_id' => 'facebook-123',
-            'email' => 'first@example.test',
-            'email_verified' => true,
+            'provider_email' => 'first@example.test',
+            'provider_email_verified_at' => now(),
         ]);
 
         $this->expectException(ValidationException::class);
@@ -74,7 +75,7 @@ class ConnectedIdentityFoundationTest extends TestCase
         $service->linkVerifiedIdentity($second, [
             'provider' => ConnectedIdentity::PROVIDER_FACEBOOK,
             'provider_user_id' => 'facebook-123',
-            'email' => 'first@example.test',
+            'email' => 'second@example.test',
             'email_verified' => true,
         ]);
     }
@@ -108,7 +109,7 @@ class ConnectedIdentityFoundationTest extends TestCase
 
         $this->assertNull($identity->last_login_at);
 
-        $resolved = $service->resolveExistingLogin('google', 'google-linked');
+        $resolved = $service->resolveExistingLogin('GOOGLE', 'google-linked');
 
         $this->assertTrue($resolved->is($user));
         $this->assertNotNull($identity->fresh()->last_login_at);

@@ -12,6 +12,7 @@ class ConnectedIdentityService
 {
     public function resolveExistingLogin(string $provider, string $providerUserId): ?User
     {
+        $provider = strtolower(trim($provider));
         $this->assertSupportedProvider($provider);
 
         $identity = ConnectedIdentity::query()
