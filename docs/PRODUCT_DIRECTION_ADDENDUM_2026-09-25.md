@@ -33,6 +33,40 @@ Growth Workspace V2 introduces the first reusable Admin page-help component. Fut
 
 Customer UI/UX needs a dedicated modernization pass. Actions such as cart quantity changes should update totals immediately without a separate update button when server safety allows it. Remove content that takes space without helping the current task. Storefront interactions should be fast, obvious, responsive and bilingual.
 
+
+## Customer identity and social login
+
+Customer authentication should support secure provider-based sign-in in addition to email/password. Start with Google and Facebook because they cover common customer expectations, but keep the implementation provider-agnostic so Apple, Microsoft or other providers can be added without redesigning account ownership.
+
+Rules:
+- link providers to one canonical Dynamic customer account;
+- never silently merge accounts just because profile data looks similar;
+- require safe verified-identity/account-linking flows for existing email accounts;
+- define unlink and recovery behavior before enabling a provider in Production;
+- keep normal email/password access usable where the merchant wants it;
+- localize consent, failure and recovery states in EN/AR with correct RTL behavior.
+
+## Customer Service / Helpdesk
+
+Dynamic should include a professional customer-service workspace comparable to mature commerce businesses rather than relying on scattered order notes or external conversations.
+
+The shared case model should support:
+- ticket/case reference, category, priority, status and assigned owner/team;
+- links to customer, order, payment, delivery and return records when relevant;
+- customer-visible messages plus private internal notes;
+- attachments where security and storage policy allow them;
+- response/resolution timing and SLA indicators;
+- searchable conversation/activity history and audit trail;
+- reusable reply templates/macros;
+- permission-scoped Admin access;
+- later channel adapters for email, WhatsApp, web chat or other communication sources feeding one timeline.
+
+## Customer account statement and commercial movement
+
+Admin should have a customer account statement that explains commercial movement from canonical business records. It should show dated references for orders, actual payment captures, refunds, returns and any future wallet/credit/account adjustments.
+
+A running balance must only be shown when Dynamic has a real customer financial ledger with explicit debit/credit rules. Until then, the statement should present source movements and totals without fabricating a balance. The workspace should support filtering, source-record drill-through, print/export and auditability.
+
 ## Configurability
 
 Dynamic should support platform-owner and merchant/admin control over which modules, navigation items, sections and optional business features are enabled or visible. Vertical-specific needs should preferably be implemented as configurable capabilities or feature flags, not hard-coded assumptions.

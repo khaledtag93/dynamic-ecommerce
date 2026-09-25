@@ -165,6 +165,11 @@ Extend the existing delivery status/provider fields into an operational workflow
 
 ## Phase 7 — conversion and customer experience
 
+### Customer identity, service and account history
+- **Social Login V1:** Google + Facebook customer login first, with secure linking to existing accounts, duplicate protection, provider unlink/recovery rules and an adapter structure for future Apple/Microsoft providers.
+- **Customer Service / Helpdesk V1:** customer tickets/cases with ownership, priority, lifecycle, SLA signals, internal notes, customer replies, attachments, audit history and links to relevant orders/payments/deliveries/returns. Future email/WhatsApp/chat channels should feed one shared case timeline.
+- **Customer Account Statement V1:** Admin statement/movement workspace per customer using canonical order/payment/refund/return records and future credit/wallet movements. Include filters, source-record drill-through, export/print and a running balance only after a true customer financial ledger exists.
+
 - Guest checkout.
 - Wishlist.
 - Product compare where useful for the catalog.
