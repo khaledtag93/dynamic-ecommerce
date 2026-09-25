@@ -213,12 +213,6 @@
     font-weight: 800;
 }
 .admin-mobile-sidebar-toggle-inline {
-    border: 1px solid var(--admin-border);
-    background: color-mix(in srgb, var(--admin-surface) 92%, white);
-    color: var(--admin-text);
-    box-shadow: 0 14px 32px color-mix(in srgb, var(--admin-sidebar) 18%, transparent);
-}
-.admin-mobile-sidebar-toggle-inline {
     width: 2.85rem;
     height: 2.85rem;
     padding: 0;
@@ -227,9 +221,12 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
+    border: 1px solid var(--admin-border);
+    background: color-mix(in srgb, var(--admin-surface) 92%, white);
+    color: var(--admin-text);
+    box-shadow: 0 14px 32px color-mix(in srgb, var(--admin-sidebar) 18%, transparent);
 }
 .admin-mobile-sidebar-toggle-inline i,
-.admin-mobile-sidebar-toggle-inline .mdi,
 .admin-mobile-sidebar-toggle-inline .mdi {
     font-size: 1.3rem;
 }
