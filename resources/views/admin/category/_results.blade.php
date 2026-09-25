@@ -97,7 +97,7 @@
                                 <td class="text-end rtl-text-start">
                                     <div class="d-flex justify-content-end rtl-justify-start gap-2 flex-wrap">
                                         <a href="{{ route('admin.categories.edit', $category) }}" class="btn-table-icon btn-edit" title="{{ __('Edit category') }}"><i class="mdi mdi-pencil-outline"></i></a>
-                                        <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline-block" data-confirm-message="{{ __('Are you sure you want to delete this category?') }}">
+                                        <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline-block" data-submit-loading data-confirm-message="{{ __('Are you sure you want to delete this category?') }}">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn-table-icon btn-delete" title="{{ __('Delete category') }}" @disabled($category->products_count > 0)><i class="mdi mdi-trash-can-outline"></i></button>
                                         </form>
