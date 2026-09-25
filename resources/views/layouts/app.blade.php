@@ -574,7 +574,7 @@
         .lc-toast-stack { position:fixed; top:1rem; inset-inline-end:1rem; z-index:1090; display:grid; gap:.65rem; width:min(420px,calc(100vw - 2rem)); pointer-events:none; }
         .lc-toast-stack--live { top:auto; bottom:1rem; }
         .lc-flash-toast { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:.75rem; padding:.85rem 1rem; border:1px solid var(--lc-border); border-radius:1rem; background:var(--lc-surface); box-shadow:var(--lc-shadow-strong); pointer-events:auto; transition:opacity .18s ease, transform .18s ease; }
-        .lc-flash-toast--success > i { color:#15803d; } .lc-flash-toast--info > i { color:var(--lc-primary-dark); }
+        .lc-flash-toast--success > i { color:#15803d; } .lc-flash-toast--info > i { color:var(--lc-primary-dark); } .lc-flash-toast--danger > i { color:#dc2626; }
         .lc-flash-toast__close { border:0; background:transparent; color:var(--lc-muted); padding:.25rem; line-height:1; border-radius:.5rem; }
         .lc-flash-toast__close:focus-visible { outline:3px solid var(--lc-primary); outline-offset:2px; }
         .lc-flash-toast.is-leaving { opacity:0; transform:translateY(-8px); }
