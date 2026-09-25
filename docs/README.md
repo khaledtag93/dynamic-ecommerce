@@ -166,3 +166,6 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Customer Notifications Live Actions
 - [Customer Notifications Live Actions](CUSTOMER_NOTIFICATIONS_LIVE_ACTIONS_2026-09-25.md)
+
+### 2026-09-25 — Customer Support Live UX
+- [Customer Support Live UX](CUSTOMER_SUPPORT_LIVE_UX_2026-09-25.md)

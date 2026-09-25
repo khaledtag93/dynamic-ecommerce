@@ -70,7 +70,7 @@ class SupportController extends Controller
         return view('frontend.support.show', compact('supportCase'));
     }
 
-    public function reply(Request $request, SupportCase $supportCase): RedirectResponse
+    public function reply(Request $request, SupportCase $supportCase)
     {
         $this->assertOwnership($request, $supportCase);
 
@@ -78,7 +78,31 @@ class SupportController extends Controller
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        $this->supportCaseService->addCustomerReply($supportCase, $request->user(), $validated['message']);
+        $reply = $this->supportCaseService->addCustomerReply(
+            $supportCase,
+            $request->user(),
+            $validated['message']
+        );
+
+        if ($request->expectsJson() || $request->header('X-Support-Live') === '1') {
+            $reply->loadMissing('author:id,name');
+            $freshCase = $supportCase->fresh();
+
+            return response()->json([
+                'message' => __('Your reply was added.'),
+                'reply' => [
+                    'id' => (int) $reply->id,
+                    'body' => (string) $reply->body,
+                    'author_label' => __('You'),
+                    'created_at' => $reply->created_at?->format('d M Y H:i'),
+                ],
+                'case' => [
+                    'status' => (string) $freshCase->status,
+                    'status_label' => (string) $freshCase->status_label,
+                    'updated_at' => $freshCase->updated_at?->format('d M Y H:i'),
+                ],
+            ]);
+        }
 
         return back()->with('success', __('Your reply was added.'));
     }
