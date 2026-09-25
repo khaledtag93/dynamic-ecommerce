@@ -27,12 +27,13 @@
             ['label' => __('Clocked in now'), 'value' => $stats['clocked_in'], 'copy' => __('Employees with an open attendance session.'), 'icon' => 'mdi-clock-in'],
         ] as $card)
             <div class="col-md-6 col-xl-3">
-                <div class="admin-card admin-stat-card h-100">
-                    <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                    <div class="admin-stat-label">{{ $card['label'] }}</div>
-                    <div class="admin-stat-value">{{ $card['value'] }}</div>
-                    <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-                </div>
+                <x-admin.stat-card
+                    :label="$card['label']"
+                    :value="$card['value']"
+                    :icon="$card['icon']"
+                    :help="$card['copy']"
+                    class="h-100"
+                />
             </div>
         @endforeach
     </div>
