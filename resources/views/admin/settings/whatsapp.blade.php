@@ -31,7 +31,6 @@
 .whatsapp-page .wa-switch-card .wa-switch-copy{min-width:0}
 .whatsapp-page .wa-switch-card .wa-switch-title{font-weight:700;color:var(--admin-text);line-height:1.35}
 .whatsapp-page .wa-switch-card .form-check{padding:0;min-height:0}
-.whatsapp-page .wa-switch-card .form-check-input{float:none;margin:0;width:3rem;height:1.55rem}
 .whatsapp-page .wa-metric-card .admin-stat-value{font-size:1.75rem}
 @media(max-width:768px){.wa-section-nav a{flex:1 1 calc(50% - .55rem);justify-content:center}.whatsapp-page .wa-switch-card{padding:.8rem .9rem}}
 </style>
@@ -67,10 +66,12 @@
                     ['label' => __('Pending'), 'value' => $summary['pending'] ?? 0, 'class' => 'info'],
                 ] as $item)
                     <div class="col-lg col-md-4 col-sm-6">
-                        <div class="admin-card admin-stat-card wa-metric-card h-100">
-                            <div class="admin-stat-label">{{ $item['label'] }}</div>
-                            <div class="admin-stat-value">{{ $item['value'] }}</div>
-                        </div>
+                        <x-admin.stat-card
+                            :label="$item['label']"
+                            :value="$item['value']"
+                            :tone="$item['class'] === 'danger' ? 'danger' : ($item['class'] === 'warning' ? 'warning' : ($item['class'] === 'success' ? 'success' : null))"
+                            class="wa-metric-card h-100"
+                        />
                     </div>
                 @endforeach
             </div>
