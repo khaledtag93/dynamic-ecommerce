@@ -455,25 +455,29 @@
                 <div class="analytics-subtitle">{{ __('Choose a quick range or set exact dates. Every section below uses the same window.') }}</div>
                 <div class="analytics-pills mt-3">
                     @foreach (['today' => __('Today'), '7d' => __('Last 7 days'), '30d' => __('Last 30 days'), '90d' => __('Last 90 days')] as $pillKey => $pillLabel)
-                        <a href="{{ route('admin.analytics.index', ['range' => $pillKey]) }}" class="analytics-pill {{ $range === $pillKey ? 'active' : '' }}">{{ $pillLabel }}</a>
+                        <a href="{{ route('admin.analytics.index', ['range' => $pillKey]) }}" data-live-link class="analytics-pill {{ $range === $pillKey ? 'active' : '' }}">{{ $pillLabel }}</a>
                     @endforeach
                 </div>
             </div>
-            <form method="GET" action="{{ route('admin.analytics.index') }}" class="analytics-form">
+            <form method="GET" action="{{ route('admin.analytics.index') }}" class="analytics-form" data-live-filter>
                 <input type="hidden" name="range" value="custom">
                 <div>
                     <label class="form-label">{{ __('From') }}</label>
-                    <input type="date" class="form-control" name="from_date" value="{{ request('from_date', $from->toDateString()) }}">
+                    <input type="date" class="form-control" name="from_date" value="{{ request('from_date', $from->toDateString()) }}" data-live-filter-control>
                 </div>
                 <div>
                     <label class="form-label">{{ __('To') }}</label>
-                    <input type="date" class="form-control" name="to_date" value="{{ request('to_date', $to->toDateString()) }}">
+                    <input type="date" class="form-control" name="to_date" value="{{ request('to_date', $to->toDateString()) }}" data-live-filter-control>
                 </div>
                 <button class="btn btn-primary" type="submit">{{ __('Apply range') }}</button>
             </form>
         </div>
     </div>
 
+    <div class="visually-hidden" aria-live="polite" data-live-status data-loading="{{ __('Loading...') }}" data-updated="{{ __('Updated') }}" data-error="{{ __('Could not refresh this view. Use the fallback link to reload.') }}"></div>
+    <a class="visually-hidden" href="{{ request()->fullUrl() }}" data-live-fallback>{{ __('Reload results') }}</a>
+
+    <div data-live-results>
     @include('admin.analytics._trust_panel', ['trust' => $trust ?? [], 'uiState' => $uiState ?? []])
 
     @include('admin.analytics._report_toolbar', [
@@ -731,5 +735,10 @@
             </div>
         @endif
     @endif
+    </div>
 </div>
+
+@push('scripts')
+    <script defer src="{{ asset('admin/js/live-list.js') }}"></script>
+@endpush
 @endsection
