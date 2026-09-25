@@ -111,19 +111,18 @@ Layout uses existing shared Admin and storefront primitives so RTL behavior foll
 
 The wider CI also continues to run Blade namespace, migration, route, Laravel boot, view compilation and frontend build gates.
 
-## Deferred Helpdesk V2
+## Deferred Helpdesk scope
 
-Not included in V1:
+Still deferred after V2:
 - file attachments and malware/type/size policy;
-- SLA target configuration and breach indicators;
-- reusable reply templates/macros;
 - richer embedded order/payment/delivery/return summaries;
 - customer-service analytics;
+- business-hours calendars and SLA pause policies;
 - email ingestion;
 - WhatsApp ingestion;
 - live chat ingestion.
 
-Future channels should feed this same case timeline rather than introduce parallel support records.
+SLA targets/breach indicators and reusable bilingual reply templates moved into V2 below. Future channels should feed this same case timeline rather than introduce parallel support records.
 
 ## Release state
 
@@ -131,7 +130,9 @@ Future channels should feed this same case timeline rather than introduce parall
 - V1 implementation commits: `b0116d0`, `d342153`, `09da0c0`, `7054729`, `74eba22`, `4c6ab52`, `a1b0ee2`
 - Production: unchanged
 - QAS: not claimed by this document
-- Required next gate: green branch-head CI, then authenticated EN/AR/RTL/responsive Helpdesk acceptance on QAS.
+- V1 source gate passed before V2 work.
+- V2 was merged to `v42-clean-baseline` at `173c14e`; final branch-head CI remains the source gate before QAS.
+- Authenticated EN/AR/RTL/responsive Helpdesk acceptance on QAS remains a separate gate.
 
 ## V2 — SLA targets and reply templates
 

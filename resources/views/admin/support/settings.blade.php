@@ -33,7 +33,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(AppModelsSupportCase::priorityOptions() as $priority => $label)
+                            @foreach(\App\Models\SupportCase::priorityOptions() as $priority => $label)
                                 <tr>
                                     <td><span class="fw-semibold">{{ $label }}</span></td>
                                     <td>
@@ -85,8 +85,8 @@
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('Default visibility') }}</label>
                         <select name="visibility" class="form-select">
-                            <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
-                            <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_INTERNAL }}">{{ __('Internal note') }}</option>
+                            <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
+                            <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}">{{ __('Internal note') }}</option>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -110,7 +110,7 @@
                             <div class="d-flex gap-2 align-items-center flex-wrap">
                                 <h4 class="mb-0">{{ $template->displayName() }}</h4>
                                 <span class="badge admin-status-badge {{ $template->is_active ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ $template->is_active ? __('Active') : __('Inactive') }}</span>
-                                <span class="badge badge-soft-info">{{ $template->visibility === AppModelsSupportCaseMessage::VISIBILITY_INTERNAL ? __('Internal note') : __('Customer-visible reply') }}</span>
+                                <span class="badge badge-soft-info">{{ $template->visibility === \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL ? __('Internal note') : __('Customer-visible reply') }}</span>
                             </div>
                             <div class="text-muted small mt-1">{{ __('Sort order') }}: {{ $template->sort_order }}</div>
                         </div>
@@ -142,8 +142,8 @@
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">{{ __('Default visibility') }}</label>
                                 <select name="visibility" class="form-select">
-                                    <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_CUSTOMER }}" @selected($template->visibility === AppModelsSupportCaseMessage::VISIBILITY_CUSTOMER)>{{ __('Customer-visible reply') }}</option>
-                                    <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_INTERNAL }}" @selected($template->visibility === AppModelsSupportCaseMessage::VISIBILITY_INTERNAL)>{{ __('Internal note') }}</option>
+                                    <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}" @selected($template->visibility === \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER)>{{ __('Customer-visible reply') }}</option>
+                                    <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}" @selected($template->visibility === \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL)>{{ __('Internal note') }}</option>
                                 </select>
                             </div>
                             <div class="col-md-4">

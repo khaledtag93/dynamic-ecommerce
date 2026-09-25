@@ -58,7 +58,8 @@ Customer-facing access is not introduced in V1.
 
 ## Release state
 
-- Working implementation branch: `wip/customer-account-statement-v1`
 - Initial implementation commit: `75e2f53`
-- Production unchanged.
-- Merge to `v42-clean-baseline` requires the current base Hardening CI to be green first.
+- Merged to `v42-clean-baseline` at `347845b`.
+- Follow-up authorization-test alignment completed at `962cce1`.
+- Hardening CI #1363 passed on `962cce1`.
+- Production unchanged; QAS acceptance remains separate.

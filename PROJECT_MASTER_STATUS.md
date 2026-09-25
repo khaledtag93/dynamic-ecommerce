@@ -971,7 +971,7 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added `SupportCaseFoundationTest` covering role boundaries, order ownership, cross-customer isolation, internal-note privacy, first-response behavior, reopen/closed lifecycle behavior, staff-customer rejection, and audit trail.
 - Source commits in this slice: `b0116d0`, `d342153`, `09da0c0`, `7054729`, `74eba22`, `4c6ab52`, `a1b0ee2`.
 - Production unchanged. QAS deployment and authenticated EN/AR/RTL/responsive acceptance remain separate gates.
-- Deferred Helpdesk V2 scope: attachments with safe file policy, SLA targets/breach indicators, reusable reply templates, richer customer/order/payment/delivery/return context, and channel ingestion for email/WhatsApp/chat into the same case timeline.
+- Remaining Helpdesk scope after V2: attachments with safe file policy, richer customer/order/payment/delivery/return context, customer-service analytics, business-hours/SLA pause policy, and channel ingestion for email/WhatsApp/chat into the same case timeline.
 
 ## Customer Account Statement V1 — 2026-09-25
 - Added an Admin customer statement built only from canonical Orders, captured Payments, Order Refunds and Return Requests.
@@ -981,11 +981,12 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Default statement window is the last 12 months.
 - Access stays behind `customers.manage`.
 - Regression coverage: `CustomerAccountStatementTest`.
-- Source currently isolated on `wip/customer-account-statement-v1` pending a green base CI before merge.
+- Merged to `v42-clean-baseline`; authorization-test alignment completed at `962cce1`.
+- Hardening CI #1363 passed on `962cce1`.
 - Production unchanged; QAS/Production remain separate gates.
 
 ## Helpdesk V2 SLA + Reply Templates — 2026-09-25
-- Working source is isolated on `wip/helpdesk-v2-sla-templates` while the current customer-statement branch-head CI is validated.
+- Merged to `v42-clean-baseline` at `173c14e`; final branch-head CI is the current source gate.
 - Added first-response and resolution due timestamps driven by case priority.
 - Added configurable per-priority SLA hours in Support Settings.
 - Added breach indicators and an SLA-breached Support queue count.
@@ -993,5 +994,6 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added reusable bilingual reply templates with customer/internal default visibility, ordering and enable/disable state.
 - Active templates prefill the case reply composer but do not bypass the existing authorization, visibility or audit path.
 - Added Arabic coverage and focused `SupportSlaAndTemplatesTest` regression coverage.
-- Attachments and external channel ingestion remain deliberately separate future slices.
+- Attachments, business-hours/SLA pause policy, richer commerce context, customer-service analytics, and external channel ingestion remain deliberately separate future slices.
+- Production unchanged; QAS acceptance remains a separate gate.
 
