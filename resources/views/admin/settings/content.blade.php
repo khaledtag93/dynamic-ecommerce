@@ -60,6 +60,8 @@
                     'footer_show_support' => __('Show support details'),
                     'footer_show_trust' => __('Show trust highlights'),
                     'footer_show_experience_note' => __('Show experience note'),
+                    'footer_show_whatsapp' => __('Show WhatsApp link'),
+                    'footer_show_website' => __('Show website link'),
                 ] as $key => $label)
                     <div class="col-md-6 col-xl-4">
                         <div class="admin-switch-card h-100 p-3 rounded-4 border d-flex align-items-center justify-content-between gap-3">
