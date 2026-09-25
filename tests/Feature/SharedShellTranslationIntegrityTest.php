@@ -35,6 +35,14 @@ class SharedShellTranslationIntegrityTest extends TestCase
             resource_path('views/admin/workforce/leave/my-leave.blade.php'),
             resource_path('views/admin/workforce/my-schedule.blade.php'),
             resource_path('views/admin/workforce/time-clock.blade.php'),
+            resource_path('views/admin/settings/branding.blade.php'),
+            resource_path('views/admin/settings/content.blade.php'),
+            resource_path('views/admin/settings/shipping/_nav.blade.php'),
+            resource_path('views/admin/settings/shipping/methods.blade.php'),
+            resource_path('views/admin/settings/shipping/rates.blade.php'),
+            resource_path('views/admin/settings/shipping/zones.blade.php'),
+            resource_path('views/admin/settings/notification-center/layout.blade.php'),
+            resource_path('views/admin/settings/notification-center/overview.blade.php'),
         ];
 
         $keys = [];
