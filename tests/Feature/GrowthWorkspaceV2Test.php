@@ -85,6 +85,8 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertSame('الحملة المرتبطة', $translations['Linked campaign'] ?? null);
         $this->assertSame('حملات تحتاج إلى قاعدة', $translations['Campaigns needing a rule'] ?? null);
         $this->assertSame('تعذر إكمال التغيير. حدّث الصفحة وحاول مرة أخرى.', $translations['The change could not be completed. Please refresh and try again.'] ?? null);
+        $this->assertSame('سجلات التشغيل', $translations['Trigger records'] ?? null);
+        $this->assertSame('سجلات تشغيل الأتمتة المتاحة للمراجعة.', $translations['Tracked automation trigger records available for review.'] ?? null);
     }
 
     public function test_growth_large_workspaces_use_real_pagination_and_bounded_overview_reads(): void
