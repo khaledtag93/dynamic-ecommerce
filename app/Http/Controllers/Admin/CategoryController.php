@@ -149,13 +149,19 @@ class CategoryController extends Controller
         $category->meta_keyword = $validated['meta_keyword'] ?? null;
         $category->meta_description = $validated['meta_description'] ?? null;
 
+        $previousImage = null;
+
         if ($request->hasFile('image')) {
-            $this->deleteImage($category->image);
+            $previousImage = $category->image;
             $category->image = $this->uploadImage($request->file('image'));
         }
 
         $category->save();
         $this->syncTranslations($category, $translations);
+
+        if ($previousImage && $previousImage !== $category->image) {
+            $this->deleteImage($previousImage);
+        }
 
         return redirect()
             ->route('admin.categories.edit', $category)
