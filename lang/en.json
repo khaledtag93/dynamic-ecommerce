@@ -4589,5 +4589,6 @@
     "Return this account to customer access? Any assigned staff roles will be removed.": "Return this account to customer access? Any assigned staff roles will be removed.",
     "Staff role :role was updated.": "Staff role :role was updated.",
     "Staff role updated for :staff.": "Staff role updated for :staff.",
-    "Change this staff role? The account permissions will change immediately.": "Change this staff role? The account permissions will change immediately."
+    "Change this staff role? The account permissions will change immediately.": "Change this staff role? The account permissions will change immediately.",
+    "Delivery updated for order :order.": "Delivery updated for order :order."
 }
