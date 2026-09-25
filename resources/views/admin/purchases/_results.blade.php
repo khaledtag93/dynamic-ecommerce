@@ -7,7 +7,7 @@
                 <p class="text-muted small mb-0">{{ __('Find purchase orders quickly and focus on stock that still needs to be received.') }}</p>
             </div>
             @if($queueStats['awaiting'] > 0)
-                <a href="{{ route('admin.purchases.index', ['status' => AppModelsPurchase::STATUS_ORDERED]) }}" data-live-link class="btn {{ $filters['status'] === AppModelsPurchase::STATUS_ORDERED ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Awaiting receipt') }} · {{ $queueStats['awaiting'] }}</a>
+                <a href="{{ route('admin.purchases.index', ['status' => \App\Models\Purchase::STATUS_ORDERED]) }}" data-live-link class="btn {{ $filters['status'] === \App\Models\Purchase::STATUS_ORDERED ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Awaiting receipt') }} · {{ $queueStats['awaiting'] }}</a>
             @endif
         </div>
     </div>
@@ -48,18 +48,18 @@
                                 <div class="fw-semibold">{{ $purchase->supplier?->name ?: '—' }}</div>
                                 <div class="text-muted small">{{ $purchase->supplier?->company ?: __('No company assigned') }}</div>
                             </td>
-                            <td><span class="badge admin-status-badge badge-soft-info">{{ AppModelsPurchase::statusOptions()[$purchase->status] ?? ucfirst($purchase->status) }}</span></td>
+                            <td><span class="badge admin-status-badge badge-soft-info">{{ \App\Models\Purchase::statusOptions()[$purchase->status] ?? ucfirst($purchase->status) }}</span></td>
                             <td>{{ optional($purchase->purchase_date)->format('d M Y') }}</td>
                             <td class="fw-bold">EGP {{ number_format($purchase->grand_total, 2) }}</td>
                             <td class="text-end">
                                 <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                     <a href="{{ route('admin.purchases.show', $purchase) }}" class="btn-table-icon btn-edit" title="{{ __('View purchase') }}"><i class="mdi mdi-eye-outline"></i></a>
-                                    @if($purchase->status === AppModelsPurchase::STATUS_ORDERED)
+                                    @if($purchase->status === \App\Models\Purchase::STATUS_ORDERED)
                                         <form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading data-confirm-title="{{ __('Confirm stock receipt') }}" data-confirm-message="{{ __('Receive this purchase and add its quantities to inventory?') }}" data-confirm-subtitle="{{ __('Receiving will update stock and cost for each line once.') }}" data-confirm-ok="{{ __('Confirm receipt') }}">
                                             @csrf
                                             <button class="btn btn-sm btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button>
                                         </form>
-                                    @elseif($purchase->status === AppModelsPurchase::STATUS_RECEIVED)
+                                    @elseif($purchase->status === \App\Models\Purchase::STATUS_RECEIVED)
                                         <span class="text-success small">{{ __('Received on :date', ['date' => optional($purchase->received_date)->format('d M Y')]) }}</span>
                                     @endif
                                 </div>
