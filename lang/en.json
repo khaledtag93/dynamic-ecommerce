@@ -3463,5 +3463,18 @@
     "Request return": "Request return",
     "Return history": "Return history",
     "Return requests linked to this order.": "Return requests linked to this order.",
-    "Received return restock": "Received return restock"
+    "Received return restock": "Received return restock",
+    "Request a Return": "Request a Return",
+    "Refund amount cannot exceed the value of received items approved for refund (:amount).": "Refund amount cannot exceed the value of received items approved for refund (:amount).",
+    "The exchange order must belong to the same customer.": "The exchange order must belong to the same customer.",
+    "Choose items": "Choose items",
+    "Enter a quantity only for the items you want reviewed for return.": "Enter a quantity only for the items you want reviewed for return.",
+    "Remaining returnable": "Remaining returnable",
+    "Notes for the review team": "Notes for the review team",
+    "Optional notes about the return request": "Optional notes about the return request",
+    "Return details": "Return details",
+    "Returned items": "Returned items",
+    "Request timeline": "Request timeline",
+    "Cancel this return request before it is reviewed?": "Cancel this return request before it is reviewed?",
+    "Keep request": "Keep request"
 }
