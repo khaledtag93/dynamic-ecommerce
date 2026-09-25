@@ -458,7 +458,24 @@
                     </div>
 
                     @for($i = 1; $i <= 4; $i++)
-                        <div class="admin-promo-card {{ $i < 4 ? 'mb-4' : '' }}">
+                        <details class="admin-promo-card border rounded-4 {{ $i < 4 ? 'mb-3' : '' }}" @if($i === 1) open @endif>
+                            <summary class="p-3 d-flex justify-content-between align-items-center gap-3">
+                                <span>
+                                    <strong>{{ __('Trust block') }} {{ $i }}</strong>
+                                    <small class="d-block text-muted mt-1">
+                                        {{ old("trust_block_{$i}_title", $settings["trust_block_{$i}_title"] ?? '') ?: __('Untitled trust block') }}
+                                    </small>
+                                </span>
+                                <span class="d-flex align-items-center gap-2">
+                                    @if(old("trust_block_{$i}_active", $settings["trust_block_{$i}_active"] ?? true))
+                                        <span class="badge rounded-pill text-bg-success-subtle border">{{ __('Active') }}</span>
+                                    @else
+                                        <span class="badge rounded-pill text-bg-light border">{{ __('Inactive') }}</span>
+                                    @endif
+                                    <i class="mdi mdi-chevron-down"></i>
+                                </span>
+                            </summary>
+                            <div class="p-3 pt-0">
                             <div class="row g-3 align-items-start">
                                 <div class="col-lg-9">
                                     <div class="row g-3">
