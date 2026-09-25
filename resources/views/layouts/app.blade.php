@@ -453,7 +453,7 @@
         .lc-navbar{box-shadow:0 10px 30px color-mix(in srgb,var(--lc-dark) 7%, transparent)}
         .lc-category-dropdown{min-width:260px;max-height:420px;overflow:auto}.lc-category-dropdown .dropdown-item{font-weight:800;color:var(--lc-text)}.lc-category-dropdown .dropdown-item:hover{background:color-mix(in srgb,var(--lc-soft) 80%, white);color:var(--lc-primary-dark)}
         .lc-btn-primary,.lc-btn-soft,.lc-btn-danger-soft{border-radius:1rem;font-weight:900}.lc-btn-primary{background:linear-gradient(135deg,var(--lc-dark),color-mix(in srgb,var(--lc-primary) 55%, var(--lc-dark)));border:none;color:var(--lc-btn-text);box-shadow:0 16px 32px color-mix(in srgb,var(--lc-dark) 16%, transparent)}.lc-btn-primary:hover{color:var(--lc-btn-text);transform:translateY(-1px);box-shadow:0 20px 42px color-mix(in srgb,var(--lc-dark) 20%, transparent)}.lc-btn-soft{background:#fff;border:1px solid color-mix(in srgb,var(--lc-border) 76%, white);color:var(--lc-primary-dark)}.lc-btn-soft:hover{background:color-mix(in srgb,var(--lc-soft) 80%, white);color:var(--lc-primary-dark);border-color:color-mix(in srgb,var(--lc-primary) 28%, white)}.lc-btn-danger-soft{background:#fff1f2;border:1px solid #fecdd3;color:#be123c}.lc-btn-danger-soft:hover{background:#ffe4e6;color:#9f1239}
-        .storefront-footer{background:linear-gradient(135deg,#0f172a,color-mix(in srgb,var(--lc-dark) 74%, #020617));color:#fff;border-top:1px solid rgba(255,255,255,.08)}.storefront-footer__top{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:2rem}.storefront-footer__brand p{color:rgba(255,255,255,.72);line-height:1.9;max-width:520px}.storefront-footer__trust{display:flex;flex-wrap:wrap;gap:.6rem}.storefront-footer__trust span{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .75rem;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:800;font-size:.84rem}.storefront-footer__trust i{color:var(--lc-primary)}.storefront-footer__column{display:flex;flex-direction:column;gap:.6rem}.storefront-footer__column h6{font-weight:900;margin-bottom:.35rem;color:#fff}.storefront-footer__column a,.storefront-footer__column span{color:rgba(255,255,255,.68);font-size:.94rem}.storefront-footer__column a:hover{color:#fff}.storefront-footer__bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:2rem;padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:rgba(255,255,255,.58);font-size:.9rem}.lc-page-shell{background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--lc-soft) 24%, #fff))}@media(max-width:991.98px){.storefront-footer__top{grid-template-columns:1fr 1fr}.storefront-footer__brand{grid-column:1/-1}}@media(max-width:575.98px){.storefront-footer__top{grid-template-columns:1fr}.lc-section-head{align-items:flex-start;flex-direction:column}.lc-grid-products,.lc-grid-categories,.lc-grid-promos,.lc-grid-trust{grid-template-columns:1fr!important}}
+        .storefront-footer{background:linear-gradient(135deg,#0f172a,color-mix(in srgb,var(--lc-dark) 74%, #020617));color:#fff;border-top:1px solid rgba(255,255,255,.08)}.storefront-footer__top{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:2rem}.storefront-footer__brand p{color:rgba(255,255,255,.72);line-height:1.9;max-width:520px}.storefront-footer__trust{display:flex;flex-wrap:wrap;gap:.6rem}.storefront-footer__trust span{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem .75rem;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:800;font-size:.84rem}.storefront-footer__trust i{color:var(--lc-primary)}.storefront-footer__column{display:flex;flex-direction:column;gap:.6rem}.storefront-footer__column h6{font-weight:900;margin-bottom:.35rem;color:#fff}.storefront-footer__column a,.storefront-footer__column span{color:rgba(255,255,255,.68);font-size:.94rem}.storefront-footer__column a:hover{color:#fff}.storefront-footer__column a:focus-visible{color:#fff;outline:3px solid var(--lc-primary);outline-offset:4px;border-radius:.3rem}.storefront-footer__column a[aria-current="page"]{color:#fff;font-weight:850}.storefront-footer__bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:2rem;padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:rgba(255,255,255,.58);font-size:.9rem}.lc-page-shell{background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--lc-soft) 24%, #fff))}@media(max-width:991.98px){.storefront-footer__top{grid-template-columns:1fr 1fr}.storefront-footer__brand{grid-column:1/-1}}@media(max-width:575.98px){.storefront-footer__top{grid-template-columns:1fr}.lc-section-head{align-items:flex-start;flex-direction:column}.lc-grid-products,.lc-grid-categories,.lc-grid-promos,.lc-grid-trust{grid-template-columns:1fr!important}}
 
 
         /* Storefront Phase B — Retail UX Foundation */
@@ -882,12 +882,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <div class="storefront-footer__column">
                 <h6>{{ __('Shop') }}</h6>
-                <a href="{{ route('frontend.home') }}">{{ __('Home') }}</a>
-                <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
+                <a href="{{ route('frontend.home') }}" @if(request()->routeIs('frontend.home')) aria-current="page" @endif>{{ __('Home') }}</a>
+                <a href="{{ route('frontend.contact') }}" @if(request()->routeIs('frontend.contact')) aria-current="page" @endif>{{ __('Contact') }}</a>
                 @auth
-                    <a href="{{ route('account.index') }}">{{ __('My account') }}</a>
-                    <a href="{{ route('orders.index') }}">{{ __('My Orders') }}</a>
-                    <a href="{{ route('checkout.index') }}">{{ __('Checkout') }}</a>
+                    <a href="{{ route('account.index') }}" @if(request()->routeIs('account.*')) aria-current="page" @endif>{{ __('My account') }}</a>
+                    <a href="{{ route('orders.index') }}" @if(request()->routeIs('orders.*')) aria-current="page" @endif>{{ __('My Orders') }}</a>
+                    <a href="{{ route('checkout.index') }}" @if(request()->routeIs('checkout.*')) aria-current="page" @endif>{{ __('Checkout') }}</a>
                 @else
                     <a href="{{ route('login') }}">{{ __('Login') }}</a>
                 @endauth
@@ -895,10 +895,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <div class="storefront-footer__column">
                 <h6>{{ __('Policies') }}</h6>
-                <a href="{{ route('frontend.privacy') }}">{{ __('Privacy Policy') }}</a>
-                <a href="{{ route('frontend.terms') }}">{{ __('Terms & Conditions') }}</a>
-                <a href="{{ route('frontend.refund') }}">{{ __('Refund Policy') }}</a>
-                <a href="{{ route('frontend.shipping') }}">{{ __('Shipping Policy') }}</a>
+                <a href="{{ route('frontend.privacy') }}" @if(request()->routeIs('frontend.privacy')) aria-current="page" @endif>{{ __('Privacy Policy') }}</a>
+                <a href="{{ route('frontend.terms') }}" @if(request()->routeIs('frontend.terms')) aria-current="page" @endif>{{ __('Terms & Conditions') }}</a>
+                <a href="{{ route('frontend.refund') }}" @if(request()->routeIs('frontend.refund')) aria-current="page" @endif>{{ __('Refund Policy') }}</a>
+                <a href="{{ route('frontend.shipping') }}" @if(request()->routeIs('frontend.shipping')) aria-current="page" @endif>{{ __('Shipping Policy') }}</a>
             </div>
 
             <div class="storefront-footer__column">
