@@ -19,7 +19,7 @@ class InventoryAdjustmentTest extends TestCase
 
     public function test_counted_stock_creates_one_audited_movement_and_can_decrease_safely(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product(5);
         $service = app(InventoryAdjustmentService::class);
 
@@ -51,7 +51,7 @@ class InventoryAdjustmentTest extends TestCase
 
     public function test_stale_or_replayed_count_does_not_change_stock_twice(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product(5);
         $service = app(InventoryAdjustmentService::class);
         $service->setStock($product->id, null, 5, 8, 'Physical count correction', $admin->id);
@@ -65,7 +65,7 @@ class InventoryAdjustmentTest extends TestCase
 
     public function test_legacy_negative_stock_can_be_corrected_to_zero(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product(-2);
 
         $movement = app(InventoryAdjustmentService::class)->setStock($product->id, null, -2, 0, 'Physical count correction', $admin->id);
@@ -77,7 +77,7 @@ class InventoryAdjustmentTest extends TestCase
 
     public function test_variant_count_changes_only_its_own_stock_and_rejects_other_product_variant(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product(4, true);
         $variant = $this->variant($product, 3);
         $otherVariant = $this->variant($product, 7);
@@ -108,7 +108,7 @@ class InventoryAdjustmentTest extends TestCase
             'reason' => 'Physical count correction',
         ])->assertRedirect('/');
 
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $this->actingAs($admin)->get(route('admin.inventory.adjust', ['product_id' => $product->id]))
             ->assertOk()->assertSee(__('Current stock'))->assertSee('name="expected_stock" value="5"', false);
         $this->post(route('admin.inventory.adjust.store'), [
@@ -123,7 +123,7 @@ class InventoryAdjustmentTest extends TestCase
 
     public function test_admin_post_rechecks_count_and_reports_a_stale_form(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product(5);
         $data = [
             'product_id' => $product->id,

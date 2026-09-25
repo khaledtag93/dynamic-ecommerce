@@ -68,7 +68,7 @@ class PermissionEscalationHardeningTest extends TestCase
 
     public function test_super_admin_cannot_clear_an_admin_role_into_legacy_super_admin_fallback(): void
     {
-        $superAdmin = User::factory()->create(['role_as' => 1]);
+        $superAdmin = $this->createSuperAdmin();
 
         $staffRole = Role::query()->create([
             'name' => 'Support Staff',
