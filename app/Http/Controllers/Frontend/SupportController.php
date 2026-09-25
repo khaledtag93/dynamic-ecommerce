@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\SupportCase;
 use App\Services\Support\SupportCaseService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -42,7 +43,7 @@ class SupportController extends Controller
         return view('frontend.support.create', compact('orders'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'order_id' => ['nullable', 'integer'],
@@ -53,9 +54,24 @@ class SupportController extends Controller
 
         $case = $this->supportCaseService->createForCustomer($request->user(), $validated);
 
+        $message = __('Your support request has been created.');
+
+        if ($request->expectsJson() || $request->header('X-Support-Live') === '1') {
+            return response()->json([
+                'message' => $message,
+                'redirect_url' => route('support.show', $case),
+                'case' => [
+                    'id' => (int) $case->id,
+                    'case_number' => (string) $case->case_number,
+                    'status' => (string) $case->status,
+                    'status_label' => (string) $case->status_label,
+                ],
+            ], 201);
+        }
+
         return redirect()
             ->route('support.show', $case)
-            ->with('success', __('Your support request has been created.'));
+            ->with('success', $message);
     }
 
     public function show(Request $request, SupportCase $supportCase)

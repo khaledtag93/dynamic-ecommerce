@@ -161,6 +161,43 @@ class ReturnRequestWorkflowTest extends TestCase
     }
 
 
+
+    public function test_customer_can_create_return_through_live_endpoint(): void
+    {
+        $customer = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $response = $this->actingAs($customer)->postJson(route('returns.store', $order), [
+            'customer_notes' => 'Live return request.',
+            'items' => [[
+                'order_item_id' => $item->id,
+                'quantity' => 1,
+                'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+            ]],
+        ], ['X-Return-Live' => '1']);
+
+        $response->assertCreated()
+            ->assertJsonPath('message', 'Return request submitted successfully.')
+            ->assertJsonPath('return.status', ReturnRequest::STATUS_REQUESTED);
+        $this->assertDatabaseHas('return_requests', [
+            'user_id' => $customer->id,
+            'order_id' => $order->id,
+            'status' => ReturnRequest::STATUS_REQUESTED,
+        ]);
+    }
+
     public function test_customer_can_cancel_requested_return_through_live_endpoint(): void
     {
         $customer = User::factory()->create();

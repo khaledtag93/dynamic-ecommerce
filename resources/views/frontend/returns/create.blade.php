@@ -21,7 +21,9 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('returns.store', $order) }}" data-submit-loading>
+        <div class="alert alert-danger rounded-4 d-none" role="alert" aria-live="polite" data-request-live-status></div>
+
+        <form method="POST" action="{{ route('returns.store', $order) }}" data-submit-loading data-return-create-live>
             @csrf
             <div class="lc-card p-4 mb-4">
                 <h4 class="fw-bold mb-2">{{ __('Choose items and quantities') }}</h4>
@@ -88,3 +90,51 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form[data-return-create-live]');
+    if (!form || typeof window.fetch !== 'function') return;
+    const status = document.querySelector('[data-request-live-status]');
+    const show = (message, error = false) => {
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.toggle('d-none', !message);
+        status.classList.toggle('text-danger', error);
+        status.classList.toggle('text-success', !error && Boolean(message));
+    };
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const button = event.submitter || form.querySelector('button[type="submit"]');
+        if (button) button.disabled = true;
+        show('');
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Return-Live': '1',
+                    'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                },
+                body: new FormData(form),
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const firstError = Object.values(payload.errors || {}).flat()[0];
+                throw new Error(firstError || payload.message || @json(__('Could not submit the return request. Please review the form and try again.')));
+            }
+            show(payload.message || @json(__('Request submitted successfully.')));
+            if (payload.redirect_url) window.location.assign(payload.redirect_url);
+        } catch (error) {
+            show(error.message, true);
+            if (button) button.disabled = false;
+        }
+    }, true);
+});
+</script>
+@endpush

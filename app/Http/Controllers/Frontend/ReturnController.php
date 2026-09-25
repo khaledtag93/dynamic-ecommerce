@@ -62,7 +62,7 @@ class ReturnController extends Controller
         ]);
     }
 
-    public function store(Request $request, Order $order): RedirectResponse
+    public function store(Request $request, Order $order): RedirectResponse|JsonResponse
     {
         abort_unless((int) $order->user_id === (int) $request->user()->id, 403);
 
@@ -84,9 +84,23 @@ class ReturnController extends Controller
                 $data['customer_notes'] ?? null,
             );
 
+            $message = __('Return request submitted successfully.');
+
+            if ($request->expectsJson() || $request->header('X-Return-Live') === '1') {
+                return response()->json([
+                    'message' => $message,
+                    'redirect_url' => route('returns.show', $returnRequest),
+                    'return' => [
+                        'id' => (int) $returnRequest->id,
+                        'status' => $returnRequest->status,
+                        'status_label' => $returnRequest->status_label,
+                    ],
+                ], 201);
+            }
+
             return redirect()
                 ->route('returns.show', $returnRequest)
-                ->with('success', __('Return request submitted successfully.'));
+                ->with('success', $message);
         } catch (ValidationException $exception) {
             return back()->withErrors($exception->errors())->withInput();
         }
