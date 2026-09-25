@@ -549,6 +549,22 @@ Deliberate boundary: POS lookup exposes name/email only and does not grant custo
 - The deploy also validates Workforce route registration before touching the database.
 - This hardening was added after the QAS 500 incident so similar source corruption is caught during deployment rather than after release.
 
+### Online-payment Stock Reservation / Expiry / Release V1 — 2026-09-25
+- Application source checkpoint `e58e82e9` adds one reservation ledger row per online Order Item with Reserved / Committed / Released / Expired lifecycle.
+- Online checkout now records `order_reservation` stock movement instead of immediately treating pending online payment as a committed sale. COD / bank transfer / POS preserve their existing `order_out` behavior.
+- Payment Settings now configures reservation TTL from 5–1440 minutes; default 30.
+- Pending/Authorized requires a valid reservation; Paid commits without a second stock decrease; Failed releases exactly once.
+- Paymob retry revalidates/re-reserves inventory before gateway redirect. Retry is blocked if stock was consumed elsewhere.
+- Scheduled `payments:expire-stock-reservations` runs every five minutes and releases expired pending online stock, marks Payment/Order failed, records activity and sends payment-status notification.
+- Late successful gateway callbacks after expiry attempt atomic re-reservation. If stock is unavailable, financial truth remains Paid while Order/Payment are flagged `paid_without_fulfillable_reservation`; Admin and customer payment-result UI surface the fulfillment exception.
+- Online cancellation now understands Released/Expired/Committed reservation states and avoids double-restock.
+- Inventory Movement Explorer labels reservation/release movements clearly.
+- QAS Blade namespace preflight and `WorkforceBladeIntegrityTest` were broadened from Workforce-only to all Blade views after an existing Inventory namespace corruption was found.
+- Regression coverage: `OnlineStockReservationTest`, plus updated checkout/business-hardening constructor coverage.
+- Detailed checkpoint: `docs/ONLINE_PAYMENT_STOCK_RESERVATION_V1_2026-09-25.md`.
+- CI Pending: no workflow/status visible for `e58e82e9`. Not yet on QAS. Production unchanged.
+- Next: **Returns / RMA V1**.
+
 ### Shipping Engine V1 — 2026-09-25
 - Application source checkpoint `97dc443d` replaces zero/hardcoded shipping behavior with configurable Shipping Methods, Zones/Cities and Rates.
 - Stable method codes remain Standard / Express / Store Pickup to preserve Delivery V2 transition compatibility.
