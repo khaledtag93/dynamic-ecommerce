@@ -111,7 +111,13 @@
                     <h4 class="admin-section-title">{{ __('Staff assignments') }}</h4>
                     <p class="admin-section-subtitle">{{ __('Assign one clear staff role to each admin account. Changes take effect through the existing server-side authorization checks.') }}</p>
                 </div>
-                <span class="badge rounded-pill text-bg-light border">{{ trans_choice(':count account|:count accounts', $admins->count(), ['count' => $admins->count()]) }}</span>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="input-group input-group-sm admin-staff-search">
+                        <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+                        <input type="search" class="form-control" placeholder="{{ __('Search staff by name, email, or role') }}" data-staff-search autocomplete="off">
+                    </div>
+                    <span class="badge rounded-pill text-bg-light border" data-staff-visible-count>{{ $admins->count() }}</span>
+                </div>
             </div>
 
             <div class="d-flex flex-column gap-3">
@@ -120,7 +126,7 @@
                         $currentRole = $admin->roles->first();
                         $resolvedPermissions = collect($admin->resolved_permissions ?? []);
                     @endphp
-                    <article class="border rounded-4 p-3">
+                    <article class="border rounded-4 p-3" data-staff-card data-staff-search-text="{{ \Illuminate\Support\Str::lower(implode(' ', [$admin->name, $admin->email, optional($currentRole)->name])) }}">
                         <div class="row g-3 align-items-center">
                             <div class="col-lg-5">
                                 <div class="d-flex align-items-center gap-3">
@@ -167,6 +173,11 @@
                     </div>
                 @endforelse
             </div>
+            <div class="admin-empty-state py-4" data-staff-empty hidden>
+                <div class="empty-icon"><i class="mdi mdi-account-search-outline"></i></div>
+                <h5 class="mb-2">{{ __('No staff match your search') }}</h5>
+                <p class="text-muted mb-0">{{ __('Try a staff name, email address, or role name.') }}</p>
+            </div>
         </div>
     </section>
 
@@ -198,7 +209,11 @@
                                 <span class="text-muted small">{{ __('Select only what this role needs.') }}</span>
                             </div>
 
-                            <div class="permission-choice-list">
+                            <div class="d-flex justify-content-end gap-2 mb-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-permission-bulk="select">{{ __('Select all') }}</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-permission-bulk="clear">{{ __('Clear all') }}</button>
+                            </div>
+                            <div class="permission-choice-list" data-permission-choice-scope>
                                 @foreach($permissionGroups as $group => $permissions)
                                     <details class="border rounded-4 mb-2" @if($loop->first) open @endif>
                                         <summary class="p-3 fw-semibold d-flex justify-content-between align-items-center gap-3">
@@ -260,7 +275,11 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mt-4 d-grid gap-2">
+                                            <div class="d-flex justify-content-end gap-2 mt-4 mb-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" data-permission-bulk="select">{{ __('Select all') }}</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" data-permission-bulk="clear">{{ __('Clear all') }}</button>
+                                            </div>
+                                            <div class="d-grid gap-2" data-permission-choice-scope>
                                                 @foreach($permissionGroups as $group => $permissions)
                                                     <details class="border rounded-3">
                                                         <summary class="p-2 px-3 fw-semibold">{{ __(\Illuminate\Support\Str::headline($group)) }}</summary>
@@ -438,13 +457,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const workspace = document.querySelector('[data-permissions-workspace]');
     if (!workspace) return;
 
+    const staffInput = workspace.querySelector('[data-staff-search]');
+    const staffCards = Array.from(workspace.querySelectorAll('[data-staff-card]'));
+    const staffCounter = workspace.querySelector('[data-staff-visible-count]');
+    const staffEmpty = workspace.querySelector('[data-staff-empty]');
     const input = workspace.querySelector('[data-permission-search]');
     const rows = Array.from(workspace.querySelectorAll('[data-permission-row]'));
     const groups = Array.from(workspace.querySelectorAll('[data-permission-group]'));
     const counter = workspace.querySelector('[data-permission-visible-count]');
     const empty = workspace.querySelector('[data-permission-empty]');
-
-    if (!input) return;
 
     const normalize = (value) => String(value || '').toLocaleLowerCase().trim();
 
@@ -473,7 +494,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (empty) empty.hidden = visible !== 0;
     };
 
-    input.addEventListener('input', applySearch);
+    input?.addEventListener('input', applySearch);
+
+    const applyStaffSearch = () => {
+        const query = normalize(staffInput?.value);
+        let visible = 0;
+        staffCards.forEach((card) => {
+            const matches = !query || normalize(card.dataset.staffSearchText).includes(query);
+            card.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        if (staffCounter) staffCounter.textContent = String(visible);
+        if (staffEmpty) staffEmpty.hidden = visible !== 0;
+    };
+    staffInput?.addEventListener('input', applyStaffSearch);
+
+    workspace.querySelectorAll('[data-permission-bulk]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const form = button.closest('form');
+            const scope = form?.querySelector('[data-permission-choice-scope]');
+            if (!scope) return;
+            const checked = button.dataset.permissionBulk === 'select';
+            scope.querySelectorAll('input[name="permission_slugs[]"]').forEach((checkbox) => { checkbox.checked = checked; });
+        });
+    });
 });
 </script>
 @endpush
