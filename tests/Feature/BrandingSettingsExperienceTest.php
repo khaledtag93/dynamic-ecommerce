@@ -67,6 +67,36 @@ class BrandingSettingsExperienceTest extends TestCase
         $this->assertSame('outline', WebsiteSetting::getValue('customer_badge_style'));
     }
 
+    public function test_custom_theme_keeps_its_own_identity_and_current_visual_values(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'royal_navy',
+                'brand_primary_color' => '#123456',
+                'brand_secondary_color' => '#234567',
+                'brand_accent_color' => '#345678',
+                'customer_card_radius' => 22,
+                'customer_badge_style' => 'pill',
+                'custom_theme_name' => 'My Retail Theme',
+                'save_as_custom_theme' => 1,
+                'default_locale' => 'en',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $themes = json_decode((string) WebsiteSetting::getValue('custom_themes', '[]'), true);
+
+        $this->assertSame('custom_my_retail_theme', WebsiteSetting::getValue('theme_preset'));
+        $this->assertSame('custom_my_retail_theme', $themes['custom_my_retail_theme']['theme_preset'] ?? null);
+        $this->assertSame('My Retail Theme', $themes['custom_my_retail_theme']['theme_label'] ?? null);
+        $this->assertSame('#123456', $themes['custom_my_retail_theme']['brand_primary_color'] ?? null);
+        $this->assertSame('22', (string) ($themes['custom_my_retail_theme']['customer_card_radius'] ?? null));
+        $this->assertSame('pill', $themes['custom_my_retail_theme']['customer_badge_style'] ?? null);
+    }
+
     public function test_professional_theme_can_be_saved_and_homepage_toggles_normalize(): void
     {
         $owner = $this->createSuperAdmin();
