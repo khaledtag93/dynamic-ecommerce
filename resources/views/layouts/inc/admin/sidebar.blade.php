@@ -12,7 +12,7 @@
 
     $overviewOpen = $isRoute('admin.dashboard', 'admin.analytics.*', 'admin.growth.*');
     $catalogOpen = $isRoute('admin.categories.*', 'admin.products.*', 'admin.attributes.*', 'admin.brands.*');
-    $operationsOpen = $isRoute('admin.pos.*', 'admin.orders.*', 'admin.customers.*', 'admin.deliveries.*', 'admin.payments.*');
+    $operationsOpen = $isRoute('admin.pos.*', 'admin.orders.*', 'admin.returns.*', 'admin.customers.*', 'admin.deliveries.*', 'admin.payments.*');
     $inventoryOpen = $isRoute('admin.purchases.*', 'admin.inventory.*', 'admin.suppliers.*', 'admin.cost-calculator.*');
     $marketingOpen = $isRoute('admin.coupons.*', 'admin.promotions.*');
     $channelsOpen = $isRoute('admin.settings.branding', 'admin.settings.content*', 'admin.settings.whatsapp*', 'admin.settings.notifications*', 'admin.settings.payments*', 'admin.settings.deploy-center*', 'admin.imports.*');
@@ -125,6 +125,9 @@
                 @if($can('orders.view'))
                 <li class="nav-item {{ $isRoute('admin.orders.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.orders.index') }}"><i class="mdi mdi-cart-outline menu-icon"></i><span class="menu-title">{{ __('Orders') }}</span></a>
+                </li>
+                <li class="nav-item {{ $isRoute('admin.returns.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.returns.index') }}"><i class="mdi mdi-package-variant-closed-remove menu-icon"></i><span class="menu-title">{{ __('Returns & RMA') }}</span></a>
                 </li>
                 @endif
                 @if($can('customers.manage'))
