@@ -93,7 +93,7 @@ class PosCashierTest extends TestCase
     public function test_arabic_pos_validation_does_not_leak_default_english_required_message(): void
     {
         app()->setLocale('ar');
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $cart = app(PosService::class)->cartFor($admin);
 
         $this->actingAs($admin)
@@ -131,7 +131,7 @@ class PosCashierTest extends TestCase
 
     public function test_scanning_simple_product_adds_one_unit_without_changing_stock(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Simple Product', '6224000000001', 3, false, 25);
 
         $this->actingAs($admin)->get(route('admin.pos.index'))->assertOk();
@@ -153,7 +153,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_page_uses_live_lookup_endpoints_without_legacy_search_query_state(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         $this->actingAs($admin)
             ->get(route('admin.pos.index', ['product_search' => 'legacy', 'customer_search' => 'legacy']))
@@ -166,7 +166,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_live_product_lookup_supports_name_and_barcode_free_products(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Live Search Jacket', '', 4, false, 55);
 
         $this->actingAs($admin)
@@ -178,7 +178,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_live_customer_lookup_supports_contains_email_search(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $customer = User::factory()->create(['role_as' => 0, 'name' => 'Lookup Customer', 'email' => 'lookup.customer@example.test']);
 
         $this->actingAs($admin)
@@ -190,7 +190,7 @@ class PosCashierTest extends TestCase
 
     public function test_manual_catalog_add_does_not_require_a_barcode(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Manual POS Product', '', 3, false, 22);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -210,7 +210,7 @@ class PosCashierTest extends TestCase
 
     public function test_manual_catalog_add_requires_exact_variant_for_variant_products(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Manual Variant Product', '', 0, true, 30);
         $variant = $this->variant($product, 'MANUAL-VAR-1', '', 2, 35);
         $cart = app(PosService::class)->cartFor($admin);
@@ -233,7 +233,7 @@ class PosCashierTest extends TestCase
 
     public function test_variant_product_requires_exact_variant_barcode(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Variant Product', '6224000000002', 0, true, 30);
         $variant = $this->variant($product, 'POS-VAR-001', '6224000000021', 2, 35);
 
@@ -259,7 +259,7 @@ class PosCashierTest extends TestCase
 
     public function test_scanning_cannot_put_more_units_in_cart_than_current_stock(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Limited Product', '6224000000003', 2, false, 15);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -275,7 +275,7 @@ class PosCashierTest extends TestCase
 
     public function test_quantity_update_rejects_stale_form_and_stock_overflow(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Quantity Product', '6224000000004', 4, false, 10);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -306,7 +306,7 @@ class PosCashierTest extends TestCase
 
     public function test_cash_checkout_is_atomic_paid_inventory_safe_and_replay_safe(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Cash Product', '6224000000005', 5, false, 20, 8);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -375,7 +375,7 @@ class PosCashierTest extends TestCase
 
     public function test_cash_checkout_requires_an_open_cash_shift_but_card_checkout_does_not(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $cashProduct = $this->product('POS Shift Guard Cash', '6224000000090', 2, false, 20);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -400,7 +400,7 @@ class PosCashierTest extends TestCase
 
     public function test_cash_shift_reconciliation_records_expected_cash_and_variance(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Shift Product', '6224000000091', 2, false, 30);
         $shiftService = app(PosCashShiftService::class);
         $shift = $shiftService->openShift($admin, 100, 'Opening float');
@@ -433,7 +433,7 @@ class PosCashierTest extends TestCase
 
     public function test_cash_checkout_rejects_insufficient_cash_without_writing_sale_or_stock(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Cash Guard Product', '6224000000006', 2, false, 30);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -456,7 +456,7 @@ class PosCashierTest extends TestCase
 
     public function test_card_terminal_checkout_does_not_require_cash_received(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Card Product', '6224000000007', 2, false, 45);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -484,7 +484,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_customer_search_attach_and_checkout_links_customer_account(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $customer = User::factory()->create([
             'role_as' => 0,
             'name' => 'Mona POS Customer',
@@ -548,8 +548,8 @@ class PosCashierTest extends TestCase
 
     public function test_pos_customer_attachment_is_owner_scoped_and_rejects_staff_accounts(): void
     {
-        $firstCashier = User::factory()->create(['role_as' => 1]);
-        $secondCashier = User::factory()->create(['role_as' => 1]);
+        $firstCashier = $this->createSuperAdmin();
+        $secondCashier = $this->createSuperAdmin();
         $customer = User::factory()->create(['role_as' => 0]);
         $staff = User::factory()->create(['role_as' => 1]);
         $cart = app(PosService::class)->cartFor($firstCashier);
@@ -592,7 +592,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_checkout_rechecks_attached_customer_account_before_writing_sale(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $customer = User::factory()->create([
             'role_as' => 0,
             'name' => 'Customer Before Role Change',
@@ -626,7 +626,7 @@ class PosCashierTest extends TestCase
 
     public function test_cashier_can_hold_and_resume_sale_without_mutating_inventory(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Held Product', '6224000000010', 5, false, 22, 8);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -697,7 +697,7 @@ class PosCashierTest extends TestCase
 
     public function test_resume_is_blocked_when_current_sale_contains_items(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $heldProduct = $this->product('POS First Held Product', '6224000000011', 3, false, 12);
         $currentProduct = $this->product('POS Current Product', '6224000000012', 3, false, 14);
 
@@ -727,8 +727,8 @@ class PosCashierTest extends TestCase
 
     public function test_held_sale_discard_and_ownership_guards_do_not_touch_stock(): void
     {
-        $firstCashier = User::factory()->create(['role_as' => 1]);
-        $secondCashier = User::factory()->create(['role_as' => 1]);
+        $firstCashier = $this->createSuperAdmin();
+        $secondCashier = $this->createSuperAdmin();
         $product = $this->product('POS Discard Held Product', '6224000000013', 4, false, 16);
         $cart = app(PosService::class)->cartFor($firstCashier);
 
@@ -804,7 +804,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_line_and_sale_discounts_flow_into_order_payment_profit_and_change(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Discount Product', '6224000000011', 5, false, 100, 40);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -875,7 +875,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_discount_requires_reason_and_cannot_exceed_eligible_total(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Discount Guard Product', '6224000000012', 2, false, 20);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -911,7 +911,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_receipt_is_read_only_and_supports_print_paper_sizes(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Receipt Product', '6224000000009', 3, false, 18, 7);
         $cart = app(PosService::class)->cartFor($admin);
 
@@ -953,8 +953,8 @@ class PosCashierTest extends TestCase
     {
         app(AuthorizationService::class)->syncDefaults();
 
-        $firstCashier = User::factory()->create(['role_as' => 1]);
-        $secondCashier = User::factory()->create(['role_as' => 1]);
+        $firstCashier = $this->createSuperAdmin();
+        $secondCashier = $this->createSuperAdmin();
         $cashierRole = Role::query()->where('slug', 'cashier')->firstOrFail();
         $firstCashier->roles()->sync([$cashierRole->id]);
         $secondCashier->roles()->sync([$cashierRole->id]);
@@ -984,7 +984,7 @@ class PosCashierTest extends TestCase
 
     public function test_pos_item_return_uses_discounted_snapshot_and_restocks_once(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('POS Return Product', '6224000000020', 5, false, 100, 40);
         $cart = app(PosService::class)->cartFor($admin);
 

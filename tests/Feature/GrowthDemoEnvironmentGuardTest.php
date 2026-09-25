@@ -15,7 +15,7 @@ class GrowthDemoEnvironmentGuardTest extends TestCase
 
     public function test_production_refuses_demo_seed_and_clear_routes(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $this->app->detectEnvironment(fn () => 'production');
         $this->withoutMiddleware(VerifyCsrfToken::class);
 

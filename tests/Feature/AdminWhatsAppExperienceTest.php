@@ -12,7 +12,7 @@ class AdminWhatsAppExperienceTest extends TestCase
 
     public function test_whatsapp_settings_use_sectioned_workspace_and_aligned_switch_cards(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         $response = $this->actingAs($owner)
             ->get(route('admin.settings.whatsapp'));

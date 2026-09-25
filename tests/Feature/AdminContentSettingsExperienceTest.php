@@ -12,7 +12,7 @@ class AdminContentSettingsExperienceTest extends TestCase
 
     public function test_store_content_switches_use_aligned_toggle_layout(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         $response = $this->actingAs($admin)
             ->get(route('admin.settings.content'));

@@ -19,7 +19,7 @@ class AdminProductEditorExperienceTest extends TestCase
 
     public function test_product_editor_renders_publish_readiness_and_retail_identifiers(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         $this->actingAs($owner)
             ->get(route('admin.products.create'))

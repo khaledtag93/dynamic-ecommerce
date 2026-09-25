@@ -48,7 +48,7 @@ class FinancialHardeningTest extends TestCase
 
     public function test_admin_cannot_permanently_delete_cancelled_order(): void
     {
-        $superAdmin = User::factory()->create(['role_as' => 1]);
+        $superAdmin = $this->createSuperAdmin();
 
         $order = $this->createOrder([
             'status' => Order::STATUS_CANCELLED,
