@@ -124,14 +124,15 @@
     'exportRows' => $exportRows,
 ])
 
-<div class="analytics-shell">
-    <div class="offers-anchor-nav">
-        <a href="#offers-chart-suite" class="offers-anchor">{{ __('Chart suite') }}</a>
-        <a href="#offers-leaderboard" class="offers-anchor">{{ __('Leaderboard') }}</a>
-        <a href="#offers-posture" class="offers-anchor">{{ __('Promotion posture') }}</a>
-    </div>
+<div class="analytics-shell" data-admin-section-tabs="offers-analytics">
+    <x-admin.section-tabs id="offers-analytics" :sections="[
+        'summary' => __('Summary'),
+        'charts' => __('Coupon charts'),
+        'management' => __('Management view'),
+        'details' => __('Detailed table'),
+    ]" />
 
-    <div class="offers-storyboard">
+    <div class="offers-storyboard" id="offers-analytics-panel-summary" role="tabpanel" aria-labelledby="offers-analytics-tab-summary" data-admin-section-panel="summary">
         <div class="offers-story-card">
             <div class="eyebrow">{{ __('Offer focus') }}</div>
             <div class="headline">{{ __('Promotions are currently :mode across :period.', ['mode' => $effectiveDiscountRate <= 0.12 ? __('supporting margin-aware growth') : __('putting pressure on margin quality'), 'period' => $from->format('Y-m-d') . ' → ' . $to->format('Y-m-d')]) }}</div>
@@ -156,14 +157,14 @@
         </div>
     </div>
 
-    <div class="offers-trend-grid">
-        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Discounted orders') }}</div><div class="offers-value">{{ number_format($discountedOrdersCount) }}</div><div class="offers-help">{{ __('Orders influenced by coupon or discount logic in this window.') }}</div></div>
-        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Discount value') }}</div><div class="offers-value">EGP {{ number_format($discountTotal, 2) }}</div><div class="offers-help">{{ __('Total promotional cost absorbed across discounted orders.') }}</div></div>
-        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Discounted revenue') }}</div><div class="offers-value">EGP {{ number_format($discountRevenue, 2) }}</div><div class="offers-help">{{ __('Revenue created while a discount was present.') }}</div></div>
-        <div class="admin-card admin-stat-card offers-trend-card"><div class="offers-kicker">{{ __('Effective discount rate') }}</div><div class="offers-value">{{ number_format($effectiveDiscountRate * 100, 1) }}%</div><div class="offers-help">{{ __('Discount total divided by discounted-order revenue.') }}</div></div>
+    <div class="offers-trend-grid" data-admin-section-panel="summary">
+        <x-admin.stat-card :label="__('Discounted orders')" :value="number_format($discountedOrdersCount)" :help="__('Orders influenced by coupon or discount logic in this window.')" class="offers-trend-card" />
+        <x-admin.stat-card :label="__('Discount value')" :value="'EGP ' . number_format($discountTotal, 2)" :help="__('Total promotional cost absorbed across discounted orders.')" tone="warning" class="offers-trend-card" />
+        <x-admin.stat-card :label="__('Discounted revenue')" :value="'EGP ' . number_format($discountRevenue, 2)" :help="__('Revenue created while a discount was present.')" tone="success" class="offers-trend-card" />
+        <x-admin.stat-card :label="__('Effective discount rate')" :value="number_format($effectiveDiscountRate * 100, 1) . '%'" :help="__('Discount total divided by discounted-order revenue.')" class="offers-trend-card" />
     </div>
 
-    <div class="offers-chart-grid" id="offers-chart-suite">
+    <div class="offers-chart-grid" id="offers-analytics-panel-charts" role="tabpanel" aria-labelledby="offers-analytics-tab-charts" data-admin-section-panel="charts">
         <div class="offers-chart-card">
             <div class="fw-bold fs-5">{{ __('Coupon chart suite') }}</div>
             <div class="text-muted small mt-1 mb-3">{{ __('A real visual read for the top coupon set by revenue and order pace.') }}</div>
@@ -226,7 +227,7 @@
         </div>
     </div>
 
-    <div class="row g-3" id="offers-leaderboard">
+    <div class="row g-3" id="offers-analytics-panel-management" role="tabpanel" aria-labelledby="offers-analytics-tab-management" data-admin-section-panel="management">
         <div class="col-lg-6">
             <div class="analytics-card h-100">
                 <div class="card-body">
@@ -279,7 +280,7 @@
         </div>
     </div>
 
-    <div class="analytics-card">
+    <div class="analytics-card" id="offers-analytics-panel-details" role="tabpanel" aria-labelledby="offers-analytics-tab-details" data-admin-section-panel="details">
         <div class="card-body">
             <h4 class="mb-3">{{ __('Coupon performance table') }}</h4>
             <div class="table-responsive">
