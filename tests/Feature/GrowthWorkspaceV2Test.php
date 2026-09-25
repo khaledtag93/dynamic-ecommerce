@@ -45,6 +45,25 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertStringNotContainsString('placeholder="returning_customer_followup"', $source);
     }
 
+    public function test_growth_safe_mutations_use_progressive_no_reload_enhancement(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/GrowthController.php'));
+        $layout = file_get_contents(resource_path('views/admin/growth/layout.blade.php'));
+        $overview = file_get_contents(resource_path('views/admin/growth/index.blade.php'));
+        $content = file_get_contents(resource_path('views/admin/growth/content.blade.php'));
+        $operations = file_get_contents(resource_path('views/admin/growth/operations.blade.php'));
+
+        $this->assertStringContainsString('RedirectResponse|JsonResponse', $controller);
+        $this->assertStringContainsString('mutationResponse(', $controller);
+        $this->assertStringContainsString('data-growth-async', $overview);
+        $this->assertSame(3, substr_count($content, 'data-growth-async'));
+        $this->assertSame(1, substr_count($operations, 'data-growth-retry'));
+        $this->assertStringContainsString("fetch(form.action", $layout);
+        $this->assertStringContainsString("'X-Requested-With': 'XMLHttpRequest'", $layout);
+        $this->assertStringContainsString('data-growth-status=', $layout);
+        $this->assertStringContainsString('data-growth-feedback', $layout);
+    }
+
     public function test_growth_operations_hides_developer_cli_copy_from_the_admin_ui(): void
     {
         $source = file_get_contents(resource_path('views/admin/growth/operations.blade.php'));
@@ -65,5 +84,6 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertSame('صحة العملاء', $translations['Customer health'] ?? null);
         $this->assertSame('الحملة المرتبطة', $translations['Linked campaign'] ?? null);
         $this->assertSame('حملات تحتاج إلى قاعدة', $translations['Campaigns needing a rule'] ?? null);
+        $this->assertSame('تعذر إكمال التغيير. حدّث الصفحة وحاول مرة أخرى.', $translations['The change could not be completed. Please refresh and try again.'] ?? null);
     }
 }
