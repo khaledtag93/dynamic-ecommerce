@@ -10,12 +10,15 @@ Finish the active workstream to a strong, tested state before moving to the next
 
 ## Current workstream
 
-### Analytics & Insights
+### Shared Navigation Shell + Global Feedback/Toast UX
 
-Refine the analytics workspace into a production-grade decision surface: improve information hierarchy, consistency, responsive/RTL behavior, actionable insights, filtering/navigation ergonomics, and regression coverage without duplicating metrics or introducing unnecessary page length.
+Harden the persistent Admin and Customer navigation/feedback surfaces into a production-grade shared shell. Current Admin work includes a single mobile sidebar trigger, backdrop/scroll-lock/Escape lifecycle, active-route semantics, accessible expandable groups, keyboard-operable topbar menus, global search shortcuts, and a normalized dismissible toast stack. Preserve permission boundaries, responsive/RTL behavior, and inline field validation while removing duplicated shell behavior.
+
+The Admin shell is being finished first because it already has the shared toast/navigation foundation. Customer/storefront shell work remains part of this same workstream and should follow before closure.
 
 ### Recently closed
 
+- Analytics & Insights V2 — closed 2026-09-25 after source-level UX, responsive/RTL, bilingual and regression hardening.
 - Branding & Appearance V2 — closed 2026-09-25 after final Hardening CI passed at `abb0477`.
 
 ## Cross-cutting product standards
@@ -56,7 +59,7 @@ Examples:
 - filters/search update without disruptive full-page reloads where practical;
 - dependent totals, badges and summaries stay synchronized.
 
-### 4. Navigation shell quality — planned major workstream
+### 4. Navigation shell quality — active major workstream
 
 Admin sidebar/top navigation and customer navigation are persistent product surfaces and need dedicated polish:
 - cleaner hierarchy and grouping;
