@@ -899,7 +899,7 @@
     "Electronics deals": "عروض الإلكترونيات",
     "Electronics deals today": "عروض إلكترونيات اليوم",
     "Electronics discounts": "خصومات على الإلكترونيات",
-    "Eligibility": "شروط التطبيق",
+    "Eligibility": "شروط الاستحقاق",
     "Eligibility thresholds": "حدود التأهل",
     "Eligibility, delays, cooldowns, and trigger logic in one place.": "الأهلية والتأخيرات وفترات التهدئة ومنطق التشغيل في مكان واحد.",
     "email": "البريد الإلكتروني",
@@ -1722,7 +1722,7 @@
     "Notifications": "الإشعارات",
     "Notify admin email": "إخطار بريد الإدارة",
     "Notify operations or create timeline activity for repeated failures and missing recipients.": "أخطر فريق التشغيل أو أنشئ نشاطًا في الجدول الزمني عند تكرار الأعطال أو غياب المستلمين.",
-    "Offer": "عرض",
+    "Offer": "العرض",
     "Offer analytics are calculated from order-level coupon and discount activity in the selected range.": "يتم احتساب تحليلات العروض من نشاط الكوبونات والخصومات على مستوى الطلب داخل النطاق المحدد.",
     "Offer focus": "محور العروض",
     "Offer operating lanes": "مسارات تشغيل العروض",
@@ -4586,5 +4586,8 @@
     "Activate selected": "تفعيل المحدد",
     "Hide selected products?": "هل تريد إخفاء المنتجات المحددة؟",
     "Selected products will be removed from customer-facing catalog visibility until they are activated again.": "ستتم إزالة المنتجات المحددة من ظهور الكتالوج للعملاء حتى يتم تفعيلها مرة أخرى.",
-    "Hide selected": "إخفاء المحدد"
+    "Hide selected": "إخفاء المحدد",
+    "Limits & eligibility": "الحدود وشروط الاستحقاق",
+    "Schedule & notes": "الجدولة والملاحظات",
+    "Schedule & status": "الجدولة والحالة"
 }
