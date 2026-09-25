@@ -129,9 +129,9 @@
                             <table class="table admin-table align-middle mb-0">
                                 <thead><tr><th>{{ __('Type') }}</th><th>{{ __('Dates') }}</th><th>{{ __('Days') }}</th><th>{{ __('Status') }}</th><th class="text-end">{{ __('Actions') }}</th></tr></thead>
                                 <tbody>
-                                    @forelse($requests as $leave)
+                                    @forelse($requests as $leaveRequest)
                                         @php
-                                            $statusClass = match($leave->status) {
+                                            $statusClass = match($leaveRequest->status) {
                                                 \App\Models\EmployeeLeaveRequest::STATUS_APPROVED => 'badge-soft-success',
                                                 \App\Models\EmployeeLeaveRequest::STATUS_REJECTED => 'badge-soft-danger',
                                                 \App\Models\EmployeeLeaveRequest::STATUS_CANCELLED => 'badge-soft-secondary',
@@ -139,16 +139,16 @@
                                             };
                                         @endphp
                                         <tr>
-                                            <td><div class="fw-semibold">{{ $leave->leaveType?->displayName() }}</div><div class="text-muted small">{{ $leave->reason ?: '—' }}</div></td>
-                                            <td>{{ $leave->starts_on->format('d M Y') }} → {{ $leave->ends_on->format('d M Y') }}</td>
-                                            <td>{{ number_format((float)$leave->requested_days, 2) }}</td>
+                                            <td><div class="fw-semibold">{{ $leaveRequest->leaveType?->displayName() }}</div><div class="text-muted small">{{ $leaveRequest->reason ?: '—' }}</div></td>
+                                            <td>{{ $leaveRequest->starts_on->format('d M Y') }} → {{ $leaveRequest->ends_on->format('d M Y') }}</td>
+                                            <td>{{ number_format((float)$leaveRequest->requested_days, 2) }}</td>
                                             <td>
-                                                <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeLeaveRequest::statusOptions()[$leave->status] ?? \Illuminate\Support\Str::headline($leave->status) }}</span>
-                                                @if($leave->review_notes)<div class="text-muted small mt-1">{{ $leave->review_notes }}</div>@endif
+                                                <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeLeaveRequest::statusOptions()[$leaveRequest->status] ?? \Illuminate\Support\Str::headline($leaveRequest->status) }}</span>
+                                                @if($leaveRequest->review_notes)<div class="text-muted small mt-1">{{ $leaveRequest->review_notes }}</div>@endif
                                             </td>
                                             <td class="text-end">
-                                                @if($leave->isPending())
-                                                    <form method="POST" action="{{ route('admin.workforce.leave.cancel', $leave) }}" data-confirm-message="{{ __('Cancel this pending leave request?') }}">
+                                                @if($leaveRequest->isPending())
+                                                    <form method="POST" action="{{ route('admin.workforce.leave.cancel', $leaveRequest) }}" data-confirm-message="{{ __('Cancel this pending leave request?') }}">
                                                         @csrf
                                                         @method('PATCH')
                                                         <button class="btn btn-sm btn-outline-danger">{{ __('Cancel request') }}</button>
