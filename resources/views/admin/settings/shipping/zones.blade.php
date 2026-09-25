@@ -5,9 +5,9 @@
 @section('content')
 <div class="admin-page-shell">
     <x-admin.page-header :kicker="__('Commerce setup')" :title="__('Shipping zones & cities')" :description="__('Group exact city names into shipping zones. A city can belong to only one zone per country.')">
-        <a href="{{ route('admin.settings.shipping.methods') }}" class="btn btn-light border">{{ __('Shipping methods') }}</a>
-        <a href="{{ route('admin.settings.shipping.rates') }}" class="btn btn-light border">{{ __('Shipping rates') }}</a>
     </x-admin.page-header>
+
+    @include('admin.settings.shipping._nav', ['shippingSection' => 'zones'])
 
     <div class="admin-card mb-4">
         <div class="admin-card-body">
