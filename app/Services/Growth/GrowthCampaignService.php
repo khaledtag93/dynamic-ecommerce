@@ -90,14 +90,6 @@ class GrowthCampaignService
     public function dashboardSnapshot(): array
     {
         $this->ensureDefaults();
-        app(GrowthAttributionService::class)->syncRecentAttribution();
-        app(GrowthCohortRetentionService::class)->refreshSnapshots((int) config('growth.cohort_months', 6));
-        if ($this->predictiveEnabled()) {
-            app(GrowthPredictiveIntelligenceService::class)->refreshScores();
-        }
-        if ($this->adaptiveLearningEnabled()) {
-            app(GrowthAdaptiveLearningService::class)->refreshSnapshots();
-        }
 
         $campaigns = Schema::hasTable('growth_campaigns')
             ? GrowthCampaign::query()->with(['segment', 'experiments'])->orderBy('priority')->orderBy('id')->get()
