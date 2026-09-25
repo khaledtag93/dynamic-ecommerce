@@ -52,6 +52,10 @@ class Order extends Model
         'payment_method',
         'delivery_status',
         'delivery_method',
+        'shipping_method_id',
+        'shipping_zone_id',
+        'shipping_rate_id',
+        'shipping_snapshot',
         'shipping_provider',
         'tracking_number',
         'estimated_delivery_date',
@@ -117,6 +121,7 @@ class Order extends Model
         'profit_total' => 'decimal:2',
         'billing_same_as_shipping' => 'boolean',
         'coupon_snapshot' => 'array',
+        'shipping_snapshot' => 'array',
         'meta' => 'array',
         'estimated_delivery_date' => 'date',
         'placed_at' => 'datetime',
@@ -184,6 +189,21 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function shippingMethod()
+    {
+        return $this->belongsTo(ShippingMethod::class);
+    }
+
+    public function shippingZone()
+    {
+        return $this->belongsTo(ShippingZone::class);
+    }
+
+    public function shippingRate()
+    {
+        return $this->belongsTo(ShippingRate::class);
     }
 
     public function items()
