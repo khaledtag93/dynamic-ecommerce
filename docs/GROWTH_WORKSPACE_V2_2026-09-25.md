@@ -40,6 +40,19 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 - Backend authorization, CSRF protection, validation, and server-side state remain authoritative; JavaScript is only progressive enhancement.
 - Regression coverage now checks the async contracts, feedback surface, row bindings, and Arabic fallback message.
 
+## V2.2 navigation performance hardening
+
+- Removed attribution, cohort, predictive-score, and adaptive-learning recomputation from normal Growth page GET requests.
+- Scheduled `growth:run` remains the refresh boundary for automation/reporting work, so opening or switching Growth pages no longer scans customers, orders, deliveries, and analytics events just to render the UI.
+- Removed duplicate predictive/adaptive refresh calls from the scheduled command because `GrowthCampaignService::runNow()` already refreshes the intelligence needed by automation before candidate selection.
+- Scoped dashboard snapshots by workspace:
+  - Overview loads health counts and summary metrics only.
+  - Content & Journeys loads campaigns, rules, templates, segments, and experiments.
+  - Operations loads delivery, trigger, and message activity.
+  - Insights loads attribution, cohorts, predictive/adaptive summaries, and experiment performance.
+- The legacy no-argument full snapshot remains available for compatibility, while Admin navigation explicitly requests the active workspace slice.
+- Added regression coverage to prevent heavy recomputation from returning to GET rendering and to verify irrelevant workspace datasets stay unloaded.
+
 ## Product rules reinforced by this batch
 
 - Readability and simplicity beat showing every control at once.
@@ -62,4 +75,4 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 
 ## Next Growth slice
 
-Next, remove expensive analytics/predictive refresh work from normal Growth page GET requests. Add a measured cache/scheduled-refresh boundary so navigation stays fast as orders, customers, attribution touches, cohorts, and predictive data grow.
+Next, profile the Insights experiment-performance path. Its current variant conversion calculation still walks deliveries and checks matching orders per delivery; replace that N+1-style path with batched/order-window aggregation before Growth data volume becomes large.
