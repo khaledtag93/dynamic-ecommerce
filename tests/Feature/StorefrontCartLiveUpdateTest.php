@@ -84,6 +84,12 @@ class StorefrontCartLiveUpdateTest extends TestCase
         $this->assertStringContainsString("number_format(\$cart['coupon_discount'] ?? 0, 2)", $source);
         $this->assertStringContainsString("number_format(\$cart['promotion_discount'] ?? 0, 2)", $source);
         $this->assertStringNotContainsString("number_format(\$cart['discount'], 2)", $source);
+
+        $arabic = json_decode(file_get_contents(lang_path('ar.json')), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame(
+            'تعذر تحديث سلة التسوق الآن. حاول مرة أخرى.',
+            $arabic['Unable to update the cart right now.'] ?? null
+        );
     }
 
     protected function makeProduct(int $quantity): Product
