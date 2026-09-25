@@ -625,4 +625,15 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString('.retail-action[aria-current="page"]', $layout);
     }
 
+    public function test_storefront_footer_navigation_exposes_focus_and_current_states(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('.storefront-footer__column a:focus-visible', $layout);
+        $this->assertStringContainsString('.storefront-footer__column a[aria-current="page"]', $layout);
+        $this->assertStringContainsString("routeIs('frontend.privacy')", $layout);
+        $this->assertStringContainsString("routeIs('frontend.shipping')", $layout);
+        $this->assertStringContainsString("routeIs('checkout.*')", $layout);
+    }
+
 }
