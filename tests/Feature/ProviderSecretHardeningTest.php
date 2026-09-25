@@ -79,6 +79,7 @@ class ProviderSecretHardeningTest extends TestCase
             ->put(route('admin.settings.payments.update'), [
                 'payment_gateway_provider' => 'paymob',
                 'payment_gateway_mode' => 'sandbox',
+                'payment_stock_reservation_minutes' => 30,
                 'paymob_api_key' => 'attempted-new-api-secret',
                 'paymob_hmac_secret' => 'attempted-new-hmac-secret',
             ]);
