@@ -130,7 +130,7 @@
                                     @if($run)
                                         <a href="{{ route('admin.workforce.payroll.runs.show', $run) }}" class="btn btn-sm btn-light border">{{ __('Open run') }}</a>
                                     @elseif(auth()->user()?->hasPermission('workforce.payroll.manage') && $period->isOpen())
-                                        <form method="POST" action="{{ route('admin.workforce.payroll.periods.generate', $period) }}" data-confirm-message="{{ __('Generate payroll snapshot for this period? Resolve attendance corrections and leave requests first.') }}">
+                                        <form method="POST" action="{{ route('admin.workforce.payroll.periods.generate', $period) }}" data-confirm-message="{{ __('Generate payroll snapshot for this period? Resolve attendance corrections and leave requests first.') }}" data-submit-loading>
                                             @csrf
                                             <button class="btn btn-sm btn-primary">{{ __('Generate draft') }}</button>
                                         </form>
