@@ -823,3 +823,14 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added CatalogWorkspaceV2Test covering shared primitives, RTL actions, Product health-card consistency, in-app confirmations, and Arabic labels.
 - Detailed note: docs/CATALOG_WORKSPACE_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Admin consistency sweep V2 — 2026-09-25
+- Continued Admin V2 normalization across Suppliers, Coupons, Promotions, Import Jobs, and Admin Notifications.
+- Replaced remaining manual KPI/summary-card markup in those workspaces with the shared Admin Stat Card component.
+- Moved Coupons, Promotions, and Imports from legacy custom page headers to the shared Admin page-header component.
+- Preserved existing live-list search, filters, sorting, pagination, notification actions, and server-authoritative mutations.
+- Added logical RTL alignment to Supplier, Coupon, and Promotion action columns.
+- Fixed three runtime rendering hazards discovered during the sweep: invalid IlluminateSupportStr::limit, AppModelsCoupon::TYPE_PERCENT, and IlluminateSupportStr::headline references.
+- Added AdminConsistencySweepV2Test covering shared primitives, valid namespaces, RTL actions, and removal of old KPI markup.
+- Detailed note: docs/ADMIN_CONSISTENCY_SWEEP_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
