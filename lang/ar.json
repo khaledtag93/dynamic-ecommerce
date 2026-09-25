@@ -5183,5 +5183,8 @@
     "Toggle sidebar": "فتح أو إغلاق القائمة الجانبية",
     "Inventory & sourcing": "المخزون والتوريد",
     "Marketing": "التسويق",
-    "Open storefront": "فتح واجهة المتجر"
+    "Open storefront": "فتح واجهة المتجر",
+    "Inbox": "صندوق الوارد",
+    "Close": "إغلاق",
+    "No admin users found": "لم يتم العثور على مستخدمين إداريين"
 }
