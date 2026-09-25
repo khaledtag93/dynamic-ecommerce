@@ -206,28 +206,38 @@ class ProductService
 
         $currentMaxSort = (int) ($product->images()->max('sort_order') ?? 0);
         $rows = [];
+        $storedPaths = [];
 
-        foreach ($images as $index => $imageFile) {
-            $path = $this->storeUploadedImage($imageFile);
+        try {
+            foreach ($images as $index => $imageFile) {
+                $path = $this->storeUploadedImage($imageFile);
+                $storedPaths[] = $path;
 
-            $rows[] = [
-                'product_id' => $product->id,
-                'image_path' => $path,
-                'is_main' => false,
-                'sort_order' => $currentMaxSort + $index + 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
+                $rows[] = [
+                    'product_id' => $product->id,
+                    'image_path' => $path,
+                    'is_main' => false,
+                    'sort_order' => $currentMaxSort + $index + 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
 
-        if (!empty($rows)) {
-            ProductImage::query()->insert($rows);
-            $this->normalizeMainImage($product->id);
+            if (!empty($rows)) {
+                ProductImage::query()->insert($rows);
+                $this->normalizeMainImage($product->id);
 
-            $this->logInfo('ProductService storeImages completed', [
-                'product_id' => $product->id,
-                'inserted_rows' => count($rows),
-            ]);
+                $this->logInfo('ProductService storeImages completed', [
+                    'product_id' => $product->id,
+                    'inserted_rows' => count($rows),
+                ]);
+            }
+        } catch (Throwable $e) {
+            foreach ($storedPaths as $storedPath) {
+                $this->deletePhysicalImage($storedPath, 'products');
+            }
+
+            throw $e;
         }
     }
 
