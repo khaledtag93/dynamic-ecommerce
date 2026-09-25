@@ -18,6 +18,7 @@
 - **QAS:** code integration has been performed during the 2026-09-25 consolidation/recovery sequence, including the later media-root isolation fix. Authenticated functional acceptance is still deliberately deferred to the consolidated completion-pass review.
 - **Production:** unchanged by the 2026-09-25 completion-pass work. Do not infer Production readiness from source/CI or QAS page-load success.
 - **Operating rule:** treat older “CI pending”, “next slice”, and old QAS-HEAD notes below as dated historical checkpoints unless repeated in this ledger or a newer dated section.
+- **Consolidated QAS checklist:** `docs/COMPLETION_PASS_QAS_CHECKLIST_2026-09-25.md` is the authoritative manual acceptance gate for Admin, Customer, POS, Workforce and Growth across EN/AR, RTL, desktop/mobile, permissions, money and stock workflows.
 
 
 - **Growth Workspace V2.4 (2026-09-25):** Growth is now split into focused Overview / Content / Operations / Insights workspaces with no-reload safe mutations, GET-side recomputation removed, experiment-performance batching, and real server-side pagination for large campaigns/rules/templates/segments/experiments/deliveries/logs. Overview health uses targeted counts instead of loading full datasets. Hardening CI #1372 passed at `0f1317d` with 368 tests / 2487 assertions plus clean MySQL migration, routes, Blade compilation and frontend production build. Authenticated QAS EN/AR/RTL/responsive acceptance remains separate; Production unchanged. See `docs/GROWTH_WORKSPACE_V2_2026-09-25.md`.
