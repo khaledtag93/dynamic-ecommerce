@@ -157,8 +157,8 @@
                             <label class="form-label fw-semibold">{{ __('Save current colors as a new theme') }}</label>
                             <input type="text" name="custom_theme_name" class="form-control" value="{{ old('custom_theme_name') }}" placeholder="{{ __('Example: Green Fashion') }}">
                             <div class="form-check form-switch mt-2">
-                                <input class="form-check-input" type="checkbox" role="switch" name="save_as_custom_theme" value="1" @checked(old('save_as_custom_theme'))>
-                                <label class="form-check-label ms-2">{{ __('Save as custom theme') }}</label>
+                                <input class="form-check-input" type="checkbox" role="switch" id="save_as_custom_theme" name="save_as_custom_theme" value="1" @checked(old('save_as_custom_theme'))>
+                                <label class="form-check-label ms-2" for="save_as_custom_theme">{{ __('Save as custom theme') }}</label>
                             </div>
                         </div>
                     </div>
@@ -740,7 +740,8 @@
 .customer-theme-preview__badge[data-style="soft"]{border-color:color-mix(in srgb,var(--preview-primary,#2563eb) 18%,var(--preview-border,#dbe3ef))}
 .admin-promo-meta{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;padding:1.25rem;border:1px dashed var(--admin-border);border-radius:1rem;background:color-mix(in srgb,var(--admin-surface) 92%,var(--admin-primary-soft))}
 .admin-promo-meta__icon{width:72px;height:72px;border-radius:1.1rem;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--admin-accent-soft) 80%,white);color:var(--admin-primary-dark);font-size:1.65rem}
-@media(max-width:1199.98px){.theme-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1199.98px){.theme-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.branding-side-stack{display:grid;grid-template-columns:1fr 1fr;align-items:start}.branding-side-stack>#branding-panel-media,.branding-side-stack>#branding-panel-preview{margin-bottom:0!important}}
+@media(max-width:767.98px){.branding-side-stack{grid-template-columns:1fr}.branding-side-stack>#branding-panel-media{margin-bottom:1rem!important}}
 @media(max-width:575.98px){.theme-preset-grid{grid-template-columns:1fr}.branding-save-state{width:100%;justify-content:center}.admin-form-actions-buttons{width:100%}.admin-form-actions-buttons .btn{width:100%;justify-content:center}}
 </style>
 @endpush
@@ -800,6 +801,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         if (presetSelect) presetSelect.value = key;
         setActivePresetCard(key);
+        presetSelect?.setAttribute('data-applied-preset', key);
         updatePreview();
         if (markDirty) setDirtyState(true);
     }
@@ -930,6 +932,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     setActivePresetCard(presetSelect?.value || '');
+    presetSelect?.setAttribute('data-applied-preset', presetSelect?.value || '');
     setDirtyState(false);
     updatePreview();
 });
