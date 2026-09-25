@@ -934,4 +934,7 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added Growth V2.1 progressive no-reload mutations for the four Overview engine controls, campaign/rule/experiment toggles, and failed-delivery Retry. Server responses now support JSON for enhanced requests while preserving redirect/flash fallbacks.
 - Added in-place state/status updates plus bilingual non-disruptive feedback; broad mutations such as Run Engine and demo-data seed/clear intentionally continue to reload because they change wider page state.
 - Added regression coverage for the no-reload source contract and Arabic error feedback.
-- Follow-up audit item: `dashboardSnapshot()` still refreshes attribution, cohorts, predictive scores, and adaptive-learning snapshots during Growth page GET requests. This is now the next Growth performance slice: move expensive refresh work behind a cache/scheduled or explicit-refresh boundary so normal navigation remains fast as data volume grows.
+- Completed the Growth navigation performance slice: normal Growth GET requests no longer recompute attribution, cohort, predictive, or adaptive-learning datasets; those refreshes remain behind scheduled/explicit Growth processing.
+- Removed duplicate predictive/adaptive refresh work from the scheduled command and scoped Growth snapshots by active workspace so Overview, Content, Operations, and Insights no longer load each other's unrelated datasets.
+- Added regression coverage for the read-only-heavy-computation boundary and workspace-scoped data loading.
+- Next Growth performance target: optimize experiment-performance conversion/revenue calculation, which still evaluates order windows per delivery and can become N+1-style work as delivery volume grows.
