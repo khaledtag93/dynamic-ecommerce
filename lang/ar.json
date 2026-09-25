@@ -5563,5 +5563,9 @@
     "Deductions": "الخصومات",
     "Net pay": "صافي الراتب",
     "Add a supplier for sourcing and purchase orders with a cleaner form layout.": "أضف موردًا لعمليات التوريد وأوامر الشراء من خلال نموذج أوضح وأكثر تنظيمًا.",
-    "Update supplier details without affecting existing orders or purchase history.": "حدّث بيانات المورد دون التأثير على الطلبات الحالية أو سجل المشتريات."
+    "Update supplier details without affecting existing orders or purchase history.": "حدّث بيانات المورد دون التأثير على الطلبات الحالية أو سجل المشتريات.",
+    "Confirm order cancellation": "تأكيد إلغاء الطلب",
+    "Cancel this order?": "هل تريد إلغاء هذا الطلب؟",
+    "Cancelling the order restores reserved stock and records the cancellation in the audit trail. This action should only be used when the order must not continue to fulfillment.": "إلغاء الطلب يعيد المخزون المحجوز ويسجل عملية الإلغاء في سجل التدقيق. استخدم هذا الإجراء فقط عندما يجب ألا يستمر الطلب إلى مرحلة التنفيذ.",
+    "Keep order active": "الإبقاء على الطلب نشطًا"
 }
