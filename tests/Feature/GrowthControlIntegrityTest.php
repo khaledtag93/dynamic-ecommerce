@@ -79,11 +79,47 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertStringNotContainsString('refreshScores()', $snapshotSource);
         $this->assertStringNotContainsString('GrowthAdaptiveLearningService::class)->refreshSnapshots()', $snapshotSource);
 
+        $controllerSource = file_get_contents(app_path('Http/Controllers/Admin/GrowthController.php'));
+
+        $this->assertStringContainsString('dashboardSnapshot($page)', $controllerSource);
+        $this->assertStringContainsString("public function dashboardSnapshot(string $page = 'full'): array", $serviceSource);
         $this->assertStringContainsString('growth:run', file_get_contents(app_path('Console/Kernel.php')));
         $this->assertStringContainsString('syncRecentAttribution()', $commandSource);
         $this->assertStringContainsString('GrowthCohortRetentionService', $commandSource);
         $this->assertStringNotContainsString('GrowthPredictiveIntelligenceService', $commandSource);
         $this->assertStringNotContainsString('GrowthAdaptiveLearningService', $commandSource);
+    }
+
+    public function test_growth_workspace_snapshots_only_load_the_data_needed_by_that_page(): void
+    {
+        $service = app(GrowthCampaignService::class);
+
+        $content = $service->dashboardSnapshot('content');
+        $this->assertNotEmpty($content['campaigns']);
+        $this->assertNotEmpty($content['rules']);
+        $this->assertNotEmpty($content['templates']);
+        $this->assertEmpty($content['deliveries']);
+        $this->assertEmpty($content['trigger_logs']);
+        $this->assertSame([], $content['attribution_summary']);
+        $this->assertSame([], $content['predictive_summary']);
+        $this->assertSame([], $content['performance']);
+
+        $operations = $service->dashboardSnapshot('operations');
+        $this->assertEmpty($operations['campaigns']);
+        $this->assertEmpty($operations['rules']);
+        $this->assertEmpty($operations['templates']);
+        $this->assertEmpty($operations['segments']);
+        $this->assertSame([], $operations['attribution_summary']);
+        $this->assertSame([], $operations['cohort_summary']);
+        $this->assertSame([], $operations['predictive_summary']);
+        $this->assertSame([], $operations['performance']);
+
+        $insights = $service->dashboardSnapshot('insights');
+        $this->assertEmpty($insights['campaigns']);
+        $this->assertEmpty($insights['rules']);
+        $this->assertEmpty($insights['templates']);
+        $this->assertEmpty($insights['deliveries']);
+        $this->assertSame([], $insights['performance']);
     }
 
     public function test_disabled_growth_run_returns_a_complete_result_shape(): void
