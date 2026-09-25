@@ -579,6 +579,9 @@
         .lc-flash-toast.is-leaving { opacity:0; transform:translateY(-8px); }
         @media (max-width:575.98px) { .lc-toast-stack { top:.75rem; inset-inline:.75rem; width:auto; } }
 
+        .retail-links a[aria-current="page"] { color:var(--lc-primary-dark); background:color-mix(in srgb, var(--lc-soft) 82%, white); }
+        .retail-links a:focus-visible, .retail-link-button:focus-visible, .retail-menu-toggle:focus-visible, .retail-category-button:focus-visible, .retail-action:focus-visible { outline:3px solid var(--lc-primary); outline-offset:3px; }
+
         .lc-account-nav { display:flex; gap:.55rem; overflow-x:auto; padding:.35rem 0 .75rem; scrollbar-width:thin; }
         .lc-account-nav a { flex:none; border:1px solid var(--lc-border); border-radius:999px; padding:.6rem 1rem; background:var(--lc-surface); color:var(--lc-text); font-weight:700; }
         .lc-account-nav a:hover, .lc-account-nav a[aria-current="page"] { background:var(--lc-primary); border-color:var(--lc-primary); color:var(--lc-btn-text); }
@@ -716,11 +719,11 @@
                     </div>
 
                     <div class="retail-links">
-                        <a href="{{ route('frontend.home') }}">{{ __('Home') }}</a>
+                        <a href="{{ route('frontend.home') }}" @if(request()->routeIs('frontend.home')) aria-current="page" @endif>{{ __('Home') }}</a>
                         <a href="#on-sale-products">{{ __('Offers') }}</a>
                         <a href="#best-sellers">{{ __('Best sellers') }}</a>
                         <a href="#latest-products">{{ __('New arrivals') }}</a>
-                        <a href="{{ route('frontend.contact') }}">{{ __('Contact') }}</a>
+                        <a href="{{ route('frontend.contact') }}" @if(request()->routeIs('frontend.contact')) aria-current="page" @endif>{{ __('Contact') }}</a>
                         @auth
                             <a class="d-md-none" href="{{ route('account.index') }}"><i class="bi bi-person me-1"></i>{{ __('My account') }}</a>
                             <a class="d-md-none" href="{{ route('orders.index') }}"><i class="bi bi-receipt me-1"></i>{{ __('My Orders') }}</a>
@@ -792,6 +795,20 @@ document.addEventListener('DOMContentLoaded', function () {
     stack.querySelectorAll('[data-storefront-toast]').forEach((toast) => {
         window.setTimeout(() => dismiss(toast), 4200);
     });
+});
+    const retailNav = document.getElementById('retailNav');
+    if (retailNav) {
+        retailNav.addEventListener('shown.bs.collapse', () => {
+            const firstAction = retailNav.querySelector('a, button, input');
+            if (firstAction && window.matchMedia('(max-width: 991.98px)').matches) firstAction.focus();
+        });
+        retailNav.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape' || !retailNav.classList.contains('show')) return;
+            const toggle = document.querySelector('[data-bs-target="#retailNav"]');
+            bootstrap.Collapse.getOrCreateInstance(retailNav).hide();
+            if (toggle) toggle.focus();
+        });
+    }
 });
 </script>
 
