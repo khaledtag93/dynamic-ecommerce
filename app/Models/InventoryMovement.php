@@ -17,6 +17,7 @@ class InventoryMovement extends Model
     public const TYPE_DAMAGE = 'damage';
     public const TYPE_LOST = 'lost';
     public const TYPE_REFUND_RESTOCK = 'refund_restock';
+    public const TYPE_RETURN_RESTOCK = 'return_restock';
 
     protected $fillable = [
         'product_id', 'product_variant_id', 'purchase_id', 'order_id', 'type', 'reason', 'quantity_change', 'balance_after', 'unit_cost', 'expiration_date', 'meta',
@@ -41,6 +42,7 @@ class InventoryMovement extends Model
             self::TYPE_DAMAGE => __('Damaged stock'),
             self::TYPE_LOST => __('Lost stock'),
             self::TYPE_REFUND_RESTOCK => __('Refund / cancellation restock'),
+            self::TYPE_RETURN_RESTOCK => __('Received return restock'),
         ];
     }
 
