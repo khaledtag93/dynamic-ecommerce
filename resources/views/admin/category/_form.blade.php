@@ -1,27 +1,27 @@
-<div class="category-editor-shell">
+<div class="category-editor-shell" data-admin-section-tabs="category-editor">
     <div class="admin-card mb-4">
         <div class="admin-card-body">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-                <div>
-                    <div class="admin-kicker">{{ __('Category editor') }}</div>
-                    <h4 class="mb-1">{{ $category?->exists ? __('Edit category content') : __('Build a new category') }}</h4>
-                    <p class="text-muted small mb-0">{{ __('Complete the storefront content, translations, search metadata, media, and visibility from one focused workspace.') }}</p>
-                </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="#category-basic" class="btn btn-light border btn-sm">{{ __('Basics') }}</a>
-                    <a href="#category-translations" class="btn btn-light border btn-sm">{{ __('Translations') }}</a>
-                    <a href="#category-seo" class="btn btn-light border btn-sm">{{ __('SEO') }}</a>
-                    <a href="#category-media" class="btn btn-light border btn-sm">{{ __('Media') }}</a>
-                </div>
+            <div>
+                <div class="admin-kicker">{{ __('Category editor') }}</div>
+                <h4 class="mb-1">{{ $category?->exists ? __('Edit category content') : __('Build a new category') }}</h4>
+                <p class="text-muted small mb-0">{{ __('Complete the storefront content, translations, search metadata, media, and visibility from one focused workspace.') }}</p>
             </div>
         </div>
     </div>
 
+    <x-admin.section-tabs id="category-editor" :sections="[
+        'basic' => __('Basics'),
+        'translations' => __('Translations'),
+        'seo' => __('SEO'),
+        'media' => __('Media & visibility'),
+    ]" />
+
 <div class="row g-4">
-    <div class="col-lg-8">
-        <div class="card admin-card mb-4" id="category-basic">
+    <div class="col-12">
+        <div class="card admin-card mb-4" id="category-editor-panel-basic" role="tabpanel" aria-labelledby="category-editor-tab-basic" data-admin-section-panel="basic">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Basic Information') }}</h5>
+                <div class="text-muted small mt-1">{{ __('Default fallback content used when a localized value is not available.') }}</div>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -53,9 +53,10 @@
         </div>
 
 
-        <div class="card admin-card mb-4" id="category-translations">
+        <div class="card admin-card mb-4" id="category-editor-panel-translations" role="tabpanel" aria-labelledby="category-editor-tab-translations" data-admin-section-panel="translations">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Translations') }}</h5>
+                <div class="text-muted small mt-1">{{ __('Maintain English and Arabic storefront content separately. Arabic fields use RTL direction automatically.') }}</div>
             </div>
             <div class="card-body">
                 @php($translationLocales = ['en' => __('English'), 'ar' => __('Arabic')])
@@ -70,7 +71,7 @@
                     @foreach($translationLocales as $locale => $label)
                         @php($currentTranslation = $translations[$locale] ?? [])
                         @php($translationDirection = $locale === 'ar' ? 'rtl' : 'ltr')
-                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="category-translation-{{ $locale }}" role="tabpanel" dir="{{ $translationDirection }}">
+                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }} category-translation-pane" id="category-translation-{{ $locale }}" role="tabpanel" dir="{{ $translationDirection }}" lang="{{ $locale }}">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">{{ __('Name') }} ({{ strtoupper($locale) }})</label>
@@ -121,7 +122,7 @@
             </div>
         </div>
 
-        <div class="card admin-card mb-4" id="category-seo">
+        <div class="card admin-card mb-4" id="category-editor-panel-seo" role="tabpanel" aria-labelledby="category-editor-tab-seo" data-admin-section-panel="seo">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Search Engine Setup') }}</h5>
             </div>
@@ -155,8 +156,8 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
-        <div class="card admin-card mb-4" id="category-media">
+    <div class="col-12">
+        <div class="card admin-card mb-4" id="category-editor-panel-media" role="tabpanel" aria-labelledby="category-editor-tab-media" data-admin-section-panel="media">
             <div class="card-header">
                 <h5 class="mb-0">{{ __('Media & Visibility') }}</h5>
             </div>
@@ -220,6 +221,19 @@
     }
     .category-editor-shell [id^="category-"] {
         scroll-margin-top:1.5rem;
+    }
+    .category-translation-pane[dir="rtl"] .form-label,
+    .category-translation-pane[dir="rtl"] .form-control {
+        text-align:right;
+    }
+    .category-translation-pane[dir="rtl"] input[dir="ltr"] {
+        text-align:left;
+    }
+    html[dir="rtl"] .rtl-text-start {
+        text-align:start !important;
+    }
+    html[dir="rtl"] .rtl-justify-start {
+        justify-content:flex-start !important;
     }
     .admin-toggle-card {
         display:flex;
