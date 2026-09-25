@@ -337,6 +337,7 @@ class StoreSettingsService
             'payment_online_enabled' => '1',
             'payment_gateway_provider' => 'paymob',
             'payment_gateway_mode' => 'sandbox',
+            'payment_stock_reservation_minutes' => '30',
             'payment_gateway_public_key' => '',
             'payment_gateway_secret_key' => '',
             'payment_gateway_webhook_secret' => '',
