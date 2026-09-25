@@ -175,9 +175,6 @@
     </div>
 </nav>
 
-<button class="admin-mobile-sidebar-toggle d-lg-none" type="button" data-toggle="offcanvas" aria-label="{{ __('Toggle sidebar') }}" title="{{ __('Open navigation') }}">
-    <i class="mdi mdi-menu"></i>
-</button>
 
 <style>
 
@@ -215,7 +212,6 @@
     font-size: .75rem;
     font-weight: 800;
 }
-.admin-mobile-sidebar-toggle,
 .admin-mobile-sidebar-toggle-inline {
     border: 1px solid var(--admin-border);
     background: color-mix(in srgb, var(--admin-surface) 92%, white);
@@ -232,21 +228,12 @@
     justify-content: center;
     flex: 0 0 auto;
 }
-.admin-mobile-sidebar-toggle {
-    display: none;
-}
-.admin-mobile-sidebar-toggle i,
 .admin-mobile-sidebar-toggle-inline i,
 .admin-mobile-sidebar-toggle-inline .mdi,
-.admin-mobile-sidebar-toggle .mdi {
+.admin-mobile-sidebar-toggle-inline .mdi {
     font-size: 1.3rem;
 }
 
-.admin-mobile-sidebar-toggle {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-.admin-mobile-sidebar-toggle:focus-visible,
 .admin-mobile-sidebar-toggle-inline:focus-visible {
     outline: 0;
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--admin-primary) 22%, transparent),
@@ -333,31 +320,6 @@ body[dir='ltr'] .admin-custom-menu { inset-inline-start: auto; inset-inline-end:
     }
     .admin-mobile-sidebar-toggle-inline {
         display: inline-flex;
-    }
-    .admin-mobile-sidebar-toggle {
-        position: fixed;
-        top: calc(env(safe-area-inset-top, 0px) + 78px);
-        inset-inline-start: 14px;
-        z-index: 1051;
-        width: 3.2rem;
-        height: 3.2rem;
-        padding: 0;
-        border-radius: 999px;
-        align-items: center;
-        justify-content: center;
-        display: inline-flex;
-    }
-    .navbar .navbar-brand-wrapper .navbar-toggler {
-        display: none !important;
-    }
-    body[dir='rtl'] .admin-mobile-sidebar-toggle {
-        inset-inline-start: auto;
-        inset-inline-end: 12px;
-    }
-}
-@media (min-width: 992px) {
-    .admin-mobile-sidebar-toggle {
-        display: none !important;
     }
 }
 </style>
