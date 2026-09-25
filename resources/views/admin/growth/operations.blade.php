@@ -61,9 +61,9 @@
             <tr>
                 <td><strong>{{ $delivery->campaign?->name ?? '—' }}</strong></td>
                 <td>{{ $delivery->user?->name ?? __('Guest') }}</td>
-                <td>{{ $deliveryStatusLabels[$delivery->status] ?? ucfirst((string) $delivery->status) }}</td>
+                <td><span data-growth-state>{{ $deliveryStatusLabels[$delivery->status] ?? ucfirst((string) $delivery->status) }}</span></td>
                 <td>{{ optional($delivery->created_at)->format('Y-m-d H:i') }}</td>
-                <td>@if($delivery->status === 'failed')<form method="POST" action="{{ route('admin.growth.deliveries.retry', $delivery) }}">@csrf @method('PATCH')<button class="btn btn-sm btn-outline-warning">{{ __('Retry') }}</button></form>@else<span class="gm-mini">—</span>@endif</td>
+                <td>@if($delivery->status === 'failed')<form method="POST" action="{{ route('admin.growth.deliveries.retry', $delivery) }}" data-growth-async data-growth-retry>@csrf @method('PATCH')<button class="btn btn-sm btn-outline-warning" data-growth-action>{{ __('Retry') }}</button></form>@else<span class="gm-mini">—</span>@endif</td>
             </tr>
         @endforeach
         </tbody></table></div>
