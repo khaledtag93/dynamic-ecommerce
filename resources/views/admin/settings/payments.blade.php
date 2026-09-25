@@ -62,16 +62,24 @@
             </div>
 
             <div class="row g-4 mb-4 admin-settings-section">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">{{ __('Gateway provider') }}</label>
                     <input type="text" class="form-control" name="payment_gateway_provider" value="{{ old('payment_gateway_provider', $storeSettings['payment_gateway_provider'] ?? 'paymob') }}">
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">{{ __('Gateway mode') }}</label>
                     <select name="payment_gateway_mode" class="form-select">
                         <option value="sandbox" @selected(($storeSettings['payment_gateway_mode'] ?? 'sandbox') === 'sandbox')>{{ __('Sandbox') }}</option>
                         <option value="live" @selected(($storeSettings['payment_gateway_mode'] ?? 'sandbox') === 'live')>{{ __('Live') }}</option>
                     </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">{{ __('Online stock reservation') }}</label>
+                    <div class="input-group">
+                        <input type="number" min="5" max="1440" name="payment_stock_reservation_minutes" class="form-control" value="{{ old('payment_stock_reservation_minutes', $storeSettings['payment_stock_reservation_minutes'] ?? 30) }}" required>
+                        <span class="input-group-text">{{ __('minutes') }}</span>
+                    </div>
+                    <div class="text-muted small mt-2">{{ __('Unpaid online orders hold stock for this period. Failed, cancelled, or expired reservations release stock safely.') }}</div>
                 </div>
                 <div class="col-12">
                     <div class="rounded-4 border p-3 bg-light-subtle">
