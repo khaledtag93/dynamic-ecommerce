@@ -3059,9 +3059,7 @@ select option {
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Update completed') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('message') }}</div>
-                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
-                            </div>
                             </div>
                         @endif
                         @if (session('success'))
@@ -3070,9 +3068,7 @@ select option {
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Changes saved successfully') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('success') }}</div>
-                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
-                            </div>
                             </div>
                         @endif
                         @if (session('warning'))
@@ -3081,9 +3077,7 @@ select option {
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Please review this note') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('warning') }}</div>
-                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
-                            </div>
                             </div>
                         @endif
                         @if (session('error'))
@@ -3092,9 +3086,7 @@ select option {
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Action needs attention') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('error') }}</div>
-                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
-                            </div>
                             </div>
                         @endif
                         @if ($errors->any())
@@ -3108,7 +3100,6 @@ select option {
                                             <li>{{ $error }}</li>
                                         @endforeach
                                     </ul>
-                                </div>
                                 </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
                             </div>
