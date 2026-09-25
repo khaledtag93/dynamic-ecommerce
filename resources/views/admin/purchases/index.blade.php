@@ -15,7 +15,15 @@
             ['label' => __('Received'), 'value' => $stats['received'], 'copy' => __('Purchases already added to inventory.'), 'icon' => 'mdi-package-check'],
             ['label' => __('Procurement value'), 'value' => 'EGP ' . number_format($stats['value'], 2), 'copy' => __('Total recorded purchase value.'), 'icon' => 'mdi-cash-multiple'],
         ] as $card)
-            <div class="col-md-6 col-xl-3"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span><div class="admin-stat-label">{{ $card['label'] }}</div><div class="admin-stat-value">{{ $card['value'] }}</div><div class="text-muted small mt-2">{{ $card['copy'] }}</div></div></div>
+            <div class="col-md-6 col-xl-3">
+                <x-admin.stat-card
+                    :label="$card['label']"
+                    :value="$card['value']"
+                    :icon="$card['icon']"
+                    :help="$card['copy']"
+                    class="h-100"
+                />
+            </div>
         @endforeach
     </div>
 
