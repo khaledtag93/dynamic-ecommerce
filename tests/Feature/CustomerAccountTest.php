@@ -141,7 +141,7 @@ class CustomerAccountTest extends TestCase
             'shipping_country' => $shipping->country, 'billing_same_as_shipping' => '0',
             'billing_address_line_1' => $billing->address_line_1, 'billing_city' => $billing->city,
             'billing_country' => $billing->country, 'payment_method' => Order::PAYMENT_METHOD_COD,
-            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
         ])->assertSessionHasNoErrors();
 
         $order = $user->orders()->firstOrFail();
