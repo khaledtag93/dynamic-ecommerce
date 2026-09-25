@@ -162,7 +162,14 @@ class SupportCaseController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.support.show', compact('supportCase', 'staff', 'replyTemplates'));
+        $replyTemplatePayload = $replyTemplates->mapWithKeys(fn (SupportReplyTemplate $template) => [
+            (string) $template->id => [
+                'body' => $template->displayBody(),
+                'visibility' => $template->visibility,
+            ],
+        ])->all();
+
+        return view('admin.support.show', compact('supportCase', 'staff', 'replyTemplates', 'replyTemplatePayload'));
     }
 
     public function settings()

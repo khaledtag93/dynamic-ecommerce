@@ -170,12 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const select = document.querySelector('[data-support-template]');
     const message = document.querySelector('[data-support-message]');
     const visibility = document.querySelector('[data-support-visibility]');
-    const templates = @json($replyTemplates->mapWithKeys(fn ($template) => [
-        (string) $template->id => [
-            'body' => $template->displayBody(),
-            'visibility' => $template->visibility,
-        ],
-    ]));
+    const templates = @json($replyTemplatePayload);
 
     if (!select || !message) return;
 
