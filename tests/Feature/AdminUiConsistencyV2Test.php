@@ -124,6 +124,7 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString('aria-controls="quick-create-menu" aria-haspopup="menu"', $navbar);
         $this->assertStringContainsString('aria-controls="profile-menu" aria-haspopup="menu"', $navbar);
         $this->assertStringContainsString('role="menu"', $navbar);
+        $this->assertGreaterThanOrEqual(6, substr_count($navbar, 'role="menuitem"'));
         $this->assertStringContainsString('function focusableMenuItems(menu)', $navbar);
         $this->assertStringContainsString("['ArrowDown', 'ArrowUp'].includes(event.key)", $navbar);
         $this->assertStringContainsString('closeMenus(null, true)', $navbar);
