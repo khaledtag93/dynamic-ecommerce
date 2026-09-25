@@ -354,6 +354,25 @@
         </div>
         @endif
 
+        <div class="modal fade" id="refundConfirmModal" tabindex="-1" aria-labelledby="refundConfirmTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="refundConfirmTitle">{{ __('Confirm refund') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2" data-refund-confirm-copy></p>
+                        <p class="text-muted small mb-0">{{ __('The refund is recorded in the order ledger and changes the payment status when the refundable balance is fully consumed.') }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">{{ __('Review refund') }}</button>
+                        <button type="button" class="btn btn-danger" data-confirm-refund>{{ __('Confirm refund') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="admin-card mb-4" id="order-refund">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Refund') }}</h4>
@@ -363,7 +382,7 @@
                 </div>
                 @if($order->canBeRefunded())
                     @if($can('orders.manage'))
-                    <form method="POST" action="{{ route('admin.orders.refund', $order) }}" data-submit-loading>
+                    <form method="POST" action="{{ route('admin.orders.refund', $order) }}" data-submit-loading data-refund-form data-refund-currency="{{ $currency }}">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-semibold">{{ __('Amount') }}</label>
@@ -438,6 +457,42 @@ document.addEventListener('DOMContentLoaded', function () {
                 orderStatusForm.requestSubmit();
             } else {
                 orderStatusForm.submit();
+            }
+        });
+    }
+
+    const refundForm = document.querySelector('[data-refund-form]');
+    const refundModalElement = document.getElementById('refundConfirmModal');
+
+    if (refundForm && refundModalElement && typeof bootstrap !== 'undefined') {
+        const refundAmount = refundForm.querySelector('[name="amount"]');
+        const refundConfirmCopy = refundModalElement.querySelector('[data-refund-confirm-copy]');
+        const refundConfirmButton = refundModalElement.querySelector('[data-confirm-refund]');
+        const refundModal = bootstrap.Modal.getOrCreateInstance(refundModalElement);
+        let refundConfirmed = false;
+
+        refundForm.addEventListener('submit', function (event) {
+            if (refundConfirmed) {
+                return;
+            }
+
+            event.preventDefault();
+            const amount = refundAmount?.value || '0';
+            if (refundConfirmCopy) {
+                refundConfirmCopy.textContent = @json(__('Record a refund of :amount?', ['amount' => '__AMOUNT__']))
+                    .replace('__AMOUNT__', refundForm.dataset.refundCurrency + ' ' + amount);
+            }
+            refundModal.show();
+        });
+
+        refundConfirmButton?.addEventListener('click', function () {
+            refundConfirmed = true;
+            refundModal.hide();
+
+            if (typeof refundForm.requestSubmit === 'function') {
+                refundForm.requestSubmit();
+            } else {
+                refundForm.submit();
             }
         });
     }
