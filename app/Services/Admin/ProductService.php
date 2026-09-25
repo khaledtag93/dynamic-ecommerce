@@ -233,16 +233,18 @@ class ProductService
 
     public function deleteImage(int $imageId): void
     {
-        DB::transaction(function () use ($imageId) {
-            $image = ProductImage::query()->findOrFail($imageId);
+        $path = DB::transaction(function () use ($imageId) {
+            $image = ProductImage::query()->lockForUpdate()->findOrFail($imageId);
             $productId = $image->product_id;
             $path = $image->image_path ?: $image->image;
 
-            $this->deletePhysicalImage($path, 'products');
-
             $image->delete();
             $this->normalizeMainImage($productId);
+
+            return $path;
         });
+
+        $this->deletePhysicalImage($path, 'products');
     }
 
     public function setMainImage(int $imageId): void
