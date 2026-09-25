@@ -1,11 +1,9 @@
 <div>
-    <div class="admin-page-header">
-        <div>
-            <span class="admin-eyebrow">{{ __('Catalog / Attributes') }}</span>
-            <h1 class="admin-page-title">{{ __('Product Attributes') }}</h1>
-            <p class="admin-page-description">{{ __('Create and manage reusable product attributes and their values with cleaner search and coverage stats.') }}</p>
-        </div>
-    </div>
+    <x-admin.page-header
+        :kicker="__('Catalog management')"
+        :title="__('Product Attributes')"
+        :description="__('Create and manage reusable product attributes and their values with cleaner search and coverage stats.')"
+    />
 
     <div class="row g-3 mb-4">
         @foreach([
@@ -16,12 +14,7 @@
             ['label' => __('In use'), 'value' => $stats['in_use'], 'copy' => __('Attributes already referenced by product variants.'), 'icon' => 'mdi-link-variant'],
         ] as $card)
             <div class="col-md-6 col-xl">
-                <div class="admin-card admin-stat-card h-100">
-                    <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                    <div class="admin-stat-label">{{ $card['label'] }}</div>
-                    <div class="admin-stat-value">{{ $card['value'] }}</div>
-                    <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-                </div>
+                <x-admin.stat-card :label="$card['label']" :value="$card['value']" :icon="$card['icon']" :help="$card['copy']" class="h-100" />
             </div>
         @endforeach
     </div>
@@ -98,7 +91,7 @@
                             <th style="width: 80px;">{{ __('ID') }}</th>
                             <th>{{ __('Name') }}</th>
                             <th style="width: 120px;">{{ __('Values') }}</th>
-                            <th style="width: 220px;">{{ __('Actions') }}</th>
+                            <th style="width: 220px;" class="rtl-text-start">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -107,8 +100,8 @@
                                 <td>{{ $attr->id }}</td>
                                 <td>{{ $attr->name }}</td>
                                 <td><div class="fw-semibold">{{ $attr->values_count }}</div><small class="text-muted">{{ $attr->variant_attributes_count }} {{ __('variant links') }}</small></td>
-                                <td>
-                                    <div class="d-flex gap-2 flex-wrap">
+                                <td class="rtl-text-start">
+                                    <div class="d-flex gap-2 flex-wrap rtl-justify-start">
                                         <button wire:click="edit({{ $attr->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit attribute') }}">
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </button>
