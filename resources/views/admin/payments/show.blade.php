@@ -93,7 +93,7 @@
             @else
                 <div class="alert alert-info border-0 small">{{ __('Only safe next statuses are available. Manual changes should be backed by provider or transaction evidence.') }}</div>
             @endif
-            <form method="POST" action="{{ route('admin.payments.update-status', $payment) }}" data-submit-loading>
+            <form method="POST" action="{{ route('admin.payments.update-status', $payment) }}" data-submit-loading data-payment-status-form data-current-status="{{ $payment->status }}" data-paid-status="{{ \App\Models\Payment::STATUS_PAID }}" data-failed-status="{{ \App\Models\Payment::STATUS_FAILED }}">
                 @csrf
                 @method('PATCH')
                 <div class="mb-3">
@@ -118,4 +118,34 @@
     </div>
 </div>
 </div>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('[data-payment-status-form]');
+    if (!form) return;
+
+    const status = form.querySelector('[name="status"]');
+    let confirmed = false;
+
+    form.addEventListener('submit', function (event) {
+        if (confirmed || !status || status.value === form.dataset.currentStatus) return;
+
+        let message = null;
+        if (status.value === form.dataset.paidStatus) {
+            message = @json(__('Mark this payment as Paid manually? Confirm that the provider or transaction evidence proves the money was received.'));
+        } else if (status.value === form.dataset.failedStatus) {
+            message = @json(__('Mark this payment as Failed manually? For online payments this can release the active stock reservation.'));
+        }
+
+        if (!message || window.confirm(message)) {
+            confirmed = true;
+            return;
+        }
+
+        event.preventDefault();
+    });
+});
+</script>
+@endpush
+
 @endsection
