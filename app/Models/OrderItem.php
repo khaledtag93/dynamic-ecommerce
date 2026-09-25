@@ -49,6 +49,11 @@ class OrderItem extends Model
         return $this->hasOne(OrderStockReservation::class);
     }
 
+    public function returnRequestItems()
+    {
+        return $this->hasMany(ReturnRequestItem::class);
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);
