@@ -746,3 +746,17 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Focused regression coverage: `ExplicitAdminRoleHardeningTest`.
 - Detailed note: `docs/EXPLICIT_ADMIN_ROLE_HARDENING_2026-09-25.md`.
 - CI/QAS verification remains pending for this new head; Production is unchanged.
+
+## Roles & Permissions V2 — 2026-09-25
+- Rebuilt the previously long, mixed-language access-control page into four focused workspaces: Overview, Staff assignments, Roles, and Permission matrix.
+- Reused the shared accessible Admin section-tab pattern with keyboard navigation and RTL-aware arrow behavior.
+- Added explicit unassigned-admin warning; missing role data is never presented as Super Admin.
+- Staff assignment cards now focus on one account, current role, and one server-authoritative role change.
+- Custom role creation/editing groups capabilities by access area instead of rendering one giant checkbox wall; existing custom roles stay collapsed until edited.
+- Role deletion now uses the shared in-app confirmation flow; system-role and assigned-role backend protections remain unchanged.
+- Permission matrix now has client-side no-reload search across permission name, description, group, slug and assigned roles, plus visible-result counting and automatic group filtering.
+- Completed EN/AR copy for the new workspace, system roles, built-in permission names/descriptions, and access-area labels.
+- Added PermissionsWorkspaceV2Test covering structure/search markup, Arabic copy, unassigned-admin presentation, and absence of legacy fallback wording.
+- Fixed duplicate Return controller imports found during the pass before continuing the UI work.
+- Detailed note: docs/ROLES_PERMISSIONS_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
