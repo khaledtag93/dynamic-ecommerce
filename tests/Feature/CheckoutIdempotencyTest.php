@@ -11,6 +11,7 @@ use App\Services\Commerce\CouponService;
 use App\Services\Commerce\InventoryService;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
+use App\Services\Commerce\ShippingService;
 use App\Services\Commerce\PromotionEngine;
 use App\Services\Frontend\CartService;
 use App\Services\Frontend\CheckoutService;
@@ -52,7 +53,7 @@ class CheckoutIdempotencyTest extends TestCase
             'shipping_country' => 'Egypt',
             'billing_same_as_shipping' => true,
             'payment_method' => Order::PAYMENT_METHOD_COD,
-            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
         ];
 
         $order = $service->place($data, $user);
@@ -115,6 +116,7 @@ class CheckoutIdempotencyTest extends TestCase
             app(PaymentService::class),
             app(ProfitService::class),
             app(WhatsAppManager::class),
+            app(ShippingService::class),
         );
 
         $data = [
@@ -126,7 +128,7 @@ class CheckoutIdempotencyTest extends TestCase
             'shipping_country' => 'Egypt',
             'billing_same_as_shipping' => true,
             'payment_method' => Order::PAYMENT_METHOD_COD,
-            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
         ];
 
         try {
