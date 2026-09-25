@@ -10,9 +10,13 @@ Finish the active workstream to a strong, tested state before moving to the next
 
 ## Current workstream
 
-### Branding & Appearance
+### Analytics & Insights
 
-Finish theme quality, live-preview fidelity, theme-selection UX, bilingual/RTL polish, responsive behavior, media/branding usability, and regression coverage before moving on.
+Refine the analytics workspace into a production-grade decision surface: improve information hierarchy, consistency, responsive/RTL behavior, actionable insights, filtering/navigation ergonomics, and regression coverage without duplicating metrics or introducing unnecessary page length.
+
+### Recently closed
+
+- Branding & Appearance V2 — closed 2026-09-25 after final Hardening CI passed at `abb0477`.
 
 ## Cross-cutting product standards
 
