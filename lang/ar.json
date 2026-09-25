@@ -5373,5 +5373,21 @@
     "Search by product name, SKU, or barcode": "ابحث باسم المنتج أو SKU أو الباركود",
     "Search by name, email, or phone": "ابحث بالاسم أو البريد الإلكتروني أو الهاتف",
     "Open shift required": "يجب فتح وردية",
-    "Stock": "المخزون"
+    "Stock": "المخزون",
+    "Select only the quantities physically returned. Inventory and refund records are updated together.": "حدد فقط الكميات التي تم إرجاعها فعليًا. يتم تحديث سجلات المخزون والاسترداد معًا.",
+    "Controlled action": "إجراء مضبوط",
+    "Confirm POS return?": "هل تريد تأكيد مرتجع نقطة البيع؟",
+    "Returned quantities will be restocked and a linked refund will be recorded. This action cannot be casually undone.": "ستتم إعادة الكميات المرتجعة إلى المخزون وتسجيل استرداد مرتبط بها. لا يمكن التراجع عن هذا الإجراء بشكل اعتيادي.",
+    "Process return": "تنفيذ المرتجع",
+    "Sold": "المباع",
+    "Already returned": "تم إرجاعه سابقًا",
+    "Return quantity": "كمية المرتجع",
+    "Maximum": "الحد الأقصى",
+    "Fully returned": "تم إرجاعه بالكامل",
+    "Return reason": "سبب الإرجاع",
+    "e.g. Customer return, damaged item, wrong item": "مثال: إرجاع من العميل، صنف تالف، صنف غير صحيح",
+    "Optional return notes": "ملاحظات اختيارية للمرتجع",
+    "Processing return...": "جارٍ تنفيذ المرتجع...",
+    "Return status": "حالة المرتجع",
+    "Refunded so far": "إجمالي المسترد حتى الآن"
 }
