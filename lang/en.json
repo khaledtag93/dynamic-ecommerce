@@ -3350,5 +3350,6 @@
     "Payment was confirmed, but the online stock reservation could not be fully restored. Review inventory and fulfillment before processing this order.": "Payment was confirmed, but the online stock reservation could not be fully restored. Review inventory and fulfillment before processing this order.",
     "Payment received — fulfillment review required": "Payment received — fulfillment review required",
     "Your payment was confirmed, but one or more items need an inventory review before fulfillment. Your payment record is preserved; support can help with the next step.": "Your payment was confirmed, but one or more items need an inventory review before fulfillment. Your payment record is preserved; support can help with the next step.",
-    "Use the configured hosted gateway for secure online payment.": "Use the configured hosted gateway for secure online payment."
+    "Use the configured hosted gateway for secure online payment.": "Use the configured hosted gateway for secure online payment.",
+    "Online payment session started after stock availability was confirmed.": "Online payment session started after stock availability was confirmed."
 }
