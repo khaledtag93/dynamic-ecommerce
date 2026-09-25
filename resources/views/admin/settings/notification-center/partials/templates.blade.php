@@ -284,7 +284,12 @@
                             <span class="admin-chip">{{ __('Controlled test') }}</span>
                         </div>
 
-                        <form method="POST" action="{{ route('admin.settings.notifications.test-send') }}" class="row g-3" data-submit-loading>
+                        <form method="POST" action="{{ route('admin.settings.notifications.test-send') }}" class="row g-3" data-submit-loading
+                    data-confirm-title="{{ __('Send test notification') }}"
+                    data-confirm-message="{{ __('Send this test notification now?') }}"
+                    data-confirm-subtitle="{{ __('The selected channel will be contacted immediately using the chosen order context and destination rules.') }}"
+                    data-confirm-ok="{{ __('Send test now') }}"
+                    data-confirm-cancel="{{ __('Keep reviewing') }}">
                             @csrf
                             <div class="col-12">
                                 <label class="form-label">{{ __('Order') }}</label>
