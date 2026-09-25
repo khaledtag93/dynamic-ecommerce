@@ -717,3 +717,20 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - The fragment avoids full-page financial summary queries and preserves Blade escaping. Global KPI cards remain unfiltered and refresh on a normal page load. EN/AR loading, success and error copy is reused.
 - Local verification: two new feature tests passed (29 assertions) in the isolated SQLite compatibility worktree; compiled Blade templates, PHP/JavaScript syntax and whitespace checks passed. Integrated MySQL [CI 36059356857](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36059356857) passed at `19a4b8c` with 197 tests / 1248 assertions.
 - The owner explicitly approved publication after the earlier automatic review block. The published `v42-clean-baseline` source matches the local final tree exactly. QAS remains operator-confirmed at `0a08253`; no `main` or Production change is claimed.
+
+
+## Returns / RMA V1 — 2026-09-25
+- Added customer-owned return requests for eligible paid delivered/completed orders, with explicit item quantities, reason and requested Refund/Exchange resolution.
+- Active return quantities reduce each order item's remaining returnable quantity so repeated requests cannot exceed the original purchase.
+- Customer workspace: My Returns, request form, return details/status timeline, return history on Order Details, and customer cancellation while still Requested.
+- Admin workspace: live/no-reload search/status/pagination under `orders.view`; lifecycle mutations remain under `orders.manage`.
+- Lifecycle: Requested → Approved → Received → Completed, with Requested → Rejected and customer Requested → Cancelled side paths.
+- Approval does not restore stock. Receiving requires the full approved quantity in V1 and records an explicit restock quantity, allowing damaged/unsellable goods to stay out of saleable inventory.
+- Restocked units use `return_restock` inventory movements with RMA metadata.
+- Completion reuses the canonical order refund ledger and links refunds through `order_refunds.return_request_id`.
+- Financial hardening: RMA refund amount cannot exceed the value of received items whose requested resolution is Refund; the normal remaining order refundable balance is still enforced.
+- Exchange hardening: linked exchange order must differ from the original order and belong to the same customer.
+- EN/AR copy and RTL-compatible customer/admin views are included.
+- Focused regression coverage: `ReturnRequestWorkflowTest` for lifecycle/restock/refund linkage, RMA over-refund prevention, and cross-customer exchange prevention.
+- Detailed implementation note: `docs/RETURNS_RMA_V1_2026-09-25.md`.
+- Source is on `v42-clean-baseline`; final integrated CI verification is pending at this checkpoint. QAS and Production are unchanged until the normal consolidated review/deployment gate.
