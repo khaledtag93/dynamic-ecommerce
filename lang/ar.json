@@ -5579,5 +5579,7 @@
     "Complete this return with a refund of :amount?": "هل تريد إكمال هذا المرتجع مع تسجيل استرداد بقيمة :amount؟",
     "Undo verified unit": "التراجع عن وحدة تم التحقق منها",
     "Remove one verified unit from this purchase line?": "هل تريد إزالة وحدة واحدة تم التحقق منها من بند الشراء هذا؟",
-    "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.": "لم يتم تغيير المخزون بعد. هذا الإجراء يقلل فقط عدد الوحدات التي تم التحقق منها بالباركود بمقدار وحدة واحدة قبل الاستلام النهائي."
+    "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.": "لم يتم تغيير المخزون بعد. هذا الإجراء يقلل فقط عدد الوحدات التي تم التحقق منها بالباركود بمقدار وحدة واحدة قبل الاستلام النهائي.",
+    "Mark this payment as Paid manually? Confirm that the provider or transaction evidence proves the money was received.": "هل تريد تسجيل هذه الدفعة كمدفوعة يدويًا؟ تأكد من أن دليل مزود الدفع أو المعاملة يثبت استلام المبلغ.",
+    "Mark this payment as Failed manually? For online payments this can release the active stock reservation.": "هل تريد تسجيل هذه الدفعة كفاشلة يدويًا؟ في المدفوعات الإلكترونية قد يؤدي ذلك إلى تحرير حجز المخزون النشط."
 }
