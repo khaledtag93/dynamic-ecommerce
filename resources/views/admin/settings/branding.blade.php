@@ -620,7 +620,7 @@
                         </div>
                         <div class="d-flex gap-2 flex-wrap">
                             <div class="customer-theme-preview__button">{{ __('Primary action') }}</div>
-                            <div class="customer-theme-preview__badge">{{ __('Badge') }}</div>
+                            <div class="customer-theme-preview__badge" data-preview-badge>{{ __('Badge') }}</div>
                         </div>
                     </div>
                 </div>
@@ -716,7 +716,10 @@
 .customer-theme-preview__product-copy i{display:block;height:9px;border-radius:999px;background:var(--preview-secondary,#0f172a);opacity:.7}
 .customer-theme-preview__product-copy i:last-child{width:54%;background:var(--preview-primary,#2563eb);opacity:.8}
 .customer-theme-preview__button{display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1rem;border-radius:calc(var(--preview-radius,18) * 1px);background:linear-gradient(135deg,var(--preview-primary,#2563eb),color-mix(in srgb,var(--preview-primary,#2563eb) 55%,var(--preview-secondary,#0f172a)));color:var(--preview-button-text,#fff);font-weight:800}
-.customer-theme-preview__badge{display:inline-flex;align-items:center;padding:.45rem .9rem;border-radius:999px;background:var(--preview-soft,#eff6ff);border:1px solid var(--preview-border,#dbe3ef);font-weight:700;color:var(--preview-primary,#2563eb)}
+.customer-theme-preview__badge{display:inline-flex;align-items:center;padding:.45rem .9rem;border-radius:.7rem;background:var(--preview-soft,#eff6ff);border:1px solid var(--preview-border,#dbe3ef);font-weight:700;color:var(--preview-primary,#2563eb);transition:background .18s ease,border-color .18s ease,border-radius .18s ease}
+.customer-theme-preview__badge[data-style="pill"]{border-radius:999px}
+.customer-theme-preview__badge[data-style="outline"]{background:transparent;border-color:var(--preview-primary,#2563eb)}
+.customer-theme-preview__badge[data-style="soft"]{border-color:color-mix(in srgb,var(--preview-primary,#2563eb) 18%,var(--preview-border,#dbe3ef))}
 .admin-promo-meta{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;padding:1.25rem;border:1px dashed var(--admin-border);border-radius:1rem;background:color-mix(in srgb,var(--admin-surface) 92%,var(--admin-primary-soft))}
 .admin-promo-meta__icon{width:72px;height:72px;border-radius:1.1rem;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--admin-accent-soft) 80%,white);color:var(--admin-primary-dark);font-size:1.65rem}
 @media(max-width:1199.98px){.theme-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -797,6 +800,8 @@ document.addEventListener('DOMContentLoaded', function () {
         set('--preview-admin-surface', 'admin_surface_color', '#ffffff');
         set('--preview-admin-border', 'admin_card_border_color', '#e2e8f0');
         root.style.setProperty('--preview-radius', form?.querySelector('[name="customer_card_radius"]')?.value || 18);
+        const badge = document.querySelector('[data-preview-badge]');
+        if (badge) badge.dataset.style = form?.querySelector('[name="customer_badge_style"]')?.value || 'soft';
     }
 
     function updateImagePreview(targetKey, src) {
