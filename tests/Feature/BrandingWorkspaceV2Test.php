@@ -46,6 +46,10 @@ class BrandingWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('name="logo_file"', $source);
         $this->assertStringContainsString('name="hero_banner_file"', $source);
         $this->assertStringContainsString('data-preview-badge', $source);
+        $this->assertStringContainsString('customer-theme-preview__accent', $source);
+        $this->assertStringContainsString("set('--preview-accent', 'brand_accent_color'", $source);
+        $this->assertStringContainsString('.branding-side-stack>#branding-panel-preview{position:sticky', $source);
+        $this->assertStringNotContainsString('max-height:calc(100vh - 2rem);overflow:auto', $source);
     }
 
     public function test_arabic_branding_cleanup_labels_are_available(): void
