@@ -3951,7 +3951,20 @@
     "No order mix data yet.": "No order mix data yet.",
     "Dismiss notification": "Dismiss notification",
     "Search admin workspace": "Search admin workspace",
-  "Social channels": "Social channels",
-  "Only configured channels are shown in the storefront footer.": "Only configured channels are shown in the storefront footer.",
-  "Show social links": "Show social links"
+    "Social channels": "Social channels",
+    "Only configured channels are shown in the storefront footer.": "Only configured channels are shown in the storefront footer.",
+    "Show social links": "Show social links",
+    "Toggle sidebar": "Toggle sidebar",
+    "Deploy Center": "Deploy Center",
+    "Product Reviews": "Product Reviews",
+    "Cash Shift Review": "Cash Shift Review",
+    "Customer Support": "Customer Support",
+    "Inventory & sourcing": "Inventory & sourcing",
+    "Marketing": "Marketing",
+    "Open storefront": "Open storefront",
+    "Page help": "Page help",
+    "Help": "Help",
+    "Simple guide": "Simple guide",
+    "Close help": "Close help",
+    "Example": "Example"
 }
