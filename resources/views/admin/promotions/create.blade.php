@@ -15,7 +15,7 @@
 @if($errors->any())<div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4"><div class="fw-bold mb-2">{{ __('Please review the promotion details:') }}</div><ul class="mb-0 ps-3">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <div class="admin-card">
     <div class="admin-card-body">
-        <form method="POST" action="{{ $mode === 'edit' ? route('admin.promotions.update', $promotion) : route('admin.promotions.store') }}" data-submit-loading data-admin-section-tabs="promotion-editor">
+        <form method="POST" action="{{ $mode === 'edit' ? route('admin.promotions.update', $promotion) : route('admin.promotions.store') }}" data-submit-loading data-admin-section-tabs="promotion-editor" data-active-rule-confirm data-active-field="is_active" data-active-value="1" data-confirm-title="{{ __('Publish active promotion?') }}" data-confirm-message="{{ __('This promotion will be active in checkout according to its schedule. Review the discount value, eligibility, and dates before saving.') }}" data-confirm-ok="{{ __('Save active promotion') }}">
             @csrf
             @if($mode === 'edit') @method('PUT') @endif
 
