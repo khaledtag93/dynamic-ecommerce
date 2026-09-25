@@ -7,6 +7,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
+use App\Services\Commerce\AdminActivityLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,10 @@ use Illuminate\Validation\Rule;
 
 class PermissionController extends Controller
 {
-    public function __construct(protected AuthorizationService $authorizationService)
+    public function __construct(
+        protected AuthorizationService $authorizationService,
+        protected AdminActivityLogService $adminActivityLogService,
+    )
     {
     }
 
@@ -84,14 +88,31 @@ class PermissionController extends Controller
             'permission_slugs.*' => ['string', Rule::exists('permissions', 'slug')],
         ]);
 
-        $role->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-        ]);
+        DB::transaction(function () use ($role, $validated, $request) {
+            $lockedRole = Role::query()->with('permissions')->whereKey($role->getKey())->lockForUpdate()->firstOrFail();
+            abort_if($lockedRole->is_system, 403);
 
-        $role->permissions()->sync(
-            Permission::query()->whereIn('slug', $validated['permission_slugs'] ?? [])->pluck('id')->all()
-        );
+            $oldPermissions = $lockedRole->permissions->pluck('slug')->sort()->values()->all();
+            $newPermissionIds = Permission::query()->whereIn('slug', $validated['permission_slugs'] ?? [])->pluck('id')->all();
+
+            $lockedRole->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+            ]);
+            $lockedRole->permissions()->sync($newPermissionIds);
+
+            $this->adminActivityLogService->log(
+                'permissions',
+                'staff_role_updated',
+                __('Staff role :role was updated.', ['role' => $lockedRole->name]),
+                $request->user()->id,
+                $lockedRole,
+                [
+                    'old_permissions' => $oldPermissions,
+                    'new_permissions' => Permission::query()->whereIn('id', $newPermissionIds)->pluck('slug')->sort()->values()->all(),
+                ]
+            );
+        });
 
         return back()->with('success', __('Custom staff role updated successfully.'));
     }
@@ -157,15 +178,33 @@ class PermissionController extends Controller
         $this->authorizationService->syncDefaults();
 
         $validated = $request->validate([
-            'role_id' => ['required', Rule::exists('roles', 'id')],
+            'role_id' => [
+                'required',
+                Rule::exists('roles', 'id')->where(fn ($query) => $query->where('slug', '!=', 'super_admin')),
+            ],
         ]);
 
         if ((int) $user->role_as !== 1) {
             return back()->with('error', __('Only admin accounts can receive back-office staff roles.'));
         }
 
-        $roleId = (int) $validated['role_id'];
-        $user->roles()->sync([$roleId]);
+        DB::transaction(function () use ($user, $validated, $request) {
+            $account = User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+            abort_if($account->isSuperAdmin() || $account->id === $request->user()->id, 403);
+
+            $oldRoleId = $account->roles()->value('roles.id');
+            $roleId = (int) $validated['role_id'];
+            $account->roles()->sync([$roleId]);
+
+            $this->adminActivityLogService->log(
+                'permissions',
+                'staff_role_assigned',
+                __('Staff role updated for :staff.', ['staff' => $account->email]),
+                $request->user()->id,
+                $account,
+                ['old_role_id' => $oldRoleId, 'new_role_id' => $roleId]
+            );
+        });
 
         return back()->with('success', __('Staff role updated successfully.'));
     }
