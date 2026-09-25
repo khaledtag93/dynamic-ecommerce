@@ -21,7 +21,12 @@ class SupportController extends Controller
             ->with(['order:id,order_number'])
             ->latest('updated_at')
             ->latest('id')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
+
+        if ($request->header('X-Live-List') === '1') {
+            return response()->view('frontend.support._results', compact('cases'));
+        }
 
         return view('frontend.support.index', compact('cases'));
     }
