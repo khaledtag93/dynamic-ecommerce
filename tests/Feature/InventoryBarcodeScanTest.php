@@ -22,7 +22,7 @@ class InventoryBarcodeScanTest extends TestCase
             ->get(route('admin.inventory.scan'))
             ->assertRedirect('/');
 
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         $this->actingAs($admin)
             ->get(route('admin.inventory.scan'))
@@ -33,7 +33,7 @@ class InventoryBarcodeScanTest extends TestCase
 
     public function test_exact_simple_product_barcode_opens_the_correct_stock_item(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Simple Scan Product', '6221000000001', 7, false);
 
         $this->actingAs($admin)
@@ -49,7 +49,7 @@ class InventoryBarcodeScanTest extends TestCase
 
     public function test_exact_variant_barcode_targets_that_variant_without_guessing(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Variant Scan Product', null, 0, true);
         $variant = $this->variant($product, 'SCAN-VAR-001', '6221000000002', 9);
 
@@ -65,7 +65,7 @@ class InventoryBarcodeScanTest extends TestCase
 
     public function test_parent_product_barcode_requires_explicit_variant_selection(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Parent Scan Product', '6221000000003', 0, true);
         $first = $this->variant($product, 'PARENT-RED', '6221000000031', 4);
         $second = $this->variant($product, 'PARENT-BLUE', '6221000000032', 6);
@@ -84,7 +84,7 @@ class InventoryBarcodeScanTest extends TestCase
 
     public function test_unknown_barcode_returns_a_safe_no_match_state(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         $this->actingAs($admin)
             ->get(route('admin.inventory.scan', ['barcode' => '6221999999999']))
@@ -95,7 +95,7 @@ class InventoryBarcodeScanTest extends TestCase
 
     public function test_legacy_cross_table_barcode_collision_is_reported_without_stock_action(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $barcode = '6221000000004';
 
         $this->product('Legacy Barcode Owner', $barcode, 2, false);

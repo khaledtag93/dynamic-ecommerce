@@ -14,7 +14,7 @@ class AdminAnalyticsExperienceTest extends TestCase
 
     public function test_analytics_overview_uses_compact_decision_first_hierarchy(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         AnalyticsDailyStat::create([
             'stat_date' => now()->toDateString(),
@@ -63,7 +63,7 @@ class AdminAnalyticsExperienceTest extends TestCase
 
     public function test_growth_analytics_does_not_repeat_the_same_signal_layer(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         $response = $this->actingAs($owner)
             ->get(route('admin.analytics.growth', ['range' => '7d']));
@@ -77,7 +77,7 @@ class AdminAnalyticsExperienceTest extends TestCase
 
     public function test_growth_insights_reuses_shared_admin_metric_cards(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         $response = $this->actingAs($owner)
             ->get(route('admin.growth.insights'));
@@ -92,7 +92,7 @@ class AdminAnalyticsExperienceTest extends TestCase
 
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         $response = $this->actingAs($owner)
             ->get(route('admin.analytics.offers', ['range' => '7d']));

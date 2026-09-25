@@ -14,7 +14,7 @@ class AdminCategoryExperienceTest extends TestCase
 
     public function test_category_workspace_filters_empty_and_content_cleanup_queues(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         $empty = $this->category('Empty Category', 'empty-category', '', null);
         $used = $this->category('Used Category', 'used-category', 'Ready content', 'category/ready.webp');
@@ -44,7 +44,7 @@ class AdminCategoryExperienceTest extends TestCase
 
     public function test_category_slug_must_be_unique_but_current_category_can_keep_its_slug(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $first = $this->category('First Category', 'shared-slug', 'First description', 'category/first.webp');
         $second = $this->category('Second Category', 'second-slug', 'Second description', 'category/second.webp');
 
@@ -75,7 +75,7 @@ class AdminCategoryExperienceTest extends TestCase
 
     public function test_category_edit_keeps_canonical_fields_separate_from_arabic_translation(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $category = $this->category('Canonical Category', 'canonical-category', 'Canonical description', 'category/canonical.webp');
 
         $category->translations()->create([
@@ -100,7 +100,7 @@ class AdminCategoryExperienceTest extends TestCase
 
     public function test_clearing_optional_arabic_translation_removes_stale_translation(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $category = $this->category('Canonical Category', 'canonical-category', 'Canonical description', 'category/canonical.webp');
 
         $category->translations()->create([
@@ -144,7 +144,7 @@ class AdminCategoryExperienceTest extends TestCase
 
     public function test_category_with_products_cannot_be_deleted(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $category = $this->category('Protected Category', 'protected-category', 'Protected', 'category/protected.webp');
 
         Product::create([

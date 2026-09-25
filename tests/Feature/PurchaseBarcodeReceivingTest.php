@@ -30,7 +30,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
             ->get(route('admin.purchases.receiving', $purchase))
             ->assertRedirect('/');
 
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
 
         $this->actingAs($admin)
             ->get(route('admin.purchases.receiving', $purchase))
@@ -55,7 +55,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
 
     public function test_each_scan_counts_one_unit_over_scan_is_ignored_and_verified_receipt_is_replay_safe(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Counted Receiving Product', '6223000000002', 5, false);
         $purchase = $this->purchase();
         $item = $this->item($purchase, $product, 2, 12);
@@ -101,7 +101,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
 
     public function test_variant_receiving_requires_exact_variant_barcode_and_changes_only_that_variant_on_final_receipt(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Variant Receiving Product', '6223000000003', 0, true);
         $variant = $this->variant($product, 'RECV-VAR-001', '6223000000031', 3);
         $other = $this->variant($product, 'RECV-VAR-002', '6223000000032', 8);
@@ -138,7 +138,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
 
     public function test_barcode_outside_purchase_and_unknown_barcode_are_rejected_without_progress(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $ordered = $this->product('Ordered Product', '6223000000004', 1, false);
         $outside = $this->product('Outside Product', '6223000000005', 1, false);
         $purchase = $this->purchase();
@@ -159,7 +159,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
 
     public function test_duplicate_purchase_lines_require_explicit_line_selection_before_counting(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Duplicate Line Product', '6223000000006', 2, false);
         $purchase = $this->purchase();
         $first = $this->item($purchase, $product, 1, 10, null, '2027-01-01');
@@ -191,7 +191,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
 
     public function test_undo_one_corrects_a_scan_and_incomplete_verified_receipt_is_blocked(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Undo Receiving Product', '6223000000007', 4, false);
         $purchase = $this->purchase();
         $item = $this->item($purchase, $product, 2, 10);
@@ -221,7 +221,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
 
     public function test_scan_is_rejected_after_purchase_is_received(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Closed Receiving Product', '6223000000008', 1, false);
         $purchase = $this->purchase(Purchase::STATUS_RECEIVED);
         $this->item($purchase, $product, 1, 10);

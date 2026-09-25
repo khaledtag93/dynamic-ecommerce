@@ -26,7 +26,7 @@ class InventoryBarcodeLabelTest extends TestCase
 
     public function test_simple_product_prints_requested_number_of_real_size_code128_labels(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Printable Product', '6222000000002', false, 'PRINT-001');
 
         $response = $this->actingAs($admin)
@@ -50,7 +50,7 @@ class InventoryBarcodeLabelTest extends TestCase
 
     public function test_variant_product_requires_an_exact_variant_for_label_printing(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Variant Label Product', '6222000000003', true);
 
         $this->actingAs($admin)
@@ -60,7 +60,7 @@ class InventoryBarcodeLabelTest extends TestCase
 
     public function test_variant_label_uses_the_variant_barcode_sku_and_price(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $product = $this->product('Variant Label Product', '6222000000004', true);
         $variant = $this->variant($product, 'LABEL-VAR-001', '6222000000041', 37.50);
 
@@ -78,7 +78,7 @@ class InventoryBarcodeLabelTest extends TestCase
 
     public function test_variant_from_another_product_cannot_be_printed_under_this_product(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $first = $this->product('First Label Parent', null, true);
         $second = $this->product('Second Label Parent', null, true);
         $otherVariant = $this->variant($second, 'OTHER-VAR-001', '6222000000051', 20);
@@ -93,7 +93,7 @@ class InventoryBarcodeLabelTest extends TestCase
 
     public function test_missing_or_unsupported_barcode_shows_safe_non_printable_state(): void
     {
-        $admin = User::factory()->create(['role_as' => 1]);
+        $admin = $this->createSuperAdmin();
         $missing = $this->product('Missing Barcode Product', null, false);
 
         $this->actingAs($admin)
