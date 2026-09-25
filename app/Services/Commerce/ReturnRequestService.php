@@ -296,7 +296,7 @@ class ReturnRequestService
             }
 
             $items = $locked->items()
-                ->with('orderItem.product', 'orderItem.variant')
+                ->with(['orderItem.product', 'orderItem.variant'])
                 ->orderBy('id')
                 ->lockForUpdate()
                 ->get();
