@@ -61,4 +61,16 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString('grid-template-columns: 2.5rem minmax(0, 1fr)', $source);
         $this->assertStringContainsString('padding: .55rem .7rem !important', $source);
     }
+    public function test_admin_flash_feedback_is_floating_dismissible_and_accessible(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+
+        $this->assertStringContainsString('class="admin-toast-stack"', $layout);
+        $this->assertStringContainsString('data-admin-toast-close', $layout);
+        $this->assertStringContainsString("__('Dismiss notification')", $layout);
+        $this->assertStringContainsString("stack.querySelectorAll('.admin-flash--success')", $layout);
+        $this->assertStringContainsString('window.setTimeout(() => dismissToast(toast), 4200)', $layout);
+        $this->assertStringContainsString('.admin-flash.is-leaving', $layout);
+    }
+
 }
