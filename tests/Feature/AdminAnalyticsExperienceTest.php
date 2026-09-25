@@ -54,11 +54,11 @@ class AdminAnalyticsExperienceTest extends TestCase
 
         $html = $response->getContent();
 
-        $this->assertSame(1, substr_count($html, 'id="performance"'));
-        $this->assertSame(1, substr_count($html, 'id="decision-read"'));
-        $this->assertSame(1, substr_count($html, 'id="trends"'));
-        $this->assertSame(1, substr_count($html, 'id="funnel"'));
-        $this->assertSame(1, substr_count($html, 'id="drilldowns"'));
+        $this->assertSame(1, substr_count($html, 'id="analytics-panel-performance"'));
+        $this->assertSame(1, substr_count($html, 'id="analytics-panel-decision"'));
+        $this->assertSame(1, substr_count($html, 'id="analytics-panel-trends"'));
+        $this->assertSame(1, substr_count($html, 'id="analytics-panel-funnel"'));
+        $this->assertSame(1, substr_count($html, 'id="analytics-panel-drilldowns"'));
     }
 
     public function test_growth_analytics_does_not_repeat_the_same_signal_layer(): void
@@ -87,7 +87,8 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertSee('Attributed revenue')
             ->assertSee('Average churn risk');
 
-        $this->assertSame(4, substr_count($response->getContent(), 'admin-card admin-stat-card gm-card'));
+        $source = file_get_contents(resource_path('views/admin/growth/insights.blade.php'));
+        $this->assertSame(4, substr_count($source, '<x-admin.stat-card'));
     }
 
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void
