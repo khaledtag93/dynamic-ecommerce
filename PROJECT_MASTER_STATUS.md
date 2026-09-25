@@ -771,3 +771,15 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added AdminUiConsistencyV2Test covering the component contract, core rollout, and RTL-safe switch foundation.
 - Detailed note: docs/ADMIN_UI_CONSISTENCY_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Analytics workspace V2 — 2026-09-25
+- Reworked Revenue Intelligence from one long anchor-scrolled page into focused shared section tabs: Performance, Decision read, Trends, Funnel & comparison, and Drilldowns.
+- Moved More diagnostics under Trends and Session watchlist under Drilldowns without removing any existing data or calculations.
+- Reworked Offers drilldown into Summary, Coupon charts, Management view, and Detailed table tabs.
+- Converted Offers KPI cards to the shared Admin Stat Card component.
+- Reworked Growth Automation into Growth overview, Campaigns & automation, Product signals, and Offers & coupons.
+- Preserved all existing analytics calculations, date/range logic, charts, recommendations, funnel metrics, product/coupon data, and server-side authorization.
+- Added EN/AR labels for the new workspaces and reused RTL-aware shared section-tab behavior.
+- Added AnalyticsWorkspaceV2Test covering the three analytics workspaces, removal of old anchor navigation, shared KPI usage, and Arabic labels.
+- Detailed note: docs/ANALYTICS_WORKSPACE_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
