@@ -77,13 +77,13 @@
 
             @if($canAdmin('catalog.manage') || $canAdmin('promotions.manage') || $canAdmin('orders.view'))
             <li class="nav-item d-none d-xl-flex align-items-center position-relative admin-menu-wrap">
-                <button type="button" class="admin-topbar-action admin-custom-menu-toggle" data-admin-menu-target="quick-create-menu" aria-expanded="false">
+                <button type="button" class="admin-topbar-action admin-custom-menu-toggle" data-admin-menu-target="quick-create-menu" aria-expanded="false" aria-controls="quick-create-menu" aria-haspopup="menu">
                     <i class="mdi mdi-plus-circle-outline"></i>
                     <span class="d-none d-xxl-inline">{{ __('Quick create') }}</span>
                     <i class="mdi mdi-chevron-down admin-menu-chevron"></i>
                 </button>
 
-                <div class="admin-custom-menu" id="quick-create-menu" hidden>
+                <div class="admin-custom-menu" id="quick-create-menu" role="menu" hidden>
                     @if($canAdmin('catalog.manage'))
                         <a class="admin-custom-menu__item" href="{{ route('admin.products.create') }}"><i class="mdi mdi-package-variant-closed"></i><span>{{ __('New product') }}</span></a>
                         <a class="admin-custom-menu__item" href="{{ route('admin.categories.create') }}"><i class="mdi mdi-shape-outline"></i><span>{{ __('New category') }}</span></a>
@@ -95,7 +95,7 @@
             @endif
 
             <li class="nav-item nav-profile position-relative admin-menu-wrap">
-                <button type="button" class="nav-link admin-profile-trigger admin-custom-menu-toggle" data-admin-menu-target="profile-menu" aria-expanded="false">
+                <button type="button" class="nav-link admin-profile-trigger admin-custom-menu-toggle" data-admin-menu-target="profile-menu" aria-expanded="false" aria-controls="profile-menu" aria-haspopup="menu">
                     <span class="admin-profile-avatar">
                         {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
                     </span>
@@ -103,7 +103,7 @@
                     <i class="mdi mdi-chevron-down admin-menu-chevron"></i>
                 </button>
 
-                <div class="admin-custom-menu admin-custom-menu--profile" id="profile-menu" hidden>
+                <div class="admin-custom-menu admin-custom-menu--profile" id="profile-menu" role="menu" hidden>
                     <div class="admin-profile-menu__header">
                         <div class="admin-profile-menu__name">{{ Auth::user()->name }}</div>
                         <div class="admin-profile-menu__email">{{ Auth::user()->email }}</div>
@@ -366,7 +366,11 @@ body[dir='ltr'] .admin-custom-menu { inset-inline-start: auto; inset-inline-end:
 document.addEventListener('DOMContentLoaded', function () {
     const toggles = Array.from(document.querySelectorAll('.admin-custom-menu-toggle'));
 
-    function closeMenus(exceptMenuId = null) {
+    function focusableMenuItems(menu) {
+        return Array.from(menu.querySelectorAll('a[href], button:not([disabled])')).filter((item) => item.offsetParent !== null);
+    }
+
+    function closeMenus(exceptMenuId = null, restoreFocus = false) {
         toggles.forEach((toggle) => {
             const menuId = toggle.getAttribute('data-admin-menu-target');
             const menu = menuId ? document.getElementById(menuId) : null;
@@ -375,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
             menu.hidden = true;
             toggle.classList.remove('is-open');
             toggle.setAttribute('aria-expanded', 'false');
+            if (restoreFocus && document.activeElement && menu.contains(document.activeElement)) toggle.focus();
         });
     }
 
@@ -390,6 +395,10 @@ document.addEventListener('DOMContentLoaded', function () {
             menu.hidden = !willOpen;
             this.classList.toggle('is-open', willOpen);
             this.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (willOpen) {
+                const firstItem = focusableMenuItems(menu)[0];
+                if (firstItem) window.requestAnimationFrame(() => firstItem.focus());
+            }
         });
     });
 
@@ -399,7 +408,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') closeMenus();
+        if (event.key === 'Escape') closeMenus(null, true);
+
+        const openToggle = toggles.find((toggle) => toggle.getAttribute('aria-expanded') === 'true');
+        const openMenu = openToggle ? document.getElementById(openToggle.getAttribute('data-admin-menu-target')) : null;
+        if (openMenu && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
+            const items = focusableMenuItems(openMenu);
+            if (items.length) {
+                event.preventDefault();
+                const currentIndex = items.indexOf(document.activeElement);
+                const direction = event.key === 'ArrowDown' ? 1 : -1;
+                const nextIndex = currentIndex < 0 ? 0 : (currentIndex + direction + items.length) % items.length;
+                items[nextIndex].focus();
+            }
+        }
 
         if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
             const activeTag = document.activeElement?.tagName?.toLowerCase();
