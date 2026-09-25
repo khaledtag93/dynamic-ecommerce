@@ -13,6 +13,8 @@ class EmployeeCompensation extends Model
     public const BASIS_SALARY = 'salary';
     public const BASIS_HOURLY = 'hourly';
 
+    protected $table = 'employee_compensations';
+
     protected $fillable = [
         'employee_profile_id',
         'pay_basis',
