@@ -19,7 +19,30 @@ return new class extends Migration
             ->value('id');
 
         if (! $superAdminId) {
-            return;
+            $superAdminId = DB::table('roles')->insertGetId([
+                'name' => 'Super Admin',
+                'slug' => 'super_admin',
+                'description' => 'Full control across the back office.',
+                'is_system' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        if (Schema::hasTable('permission_role') && Schema::hasTable('permissions')) {
+            $now = now();
+
+            DB::table('permissions')
+                ->orderBy('id')
+                ->pluck('id')
+                ->each(function ($permissionId) use ($superAdminId, $now) {
+                    DB::table('permission_role')->insertOrIgnore([
+                        'permission_id' => $permissionId,
+                        'role_id' => $superAdminId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                });
         }
 
         $legacyAdminIds = DB::table('users')
