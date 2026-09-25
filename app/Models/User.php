@@ -70,25 +70,21 @@ class User extends Authenticatable
 
     public function isSuperAdmin(): bool
     {
-        return $this->isLegacyAdmin() && ($this->roles()->doesntExist() || $this->hasRole('super_admin'));
+        return $this->isLegacyAdmin() && $this->hasRole('super_admin');
     }
 
     public function hasRole(string $slug): bool
     {
-        if ($slug === 'super_admin' && $this->isLegacyAdmin() && $this->roles()->doesntExist()) {
-            return true;
-        }
-
         return $this->roles()->where('slug', $slug)->exists();
     }
 
     public function hasPermission(string $slug): bool
     {
-        if ($this->isSuperAdmin()) {
-            return true;
+        if (! $this->isLegacyAdmin()) {
+            return false;
         }
 
-        if ($this->isLegacyAdmin() && ! \Illuminate\Support\Facades\Schema::hasTable('roles')) {
+        if ($this->isSuperAdmin()) {
             return true;
         }
 
@@ -101,6 +97,6 @@ class User extends Authenticatable
             return (string) optional($this->roles()->orderBy('roles.id')->first())->name;
         }
 
-        return $this->isLegacyAdmin() ? 'Super Admin' : 'Customer';
+        return $this->isLegacyAdmin() ? 'Unassigned admin' : 'Customer';
     }
 }
