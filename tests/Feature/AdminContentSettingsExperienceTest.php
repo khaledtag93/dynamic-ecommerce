@@ -112,4 +112,19 @@ class AdminContentSettingsExperienceTest extends TestCase
         $this->assertDatabaseHas('website_settings', ['key' => 'footer_show_social', 'value' => '0']);
     }
 
+
+    public function test_footer_social_channels_reject_non_web_urls(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $this->actingAs($admin)
+            ->from(route('admin.settings.content'))
+            ->put(route('admin.settings.content.update'), [
+                'footer_show_social' => '1',
+                'store_social_facebook' => 'ftp://example.com/profile',
+            ])
+            ->assertRedirect(route('admin.settings.content'))
+            ->assertSessionHasErrors('store_social_facebook');
+    }
+
 }
