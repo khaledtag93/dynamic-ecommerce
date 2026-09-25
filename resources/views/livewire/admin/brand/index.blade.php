@@ -1,11 +1,9 @@
 <div>
-    <div class="admin-page-header">
-        <div>
-            <span class="admin-eyebrow">{{ __('Catalog / Brands') }}</span>
-            <h1 class="admin-page-title">{{ __('Brands') }}</h1>
-            <p class="admin-page-description">{{ __('Manage your brands in a cleaner list with safer delete behavior, quick edits, and basic visibility filters.') }}</p>
-        </div>
-    </div>
+    <x-admin.page-header
+        :kicker="__('Catalog management')"
+        :title="__('Brands')"
+        :description="__('Manage your brands in a cleaner list with safer delete behavior, quick edits, and basic visibility filters.')"
+    />
 
     <div class="row g-3 mb-4">
         @foreach([
@@ -16,12 +14,7 @@
             ['label' => __('Empty'), 'value' => $stats['empty'], 'copy' => __('Brands with no linked products and ready for cleanup review.'), 'icon' => 'mdi-link-variant-off'],
         ] as $card)
             <div class="col-md-6 col-xl-3">
-                <div class="admin-card admin-stat-card h-100">
-                    <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                    <div class="admin-stat-label">{{ $card['label'] }}</div>
-                    <div class="admin-stat-value">{{ $card['value'] }}</div>
-                    <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-                </div>
+                <x-admin.stat-card :label="$card['label']" :value="$card['value']" :icon="$card['icon']" :help="$card['copy']" class="h-100" />
             </div>
         @endforeach
     </div>
@@ -126,7 +119,7 @@
                             <th>{{ __('Name') }}</th>
                             <th style="width: 120px;">{{ __('Products') }}</th>
                             <th style="width: 100px;">{{ __('Status') }}</th>
-                            <th style="width: 180px;">{{ __('Actions') }}</th>
+                            <th style="width: 180px;" class="rtl-text-start">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -136,7 +129,7 @@
                                 <td><div class="fw-semibold">{{ $brand->name }}</div><div class="small text-muted">{{ $brand->slug }}</div></td>
                                 <td>{{ $brand->products_count }}</td>
                                 <td>@if($brand->status)<span class="badge admin-status-badge badge-soft-secondary">{{ __('Hidden') }}</span>@else<span class="badge admin-status-badge badge-soft-success">{{ __('Visible') }}</span>@endif</td>
-                                <td><div class="d-flex gap-2 flex-wrap"><button wire:click="edit({{ $brand->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit brand') }}"><i class="mdi mdi-pencil-outline"></i></button><button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete brand') }}" wire:click="requestDelete({{ $brand->id }})" @disabled($brand->products_count > 0)><i class="mdi mdi-trash-can-outline"></i></button></div></td>
+                                <td class="rtl-text-start"><div class="d-flex gap-2 flex-wrap rtl-justify-start"><button wire:click="edit({{ $brand->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit brand') }}"><i class="mdi mdi-pencil-outline"></i></button><button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete brand') }}" wire:click="requestDelete({{ $brand->id }})" @disabled($brand->products_count > 0)><i class="mdi mdi-trash-can-outline"></i></button></div></td>
                             </tr>
                         @empty
                             <tr><td colspan="5" class="text-center py-4 text-muted">{{ __('No brands found.') }}</td></tr>
