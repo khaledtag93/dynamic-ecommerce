@@ -572,6 +572,7 @@
         }
 
         .lc-toast-stack { position:fixed; top:1rem; inset-inline-end:1rem; z-index:1090; display:grid; gap:.65rem; width:min(420px,calc(100vw - 2rem)); pointer-events:none; }
+        .lc-toast-stack--live { top:auto; bottom:1rem; }
         .lc-flash-toast { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:.75rem; padding:.85rem 1rem; border:1px solid var(--lc-border); border-radius:1rem; background:var(--lc-surface); box-shadow:var(--lc-shadow-strong); pointer-events:auto; transition:opacity .18s ease, transform .18s ease; }
         .lc-flash-toast--success > i { color:#15803d; } .lc-flash-toast--info > i { color:var(--lc-primary-dark); }
         .lc-flash-toast__close { border:0; background:transparent; color:var(--lc-muted); padding:.25rem; line-height:1; border-radius:.5rem; }
@@ -855,12 +856,18 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<div class="alert alert-success border-0 shadow rounded-4 position-fixed m-3 d-none"
-     style="inset-inline-end:0;bottom:0;z-index:1080;max-width:min(420px,calc(100vw - 2rem));"
-     role="status"
-     aria-live="polite"
-     data-live-cart-feedback
-     data-error="{{ __('Could not update the cart right now.') }}"></div>
+<div class="lc-toast-stack lc-toast-stack--live" aria-live="polite" aria-atomic="true">
+    <div class="lc-flash-toast lc-flash-toast--success d-none"
+         role="status"
+         data-live-cart-feedback
+         data-error="{{ __('Could not update the cart right now.') }}">
+        <i class="bi bi-check-circle-fill" aria-hidden="true" data-live-cart-feedback-icon></i>
+        <div class="lc-flash-toast__content" data-live-cart-feedback-message></div>
+        <button type="button" class="lc-flash-toast__close" aria-label="{{ __('Dismiss notification') }}" data-live-cart-feedback-close>
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+    </div>
+</div>
 
 <main>
     @yield('hero')
