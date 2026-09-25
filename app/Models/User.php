@@ -37,6 +37,11 @@ class User extends Authenticatable
         return $this->hasMany(ProductReview::class);
     }
 
+    public function connectedIdentities()
+    {
+        return $this->hasMany(ConnectedIdentity::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
