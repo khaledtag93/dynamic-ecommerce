@@ -3,14 +3,13 @@
 @section('title', $title . ' | Admin')
 
 @section('content')
-<div class="admin-page-header">
-    <div>
-        <div class="admin-kicker">{{ __('Promotions') }}</div>
-        <h1 class="admin-page-title">{{ $title }}</h1>
-        <p class="admin-page-description">{{ __('Define safe discount rules with clear scheduling, usage limits, and minimum order validation.') }}</p>
-    </div>
+<x-admin.page-header
+    :kicker="__('Promotions')"
+    :title="$title"
+    :description="__('Define safe discount rules with clear scheduling, usage limits, and minimum order validation.')"
+>
     <a href="{{ route('admin.coupons.index') }}" class="btn btn-light border admin-back-btn">{{ __('Back to coupons') }}</a>
-</div>
+</x-admin.page-header>
 
 <div class="admin-card mb-4"><div class="admin-card-body"><div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3"><div><span class="badge badge-soft-info mb-2">{{ __('Promotion builder') }}</span><h4 class="mb-1">{{ __('Build a controlled offer') }}</h4><p class="text-muted small mb-0">{{ __('Define the discount, eligibility, schedule, and usage guardrails before making the coupon available.') }}</p></div><div class="d-flex gap-2 flex-wrap"><span class="admin-chip"><i class="mdi mdi-ticket-percent-outline"></i> {{ __('Discount') }}</span><span class="admin-chip"><i class="mdi mdi-shield-check-outline"></i> {{ __('Limits') }}</span><span class="admin-chip"><i class="mdi mdi-calendar-clock-outline"></i> {{ __('Schedule') }}</span></div></div></div></div>
 
@@ -20,10 +19,18 @@
     <div class="col-xl-8">
         <div class="admin-card">
             <div class="admin-card-body">
-                <form method="POST" action="{{ $action }}" class="row g-4" data-submit-loading>
+                <form method="POST" action="{{ $action }}" data-submit-loading data-admin-section-tabs="coupon-editor">
                     @csrf
                     @if($method !== 'POST') @method($method) @endif
 
+                    <x-admin.section-tabs id="coupon-editor" :sections="[
+                        'offer' => __('Offer'),
+                        'limits' => __('Limits & eligibility'),
+                        'schedule' => __('Schedule & notes'),
+                    ]" />
+
+                    <div id="coupon-editor-panel-offer" role="tabpanel" aria-labelledby="coupon-editor-tab-offer" data-admin-section-panel="offer">
+                        <div class="row g-4">
                     <div class="col-lg-6">
                         <label class="form-label fw-semibold">{{ __('Name') }}</label>
                         <input type="text" name="name" class="form-control" value="{{ old('name', $coupon->name) }}" placeholder="{{ __('Optional internal label') }}">
@@ -46,6 +53,11 @@
                         <label class="form-label fw-semibold">{{ __('Value') }}</label>
                         <input type="number" step="0.01" min="0.01" name="value" id="couponValue" class="form-control" value="{{ old('value', $coupon->value) }}">
                     </div>
+                        </div>
+                    </div>
+
+                    <div id="coupon-editor-panel-limits" role="tabpanel" aria-labelledby="coupon-editor-tab-limits" data-admin-section-panel="limits">
+                        <div class="row g-4">
                     <div class="col-lg-4">
                         <label class="form-label fw-semibold">{{ __('Usage limit') }}</label>
                         <input type="number" min="1" name="usage_limit" class="form-control" value="{{ old('usage_limit', $coupon->usage_limit) }}" placeholder="{{ __('Optional') }}">
@@ -64,6 +76,11 @@
                             <label class="form-check-label" for="isActive">{{ __('Coupon is active') }}</label>
                         </div>
                     </div>
+                        </div>
+                    </div>
+
+                    <div id="coupon-editor-panel-schedule" role="tabpanel" aria-labelledby="coupon-editor-tab-schedule" data-admin-section-panel="schedule">
+                        <div class="row g-4">
                     <div class="col-lg-6">
                         <label class="form-label fw-semibold">{{ __('Starts at') }}</label>
                         <input type="datetime-local" name="starts_at" class="form-control" value="{{ old('starts_at', optional($coupon->starts_at)->format('Y-m-d\TH:i')) }}">
@@ -76,7 +93,10 @@
                         <label class="form-label fw-semibold">{{ __('Notes') }}</label>
                         <textarea name="notes" rows="4" class="form-control" placeholder="{{ __('Optional notes') }}">{{ old('notes', $coupon->notes) }}</textarea>
                     </div>
-                    <div class="col-12">
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4">
                         <div class="admin-form-actions">
                             <div class="admin-form-actions-copy">
                                 <div class="admin-form-actions-title">{{ __('Ready to save?') }}</div>
