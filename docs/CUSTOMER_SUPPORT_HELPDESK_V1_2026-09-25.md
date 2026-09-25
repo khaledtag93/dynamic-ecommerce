@@ -131,7 +131,8 @@ SLA targets/breach indicators and reusable bilingual reply templates moved into 
 - Production: unchanged
 - QAS: not claimed by this document
 - V1 source gate passed before V2 work.
-- V2 was merged to `v42-clean-baseline` at `173c14e`; final branch-head CI remains the source gate before QAS.
+- V2 was merged to `v42-clean-baseline` at `173c14e`; namespace integrity follow-up completed at `45e85e4`.
+- Hardening CI #1365 passed on `45e85e4`: 362 tests / 2454 assertions plus clean migration, routes, Blade compilation, and Vite production build.
 - Authenticated EN/AR/RTL/responsive Helpdesk acceptance on QAS remains a separate gate.
 
 ## V2 — SLA targets and reply templates

@@ -986,7 +986,7 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Production unchanged; QAS/Production remain separate gates.
 
 ## Helpdesk V2 SLA + Reply Templates — 2026-09-25
-- Merged to `v42-clean-baseline` at `173c14e`; final branch-head CI is the current source gate.
+- Merged to `v42-clean-baseline` at `173c14e`; namespace integrity follow-up completed at `45e85e4`.
 - Added first-response and resolution due timestamps driven by case priority.
 - Added configurable per-priority SLA hours in Support Settings.
 - Added breach indicators and an SLA-breached Support queue count.
@@ -995,5 +995,6 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Active templates prefill the case reply composer but do not bypass the existing authorization, visibility or audit path.
 - Added Arabic coverage and focused `SupportSlaAndTemplatesTest` regression coverage.
 - Attachments, business-hours/SLA pause policy, richer commerce context, customer-service analytics, and external channel ingestion remain deliberately separate future slices.
+- Hardening CI #1365 passed on `45e85e4`: 362 tests / 2454 assertions, clean MySQL migration, Laravel boot/routes, Blade compilation, and Vite production build.
 - Production unchanged; QAS acceptance remains a separate gate.
 
