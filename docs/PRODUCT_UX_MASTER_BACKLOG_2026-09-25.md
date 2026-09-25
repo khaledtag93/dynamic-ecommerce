@@ -10,6 +10,12 @@ Finish the active workstream to a strong, tested state before moving to the next
 
 ## Current workstream
 
+### Systematic Bilingual Integrity Sweep
+
+Started after the Footer / Storefront Shell V2 source hardening. The first shared-shell slice now guards Admin navbar/sidebar, language switcher, page-help and section-tab translation keys in both EN and AR. Missing shared-shell copy discovered in the sweep was completed, including sidebar accessibility/navigation labels and shared group labels.
+
+Continue surface-by-surface across Admin, Customer, POS and Workforce, prioritizing shared components and high-traffic workspaces before isolated pages. Mixed-language UI remains a product-quality defect unless the text is intentionally language-neutral.
+
 ### Footer / Storefront Shell V2
 
 Turn the storefront footer into a configurable production component suitable for multiple business types. The active source work now includes independent visibility controls for Shop, Policies, Categories, Support, Trust highlights and the experience note; actionable email/phone/WhatsApp/business-website support channels; automatic suppression of empty support content; responsive/RTL presentation polish; and three bilingual configurable trust highlights instead of commerce-specific hard-coded promises.
@@ -20,6 +26,7 @@ Shared Navigation Shell + Global Feedback/Toast source hardening is complete and
 
 ### Recently closed
 
+- Footer / Storefront Shell V2 — source hardening completed 2026-09-25 with configurable sections/support/trust/social channels, bilingual copy, safe social URL validation, responsive/RTL treatment and regression coverage. Authenticated QAS visual acceptance remains a separate deployment gate.
 - Analytics & Insights V2 — closed 2026-09-25 after source-level UX, responsive/RTL, bilingual and regression hardening.
 - Branding & Appearance V2 — closed 2026-09-25 after final Hardening CI passed at `abb0477`.
 
