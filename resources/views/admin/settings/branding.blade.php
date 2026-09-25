@@ -518,7 +518,17 @@
             <div class="branding-side-stack">
             <div class="admin-card mb-4" id="branding-panel-media" role="tabpanel" aria-labelledby="branding-tab-media" data-admin-section-panel="media">
                 <div class="admin-card-body">
-                    <h4 class="mb-3">{{ __('Images') }}</h4>
+                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-3">
+                        <div>
+                            <h4 class="mb-1">{{ __('Images') }}</h4>
+                            <div class="text-muted small">{{ __('Keep media assets focused while the live preview stays available beside your edits.') }}</div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-media-density-toggle aria-expanded="true">
+                            <i class="mdi mdi-unfold-less-horizontal"></i>
+                            <span>{{ __('Compact media') }}</span>
+                        </button>
+                    </div>
+                    <div data-media-editor>
 
                     <div class="admin-media-block mb-4">
                         <div class="admin-media-block__title">{{ __('Store logo') }}</div>
@@ -578,6 +588,8 @@
                         <input type="file" name="hero_banner_file" class="form-control mb-2 js-image-file" accept="image/*" data-preview-target="hero_banner_path">
                         <div class="admin-current-path small text-muted mb-2"><span class="fw-semibold">{{ __('Current path') }}:</span> <span dir="ltr">{{ $resolvedHeroBannerPath ?: __('Not set') }}</span></div>
                         <details class="admin-manual-path"><summary>{{ __('Use a manual path instead') }}</summary><input type="text" id="hero_banner_path" name="hero_banner_path" value="{{ $heroBannerPath }}" class="form-control js-image-path mt-2" data-preview-target="hero_banner_path" placeholder="branding/hero-banner.jpg"></details>
+                    </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -654,6 +666,10 @@
 .admin-section-columns{align-items:flex-start}
 .branding-side-stack{display:grid;gap:1rem}
 .branding-side-stack>.admin-card{margin-bottom:0!important}
+[data-media-editor].is-compact .admin-media-block{display:none}
+[data-media-editor].is-compact .admin-media-block:first-child{display:block;margin-bottom:0!important}
+[data-media-editor].is-compact .admin-media-block:first-child .admin-current-path,
+[data-media-editor].is-compact .admin-media-block:first-child .admin-manual-path{display:none}
 @media(min-width:1200px){.branding-side-column{align-self:stretch}.branding-side-stack{position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow:auto;padding-inline-end:.2rem;scrollbar-width:thin}}
 .theme-preset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
 .theme-preset-card{appearance:none;width:100%;padding:0;overflow:hidden;text-align:start;border:1px solid var(--admin-border);border-radius:1.15rem;background:var(--admin-surface);color:var(--admin-text);box-shadow:0 12px 28px color-mix(in srgb,var(--admin-text) 5%,transparent);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
@@ -818,6 +834,18 @@ document.addEventListener('DOMContentLoaded', function () {
             empty?.classList.remove('d-none');
         }
     }
+
+    const mediaEditor = document.querySelector('[data-media-editor]');
+    const mediaDensityToggle = document.querySelector('[data-media-density-toggle]');
+    mediaDensityToggle?.addEventListener('click', function () {
+        const compact = !mediaEditor?.classList.contains('is-compact');
+        mediaEditor?.classList.toggle('is-compact', compact);
+        this.setAttribute('aria-expanded', compact ? 'false' : 'true');
+        const label = this.querySelector('span');
+        const icon = this.querySelector('i');
+        if (label) label.textContent = compact ? @json(__('Expand media')) : @json(__('Compact media'));
+        if (icon) icon.className = compact ? 'mdi mdi-unfold-more-horizontal' : 'mdi mdi-unfold-less-horizontal';
+    });
 
     document.querySelectorAll('[data-sync-color]').forEach(syncColor);
 
