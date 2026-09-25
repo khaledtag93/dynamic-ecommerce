@@ -77,3 +77,11 @@ Production stays unchanged until consolidated QAS acceptance and remaining opera
   - possible functional problems to be identified during QAS.
 - Treat this as a combined functional + UX review, not just visual polish.
 - Keep it in the near-term QAS backlog and do not assume the earlier Growth workspace restructuring means the page is accepted.
+
+
+## QAS media regression
+- Category images were visibly broken in QAS list/edit screens.
+- Root cause was QAS media public-root auto-detection resolving to Production `public_html` while QAS is served from `public_html/v42`.
+- Source fix adds `PUBLIC_ROOT_PATH`, updates `MediaPath`, and makes `deploy-qas.sh` set the isolated QAS root and preserve `v42/uploads`.
+- `MediaPublicRootIsolationTest` guards the behavior.
+- After deploying the fix, do a one-time copy of existing public uploads into `public_html/v42/uploads` so existing cloned DB media paths resolve in QAS.
