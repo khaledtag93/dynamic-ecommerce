@@ -61,6 +61,21 @@ class EmployeeLeaveRequest extends Model
         return $this->belongsTo(User::class, 'reviewed_by_user_id');
     }
 
+    public function getStatusLabelAttribute(): string
+    {
+        return static::statusOptions()[$this->status] ?? ucfirst(str_replace('_', ' ', (string) $this->status));
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_APPROVED => 'badge-soft-success',
+            self::STATUS_REJECTED => 'badge-soft-danger',
+            self::STATUS_CANCELLED => 'badge-soft-secondary',
+            default => 'badge-soft-warning',
+        };
+    }
+
     public function isPending(): bool
     {
         return $this->status === self::STATUS_PENDING;
