@@ -71,6 +71,8 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString("stack.querySelectorAll('.admin-flash--success')", $layout);
         $this->assertStringContainsString('window.setTimeout(() => dismissToast(toast), 4200)', $layout);
         $this->assertStringContainsString('.admin-flash.is-leaving', $layout);
+        $this->assertSame(1, substr_count($layout, "stack.querySelectorAll('.admin-flash--success')"));
+        $this->assertStringNotContainsString("document.querySelectorAll('#adminToastStack .admin-flash')", $layout);
     }
 
     public function test_admin_topbar_search_has_keyboard_and_clear_controls(): void
