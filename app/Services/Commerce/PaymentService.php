@@ -373,13 +373,19 @@ class PaymentService
                 return $lockedPayment;
             }
 
+            $wasRetry = $lockedPayment->status === Payment::STATUS_FAILED
+                || ! empty(data_get($lockedOrder->meta, 'stock_reservation_expired_at'))
+                || (string) data_get($lockedPayment->meta, 'last_gateway_transition.status') === Payment::STATUS_FAILED;
+
             $this->stockReservationService->ensureReservedForOrder($lockedOrder, true);
 
             $meta = $lockedPayment->meta ?? [];
             $meta = $this->pushPaymentEvent(
                 $meta,
-                'payment_retry_started',
-                __('Online payment retry started after stock availability was confirmed.')
+                $wasRetry ? 'payment_retry_started' : 'payment_session_started',
+                $wasRetry
+                    ? __('Online payment retry started after stock availability was confirmed.')
+                    : __('Online payment session started after stock availability was confirmed.')
             );
             unset($meta['stock_reservation_exception']);
 
