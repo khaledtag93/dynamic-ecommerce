@@ -5161,5 +5161,16 @@
     "No favicon uploaded yet.": "لم يتم رفع أيقونة للموقع بعد.",
     "Review presets, colors, media assets, and live preview changes, then save your branding workspace when you are ready.": "راجع السمات والألوان وملفات الهوية والمعاينة المباشرة، ثم احفظ إعدادات الهوية عندما تصبح جاهزًا.",
     "Use comma-separated section keys: hero, promo_banners, featured_categories, manual_featured_products, featured_products, best_sellers, categories, latest_products, on_sale_products, trust_blocks.": "استخدم مفاتيح الأقسام مفصولة بفواصل: hero, promo_banners, featured_categories, manual_featured_products, featured_products, best_sellers, categories, latest_products, on_sale_products, trust_blocks.",
-    "Used when source = Manual IDs. Keep order as you want it to appear on the homepage.": "يُستخدم عندما يكون المصدر = المعرّفات اليدوية. حافظ على الترتيب المطلوب لظهورها في الصفحة الرئيسية."
+    "Used when source = Manual IDs. Keep order as you want it to appear on the homepage.": "يُستخدم عندما يكون المصدر = المعرّفات اليدوية. حافظ على الترتيب المطلوب لظهورها في الصفحة الرئيسية.",
+    ":count checkout starts did not reach purchase in the selected range.": "بدأ :count عميل عملية الدفع ولم يصل إلى الشراء خلال الفترة المحددة.",
+    "No major operational blockage is standing out in this range.": "لا يظهر عائق تشغيلي رئيسي خلال هذه الفترة.",
+    "Strongest revenue day at EGP :amount.": "أقوى يوم من حيث الإيراد بقيمة :amount ج.م.",
+    "The selected range does not yet have a standout day.": "لا تحتوي الفترة المحددة حتى الآن على يوم بارز.",
+    "Next move": "الخطوة التالية",
+    "Reduce checkout friction": "تقليل الاحتكاك في إتمام الشراء",
+    "Scale what is converting": "توسيع ما يحقق تحويلات",
+    "Review checkout drop-offs, payment failures, and handoff clarity first.": "راجع حالات ترك الدفع وفشل المدفوعات ووضوح الانتقال بين الخطوات أولًا.",
+    "Keep leaning into the channels, products, and offers that are already performing cleanly.": "استمر في التركيز على القنوات والمنتجات والعروض التي تحقق أداءً جيدًا بالفعل.",
+    "checkout": "إتمام الشراء",
+    "View → cart → checkout → purchase, with direct leakage context.": "عرض ← سلة ← إتمام الشراء ← شراء، مع توضيح مباشر لمواضع التسرب."
 }
