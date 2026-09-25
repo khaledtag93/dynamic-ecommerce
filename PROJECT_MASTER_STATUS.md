@@ -796,3 +796,17 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added BrandingWorkspaceV2Test covering shared KPI adoption, Homepage CMS sections, promo/trust collapse behavior, and Arabic labels.
 - Detailed note: docs/BRANDING_WORKSPACE_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Categories workspace V2 — 2026-09-25
+- Aligned Categories index with Admin V2 shared page header and Stat Card components.
+- Preserved live/no-reload category search, filtering, sorting, cleanup queues, and pagination.
+- Reworked Create/Edit from anchor-scroll sections into focused Basics, Translations, SEO, and Media & visibility tabs.
+- Clarified fallback/default content versus localized EN/AR content.
+- Arabic translation panes now use explicit RTL direction and language metadata while slug fields remain LTR.
+- Removed the external via.placeholder.com category-image dependency and replaced it with a local empty preview state.
+- Fixed invalid IlluminateSupportStr::limit usage in category result rendering.
+- Added missing Arabic copy for category help text, media/visibility, translation guidance, image state, save guidance, success messages, and linked-product delete protection.
+- Added shared logical RTL alignment helpers for table/action layouts.
+- Added CategoryWorkspaceV2Test covering shared components, editor tabs, RTL/LTR behavior, local image preview, valid Str namespace, and Arabic labels.
+- Detailed note: docs/CATEGORIES_WORKSPACE_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
