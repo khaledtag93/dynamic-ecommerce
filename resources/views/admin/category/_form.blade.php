@@ -171,18 +171,34 @@
                     <small class="text-muted d-block mt-2">{{ __('JPG, PNG, or WebP up to 2 MB. Choose a new image to preview it before saving.') }}</small>
                 </div>
 
-              <div class="mb-4">
-    <p class="text-muted mb-2">{{ __('Preview') }}</p>
-
-    <img
-        src="{{ !empty($category?->image_url)
-            ? $category->image_url . '?v=' . optional($category?->updated_at)->timestamp
-            : 'https://via.placeholder.com/800x600?text=Category+Image' }}"
-        alt="{{ $category?->name ?? __('Category preview') }}"
-        id="categoryImagePreview"
-        class="admin-thumb-lg"
-    >
-</div>
+                <div class="mb-4">
+                    <p class="text-muted mb-2">{{ __('Preview') }}</p>
+                    <div class="category-image-preview-shell">
+                        @if(!empty($category?->image_url))
+                            <img
+                                src="{{ $category->image_url . '?v=' . optional($category?->updated_at)->timestamp }}"
+                                alt="{{ $category?->name ?? __('Category preview') }}"
+                                id="categoryImagePreview"
+                                class="admin-thumb-lg"
+                            >
+                            <div id="categoryImageEmpty" class="admin-empty-state py-4 d-none">
+                                <div class="admin-empty-icon"><i class="mdi mdi-image-outline"></i></div>
+                                <p class="text-muted mb-0">{{ __('No category image selected yet.') }}</p>
+                            </div>
+                        @else
+                            <img
+                                src=""
+                                alt="{{ __('Category preview') }}"
+                                id="categoryImagePreview"
+                                class="admin-thumb-lg d-none"
+                            >
+                            <div id="categoryImageEmpty" class="admin-empty-state py-4">
+                                <div class="admin-empty-icon"><i class="mdi mdi-image-outline"></i></div>
+                                <p class="text-muted mb-0">{{ __('No category image selected yet.') }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
 
                 <div class="admin-toggle-card">
                     <div>
@@ -235,6 +251,23 @@
     html[dir="rtl"] .rtl-justify-start {
         justify-content:flex-start !important;
     }
+    .category-image-preview-shell {
+        min-height:180px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        border:1px dashed color-mix(in srgb, var(--admin-border) 88%, transparent);
+        border-radius:1rem;
+        background:color-mix(in srgb, var(--admin-surface) 94%, var(--admin-bg));
+        overflow:hidden;
+        padding:1rem;
+    }
+    .category-image-preview-shell .admin-thumb-lg {
+        max-width:100%;
+        width:auto;
+        max-height:260px;
+        object-fit:contain;
+    }
     .admin-toggle-card {
         display:flex;
         align-items:center;
@@ -263,6 +296,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         const input = document.getElementById('categoryImageInput');
         const preview = document.getElementById('categoryImagePreview');
+        const empty = document.getElementById('categoryImageEmpty');
         if (!input || !preview) return;
 
         input.addEventListener('change', function (event) {
@@ -272,6 +306,8 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 preview.src = e.target.result;
+                preview.classList.remove('d-none');
+                empty?.classList.add('d-none');
             };
             reader.readAsDataURL(file);
         });
