@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\PurchaseController;
+use App\Http\Controllers\Admin\ReturnRequestController as AdminReturnRequestController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ShippingSettingsController;
 use App\Http\Controllers\Admin\SupplierController;
@@ -45,6 +46,7 @@ use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
 use App\Http\Controllers\Frontend\NotificationController as FrontendNotificationController;
 use App\Http\Controllers\Frontend\PaymobController;
+use App\Http\Controllers\Frontend\ReturnController as FrontendReturnController;
 use App\Http\Controllers\Frontend\ContentPageController;
 use App\Http\Controllers\Admin\ContentSettingsController;
 use App\Http\Controllers\Admin\CostCalculatorController;
@@ -121,6 +123,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [CheckoutController::class, 'orders'])->name('orders.index');
     Route::get('/orders/{order}', [CheckoutController::class, 'showOrder'])->name('orders.show');
     Route::patch('/orders/{order}/cancel', [CheckoutController::class, 'cancelOrder'])->name('orders.cancel');
+
+    Route::get('/returns', [FrontendReturnController::class, 'index'])->name('returns.index');
+    Route::get('/orders/{order}/returns/new', [FrontendReturnController::class, 'create'])->name('returns.create');
+    Route::post('/orders/{order}/returns', [FrontendReturnController::class, 'store'])->name('returns.store');
+    Route::get('/returns/{returnRequest}', [FrontendReturnController::class, 'show'])->name('returns.show');
+    Route::patch('/returns/{returnRequest}/cancel', [FrontendReturnController::class, 'cancel'])->name('returns.cancel');
     Route::get('/order-success/{order}', [CheckoutController::class, 'success'])->name('orders.success');
 
     Route::get('/notifications', [FrontendNotificationController::class, 'index'])->name('notifications.index');
@@ -261,6 +269,8 @@ Route::prefix('admin')
                 Route::get('/orders', 'index')->name('orders.index');
                 Route::get('/orders/{order}', 'show')->name('orders.show');
             });
+            Route::get('/returns', [AdminReturnRequestController::class, 'index'])->name('returns.index');
+            Route::get('/returns/{returnRequest}', [AdminReturnRequestController::class, 'show'])->name('returns.show');
         });
         Route::middleware('permission:orders.manage')->group(function () {
             Route::controller(AdminOrderController::class)->group(function () {
@@ -269,6 +279,10 @@ Route::prefix('admin')
                 Route::post('/orders/{order}/refund', 'refund')->name('orders.refund');
                 Route::delete('/orders/{order}', 'destroy')->name('orders.destroy');
             });
+            Route::patch('/returns/{returnRequest}/approve', [AdminReturnRequestController::class, 'approve'])->name('returns.approve');
+            Route::patch('/returns/{returnRequest}/reject', [AdminReturnRequestController::class, 'reject'])->name('returns.reject');
+            Route::patch('/returns/{returnRequest}/receive', [AdminReturnRequestController::class, 'receive'])->name('returns.receive');
+            Route::patch('/returns/{returnRequest}/complete', [AdminReturnRequestController::class, 'complete'])->name('returns.complete');
         });
 
         Route::middleware('permission:pos.shifts.review')->controller(PosController::class)->group(function () {
