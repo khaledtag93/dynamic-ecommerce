@@ -955,3 +955,21 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Fixed hard-coded EGP presentation on touched customer/admin order detail surfaces so persisted order currency is respected; customer line totals now use persisted `line_total`.
 - Regression coverage: `OnlineOrderReceiptTest`.
 - Source/QAS/Production remain separate gates; consolidated EN/AR print review is still required.
+
+## Customer Support / Helpdesk Foundation V1 — 2026-09-25
+- Added a unified customer-service case model instead of creating separate disconnected tools per channel.
+- Added support case lifecycle: Open, Waiting for Customer, Waiting for Team, Resolved, and Closed.
+- Added Low / Normal / High / Urgent priority, staff ownership, optional customer and order linkage, category, source, first-response timestamp, last customer/staff activity timestamps, resolution and closure timestamps.
+- Added case messages with explicit Customer-visible vs Internal visibility. Internal staff notes are never returned by the customer case timeline.
+- Added customer portal flows for creating a support request, optionally linking an owned order, viewing only the signed-in customer's cases, and replying to non-closed cases.
+- Added Admin Customer Support workspace with live search/filter/pagination, owner/status/priority filters, summary cards, case detail timeline, assignment, workflow status, priority control, customer-visible replies and internal notes.
+- Added explicit `support.view` and `support.manage` permissions. Operations Manager and Support Agent receive both by default; Cashier does not.
+- Added Admin activity audit entries for case creation, workflow updates, customer-visible staff replies, and internal notes.
+- Hardened ownership rules so customers cannot link another customer's order or open another customer's case, and staff accounts cannot be selected as support customers.
+- First-response timing starts only on the first customer-visible staff reply; internal notes do not falsely satisfy the response metric.
+- Added full Arabic copy for the Helpdesk surfaces and customer account navigation.
+- Added `SupportCaseFoundationTest` covering role boundaries, order ownership, cross-customer isolation, internal-note privacy, first-response behavior, reopen/closed lifecycle behavior, staff-customer rejection, and audit trail.
+- Source commits in this slice: `b0116d0`, `d342153`, `09da0c0`, `7054729`, `74eba22`, `4c6ab52`, `a1b0ee2`.
+- Production unchanged. QAS deployment and authenticated EN/AR/RTL/responsive acceptance remain separate gates.
+- Deferred Helpdesk V2 scope: attachments with safe file policy, SLA targets/breach indicators, reusable reply templates, richer customer/order/payment/delivery/return context, and channel ingestion for email/WhatsApp/chat into the same case timeline.
+

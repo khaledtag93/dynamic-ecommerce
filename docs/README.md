@@ -147,3 +147,6 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Online Order Receipt V1
 - [Online Order Receipt V1](ONLINE_ORDER_RECEIPT_V1_2026-09-25.md)
+
+### 2026-09-25 — Customer Support / Helpdesk Foundation V1
+- [Customer Support / Helpdesk Foundation V1](CUSTOMER_SUPPORT_HELPDESK_V1_2026-09-25.md)
