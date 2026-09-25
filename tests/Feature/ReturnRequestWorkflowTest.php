@@ -160,6 +160,41 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertNull($return->fresh()->exchange_order_id);
     }
 
+
+    public function test_customer_can_cancel_requested_return_through_live_endpoint(): void
+    {
+        $customer = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $return = app(ReturnRequestService::class)->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+
+        $response = $this->actingAs($customer)
+            ->patchJson(route('returns.cancel', $return), [], ['X-Return-Cancel-Live' => '1']);
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Return request cancelled.')
+            ->assertJsonPath('return.status', ReturnRequest::STATUS_CANCELLED)
+            ->assertJsonPath('return.status_label', $return->fresh()->status_label);
+
+        $this->assertSame(ReturnRequest::STATUS_CANCELLED, $return->fresh()->status);
+    }
+
     private function makeDeliveredPaidOrder(User $user, float $total): Order
     {
         return Order::query()->create([

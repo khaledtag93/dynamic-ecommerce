@@ -10,7 +10,7 @@
                 <div class="text-uppercase small text-muted fw-bold">{{ __('Return request') }}</div>
                 <h1 class="lc-section-title mb-1">{{ $returnRequest->reference }}</h1>
                 <div class="d-flex gap-2 flex-wrap align-items-center">
-                    <span class="lc-status-badge {{ $returnRequest->status === $returnRequest::STATUS_COMPLETED ? 'lc-badge-success' : (in_array($returnRequest->status, [$returnRequest::STATUS_REJECTED, $returnRequest::STATUS_CANCELLED], true) ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $returnRequest->status_label }}</span>
+                    <span data-return-status class="lc-status-badge {{ $returnRequest->status === $returnRequest::STATUS_COMPLETED ? 'lc-badge-success' : (in_array($returnRequest->status, [$returnRequest::STATUS_REJECTED, $returnRequest::STATUS_CANCELLED], true) ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $returnRequest->status_label }}</span>
                     <span class="text-muted">{{ __('Order') }} {{ $returnRequest->order?->order_number }}</span>
                 </div>
             </div>
@@ -72,8 +72,10 @@
             </div>
         @endif
 
+        <div class="small text-muted mb-3 d-none" data-return-live-status role="status" aria-live="polite"></div>
+
         @if($returnRequest->status === $returnRequest::STATUS_REQUESTED)
-            <form method="POST" action="{{ route('returns.cancel', $returnRequest) }}" data-confirm-message="{{ __('Cancel this return request?') }}">
+            <form method="POST" action="{{ route('returns.cancel', $returnRequest) }}" data-confirm-message="{{ __('Cancel this return request?') }}" data-return-cancel-live>
                 @csrf
                 @method('PATCH')
                 <button class="btn btn-outline-danger">{{ __('Cancel return request') }}</button>
@@ -82,3 +84,53 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form[data-return-cancel-live]');
+    if (!form) return;
+
+    form.addEventListener('submit', async function (event) {
+        if (form.dataset.confirmed !== '1') return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const button = event.submitter || form.querySelector('button[type="submit"]');
+        if (button) button.disabled = true;
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Return-Cancel-Live': '1',
+                    'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                },
+                credentials: 'same-origin',
+            });
+
+            if (!response.ok) throw new Error('return-cancel-failed');
+
+            const payload = await response.json();
+            const status = document.querySelector('[data-return-status]');
+            const liveStatus = document.querySelector('[data-return-live-status]');
+
+            if (status) {
+                status.textContent = payload.return?.status_label || status.textContent;
+                status.className = 'lc-status-badge lc-badge-danger';
+            }
+            if (liveStatus) {
+                liveStatus.textContent = payload.message || @json(__('Return request cancelled.'));
+                liveStatus.classList.remove('d-none');
+            }
+
+            form.remove();
+        } catch (error) {
+            form.submit();
+        }
+    }, true);
+});
+</script>
+@endpush

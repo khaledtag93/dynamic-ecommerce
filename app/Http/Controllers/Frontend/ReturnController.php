@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Services\Commerce\ReturnRequestService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -105,12 +106,23 @@ class ReturnController extends Controller
         return view('frontend.returns.show', compact('returnRequest'));
     }
 
-    public function cancel(Request $request, ReturnRequest $returnRequest): RedirectResponse
+    public function cancel(Request $request, ReturnRequest $returnRequest): RedirectResponse|JsonResponse
     {
         try {
-            $this->returnRequestService->cancelByCustomer($returnRequest, $request->user());
+            $cancelledReturn = $this->returnRequestService->cancelByCustomer($returnRequest, $request->user());
+            $message = __('Return request cancelled.');
 
-            return back()->with('success', __('Return request cancelled.'));
+            if ($request->expectsJson() || $request->header('X-Return-Cancel-Live') === '1') {
+                return response()->json([
+                    'message' => $message,
+                    'return' => [
+                        'status' => $cancelledReturn->status,
+                        'status_label' => $cancelledReturn->status_label,
+                    ],
+                ]);
+            }
+
+            return back()->with('success', $message);
         } catch (ValidationException $exception) {
             return back()->withErrors($exception->errors());
         }
