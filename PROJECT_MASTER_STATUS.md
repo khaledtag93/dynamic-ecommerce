@@ -63,6 +63,20 @@
 - Treat this as integration/page-load success only; full functional acceptance still requires consolidated EN/AR, responsive, permission and workflow validation.
 - Production unchanged.
 
+## Shipping Engine V1 — 2026-09-25
+- Added `shipping_methods`, `shipping_zones`, `shipping_zone_cities`, `shipping_rates` and explicit shipping snapshot references on Orders.
+- Existing Standard / Express / Store Pickup method codes stay stable for Delivery V2 compatibility. Names, availability, ETA and sort order are configurable.
+- Cities resolve to one active zone per country using normalized exact matching; duplicate assignment is rejected.
+- One active rate per method/zone can define amount plus optional free-shipping threshold and explicit before/after-discount basis. Pickup is zero without a rate.
+- Checkout live quote is server-authoritative, no-reload and stale-request safe. Place Order stays disabled until a valid quote is confirmed.
+- CheckoutService re-quotes shipping inside the order transaction and writes immutable method/zone/rate/threshold/ETA snapshot data.
+- Cart no longer advertises disconnected EGP 600 shipping progress or shipping = 0; it states that shipping is calculated at checkout.
+- Shipping setup is split into three focused settings screens and uses existing `settings.manage`; configuration mutations are audited.
+- MySQL FK/index names are explicit/short.
+- Regression coverage: `ShippingEngineTest`; checkout idempotency constructor/scope updated.
+- Application source: `97dc443d`. CI pending, not yet claimed on QAS, Production unchanged.
+- Next: Online-payment stock reservation / expiry / release V1. Tax/VAT remains policy-gated.
+
 ## Workforce Payroll Foundation V1 — 2026-09-25
 - Added `employee_compensations`, `payroll_periods`, `payroll_runs`, `payroll_entries` and `payroll_adjustments` with explicit short MySQL constraint/index names.
 - Added scoped payroll permissions: `workforce.payroll.self`, `workforce.payroll.view`, `workforce.payroll.manage`. Finance Manager gets view/manage/self; Operations Manager/Cashier/Support get self only; Super Admin gets all.
