@@ -27,6 +27,19 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 - Completed Arabic coverage for all translation keys currently used by all 10 Growth Blade views: 375 keys checked, 0 missing.
 - Added `GrowthWorkspaceV2Test` for shared-card usage, help integration, collapsible modules, removal of CLI copy and core Arabic copy.
 
+## V2.1 integrity and no-reload hardening
+
+- Preserved advanced Growth settings when the Overview form submits only the four visible engine controls.
+- Kept explicit hidden false values for unchecked switches so turning a visible control off remains intentional and reliable.
+- Added JSON responses for safe Growth mutations while preserving the existing redirect + flash response as a progressive-enhancement fallback.
+- Overview settings now save without a full-page reload and refresh the four status badges from server-confirmed values.
+- Campaign, automation-rule, and experiment Enable/Disable actions now update their row state and action label in place.
+- Failed-delivery Retry now updates the delivery state in place and removes the Retry action when the server reports that retry is no longer applicable.
+- Added lightweight, non-disruptive success/error feedback for these actions in both English and Arabic.
+- Run Engine, seed/clear test data, and create/edit/delete flows intentionally keep their normal navigation because they change broader page state or move the user into a dedicated workflow.
+- Backend authorization, CSRF protection, validation, and server-side state remain authoritative; JavaScript is only progressive enhancement.
+- Regression coverage now checks the async contracts, feedback surface, row bindings, and Arabic fallback message.
+
 ## Product rules reinforced by this batch
 
 - Readability and simplicity beat showing every control at once.
@@ -42,11 +55,11 @@ This batch starts the focused Growth Engine redesign after the owner flagged the
 1. Open all four Growth workspace pages in English and Arabic.
 2. Verify RTL layout, Help modal, horizontal mobile navigation and collapsible Content sections.
 3. Verify all Growth create/edit forms stay fully Arabic when locale is Arabic.
-4. Confirm the four engine switches save/reload correctly and their visual alignment matches the rest of Admin V2.
+4. Confirm the four engine switches save without a full-page reload, update the header status badges from the server response, and still work through the normal redirect fallback when JavaScript is unavailable.
 5. Confirm test-data tools remain unavailable in Production and are clearly labeled in QAS/staging.
 6. Verify tables remain usable on small screens and no page introduces horizontal layout breakage beyond intentional table scrolling.
-7. Verify existing Growth business logic, campaign toggles, retries and form saves are unchanged.
+7. Verify campaign/rule/experiment toggles and failed-delivery Retry update in place, while existing Growth business logic and server authorization remain unchanged.
 
 ## Next Growth slice
 
-After CI and later QAS acceptance, review safe Growth mutations for no-reload behavior and modern non-disruptive feedback, while keeping backend authorization and server truth authoritative.
+Next, remove expensive analytics/predictive refresh work from normal Growth page GET requests. Add a measured cache/scheduled-refresh boundary so navigation stays fast as orders, customers, attribution touches, cohorts, and predictive data grow.
