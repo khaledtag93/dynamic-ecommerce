@@ -5,6 +5,7 @@
 @section('content')
 <div class="admin-page-shell">
     <x-admin.page-header :kicker="__('Customer profile')" :title="$user->name" :description="__('Review account access, lifetime order value, and recent order activity from one customer profile.')">
+        <a href="{{ route('admin.customers.statement', $user) }}" class="btn btn-outline-primary btn-text-icon"><i class="mdi mdi-file-chart-outline"></i><span>{{ __('Account statement') }}</span></a>
         <a href="{{ route('admin.customers.index') }}" class="btn btn-light border">{{ __('Back to customers') }}</a>
     </x-admin.page-header>
 

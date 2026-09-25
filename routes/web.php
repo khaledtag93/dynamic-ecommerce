@@ -338,6 +338,9 @@ Route::prefix('admin')
         Route::middleware('permission:customers.manage')->group(function () {
             Route::controller(AdminCustomerController::class)->group(function () {
                 Route::get('/customers', 'index')->name('customers.index');
+                Route::get('/customers/{user}/statement', 'statement')->name('customers.statement');
+                Route::get('/customers/{user}/statement/print', 'statementPrint')->name('customers.statement.print');
+                Route::get('/customers/{user}/statement/export', 'statementExport')->name('customers.statement.export');
                 Route::get('/customers/{user}', 'show')->name('customers.show');
                 Route::patch('/customers/{user}/role', 'updateRole')->name('customers.update-role');
             });
