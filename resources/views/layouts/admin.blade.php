@@ -1485,6 +1485,17 @@ select option {
             justify-content: flex-end;
         }
 
+        /* Logical RTL helpers */
+        html[dir='rtl'] .rtl-text-start,
+        body[dir='rtl'] .rtl-text-start {
+            text-align: start !important;
+        }
+
+        html[dir='rtl'] .rtl-justify-start,
+        body[dir='rtl'] .rtl-justify-start {
+            justify-content: flex-start !important;
+        }
+
         /* Unified admin switches */
         .form-check.form-switch {
             display: grid !important;
