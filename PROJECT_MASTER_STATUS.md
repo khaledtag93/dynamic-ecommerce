@@ -810,3 +810,16 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added CategoryWorkspaceV2Test covering shared components, editor tabs, RTL/LTR behavior, local image preview, valid Str namespace, and Arabic labels.
 - Detailed note: docs/CATEGORIES_WORKSPACE_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Catalog workspace V2 — 2026-09-25
+- Aligned Brands, Attributes, and Attribute Values with the shared Admin V2 Page Header and Stat Card components.
+- Preserved existing Livewire search, filters, pagination, inline editing, protected deletes, and catalog business rules.
+- Added logical RTL Actions alignment across Brands, Attributes, Attribute Values, and Products.
+- Converted Product Catalog / Active / Hidden health cards to shared Stat Cards.
+- Kept Needs content / Low stock / Out of stock as interactive Livewire KPI filters while applying the same Stat Card V2 visual contract.
+- Removed browser-native confirm() dialogs from Product bulk Activate/Hide and replaced them with in-app confirmation modals while preserving bulkSetStatus behavior.
+- Fixed mixed-language Product SEO label by using the complete Meta Description translation key.
+- Added missing Arabic cleanup/status/confirmation copy for catalog management.
+- Added CatalogWorkspaceV2Test covering shared primitives, RTL actions, Product health-card consistency, in-app confirmations, and Arabic labels.
+- Detailed note: docs/CATALOG_WORKSPACE_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
