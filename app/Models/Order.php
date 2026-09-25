@@ -211,6 +211,11 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function stockReservations()
+    {
+        return $this->hasMany(OrderStockReservation::class);
+    }
+
     public function refunds()
     {
         return $this->hasMany(OrderRefund::class)->latest('id');
