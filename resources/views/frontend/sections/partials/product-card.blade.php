@@ -52,7 +52,7 @@
         </div>
 
         <div class="commerce-product-card-v4__actions">
-            <form action="{{ route('cart.store', $product) }}" method="POST" data-submit-loading>
+            <form action="{{ route('cart.store', $product) }}" method="POST" data-submit-loading data-live-cart-add>
                 @csrf
                 <button class="commerce-product-card-v4__cart" type="submit" data-loading-text="{{ __('Adding...') }}" {{ $product->in_stock ? '' : 'disabled' }}>
                     <span>{{ $product->in_stock ? __('Add to cart') : __('Unavailable') }}</span>

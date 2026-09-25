@@ -28,7 +28,7 @@ Close customer-account consistency gaps in Help & Support without changing the H
 
 - Source: implemented on `v42-clean-baseline`.
 - Live-list portion: CI-verified by Hardening CI #1400 at `058cd0a`.
-- Live-reply portion: requires branch-head CI after this batch.
+- Live-reply portion: Hardening CI #1401 passed at `799ae2d` with 380 tests / 2576 assertions plus clean migration, routes, Blade compilation and frontend production build.
 - QAS: not yet claimed for this customer UX follow-up.
 - Production: unchanged.
 

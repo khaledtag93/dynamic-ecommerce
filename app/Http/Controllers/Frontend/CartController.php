@@ -60,7 +60,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function store(Request $request, Product $product): RedirectResponse
+    public function store(Request $request, Product $product)
     {
         $data = $request->validate([
             'quantity' => ['nullable', 'integer', 'min:1'],
@@ -75,7 +75,7 @@ class CartController extends Controller
         ]);
 
         try {
-            $this->cartService->add(
+            $cartItem = $this->cartService->add(
                 $product,
                 (int) ($data['quantity'] ?? 1),
                 $data['variant_id'] ?? null
@@ -88,6 +88,23 @@ class CartController extends Controller
 
             $message = __('Product added to cart successfully.');
             $redirectTo = (string) $request->input('redirect_to', 'back');
+            $liveRequested = $request->expectsJson() || $request->header('X-Cart-Add-Live') === '1';
+
+            if ($liveRequested && $redirectTo === 'back') {
+                return response()->json([
+                    'message' => $message,
+                    'item' => [
+                        'id' => (int) $cartItem->id,
+                        'product_id' => (int) $cartItem->product_id,
+                        'variant_id' => $cartItem->product_variant_id ? (int) $cartItem->product_variant_id : null,
+                        'quantity' => (int) $cartItem->quantity,
+                        'line_total' => round((float) $cartItem->line_total, 2),
+                    ],
+                    'cart' => [
+                        'items_count' => $this->cartService->count(),
+                    ],
+                ]);
+            }
 
             return match ($redirectTo) {
                 'checkout' => redirect()->route('checkout.index')->with('success', $message),
@@ -95,6 +112,10 @@ class CartController extends Controller
                 default => back()->with('success', $message),
             };
         } catch (ValidationException $e) {
+            if ($request->expectsJson() || $request->header('X-Cart-Add-Live') === '1') {
+                throw $e;
+            }
+
             return back()->withErrors($e->errors())->withInput();
         }
     }

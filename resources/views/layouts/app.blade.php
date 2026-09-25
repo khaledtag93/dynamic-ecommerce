@@ -661,7 +661,7 @@
                         </a>
                     @endauth
                     <a class="retail-action retail-action--cart" href="{{ route('cart.index') }}">
-                        <i class="bi bi-bag"></i><span class="d-none d-sm-inline">{{ __('Cart') }}</span><em>{{ $layoutCartCount }}</em>
+                        <i class="bi bi-bag"></i><span class="d-none d-sm-inline">{{ __('Cart') }}</span><em data-layout-cart-count>{{ $layoutCartCount }}</em>
                     </a>
                     <button class="retail-menu-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#retailNav" aria-controls="retailNav" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                         <i class="bi bi-list"></i>
@@ -766,6 +766,13 @@
     </div>
 @endif
 
+<div class="alert alert-success border-0 shadow rounded-4 position-fixed m-3 d-none"
+     style="inset-inline-end:0;bottom:0;z-index:1080;max-width:min(420px,calc(100vw - 2rem));"
+     role="status"
+     aria-live="polite"
+     data-live-cart-feedback
+     data-error="{{ __('Could not update the cart right now.') }}"></div>
+
 <main>
     @yield('hero')
     @yield('content')
@@ -852,6 +859,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script defer src="{{ asset('js/storefront-cart-actions.js') }}"></script>
 @livewireScripts
 @stack('scripts')
 <script>

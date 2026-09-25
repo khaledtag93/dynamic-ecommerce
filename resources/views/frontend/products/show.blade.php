@@ -119,7 +119,7 @@
                         <p class="text-muted mb-4">{{ \Illuminate\Support\Str::limit($product->description, 180) }}</p>
                     @endif
 
-                    <form method="POST" action="{{ route('cart.store', $product) }}" class="d-grid gap-3 mb-4" id="productPurchaseForm" data-submit-loading>
+                    <form method="POST" action="{{ route('cart.store', $product) }}" class="d-grid gap-3 mb-4" id="productPurchaseForm" data-submit-loading data-live-cart-add>
                         @csrf
 
                         @if($activeVariants->isNotEmpty())
