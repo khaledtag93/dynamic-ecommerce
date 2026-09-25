@@ -4830,5 +4830,6 @@
     "Each campaign uses one automation rule with the same key. Linking it here prevents rules that can never run.": "كل حملة تستخدم قاعدة أتمتة واحدة بنفس المفتاح. ربطها هنا يمنع إنشاء قواعد لن تعمل أبدًا.",
     "Campaigns needing a rule": "حملات تحتاج إلى قاعدة",
     "Active campaigns that do not have an active linked automation rule.": "حملات نشطة لا توجد لها قاعدة أتمتة نشطة مرتبطة.",
-    "Some active campaigns cannot run because they do not have an active linked rule. Open Content & Journeys to fix the linkage.": "بعض الحملات النشطة لن تعمل لأنها لا تملك قاعدة نشطة مرتبطة. افتح المحتوى والرحلات لإصلاح الربط."
+    "Some active campaigns cannot run because they do not have an active linked rule. Open Content & Journeys to fix the linkage.": "بعض الحملات النشطة لن تعمل لأنها لا تملك قاعدة نشطة مرتبطة. افتح المحتوى والرحلات لإصلاح الربط.",
+    "The change could not be completed. Please refresh and try again.": "تعذر إكمال التغيير. حدّث الصفحة وحاول مرة أخرى."
 }
