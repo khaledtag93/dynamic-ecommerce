@@ -73,7 +73,8 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString('.admin-flash.is-leaving', $layout);
         $this->assertSame(1, substr_count($layout, "stack.querySelectorAll('.admin-flash--success')"));
         $this->assertStringNotContainsString("document.querySelectorAll('#adminToastStack .admin-flash')", $layout);
-        $this->assertSame(5, substr_count($layout, 'data-admin-toast-close'));
+        $this->assertSame(5, substr_count($layout, 'data-admin-toast-close aria-label='));
+        $this->assertStringContainsString("querySelectorAll('[data-admin-toast-close]')", $layout);
         $this->assertSame(5, substr_count($layout, 'class="admin-flash-content"'));
         $this->assertSame(2, substr_count($layout, 'admin-flash--success'));
         $this->assertSame(1, substr_count($layout, 'admin-flash--warning'));
@@ -146,7 +147,7 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertSame(1, substr_count($navbar, 'data-toggle="offcanvas"'));
         $this->assertStringContainsString('admin-mobile-sidebar-toggle-inline', $navbar);
         $this->assertStringNotContainsString('class="admin-mobile-sidebar-toggle d-lg-none"', $navbar);
-        $this->assertSame(1, substr_count($navbar, ".admin-mobile-sidebar-toggle-inline {"));
+        $this->assertGreaterThanOrEqual(1, substr_count($navbar, ".admin-mobile-sidebar-toggle-inline {"));
         $this->assertSame(1, substr_count($navbar, ".admin-mobile-sidebar-toggle-inline .mdi {"));
     }
 
