@@ -149,4 +149,12 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertSame(1, substr_count($navbar, ".admin-mobile-sidebar-toggle-inline .mdi {"));
     }
 
+    public function test_sidebar_group_summaries_expose_expanded_state(): void
+    {
+        $sidebar = file_get_contents(resource_path('views/layouts/inc/admin/sidebar.blade.php'));
+
+        $this->assertGreaterThanOrEqual(6, substr_count($sidebar, 'class="sidebar-group-summary" aria-expanded='));
+        $this->assertStringContainsString("summary.setAttribute('aria-expanded', this.open ? 'true' : 'false')", $sidebar);
+    }
+
 }
