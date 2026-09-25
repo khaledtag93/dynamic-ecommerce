@@ -17,6 +17,8 @@ class PaymentService
     public function __construct(
         protected StoreSettingsService $storeSettingsService,
         protected PaymobGatewayService $paymobGatewayService,
+        protected StockReservationService $stockReservationService,
+        protected AdminActivityLogService $activityLogService,
     ) {
     }
 
@@ -159,6 +161,10 @@ class PaymentService
             $meta = array_merge($lockedPayment->meta ?? [], Arr::except($context, ['notes', 'provider_status']));
             $meta = $this->pushPaymentEvent($meta, 'manual_status_update', __('Payment status was updated manually from the admin panel.'));
 
+            if ($lockedOrder) {
+                $this->applyStockReservationTransition($lockedOrder, $lockedPayment, $status, $meta);
+            }
+
             $updates = [
                 'status' => $status,
                 'notes' => $context['notes'] ?? $lockedPayment->notes,
@@ -298,6 +304,10 @@ class PaymentService
                 'at' => now()->toDateTimeString(),
             ];
 
+            if ($lockedOrder) {
+                $this->applyStockReservationTransition($lockedOrder, $lockedPayment, $status, $meta);
+            }
+
             $updates = [
                 'status' => $status,
                 'provider_status' => $context['provider_status'] ?? $lockedPayment->provider_status,
@@ -333,6 +343,226 @@ class PaymentService
 
             return $lockedPayment;
         });
+    }
+
+    public function prepareOnlineRetry(Order $order, Payment $payment): Payment
+    {
+        return DB::transaction(function () use ($order, $payment) {
+            $lockedOrder = Order::query()
+                ->whereKey($order->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedOrder->payment_method !== Order::PAYMENT_METHOD_ONLINE) {
+                return Payment::query()->whereKey($payment->id)->firstOrFail();
+            }
+
+            if ($lockedOrder->status === Order::STATUS_CANCELLED) {
+                throw ValidationException::withMessages([
+                    'payment' => __('Cancelled orders cannot restart online payment.'),
+                ]);
+            }
+
+            $lockedPayment = Payment::query()
+                ->whereKey($payment->id)
+                ->where('order_id', $lockedOrder->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (in_array($lockedPayment->status, [Payment::STATUS_PAID, Payment::STATUS_REFUNDED], true)) {
+                return $lockedPayment;
+            }
+
+            $this->stockReservationService->ensureReservedForOrder($lockedOrder, true);
+
+            $meta = $lockedPayment->meta ?? [];
+            $meta = $this->pushPaymentEvent(
+                $meta,
+                'payment_retry_started',
+                __('Online payment retry started after stock availability was confirmed.')
+            );
+            unset($meta['stock_reservation_exception']);
+
+            $lockedPayment->update([
+                'status' => Payment::STATUS_PENDING,
+                'provider_status' => 'retry_started',
+                'failed_at' => null,
+                'meta' => $meta,
+            ]);
+
+            $orderMeta = $lockedOrder->meta ?? [];
+            unset($orderMeta['stock_reservation_exception'], $orderMeta['stock_reservation_expired_at']);
+
+            $lockedOrder->update([
+                'payment_status' => Order::PAYMENT_STATUS_PENDING,
+                'meta' => $orderMeta,
+            ]);
+
+            return $lockedPayment->fresh();
+        });
+    }
+
+    public function expireStockReservation(Order $order): bool
+    {
+        $result = DB::transaction(function () use ($order) {
+            $lockedOrder = Order::query()
+                ->whereKey($order->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedOrder->payment_method !== Order::PAYMENT_METHOD_ONLINE) {
+                return ['expired' => false, 'payment' => null, 'order' => $lockedOrder];
+            }
+
+            $payment = $lockedOrder->payments()
+                ->latest('id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($payment && in_array($payment->status, [Payment::STATUS_PAID, Payment::STATUS_REFUNDED], true)) {
+                $this->stockReservationService->commitForOrder($lockedOrder);
+
+                return ['expired' => false, 'payment' => $payment, 'order' => $lockedOrder];
+            }
+
+            if ($lockedOrder->status === Order::STATUS_CANCELLED) {
+                $this->stockReservationService->releaseForOrder($lockedOrder, 'order_cancelled');
+
+                return ['expired' => false, 'payment' => $payment, 'order' => $lockedOrder];
+            }
+
+            $released = $this->stockReservationService->releaseForOrder(
+                $lockedOrder,
+                'online_payment_reservation_expired',
+                true
+            );
+
+            if ($released < 1) {
+                return ['expired' => false, 'payment' => $payment, 'order' => $lockedOrder];
+            }
+
+            if ($payment && in_array($payment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) {
+                $meta = $payment->meta ?? [];
+                $meta = $this->pushPaymentEvent(
+                    $meta,
+                    'stock_reservation_expired',
+                    __('Online payment stock reservation expired and inventory was released.')
+                );
+
+                $payment->update([
+                    'status' => Payment::STATUS_FAILED,
+                    'provider_status' => 'reservation_expired',
+                    'failed_at' => now(),
+                    'meta' => $meta,
+                ]);
+            }
+
+            $orderMeta = $lockedOrder->meta ?? [];
+            $orderMeta['stock_reservation_expired_at'] = now()->toDateTimeString();
+
+            $lockedOrder->update([
+                'payment_status' => Order::PAYMENT_STATUS_FAILED,
+                'meta' => $orderMeta,
+            ]);
+
+            $this->activityLogService->log(
+                'commerce',
+                'stock_reservation_expired',
+                __('Online payment stock reservation expired and inventory was released.'),
+                null,
+                $lockedOrder,
+                ['released_reservations' => $released]
+            );
+
+            return [
+                'expired' => true,
+                'payment' => $payment?->fresh(),
+                'order' => $lockedOrder->fresh(),
+            ];
+        });
+
+        if ($result['expired'] && $result['payment']) {
+            $this->notifyPaymentStatusChanged($result['order'], $result['payment']);
+        }
+
+        return (bool) $result['expired'];
+    }
+
+    protected function applyStockReservationTransition(
+        Order $order,
+        Payment $payment,
+        string $status,
+        array &$paymentMeta,
+    ): void {
+        if ($order->payment_method !== Order::PAYMENT_METHOD_ONLINE) {
+            return;
+        }
+
+        if ($status === Payment::STATUS_FAILED) {
+            $this->stockReservationService->releaseForOrder(
+                $order,
+                'online_payment_failed'
+            );
+
+            return;
+        }
+
+        if (in_array($status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) {
+            $this->stockReservationService->ensureReservedForOrder($order, true);
+            $this->clearStockReservationException($order, $paymentMeta);
+
+            return;
+        }
+
+        if ($status !== Payment::STATUS_PAID) {
+            return;
+        }
+
+        try {
+            $this->stockReservationService->ensureReservedForOrder($order, false);
+            $this->stockReservationService->commitForOrder($order);
+            $this->clearStockReservationException($order, $paymentMeta);
+        } catch (ValidationException $exception) {
+            $errors = $exception->errors();
+
+            $paymentMeta['stock_reservation_exception'] = [
+                'code' => 'paid_without_fulfillable_reservation',
+                'at' => now()->toDateTimeString(),
+                'errors' => $errors,
+            ];
+
+            $orderMeta = $order->meta ?? [];
+            $orderMeta['stock_reservation_exception'] = [
+                'code' => 'paid_without_fulfillable_reservation',
+                'payment_id' => $payment->id,
+                'at' => now()->toDateTimeString(),
+                'errors' => $errors,
+            ];
+            $order->update(['meta' => $orderMeta]);
+
+            $this->activityLogService->log(
+                'commerce',
+                'paid_order_stock_reservation_exception',
+                __('Payment was confirmed after stock reservation had been released, but the order could not be fully re-reserved.'),
+                null,
+                $order,
+                [
+                    'payment_id' => $payment->id,
+                    'errors' => $errors,
+                ]
+            );
+        }
+    }
+
+    protected function clearStockReservationException(Order $order, array &$paymentMeta): void
+    {
+        unset($paymentMeta['stock_reservation_exception']);
+
+        $orderMeta = $order->meta ?? [];
+        if (array_key_exists('stock_reservation_exception', $orderMeta)) {
+            unset($orderMeta['stock_reservation_exception']);
+            $order->update(['meta' => $orderMeta]);
+        }
     }
 
     public function syncOrderPaymentStatus(Order $order): void
