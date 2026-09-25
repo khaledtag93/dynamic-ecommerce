@@ -9,9 +9,10 @@
         @include('frontend.account.partials.navigation')
 
         <div class="row g-3 mb-4">
-            <div class="col-md-4"><a href="{{ route('orders.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-receipt"></i><span><strong>{{ __('My Orders') }}</strong><small>{{ __('Orders: :count', ['count' => $ordersCount]) }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
-            <div class="col-md-4"><a href="{{ route('account.addresses.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-geo-alt"></i><span><strong>{{ __('Address book') }}</strong><small>{{ __('Saved addresses: :count', ['count' => $addressesCount]) }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
-            <div class="col-md-4"><a href="{{ route('notifications.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-bell"></i><span><strong>{{ __('Notifications') }}</strong><small>{{ __(':count unread', ['count' => $unreadCount]) }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
+            <div class="col-md-6 col-xl-3"><a href="{{ route('orders.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-receipt"></i><span><strong>{{ __('My Orders') }}</strong><small>{{ __('Orders: :count', ['count' => $ordersCount]) }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
+            <div class="col-md-6 col-xl-3"><a href="{{ route('account.addresses.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-geo-alt"></i><span><strong>{{ __('Address book') }}</strong><small>{{ __('Saved addresses: :count', ['count' => $addressesCount]) }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
+            <div class="col-md-6 col-xl-3"><a href="{{ route('notifications.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-bell"></i><span><strong>{{ __('Notifications') }}</strong><small>{{ __(':count unread', ['count' => $unreadCount]) }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
+            <div class="col-md-6 col-xl-3"><a href="{{ route('support.index') }}" class="lc-card lc-account-shortcut h-100"><i class="bi bi-headset"></i><span><strong>{{ __('Help & Support') }}</strong><small>{{ __('Open and track support requests') }}</small></span><i class="bi bi-arrow-up-right"></i></a></div>
         </div>
 
         <div class="row g-4 align-items-start">

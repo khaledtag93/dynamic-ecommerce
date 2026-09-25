@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ReturnRequestController as AdminReturnRequestController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductReviewController;
+use App\Http\Controllers\Admin\SupportCaseController as AdminSupportCaseController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\AccountController;
 use App\Http\Controllers\Frontend\AddressBookController;
@@ -49,6 +50,7 @@ use App\Http\Controllers\Frontend\ProductReviewController as FrontendProductRevi
 use App\Http\Controllers\Frontend\NotificationController as FrontendNotificationController;
 use App\Http\Controllers\Frontend\PaymobController;
 use App\Http\Controllers\Frontend\ReturnController;
+use App\Http\Controllers\Frontend\SupportController;
 use App\Http\Controllers\Frontend\ContentPageController;
 use App\Http\Controllers\Admin\ContentSettingsController;
 use App\Http\Controllers\Admin\CostCalculatorController;
@@ -137,6 +139,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{order}/return', [ReturnController::class, 'store'])->name('returns.store');
     Route::get('/returns/{returnRequest}', [ReturnController::class, 'show'])->name('returns.show');
     Route::patch('/returns/{returnRequest}/cancel', [ReturnController::class, 'cancel'])->name('returns.cancel');
+
+    Route::get('/support', [SupportController::class, 'index'])->name('support.index');
+    Route::get('/support/new', [SupportController::class, 'create'])->name('support.create');
+    Route::post('/support', [SupportController::class, 'store'])->name('support.store');
+    Route::get('/support/{supportCase}', [SupportController::class, 'show'])->name('support.show');
+    Route::post('/support/{supportCase}/reply', [SupportController::class, 'reply'])->name('support.reply');
 
     Route::get('/notifications', [FrontendNotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/read-all', [FrontendNotificationController::class, 'markAllRead'])->name('notifications.read-all');
@@ -441,6 +449,17 @@ Route::prefix('admin')
             });
         });
   
+
+        Route::middleware('permission:support.manage')->controller(AdminSupportCaseController::class)->group(function () {
+            Route::get('/support/create', 'create')->name('support.create');
+            Route::post('/support', 'store')->name('support.store');
+            Route::patch('/support/{supportCase}', 'update')->name('support.update');
+            Route::post('/support/{supportCase}/reply', 'reply')->name('support.reply');
+        });
+        Route::middleware('permission:support.view')->controller(AdminSupportCaseController::class)->group(function () {
+            Route::get('/support', 'index')->name('support.index');
+            Route::get('/support/{supportCase}', 'show')->name('support.show');
+        });
 
         Route::middleware('permission:payments.view')->group(function () {
             Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');

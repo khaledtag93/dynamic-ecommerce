@@ -12,7 +12,7 @@
 
     $overviewOpen = $isRoute('admin.dashboard', 'admin.analytics.*', 'admin.growth.*');
     $catalogOpen = $isRoute('admin.categories.*', 'admin.products.*', 'admin.attributes.*', 'admin.brands.*', 'admin.reviews.*');
-    $operationsOpen = $isRoute('admin.pos.*', 'admin.orders.*', 'admin.returns.*', 'admin.customers.*', 'admin.deliveries.*', 'admin.payments.*');
+    $operationsOpen = $isRoute('admin.pos.*', 'admin.orders.*', 'admin.returns.*', 'admin.customers.*', 'admin.support.*', 'admin.deliveries.*', 'admin.payments.*');
     $inventoryOpen = $isRoute('admin.purchases.*', 'admin.inventory.*', 'admin.suppliers.*', 'admin.cost-calculator.*');
     $marketingOpen = $isRoute('admin.coupons.*', 'admin.promotions.*');
     $channelsOpen = $isRoute('admin.settings.branding', 'admin.settings.content*', 'admin.settings.whatsapp*', 'admin.settings.notifications*', 'admin.settings.payments*', 'admin.settings.deploy-center*', 'admin.imports.*');
@@ -106,7 +106,7 @@
     </details>
     @endif
 
-    @if($can('pos.manage') || $can('pos.shifts.review') || $can('orders.view') || $can('customers.manage') || $can('payments.view') || $can('delivery.view'))
+    @if($can('pos.manage') || $can('pos.shifts.review') || $can('orders.view') || $can('customers.manage') || $can('support.view') || $can('payments.view') || $can('delivery.view'))
     <details class="sidebar-group" {{ $operationsOpen ? 'open' : '' }}>
         <summary class="sidebar-group-summary">
             <span class="sidebar-group-title-wrap">
@@ -140,6 +140,11 @@
                 @if($can('customers.manage'))
                 <li class="nav-item {{ $isRoute('admin.customers.*') ? 'sidebar-current active' : '' }}">
                     <a class="nav-link" href="{{ route('admin.customers.index') }}"><i class="mdi mdi-account-group-outline menu-icon"></i><span class="menu-title">{{ __('Customers') }}</span></a>
+                </li>
+                @endif
+                @if($can('support.view'))
+                <li class="nav-item {{ $isRoute('admin.support.*') ? 'sidebar-current active' : '' }}">
+                    <a class="nav-link" href="{{ route('admin.support.index') }}"><i class="mdi mdi-headset menu-icon"></i><span class="menu-title">{{ __('Customer Support') }}</span></a>
                 </li>
                 @endif
                 @if($can('payments.view'))
