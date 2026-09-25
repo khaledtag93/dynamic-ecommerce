@@ -67,6 +67,24 @@ Admin should have a customer account statement that explains commercial movement
 
 A running balance must only be shown when Dynamic has a real customer financial ledger with explicit debit/credit rules. Until then, the statement should present source movements and totals without fabricating a balance. The workspace should support filtering, source-record drill-through, print/export and auditability.
 
+
+## Mobile application readiness
+
+Dynamic is expected to gain customer-facing Android and iPhone applications after the web platform is mature. Current web work should therefore avoid architectural decisions that force the business layer to be rebuilt for mobile later.
+
+Rules:
+- keep commerce, account, support, inventory, growth and workforce business rules in services/domain code rather than Blade-only or browser-only logic;
+- treat the web UI as one client of the platform, not the only possible client;
+- when a feature will later be needed by a mobile app, keep its request/response contracts and authorization boundaries suitable for a future authenticated API layer;
+- use stable record identifiers and canonical server state so web and mobile clients can share the same data safely;
+- keep media/file references portable and do not depend on local browser paths;
+- design notifications so future device push tokens, push preferences and deep links can be added without replacing the existing notification model;
+- keep social/connected identity provider-neutral and suitable for mobile OAuth flows as well as web redirects;
+- preserve idempotency for checkout, payments, retries and other mutations that mobile networks may replay;
+- continue responsive mobile-web quality now, but do not prematurely choose Flutter, React Native or native iOS/Android until the app scope and operational constraints are clearer.
+
+Mobile readiness is an architecture constraint, not a reason to interrupt the current completion pass with a new app build.
+
 ## Configurability
 
 Dynamic should support platform-owner and merchant/admin control over which modules, navigation items, sections and optional business features are enabled or visible. Vertical-specific needs should preferably be implemented as configurable capabilities or feature flags, not hard-coded assumptions.
