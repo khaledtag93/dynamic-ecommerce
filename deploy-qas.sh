@@ -89,6 +89,15 @@ grep -Eq "^DB_DATABASE=$EXPECTED_DB$" .env || fail "QAS safety check failed: une
 
 chmod 600 .env
 
+log "🖼 Configuring isolated QAS media root..."
+if grep -q '^PUBLIC_ROOT_PATH=' .env; then
+    sed -i "s|^PUBLIC_ROOT_PATH=.*|PUBLIC_ROOT_PATH=$PUBLIC_DIR|" .env
+else
+    printf '\nPUBLIC_ROOT_PATH=%s\n' "$PUBLIC_DIR" >> .env
+fi
+mkdir -p "$PUBLIC_DIR/uploads"
+chmod 600 .env
+
 log "⬇️ Fetching latest QAS code..."
 git fetch --prune origin
 
