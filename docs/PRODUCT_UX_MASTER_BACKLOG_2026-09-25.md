@@ -10,13 +10,13 @@ Finish the active workstream to a strong, tested state before moving to the next
 
 ## Current workstream
 
-### Shared Navigation Shell + Global Feedback/Toast UX
+### Footer / Storefront Shell V2
 
-Harden the persistent Admin and Customer navigation/feedback surfaces into a production-grade shared shell. Current Admin work includes a single mobile sidebar trigger, backdrop/scroll-lock/Escape lifecycle, active-route semantics, accessible expandable groups, keyboard-operable topbar menus, global search shortcuts, and a normalized dismissible toast stack. Preserve permission boundaries, responsive/RTL behavior, and inline field validation while removing duplicated shell behavior.
+Turn the storefront footer into a configurable production component suitable for multiple business types. The active source work now includes independent visibility controls for Shop, Policies, Categories, Support, Trust highlights and the experience note; actionable email/phone/WhatsApp/business-website support channels; automatic suppression of empty support content; responsive/RTL presentation polish; and three bilingual configurable trust highlights instead of commerce-specific hard-coded promises.
 
-The Admin and Customer/storefront shells now share the same production-grade interaction direction. Admin has a single mobile sidebar lifecycle, accessible expandable groups, keyboard-operable topbar menus, global search shortcut, current-page semantics, and dismissible global toasts. Storefront now has current-page states across primary, utility, account and footer navigation; accessible mobile collapse behavior; keyboard-operable account/category dropdowns; a visible-search `/` shortcut; responsive RTL-safe focus states; mobile account-tab auto-visibility and authenticated mobile current-page states; and dismissible global success/status toasts while field validation remains inline. Live cart feedback now uses the same storefront toast contract instead of a separate fixed Bootstrap alert.
+Footer settings reuse the existing WebsiteSetting / StoreSettingsService / localized-settings architecture rather than introducing a parallel configuration system. Regression coverage protects toggle persistence, bilingual trust-copy persistence/rendering and empty-support behavior. Continue hardening this workstream before the systematic bilingual integrity sweep.
 
-Source hardening is complete with the latest branch-head Hardening CI green at `fec41e9` (run #1529). The remaining closure gate is an authenticated QAS desktop/mobile EN/AR visual review after QAS is deliberately deployed. QAS deployment remains explicit and is never automatic.
+Shared Navigation Shell + Global Feedback/Toast source hardening is complete and has been explicitly deployed to QAS. Its authenticated desktop/mobile EN/AR visual review is deliberately deferred so collected QAS issues can be reviewed together later; it does not block the current footer workstream.
 
 ### Recently closed
 
@@ -76,7 +76,7 @@ Admin sidebar/top navigation and customer navigation are persistent product surf
 
 Do this as a shared-shell workstream rather than page-by-page patches.
 
-### 5. Footer — planned major workstream
+### 5. Footer — active major workstream
 
 Complete the storefront footer as a configurable production component:
 - brand identity and useful store information;
