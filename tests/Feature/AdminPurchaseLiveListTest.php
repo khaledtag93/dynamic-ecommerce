@@ -18,7 +18,7 @@ class AdminPurchaseLiveListTest extends TestCase
     {
         app(AuthorizationService::class)->syncDefaults();
 
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $cashier = User::factory()->create(['role_as' => 1]);
         $cashier->roles()->sync([Role::where('slug', 'cashier')->firstOrFail()->id]);
 
@@ -83,7 +83,7 @@ class AdminPurchaseLiveListTest extends TestCase
 
     public function test_purchase_live_list_pagination_keeps_server_filtered_results(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $supplier = Supplier::create([
             'name' => 'Paging Vendor',
             'is_active' => true,

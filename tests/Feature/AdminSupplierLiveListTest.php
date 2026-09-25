@@ -17,7 +17,7 @@ class AdminSupplierLiveListTest extends TestCase
     {
         app(AuthorizationService::class)->syncDefaults();
 
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
         $cashier = User::factory()->create(['role_as' => 1]);
         $cashier->roles()->sync([Role::where('slug', 'cashier')->firstOrFail()->id]);
 
@@ -69,7 +69,7 @@ class AdminSupplierLiveListTest extends TestCase
 
     public function test_supplier_live_list_pagination_keeps_server_filtered_results(): void
     {
-        $owner = User::factory()->create(['role_as' => 1]);
+        $owner = $this->createSuperAdmin();
 
         foreach (range(1, 13) as $number) {
             Supplier::create([
