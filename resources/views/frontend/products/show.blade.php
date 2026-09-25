@@ -229,6 +229,8 @@
             </div>
         </div>
 
+        @include('frontend.products._reviews')
+
         @if($bundleProducts->isNotEmpty() || $addonProducts->isNotEmpty())
             <section class="mt-5">
                 <div class="lc-card p-4 p-lg-5 aov-bundle-shell">
