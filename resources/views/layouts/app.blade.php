@@ -886,13 +886,16 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="storefront-footer__brand">
                 <h5 class="fw-bold mb-2">{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Tag Marketplace' }}</h5>
                 <p class="mb-3">{{ $localizedFooterAbout }}</p>
+                @if(($storeSettings['footer_show_trust'] ?? '1') === '1')
                 <div class="storefront-footer__trust">
                     <span><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
                     <span><i class="bi bi-truck"></i>{{ __('Fast delivery') }}</span>
                     <span><i class="bi bi-card-checklist"></i>{{ __('Clear product details') }}</span>
                 </div>
+                @endif
             </div>
 
+            @if(($storeSettings['footer_show_shop'] ?? '1') === '1')
             <div class="storefront-footer__column">
                 <h6>{{ __('Shop') }}</h6>
                 <a href="{{ route('frontend.home') }}" @if(request()->routeIs('frontend.home')) aria-current="page" @endif>{{ __('Home') }}</a>
@@ -905,7 +908,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <a href="{{ route('login') }}">{{ __('Login') }}</a>
                 @endauth
             </div>
+            @endif
 
+            @if(($storeSettings['footer_show_policies'] ?? '1') === '1')
             <div class="storefront-footer__column">
                 <h6>{{ __('Policies') }}</h6>
                 <a href="{{ route('frontend.privacy') }}" @if(request()->routeIs('frontend.privacy')) aria-current="page" @endif>{{ __('Privacy Policy') }}</a>
@@ -913,7 +918,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 <a href="{{ route('frontend.refund') }}" @if(request()->routeIs('frontend.refund')) aria-current="page" @endif>{{ __('Refund Policy') }}</a>
                 <a href="{{ route('frontend.shipping') }}" @if(request()->routeIs('frontend.shipping')) aria-current="page" @endif>{{ __('Shipping Policy') }}</a>
             </div>
+            @endif
 
+            @if(($storeSettings['footer_show_categories'] ?? '1') === '1')
             <div class="storefront-footer__column">
                 <h6>{{ __('Categories') }}</h6>
                 @forelse($layoutCategories->take(6) as $category)
@@ -922,17 +929,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     <span class="text-white-50 small">{{ __('No categories yet') }}</span>
                 @endforelse
             </div>
+            @endif
 
+            @if(($storeSettings['footer_show_support'] ?? '1') === '1' && (!empty($storeSettings['store_support_email']) || !empty($storeSettings['store_support_phone']) || !empty($storeSettings['store_contact_address'])))
             <div class="storefront-footer__column storefront-footer__contact">
                 <h6>{{ __('Support') }}</h6>
                 @if(!empty($storeSettings['store_support_email']))<span>{{ $storeSettings['store_support_email'] }}</span>@endif
                 @if(!empty($storeSettings['store_support_phone']))<span>{{ $storeSettings['store_support_phone'] }}</span>@endif
                 @if(!empty($storeSettings['store_contact_address']))<span>{{ $storeSettings['store_contact_address'] }}</span>@endif
             </div>
+            @endif
         </div>
         <div class="storefront-footer__bottom">
             <span>© {{ now()->year }} {{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? 'Tag Marketplace' }}. {{ $localizedFooterCopyright }}</span>
+            @if(($storeSettings['footer_show_experience_note'] ?? '1') === '1')
             <span>{{ __('Built for a clear and dependable shopping experience.') }}</span>
+            @endif
         </div>
     </div>
 </footer>
