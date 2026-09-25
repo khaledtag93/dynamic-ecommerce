@@ -32,6 +32,8 @@ class AdminWhatsAppExperienceTest extends TestCase
 
         $this->assertSame(5, substr_count($html, 'class="wa-switch-card'));
         $this->assertSame(5, substr_count($html, 'form-check form-switch admin-switch-wrap m-0'));
-        $this->assertSame(5, substr_count($html, 'admin-card admin-stat-card wa-metric-card'));
+        $source = file_get_contents(resource_path('views/admin/settings/whatsapp.blade.php'));
+        $this->assertSame(5, substr_count($source, '<x-admin.stat-card'));
+        $this->assertSame(5, substr_count($source, 'class="wa-metric-card h-100"'));
     }
 }
