@@ -15,11 +15,12 @@
         ['label'=>__('Exceptions'),'value'=>$stats['exceptions'],'icon'=>'mdi-alert-octagon-outline']
     ] as $card)
         <div class="col-md-6 col-xl">
-            <div class="admin-card admin-stat-card h-100">
-                <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                <div class="admin-stat-label">{{ $card['label'] }}</div>
-                <div class="admin-stat-value">{{ $card['value'] }}</div>
-            </div>
+            <x-admin.stat-card
+                :label="$card['label']"
+                :value="$card['value']"
+                :icon="$card['icon']"
+                class="h-100"
+            />
         </div>
     @endforeach
 </div>
