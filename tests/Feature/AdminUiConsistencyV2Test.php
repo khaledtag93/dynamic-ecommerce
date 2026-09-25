@@ -130,4 +130,12 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString('window.requestAnimationFrame(() => firstItem.focus())', $navbar);
     }
 
+    public function test_sidebar_links_expose_current_page_semantics(): void
+    {
+        $sidebar = file_get_contents(resource_path('views/layouts/inc/admin/sidebar.blade.php'));
+
+        $this->assertGreaterThanOrEqual(20, substr_count($sidebar, 'aria-current="{{ $isRoute('));
+        $this->assertStringContainsString("? 'page' : 'false' }}", $sidebar);
+    }
+
 }
