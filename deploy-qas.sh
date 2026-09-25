@@ -107,8 +107,8 @@ log "🔄 Updating QAS worktree..."
 git reset --hard "origin/$BRANCH"
 
 log "🧪 Running source preflight checks..."
-if grep -RInE --include='*.blade.php' '(AppModels|IlluminateSupport)[A-Za-z0-9_:]*' resources/views/admin/workforce; then
-    fail "Workforce Blade namespace preflight failed. Fix corrupted PHP class references before deploying."
+if grep -RInE --include='*.blade.php' '(AppModels|IlluminateSupport)[A-Za-z0-9_:]*' resources/views; then
+    fail "Blade namespace preflight failed. Fix corrupted PHP class references before deploying."
 fi
 
 log "📦 Installing PHP dependencies..."
