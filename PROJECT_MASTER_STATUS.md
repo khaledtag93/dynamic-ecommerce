@@ -760,3 +760,14 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Fixed duplicate Return controller imports found during the pass before continuing the UI work.
 - Detailed note: docs/ROLES_PERMISSIONS_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Admin UI consistency foundation V2 — 2026-09-25
+- Added a real shared admin Stat Card component instead of relying on repeated hand-written KPI markup.
+- Standardized the component contract for label/value/icon/help/meta plus semantic success/warning/danger accents.
+- Rolled the shared KPI card into Analytics, Permissions, Orders, Deliveries, Customers, Purchases, Payments, Inventory, and Workforce Employees/Schedule/Corrections/Leave.
+- Analytics KPI presentation now uses the same shared component rather than its own competing label/value/help structure.
+- Added a global admin switch layout contract that neutralizes conflicting spacing utilities and aligns control/label/help consistently.
+- Switch layout is RTL-aware and supports reverse mode without physical left/right assumptions.
+- Added AdminUiConsistencyV2Test covering the component contract, core rollout, and RTL-safe switch foundation.
+- Detailed note: docs/ADMIN_UI_CONSISTENCY_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
