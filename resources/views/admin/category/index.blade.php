@@ -3,16 +3,13 @@
 @section('title', __('Categories') . ' | Admin')
 
 @section('content')
-<div class="admin-page-header">
-    <div>
-        <div class="admin-kicker">{{ __('Catalog management') }}</div>
-        <h1 class="admin-page-title">{{ __('Categories') }}</h1>
-        <p class="admin-page-description">{{ __('Organize the storefront structure, monitor visibility, and keep category dependencies under control.') }}</p>
-    </div>
-    <div class="admin-page-actions">
-        <a href="{{ route('admin.categories.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-plus-circle-outline"></i><span>{{ __('Add category') }}</span></a>
-    </div>
-</div>
+<x-admin.page-header
+    :kicker="__('Catalog management')"
+    :title="__('Categories')"
+    :description="__('Organize the storefront structure, monitor visibility, and keep category dependencies under control.')"
+>
+    <a href="{{ route('admin.categories.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-plus-circle-outline"></i><span>{{ __('Add category') }}</span></a>
+</x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>
 <div class="row g-3 mb-4">
@@ -25,12 +22,13 @@
         ['label' => __('Needs content'), 'value' => $stats['needs_content'], 'copy' => __('Missing a description or category image.'), 'icon' => 'mdi-text-box-search-outline'],
     ] as $card)
         <div class="col-md-6 col-xl-3">
-            <div class="admin-card admin-stat-card h-100">
-                <span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span>
-                <div class="admin-stat-label">{{ $card['label'] }}</div>
-                <div class="admin-stat-value">{{ $card['value'] }}</div>
-                <div class="text-muted small mt-2">{{ $card['copy'] }}</div>
-            </div>
+            <x-admin.stat-card
+                :label="$card['label']"
+                :value="$card['value']"
+                :icon="$card['icon']"
+                :help="$card['copy']"
+                class="h-100"
+            />
         </div>
     @endforeach
 </div>
