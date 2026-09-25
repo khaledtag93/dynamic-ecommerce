@@ -605,4 +605,15 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString('retail-mega-menu" role="menu"', $layout);
     }
 
+    public function test_storefront_dropdowns_support_keyboard_navigation(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString("dropdown.addEventListener('shown.bs.dropdown'", $layout);
+        $this->assertStringContainsString("event.key === 'Escape'", $layout);
+        $this->assertStringContainsString("event.key !== 'ArrowDown' && event.key !== 'ArrowUp'", $layout);
+        $this->assertStringContainsString("bootstrap.Dropdown.getOrCreateInstance(trigger).hide()", $layout);
+        $this->assertStringContainsString("items[nextIndex].focus()", $layout);
+    }
+
 }
