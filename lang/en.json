@@ -4578,5 +4578,11 @@
     "Remove one verified unit from this purchase line?": "Remove one verified unit from this purchase line?",
     "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.": "Inventory has not been changed yet. This only reduces the barcode verification count by one unit before final receipt.",
     "Mark this payment as Paid manually? Confirm that the provider or transaction evidence proves the money was received.": "Mark this payment as Paid manually? Confirm that the provider or transaction evidence proves the money was received.",
-    "Mark this payment as Failed manually? For online payments this can release the active stock reservation.": "Mark this payment as Failed manually? For online payments this can release the active stock reservation."
+    "Mark this payment as Failed manually? For online payments this can release the active stock reservation.": "Mark this payment as Failed manually? For online payments this can release the active stock reservation.",
+    "Publish active promotion?": "Publish active promotion?",
+    "This promotion will be active in checkout according to its schedule. Review the discount value, eligibility, and dates before saving.": "This promotion will be active in checkout according to its schedule. Review the discount value, eligibility, and dates before saving.",
+    "Save active promotion": "Save active promotion",
+    "Publish active coupon?": "Publish active coupon?",
+    "This coupon will be usable in checkout according to its limits and schedule. Review the value, caps, usage limit, and dates before saving.": "This coupon will be usable in checkout according to its limits and schedule. Review the value, caps, usage limit, and dates before saving.",
+    "Save active coupon": "Save active coupon"
 }
