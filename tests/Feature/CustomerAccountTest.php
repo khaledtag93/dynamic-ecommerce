@@ -90,7 +90,12 @@ class CustomerAccountTest extends TestCase
         $this->assertTrue($work->fresh()->is_default_billing);
         $this->assertFalse($home->fresh()->is_default_billing);
 
-        $this->delete(route('account.addresses.destroy', $work))->assertRedirect();
+        $this->deleteJson(route('account.addresses.destroy', $work), [], ['X-Address-Live' => '1'])
+            ->assertOk()
+            ->assertJsonPath('message', 'Address deleted.')
+            ->assertJsonPath('addresses.0.id', $home->id)
+            ->assertJsonPath('addresses.0.is_default_shipping', true)
+            ->assertJsonPath('addresses.0.is_default_billing', true);
         $this->assertTrue($home->fresh()->is_default_shipping);
         $this->assertTrue($home->fresh()->is_default_billing);
         $this->assertDatabaseHas('customer_addresses', ['id' => $foreign->id, 'user_id' => $other->id]);
