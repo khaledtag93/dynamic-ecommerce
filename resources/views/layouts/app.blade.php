@@ -728,10 +728,10 @@
                         <a href="#latest-products">{{ __('New arrivals') }}</a>
                         <a href="{{ route('frontend.contact') }}" @if(request()->routeIs('frontend.contact')) aria-current="page" @endif>{{ __('Contact') }}</a>
                         @auth
-                            <a class="d-md-none" href="{{ route('account.index') }}"><i class="bi bi-person me-1"></i>{{ __('My account') }}</a>
-                            <a class="d-md-none" href="{{ route('orders.index') }}"><i class="bi bi-receipt me-1"></i>{{ __('My Orders') }}</a>
-                            <a class="d-md-none" href="{{ route('account.addresses.index') }}"><i class="bi bi-geo-alt me-1"></i>{{ __('Address book') }}</a>
-                            <a class="d-md-none" href="{{ route('notifications.index') }}"><i class="bi bi-bell me-1"></i>{{ __('Notifications') }}</a>
+                            <a class="d-md-none" href="{{ route('account.index') }}" @if(request()->routeIs('account.*')) aria-current="page" @endif><i class="bi bi-person me-1"></i>{{ __('My account') }}</a>
+                            <a class="d-md-none" href="{{ route('orders.index') }}" @if(request()->routeIs('orders.*')) aria-current="page" @endif><i class="bi bi-receipt me-1"></i>{{ __('My Orders') }}</a>
+                            <a class="d-md-none" href="{{ route('account.addresses.index') }}" @if(request()->routeIs('account.addresses.*')) aria-current="page" @endif><i class="bi bi-geo-alt me-1"></i>{{ __('Address book') }}</a>
+                            <a class="d-md-none" href="{{ route('notifications.index') }}" @if(request()->routeIs('notifications.*')) aria-current="page" @endif><i class="bi bi-bell me-1"></i>{{ __('Notifications') }}</a>
                             @if((int) auth()->user()->role_as === 1)
                                 <a href="{{ route('admin.dashboard') }}">{{ __('Admin Dashboard') }}</a>
                             @endif
