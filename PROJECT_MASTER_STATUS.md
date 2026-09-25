@@ -834,3 +834,13 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added AdminConsistencySweepV2Test covering shared primitives, valid namespaces, RTL actions, and removal of old KPI markup.
 - Detailed note: docs/ADMIN_CONSISTENCY_SWEEP_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Admin form workspace V2 — 2026-09-25
+- Reworked Coupon Create/Edit into shared Offer, Limits & eligibility, and Schedule & notes tabs while preserving its live preview and existing request contract.
+- Reworked Promotion Create/Edit into shared Rule, Eligibility, and Schedule & status tabs while preserving buy-X-get-Y UI logic and server-side validation.
+- Moved Coupon and Promotion forms to the shared Admin page-header component.
+- Kept Supplier Create/Edit structure but removed redundant local switch sizing so it follows the global Admin switch contract.
+- Added Arabic labels for all new Coupon/Promotion form sections.
+- Added AdminFormWorkspaceV2Test covering shared headers/tabs, coupon preview preservation, promotion buy-X-get-Y behavior marker, Supplier switch cleanup, and Arabic labels.
+- Detailed note: docs/ADMIN_FORM_WORKSPACE_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
