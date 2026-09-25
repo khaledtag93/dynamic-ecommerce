@@ -49,7 +49,11 @@
             @if($canAdmin('dashboard.view'))
             <form action="{{ route('admin.dashboard') }}" method="GET" class="admin-topbar-search d-none d-lg-flex align-items-center">
                 <i class="mdi mdi-magnify"></i>
-                <input type="text" name="q" class="form-control border-0 bg-transparent shadow-none" placeholder="{{ __('Search products, orders, customers, and coupons') }}" value="{{ request('q') }}">
+                <input type="text" name="q" class="form-control border-0 bg-transparent shadow-none" placeholder="{{ __('Search products, orders, customers, and coupons') }}" value="{{ request('q') }}" aria-label="{{ __('Search admin workspace') }}">
+                @if(request()->filled('q'))
+                    <a class="admin-topbar-search-clear" href="{{ route('admin.dashboard') }}" aria-label="{{ __('Clear search') }}" title="{{ __('Clear search') }}"><i class="mdi mdi-close-circle-outline"></i></a>
+                @endif
+                <kbd class="admin-topbar-search-shortcut" aria-hidden="true">/</kbd>
             </form>
             @endif
         </div>
@@ -177,6 +181,40 @@
 
 <style>
 
+.admin-topbar-search { position: relative; }
+.admin-topbar-search-clear {
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    color: var(--admin-muted);
+    text-decoration: none;
+}
+.admin-topbar-search-clear:hover,
+.admin-topbar-search-clear:focus-visible {
+    color: var(--admin-primary-dark);
+    background: color-mix(in srgb, var(--admin-primary) 9%, transparent);
+    outline: none;
+}
+.admin-topbar-search-shortcut {
+    min-width: 1.7rem;
+    height: 1.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--admin-border);
+    border-bottom-width: 2px;
+    border-radius: .45rem;
+    background: var(--admin-surface);
+    color: var(--admin-muted);
+    font: inherit;
+    font-size: .75rem;
+    font-weight: 800;
+}
 .admin-mobile-sidebar-toggle,
 .admin-mobile-sidebar-toggle-inline {
     border: 1px solid var(--admin-border);
@@ -362,6 +400,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') closeMenus();
+
+        if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            const activeTag = document.activeElement?.tagName?.toLowerCase();
+            if (['input', 'textarea', 'select'].includes(activeTag) || document.activeElement?.isContentEditable) return;
+
+            const searchInput = document.querySelector('.admin-topbar-search input[name="q"]');
+            if (!searchInput || searchInput.offsetParent === null) return;
+
+            event.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
     });
 });
 </script>
