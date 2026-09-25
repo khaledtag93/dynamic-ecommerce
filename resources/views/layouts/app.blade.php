@@ -888,9 +888,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 <p class="mb-3">{{ $localizedFooterAbout }}</p>
                 @if(($storeSettings['footer_show_trust'] ?? '1') === '1')
                 <div class="storefront-footer__trust">
-                    <span><i class="bi bi-shield-check"></i>{{ __('Secure checkout') }}</span>
-                    <span><i class="bi bi-truck"></i>{{ __('Fast delivery') }}</span>
-                    <span><i class="bi bi-card-checklist"></i>{{ __('Clear product details') }}</span>
+                    @if(filled($storeSettings['footer_trust_1_text'] ?? null))<span><i class="bi bi-shield-check"></i>{{ $storeSettings['footer_trust_1_text'] }}</span>@endif
+                    @if(filled($storeSettings['footer_trust_2_text'] ?? null))<span><i class="bi bi-stars"></i>{{ $storeSettings['footer_trust_2_text'] }}</span>@endif
+                    @if(filled($storeSettings['footer_trust_3_text'] ?? null))<span><i class="bi bi-card-checklist"></i>{{ $storeSettings['footer_trust_3_text'] }}</span>@endif
                 </div>
                 @endif
             </div>
