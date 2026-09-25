@@ -558,4 +558,17 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('class="d-md-none" href="'.route('notifications.index').'"', false);
     }
 
+    public function test_storefront_flash_feedback_uses_global_dismissible_toasts(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('id="storefrontToastStack"', $layout);
+        $this->assertStringContainsString('data-storefront-toast-close', $layout);
+        $this->assertStringContainsString("__('Dismiss notification')", $layout);
+        $this->assertStringContainsString("window.setTimeout(() => dismiss(toast), 4200)", $layout);
+        $this->assertStringContainsString('.lc-flash-toast.is-leaving', $layout);
+        $this->assertStringContainsString("if (\$errors->any())", $layout);
+        $this->assertStringContainsString("Please review the highlighted fields.", $layout);
+    }
+
 }
