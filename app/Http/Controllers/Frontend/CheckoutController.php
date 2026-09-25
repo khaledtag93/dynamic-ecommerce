@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\ShippingMethod;
 use App\Services\Commerce\AIRecommendationEngine;
 use App\Services\Commerce\BehaviorTrackingService;
 use App\Services\Commerce\OfferAutomationService;
@@ -163,7 +164,10 @@ public function store(Request $request): RedirectResponse
         'billing_country' => [Rule::requiredIf(! $billingSameAsShipping), 'nullable', 'string', 'max:120'],
 
         'payment_method' => ['required', Rule::in($enabledMethods)],
-        'delivery_method' => ['required', Rule::in(array_keys(Order::deliveryMethodOptions()))],
+        'delivery_method' => [
+            'required',
+            Rule::exists('shipping_methods', 'code')->where(fn ($query) => $query->where('is_active', true)),
+        ],
         'notes' => ['nullable', 'string', 'max:1000'],
     ]);
 
@@ -195,10 +199,19 @@ public function store(Request $request): RedirectResponse
             ->route('orders.success', $order)
             ->with('success', 'Order placed successfully.');
     } catch (ValidationException $e) {
+        $errors = $e->errors();
+
+        if (isset($errors['shipping_city']) || isset($errors['delivery_method'])) {
+            return redirect()
+                ->route('checkout.index')
+                ->withInput()
+                ->withErrors($errors);
+        }
+
         return redirect()
             ->route('cart.index')
-            ->withErrors($e->errors())
-            ->with('error', $e->errors()['cart'][0] ?? $e->errors()['coupon'][0] ?? 'Some cart items are no longer available in the requested quantity.');
+            ->withErrors($errors)
+            ->with('error', $errors['cart'][0] ?? $errors['coupon'][0] ?? 'Some cart items are no longer available in the requested quantity.');
     }
 }
 
