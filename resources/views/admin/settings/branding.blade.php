@@ -39,28 +39,31 @@
 
     <div class="row g-4 mb-4">
         <div class="col-md-4">
-            <div class="admin-card admin-stat-card h-100">
-                <span class="admin-stat-icon"><i class="mdi mdi-palette-outline"></i></span>
-                <div class="admin-stat-label">{{ __('Default theme') }}</div>
-                <div class="admin-stat-value">{{ $selectedPresetLabel }}</div>
-                <div class="text-muted small mt-2">{{ __('This is the active theme that both admin and storefront pages use after saving.') }}</div>
-            </div>
+            <x-admin.stat-card
+                :label="__('Default theme')"
+                :value="$selectedPresetLabel"
+                icon="mdi-palette-outline"
+                :help="__('This is the active theme that both admin and storefront pages use after saving.')"
+                class="h-100"
+            />
         </div>
         <div class="col-md-4">
-            <div class="admin-card admin-stat-card h-100">
-                <span class="admin-stat-icon"><i class="mdi mdi-image-multiple-outline"></i></span>
-                <div class="admin-stat-label">{{ __('Promo banners') }}</div>
-                <div class="admin-stat-value">3</div>
-                <div class="text-muted small mt-2">{{ __('Manage three editable promo banners with images, text, links, and sort order.') }}</div>
-            </div>
+            <x-admin.stat-card
+                :label="__('Promo banners')"
+                value="3"
+                icon="mdi-image-multiple-outline"
+                :help="__('Manage three editable promo banners with images, text, links, and sort order.')"
+                class="h-100"
+            />
         </div>
         <div class="col-md-4">
-            <div class="admin-card admin-stat-card h-100">
-                <span class="admin-stat-icon"><i class="mdi mdi-content-save-cog-outline"></i></span>
-                <div class="admin-stat-label">{{ __('Saved themes') }}</div>
-                <div class="admin-stat-value">{{ count($customThemes ?? []) }}</div>
-                <div class="text-muted small mt-2">{{ __('Save your own theme after adjusting the colors manually.') }}</div>
-            </div>
+            <x-admin.stat-card
+                :label="__('Saved themes')"
+                :value="count($customThemes ?? [])"
+                icon="mdi-content-save-cog-outline"
+                :help="__('Save your own theme after adjusting the colors manually.')"
+                class="h-100"
+            />
         </div>
     </div>
 
@@ -229,7 +232,22 @@
 
             <div class="admin-card mb-4" id="branding-panel-homepage" role="tabpanel" aria-labelledby="branding-tab-homepage" data-admin-section-panel="homepage">
                 <div class="admin-card-body">
-                    <h4 class="mb-3">{{ __('Homepage CMS') }}</h4>
+                    <div class="admin-section-heading mb-4">
+                        <div>
+                            <h4 class="admin-section-title">{{ __('Homepage CMS') }}</h4>
+                            <p class="admin-section-subtitle">{{ __('Organize homepage visibility, hero content, merchandising sections, and legacy blocks without scanning one long form.') }}</p>
+                        </div>
+                    </div>
+
+                    <details class="branding-home-section border rounded-4 mb-3" open>
+                        <summary class="p-3 d-flex justify-content-between align-items-center gap-3">
+                            <span>
+                                <strong>{{ __('Visibility & order') }}</strong>
+                                <small class="d-block text-muted mt-1">{{ __('Choose which homepage sections are visible and control their display order.') }}</small>
+                            </span>
+                            <i class="mdi mdi-chevron-down"></i>
+                        </summary>
+                        <div class="p-3 pt-0">
                     <div class="row g-3">
                         <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_hero" value="1" @checked(old('show_home_hero', $settings['show_home_hero'] ?? true))><label class="form-check-label ms-2">{{ __('Show hero') }}</label></div></div>
                         <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_categories" value="1" @checked(old('show_home_categories', $settings['show_home_categories'] ?? true))><label class="form-check-label ms-2">{{ __('Show categories') }}</label></div></div>
@@ -244,13 +262,39 @@
                         <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_promo_banner" value="1" @checked(old('show_home_promo_banner', $settings['show_home_promo_banner'] ?? false))><label class="form-check-label ms-2">{{ __('Keep legacy promo block') }}</label></div></div>
 
                         <div class="col-12"><label class="form-label fw-semibold">{{ __('Homepage sections order') }}</label><input type="text" name="homepage_sections_order" value="{{ old('homepage_sections_order', $settings['homepage_sections_order'] ?? 'hero,promo_banners,featured_categories,manual_featured_products,featured_products,best_sellers,latest_products,on_sale_products,trust_blocks,categories') }}" class="form-control" placeholder="hero,promo_banners,featured_categories,manual_featured_products,featured_products,best_sellers,latest_products,on_sale_products,trust_blocks,categories"><div class="form-text">{{ __('Use comma-separated section keys: hero, promo_banners, featured_categories, manual_featured_products, featured_products, best_sellers, categories, latest_products, on_sale_products, trust_blocks.') }}</div></div>
+                    </div>
+                        </div>
+                    </details>
 
+                    <details class="branding-home-section border rounded-4 mb-3">
+                        <summary class="p-3 d-flex justify-content-between align-items-center gap-3">
+                            <span>
+                                <strong>{{ __('Hero content') }}</strong>
+                                <small class="d-block text-muted mt-1">{{ __('Edit the homepage badge and primary/secondary call-to-action links.') }}</small>
+                            </span>
+                            <i class="mdi mdi-chevron-down"></i>
+                        </summary>
+                        <div class="p-3 pt-0">
+                            <div class="row g-3">
                         <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Hero badge text') }}</label><input type="text" name="hero_badge_text" value="{{ old('hero_badge_text', $settings['hero_badge_text'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-3"><label class="form-label fw-semibold">{{ __('Hero primary button text') }}</label><input type="text" name="hero_primary_button_text" value="{{ old('hero_primary_button_text', $settings['hero_primary_button_text'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-3"><label class="form-label fw-semibold">{{ __('Hero primary button link') }}</label><input type="text" name="hero_primary_button_link" value="{{ old('hero_primary_button_link', $settings['hero_primary_button_link'] ?? '#featured-products') }}" class="form-control"></div>
                         <div class="col-md-3"><label class="form-label fw-semibold">{{ __('Hero secondary button text') }}</label><input type="text" name="hero_secondary_button_text" value="{{ old('hero_secondary_button_text', $settings['hero_secondary_button_text'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-3"><label class="form-label fw-semibold">{{ __('Hero secondary button link') }}</label><input type="text" name="hero_secondary_button_link" value="{{ old('hero_secondary_button_link', $settings['hero_secondary_button_link'] ?? '#categories') }}" class="form-control"></div>
+                            </div>
+                        </div>
+                    </details>
 
+                    <details class="branding-home-section border rounded-4 mb-3">
+                        <summary class="p-3 d-flex justify-content-between align-items-center gap-3">
+                            <span>
+                                <strong>{{ __('Merchandising sections') }}</strong>
+                                <small class="d-block text-muted mt-1">{{ __('Configure featured, latest, best-seller, sale, and category blocks.') }}</small>
+                            </span>
+                            <i class="mdi mdi-chevron-down"></i>
+                        </summary>
+                        <div class="p-3 pt-0">
+                            <div class="row g-3">
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Featured title') }}</label><input type="text" name="home_featured_products_title" value="{{ old('home_featured_products_title', $settings['home_featured_products_title'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Featured subtitle') }}</label><input type="text" name="home_featured_products_subtitle" value="{{ old('home_featured_products_subtitle', $settings['home_featured_products_subtitle'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Featured limit') }}</label><input type="number" min="1" max="24" name="home_featured_products_limit" value="{{ old('home_featured_products_limit', $settings['home_featured_products_limit'] ?? 8) }}" class="form-control"></div>
@@ -277,16 +321,40 @@
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('On sale subtitle') }}</label><input type="text" name="home_on_sale_products_subtitle" value="{{ old('home_on_sale_products_subtitle', $settings['home_on_sale_products_subtitle'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('On sale limit') }}</label><input type="number" min="1" max="24" name="home_on_sale_products_limit" value="{{ old('home_on_sale_products_limit', $settings['home_on_sale_products_limit'] ?? 8) }}" class="form-control"></div>
 
-                        <div class="col-12"><hr class="my-1"></div>
-                        <div class="col-12"><div class="fw-bold">{{ __('Manual featured products') }}</div><div class="form-text mt-0">{{ __('Add product IDs in the exact order you want them to appear.') }}</div></div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="branding-home-section border rounded-4 mb-3">
+                        <summary class="p-3 d-flex justify-content-between align-items-center gap-3">
+                            <span>
+                                <strong>{{ __('Manual featured products') }}</strong>
+                                <small class="d-block text-muted mt-1">{{ __('Add product IDs in the exact order you want them to appear.') }}</small>
+                            </span>
+                            <i class="mdi mdi-chevron-down"></i>
+                        </summary>
+                        <div class="p-3 pt-0">
+                            <div class="row g-3">
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Manual featured title') }}</label><input type="text" name="home_manual_featured_products_title" value="{{ old('home_manual_featured_products_title', $settings['home_manual_featured_products_title'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Manual featured subtitle') }}</label><input type="text" name="home_manual_featured_products_subtitle" value="{{ old('home_manual_featured_products_subtitle', $settings['home_manual_featured_products_subtitle'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-4"><label class="form-label fw-semibold">{{ __('Manual featured limit') }}</label><input type="number" min="1" max="24" name="home_manual_featured_products_limit" value="{{ old('home_manual_featured_products_limit', $settings['home_manual_featured_products_limit'] ?? 8) }}" class="form-control"></div>
                         <div class="col-md-8"><label class="form-label fw-semibold">{{ __('Manual featured product IDs') }}</label><textarea name="home_manual_featured_products_ids" class="form-control" rows="3" placeholder="12,8,31,5">{{ old('home_manual_featured_products_ids', $settings['home_manual_featured_products_ids'] ?? '') }}</textarea></div>
                         <div class="col-md-2"><label class="form-label fw-semibold">{{ __('Action text') }}</label><input type="text" name="home_manual_featured_products_action_text" value="{{ old('home_manual_featured_products_action_text', $settings['home_manual_featured_products_action_text'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-2"><label class="form-label fw-semibold">{{ __('Action link') }}</label><input type="text" name="home_manual_featured_products_action_link" value="{{ old('home_manual_featured_products_action_link', $settings['home_manual_featured_products_action_link'] ?? '#latest-products') }}" class="form-control"></div>
+                            </div>
+                        </div>
+                    </details>
 
-                        <div class="col-12"><hr class="my-1"></div>
+                    <details class="branding-home-section border rounded-4 mb-0">
+                        <summary class="p-3 d-flex justify-content-between align-items-center gap-3">
+                            <span>
+                                <strong>{{ __('Trust & legacy content') }}</strong>
+                                <small class="d-block text-muted mt-1">{{ __('Maintain trust-section headings and legacy promo content only when still required.') }}</small>
+                            </span>
+                            <i class="mdi mdi-chevron-down"></i>
+                        </summary>
+                        <div class="p-3 pt-0">
+                            <div class="row g-3">
                         <div class="col-12"><div class="fw-bold">{{ __('Trust section heading') }}</div></div>
                         <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Trust section title') }}</label><input type="text" name="home_trust_blocks_title" value="{{ old('home_trust_blocks_title', $settings['home_trust_blocks_title'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-6"><label class="form-label fw-semibold">{{ __('Trust section subtitle') }}</label><input type="text" name="home_trust_blocks_subtitle" value="{{ old('home_trust_blocks_subtitle', $settings['home_trust_blocks_subtitle'] ?? '') }}" class="form-control"></div>
@@ -297,7 +365,9 @@
                         <div class="col-md-3"><label class="form-label fw-semibold">{{ __('Legacy promo button link') }}</label><input type="text" name="home_promo_button_link" value="{{ old('home_promo_button_link', $settings['home_promo_button_link'] ?? '#featured-products') }}" class="form-control"></div>
                         <div class="col-md-3"><label class="form-label fw-semibold">{{ __('Legacy secondary text') }}</label><input type="text" name="home_promo_secondary_button_text" value="{{ old('home_promo_secondary_button_text', $settings['home_promo_secondary_button_text'] ?? '') }}" class="form-control"></div>
                         <div class="col-md-3"><label class="form-label fw-semibold">{{ __('Legacy secondary link') }}</label><input type="text" name="home_promo_secondary_button_link" value="{{ old('home_promo_secondary_button_link', $settings['home_promo_secondary_button_link'] ?? '#categories') }}" class="form-control"></div>
-                    </div>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </div>
 
