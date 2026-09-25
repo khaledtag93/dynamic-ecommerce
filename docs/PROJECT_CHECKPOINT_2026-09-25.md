@@ -96,3 +96,9 @@ Admin V2 consistency is source-complete for the known high-impact workspaces:
 - Arabic/English quality and mixed-language behavior require a focused audit.
 - There may also be functional issues; verify actions, forms, state transitions, feedback and error handling during authenticated QAS.
 - This area should be treated as an active QAS finding rather than completed polish.
+
+
+## Open QAS finding: media root isolation
+- Broken category images were confirmed visually in QAS.
+- Source fix isolates QAS media under `public_html/v42/uploads` via `PUBLIC_ROOT_PATH`.
+- QAS requires redeploy plus one-time existing-media synchronization before this finding can be marked verified.
