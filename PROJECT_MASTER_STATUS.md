@@ -844,3 +844,13 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Added AdminFormWorkspaceV2Test covering shared headers/tabs, coupon preview preservation, promotion buy-X-get-Y behavior marker, Supplier switch cleanup, and Arabic labels.
 - Detailed note: docs/ADMIN_FORM_WORKSPACE_V2_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+## Commerce settings workspace V2 — 2026-09-25
+- Split Payment Settings into focused Payment methods, Gateway & stock, Paymob setup, and Bank transfer tabs without changing provider, callback, stock-reservation, secret-management, or update semantics.
+- Added one shared Shipping settings navigation partial across Methods, Zones & cities, and Rates; removed duplicated cross-links from page headers.
+- Preserved shipping method updates, zone/city uniqueness rules, rate upserts, threshold-basis validation, and checkout behavior.
+- Reviewed Notification Center and intentionally kept its existing modular Overview / Logs / Templates / Automation / Diagnostics structure unchanged.
+- Added Arabic labels for the new Payment and Shipping workspace navigation.
+- Added CommerceSettingsWorkspaceV2Test covering Payment tabs, Paymob callback presence, shared Shipping navigation, Notification Center modularity, and Arabic labels.
+- Detailed note: docs/COMMERCE_SETTINGS_WORKSPACE_V2_2026-09-25.md.
+- CI/QAS verification pending for the current head; Production unchanged.
