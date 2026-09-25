@@ -129,39 +129,38 @@
                             <table class="table admin-table align-middle mb-0">
                                 <thead><tr><th>{{ __('Type') }}</th><th>{{ __('Dates') }}</th><th>{{ __('Days') }}</th><th>{{ __('Status') }}</th><th class="text-end">{{ __('Actions') }}</th></tr></thead>
                                 <tbody>
+                                    @foreach($requests as $leaveRequest)
+                                        @php
+                                            $statusClass = match($leaveRequest->status) {
+                                                \App\Models\EmployeeLeaveRequest::STATUS_APPROVED => 'badge-soft-success',
+                                                \App\Models\EmployeeLeaveRequest::STATUS_REJECTED => 'badge-soft-danger',
+                                                \App\Models\EmployeeLeaveRequest::STATUS_CANCELLED => 'badge-soft-secondary',
+                                                default => 'badge-soft-warning',
+                                            };
+                                        @endphp
+                                        <tr>
+                                            <td><div class="fw-semibold">{{ $leaveRequest->leaveType?->displayName() }}</div><div class="text-muted small">{{ $leaveRequest->reason ?: '—' }}</div></td>
+                                            <td>{{ $leaveRequest->starts_on->format('d M Y') }} → {{ $leaveRequest->ends_on->format('d M Y') }}</td>
+                                            <td>{{ number_format((float)$leaveRequest->requested_days, 2) }}</td>
+                                            <td>
+                                                <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeLeaveRequest::statusOptions()[$leaveRequest->status] ?? \Illuminate\Support\Str::headline($leaveRequest->status) }}</span>
+                                                @if($leaveRequest->review_notes)<div class="text-muted small mt-1">{{ $leaveRequest->review_notes }}</div>@endif
+                                            </td>
+                                            <td class="text-end">
+                                                @if($leaveRequest->isPending())
+                                                    <form method="POST" action="{{ route('admin.workforce.leave.cancel', $leaveRequest) }}" data-confirm-message="{{ __('Cancel this pending leave request?') }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button class="btn btn-sm btn-outline-danger">{{ __('Cancel request') }}</button>
+                                                    </form>
+                                                @else
+                                                    <span class="text-muted small">{{ __('Review complete') }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                     @if($requests->isEmpty())
                                         <tr><td colspan="5" class="text-center text-muted py-4">{{ __('No leave requests yet.') }}</td></tr>
-                                    @else
-                                        @foreach($requests as $leaveRequest)
-                                            @php
-                                                $statusClass = match($leaveRequest->status) {
-                                                    \App\Models\EmployeeLeaveRequest::STATUS_APPROVED => 'badge-soft-success',
-                                                    \App\Models\EmployeeLeaveRequest::STATUS_REJECTED => 'badge-soft-danger',
-                                                    \App\Models\EmployeeLeaveRequest::STATUS_CANCELLED => 'badge-soft-secondary',
-                                                    default => 'badge-soft-warning',
-                                                };
-                                            @endphp
-                                            <tr>
-                                                <td><div class="fw-semibold">{{ $leaveRequest->leaveType?->displayName() }}</div><div class="text-muted small">{{ $leaveRequest->reason ?: '—' }}</div></td>
-                                                <td>{{ $leaveRequest->starts_on->format('d M Y') }} → {{ $leaveRequest->ends_on->format('d M Y') }}</td>
-                                                <td>{{ number_format((float)$leaveRequest->requested_days, 2) }}</td>
-                                                <td>
-                                                    <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeLeaveRequest::statusOptions()[$leaveRequest->status] ?? \Illuminate\Support\Str::headline($leaveRequest->status) }}</span>
-                                                    @if($leaveRequest->review_notes)<div class="text-muted small mt-1">{{ $leaveRequest->review_notes }}</div>@endif
-                                                </td>
-                                                <td class="text-end">
-                                                    @if($leaveRequest->isPending())
-                                                        <form method="POST" action="{{ route('admin.workforce.leave.cancel', $leaveRequest) }}" data-confirm-message="{{ __('Cancel this pending leave request?') }}">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button class="btn btn-sm btn-outline-danger">{{ __('Cancel request') }}</button>
-                                                        </form>
-                                                    @else
-                                                        <span class="text-muted small">{{ __('Review complete') }}</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
                                     @endif
                                 </tbody>
                             </table>
