@@ -25,12 +25,18 @@ class AdminCategoryLiveListTest extends TestCase
             'name' => '<script>Live Category</script>',
             'slug' => 'live-category',
             'description' => '',
+            'meta_title' => 'Live Category',
+            'meta_keyword' => 'live category',
+            'meta_description' => 'Live category test fixture',
             'status' => 1,
         ]);
         Category::create([
             'name' => 'Other Category',
             'slug' => 'other-category',
             'description' => 'Ready',
+            'meta_title' => 'Other Category',
+            'meta_keyword' => 'other category',
+            'meta_description' => 'Other category test fixture',
             'image' => 'category/ready.jpg',
             'status' => 0,
         ]);
