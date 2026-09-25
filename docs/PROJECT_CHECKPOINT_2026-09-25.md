@@ -89,3 +89,10 @@ Admin V2 consistency is source-complete for the known high-impact workspaces:
 2. Fix only discovered regressions/blockers.
 3. Continue feature work with storefront polish + online invoice/receipt + import pipeline.
 4. Keep Production unchanged until the release gate and operational checks are explicitly completed.
+
+
+## Open QAS finding: Growth Engine
+- Owner specifically flagged the Growth Engine / Growth Automation experience as still weak in page division, UI, UX, and consistency.
+- Arabic/English quality and mixed-language behavior require a focused audit.
+- There may also be functional issues; verify actions, forms, state transitions, feedback and error handling during authenticated QAS.
+- This area should be treated as an active QAS finding rather than completed polish.
