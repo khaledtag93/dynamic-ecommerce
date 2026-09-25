@@ -4886,5 +4886,7 @@
     "Your review was submitted for moderation.": "تم إرسال تقييمك للمراجعة قبل النشر.",
     "Manage reviews": "إدارة التقييمات",
     "Moderate verified-purchase product reviews before they are published.": "راجع تقييمات المنتجات الناتجة عن شراء موثق قبل نشرها.",
-    "reviews": "التقييمات"
+    "reviews": "التقييمات",
+    "Selected products will become visible in the storefront. Products that still need content review will remain flagged for attention.": "ستصبح المنتجات المحددة ظاهرة في واجهة المتجر، وستظل المنتجات التي تحتاج إلى مراجعة المحتوى مميزة للتنبيه.",
+    "Selected products will be hidden from the storefront without deleting their catalog records.": "سيتم إخفاء المنتجات المحددة من واجهة المتجر دون حذف سجلاتها من الكتالوج."
 }
