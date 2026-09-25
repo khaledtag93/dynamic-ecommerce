@@ -673,4 +673,23 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString('4200', $script);
     }
 
+    public function test_storefront_footer_uses_localized_trust_copy_and_hides_empty_support(): void
+    {
+        \App\Models\WebsiteSetting::setValue('footer_trust_1_text_en', 'Protected payments', 'content');
+        \App\Models\WebsiteSetting::setValue('footer_trust_1_text_ar', 'مدفوعات محمية', 'content');
+        \App\Models\WebsiteSetting::setValue('footer_show_trust', '1', 'content');
+        \App\Models\WebsiteSetting::setValue('footer_show_support', '1', 'content');
+        \App\Models\WebsiteSetting::setValue('store_support_email', '', 'content');
+        \App\Models\WebsiteSetting::setValue('store_support_phone', '', 'content');
+        \App\Models\WebsiteSetting::setValue('store_support_whatsapp', '', 'content');
+        \App\Models\WebsiteSetting::setValue('store_business_website', '', 'content');
+        \App\Models\WebsiteSetting::setValue('store_contact_address', '', 'content');
+
+        $english = $this->withSession(['locale' => 'en'])->get(route('frontend.home'));
+        $english->assertOk()->assertSee('Protected payments')->assertDontSee('<h6>Support</h6>', false);
+
+        $arabic = $this->withSession(['locale' => 'ar'])->get(route('frontend.home'));
+        $arabic->assertOk()->assertSee('مدفوعات محمية');
+    }
+
 }
