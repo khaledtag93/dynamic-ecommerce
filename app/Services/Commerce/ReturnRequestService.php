@@ -429,6 +429,26 @@ class ReturnRequestService
                         'exchange_order_id' => __('The selected exchange order does not exist.'),
                     ]);
                 }
+
+                if ((int) $exchangeOrder->user_id !== (int) $locked->user_id) {
+                    throw ValidationException::withMessages([
+                        'exchange_order_id' => __('The exchange order must belong to the same customer.'),
+                    ]);
+                }
+            }
+
+            $maxRmaRefund = round((float) $locked->items()
+                ->with('orderItem:id,unit_price')
+                ->where('requested_resolution', ReturnRequestItem::RESOLUTION_REFUND)
+                ->get()
+                ->sum(fn (ReturnRequestItem $item) => (float) ($item->orderItem?->unit_price ?? 0) * (int) $item->received_quantity), 2);
+
+            if ($refundAmount > $maxRmaRefund) {
+                throw ValidationException::withMessages([
+                    'refund_amount' => __('Refund amount cannot exceed the value of received items approved for refund (:amount).', [
+                        'amount' => number_format($maxRmaRefund, 2),
+                    ]),
+                ]);
             }
 
             if ($refundAmount <= 0 && ! $exchangeOrder && ! $notes) {
