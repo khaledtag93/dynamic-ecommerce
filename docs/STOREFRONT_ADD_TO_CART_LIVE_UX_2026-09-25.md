@@ -8,6 +8,7 @@ Remove avoidable full-page reloads from the primary storefront Add to Cart actio
 
 - Product cards use progressive Add to Cart without page reload.
 - Product detail Add to Cart uses the same shared progressive behavior.
+- Category Quick View Add to Cart uses the same shared progressive behavior; Quick View Buy Now keeps normal Checkout navigation.
 - The enhancement uses delegated submit handling, so product cards replaced by live search/category results continue to work without reinitialization.
 - The header cart badge updates from the server-confirmed cart count.
 - A shared accessible storefront feedback surface shows success and validation/network errors.
@@ -39,13 +40,15 @@ Remove avoidable full-page reloads from the primary storefront Add to Cart actio
 ## Release status
 
 - Source: implemented on `v42-clean-baseline`.
-- CI: pending branch-head verification.
+- Base Add-to-Cart implementation: Hardening CI #1402 passed at `72b8528` with 383 tests / 2596 assertions plus clean migration, routes, Blade compilation and frontend production build.
+- Quick View consistency follow-up: branch-head CI pending.
 - QAS: not yet claimed for this slice.
 - Production: unchanged.
 
 ## QAS acceptance
 
 - Add simple products from Home/Search/Category cards without reload.
+- Add from Category Quick View without reload and verify Quick View Buy Now still navigates to Checkout.
 - Add a selected variant and quantity from Product Details without reload.
 - Verify header cart count updates immediately and matches Cart after refresh.
 - Verify out-of-stock/stock-clamped behavior and server validation feedback.

@@ -160,7 +160,7 @@ Test at minimum Super Admin/owner-equivalent explicit role, Operations Manager, 
 - [ ] Catalog search/category browsing is responsive and live where designed.
 - [ ] Quick View still works after live result refresh.
 - [ ] Cart quantities/totals behave correctly and preserve context.
-- [ ] Product-card/Product-detail Add to Cart updates the header cart count without reload; Buy Now still navigates to Checkout.
+- [ ] Product-card/Product-detail/Category Quick View Add to Cart updates the header cart count without reload; Buy Now still navigates to Checkout.
 - [ ] Checkout uses honest shipping totals and recorded currency.
 - [ ] My Orders pagination and order detail are bilingual/responsive.
 - [ ] Notifications pagination/read actions behave correctly.

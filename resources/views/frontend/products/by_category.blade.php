@@ -154,12 +154,12 @@
                             <div class="quick-view-stock mb-3" id="quickViewStock">{{ __('Ready to ship') }}</div>
                             <p class="text-muted mb-4" id="quickViewDescription">{{ __('Short overview') }}</p>
 
-                            <form method="POST" action="#" id="quickViewCartForm" class="d-grid gap-2">
+                            <form method="POST" action="#" id="quickViewCartForm" class="d-grid gap-2" data-live-cart-add>
                                 @csrf
-                                <button type="submit" class="btn lc-btn-primary">
+                                <button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Adding...') }}">
                                     <i class="bi bi-bag-plus me-2"></i>{{ __('Add to cart') }}
                                 </button>
-                                <button type="submit" name="redirect_to" value="checkout" class="btn lc-btn-soft">
+                                <button type="submit" name="redirect_to" value="checkout" class="btn lc-btn-soft" data-loading-text="{{ __('Preparing checkout...') }}">
                                     <i class="bi bi-lightning-charge-fill me-2"></i>{{ __('Buy now') }}
                                 </button>
                                 <a href="#" class="btn lc-btn-soft" id="quickViewOpenProduct">

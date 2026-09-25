@@ -61,11 +61,14 @@ class StorefrontAddToCartLiveTest extends TestCase
     {
         $card = file_get_contents(resource_path('views/frontend/sections/partials/product-card.blade.php'));
         $show = file_get_contents(resource_path('views/frontend/products/show.blade.php'));
+        $category = file_get_contents(resource_path('views/frontend/products/by_category.blade.php'));
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
         $script = file_get_contents(public_path('js/storefront-cart-actions.js'));
 
         $this->assertStringContainsString('data-live-cart-add', $card);
         $this->assertStringContainsString('data-live-cart-add', $show);
+        $this->assertStringContainsString('id="quickViewCartForm"', $category);
+        $this->assertStringContainsString('id="quickViewCartForm" class="d-grid gap-2" data-live-cart-add', $category);
         $this->assertStringContainsString('data-layout-cart-count', $layout);
         $this->assertStringContainsString('js/storefront-cart-actions.js', $layout);
         $this->assertStringContainsString("document.addEventListener('submit'", $script);
