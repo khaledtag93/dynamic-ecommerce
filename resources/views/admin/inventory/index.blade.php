@@ -129,7 +129,7 @@
                 <select name="type" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All types') }}</option>
                     @foreach($movementTypes as $type)
-                        <option value="{{ $type }}" @selected($filters['type'] === $type)>{{ __(str_replace('_', ' ', IlluminateSupportStr::headline($type))) }}</option>
+                        <option value="{{ $type }}" @selected($filters['type'] === $type)>{{ __(str_replace('_', ' ', \Illuminate\Support\Str::headline($type))) }}</option>
                     @endforeach
                 </select>
             </div>
