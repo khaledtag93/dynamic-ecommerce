@@ -5172,5 +5172,7 @@
     "Review checkout drop-offs, payment failures, and handoff clarity first.": "راجع حالات ترك الدفع وفشل المدفوعات ووضوح الانتقال بين الخطوات أولًا.",
     "Keep leaning into the channels, products, and offers that are already performing cleanly.": "استمر في التركيز على القنوات والمنتجات والعروض التي تحقق أداءً جيدًا بالفعل.",
     "checkout": "إتمام الشراء",
-    "View → cart → checkout → purchase, with direct leakage context.": "عرض ← سلة ← إتمام الشراء ← شراء، مع توضيح مباشر لمواضع التسرب."
+    "View → cart → checkout → purchase, with direct leakage context.": "عرض ← سلة ← إتمام الشراء ← شراء، مع توضيح مباشر لمواضع التسرب.",
+    "Report link copied to clipboard.": "تم نسخ رابط التقرير إلى الحافظة.",
+    "Copy failed. Copy the current browser address manually.": "تعذر النسخ. انسخ عنوان المتصفح الحالي يدويًا."
 }
