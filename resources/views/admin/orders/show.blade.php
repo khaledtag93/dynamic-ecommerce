@@ -16,10 +16,12 @@
         \App\Models\Order::STATUS_COMPLETED => 3,
         \App\Models\Order::STATUS_CANCELLED => 1,
     ][$order->status] ?? 1;
+    $currency = $order->currency ?: 'EGP';
 @endphp
 
 <x-admin.page-header :kicker="__('Order details')" :title="$order->order_number" :description="__('Placed :date', ['date' => optional($order->placed_at)->format('d M Y, h:i A') ?: $order->created_at->format('d M Y, h:i A')])">
     <a href="{{ route('admin.orders.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to orders') }}</span></a>
+    <a href="{{ route('admin.orders.receipt', $order) }}" class="btn btn-primary btn-text-icon" target="_blank" rel="noopener"><i class="mdi mdi-printer-outline"></i><span>{{ __('Print receipt') }}</span></a>
 </x-admin.page-header>
 
 @if(data_get($order->meta, 'stock_reservation_exception'))
@@ -92,8 +94,8 @@
                                     </td>
                                     <td>{{ $item->sku ?: '—' }}</td>
                                     <td class="text-center">{{ (int) $item->quantity }}</td>
-                                    <td class="text-end">EGP {{ number_format((float) $item->unit_price, 2) }}</td>
-                                    <td class="text-end fw-bold">EGP {{ number_format((float) $item->line_total, 2) }}</td>
+                                    <td class="text-end">{{ $currency }} {{ number_format((float) $item->unit_price, 2) }}</td>
+                                    <td class="text-end fw-bold">{{ $currency }} {{ number_format((float) $item->line_total, 2) }}</td>
                                 </tr>
                             @empty
                                 <tr>
@@ -158,7 +160,7 @@
                             <div class="admin-refund-item">
                                 <div class="d-flex justify-content-between gap-3 flex-wrap mb-1">
                                     <strong>{{ $refund->reason }}</strong>
-                                    <strong>EGP {{ number_format($refund->amount, 2) }}</strong>
+                                    <strong>{{ $currency }} {{ number_format($refund->amount, 2) }}</strong>
                                 </div>
                                 <div class="text-muted small">{{ __('Processed :date', ['date' => optional($refund->processed_at)->format('d M Y, h:i A')]) }}@if($refund->processedBy) · {{ __('By :name', ['name' => $refund->processedBy->name]) }}@endif</div>
                                 @if($refund->notes)<div class="text-muted small mt-2">{{ $refund->notes }}</div>@endif
@@ -196,21 +198,21 @@
 
                 <h4 class="mb-3">{{ __('Order Summary') }}</h4>
                 <div class="admin-summary-list">
-                    <div class="summary-row"><span class="text-muted">{{ __('Subtotal') }}</span><strong>EGP {{ number_format($order->subtotal, 2) }}</strong></div>
-                    <div class="summary-row"><span class="text-muted">{{ __('Discount') }}</span><strong>EGP {{ number_format($order->discount_total, 2) }}</strong></div>
-                    <div class="summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong>EGP {{ number_format($order->shipping_total, 2) }}</strong></div>
-                    <div class="summary-row"><span class="text-muted">{{ __('Tax') }}</span><strong>EGP {{ number_format($order->tax_total, 2) }}</strong></div>
+                    <div class="summary-row"><span class="text-muted">{{ __('Subtotal') }}</span><strong>{{ $currency }} {{ number_format($order->subtotal, 2) }}</strong></div>
+                    <div class="summary-row"><span class="text-muted">{{ __('Discount') }}</span><strong>{{ $currency }} {{ number_format($order->discount_total, 2) }}</strong></div>
+                    <div class="summary-row"><span class="text-muted">{{ __('Shipping') }}</span><strong>{{ $currency }} {{ number_format($order->shipping_total, 2) }}</strong></div>
+                    <div class="summary-row"><span class="text-muted">{{ __('Tax') }}</span><strong>{{ $currency }} {{ number_format($order->tax_total, 2) }}</strong></div>
                     @if($order->coupon_code)
                         <div class="summary-row"><span class="text-muted">{{ __('Coupon') }}</span><strong>{{ $order->coupon_code }}</strong></div>
                     @endif
                     @if((float) $order->refund_total > 0)
-                        <div class="summary-row"><span class="text-muted">{{ __('Refunded') }}</span><strong>EGP {{ number_format($order->refund_total, 2) }}</strong></div>
+                        <div class="summary-row"><span class="text-muted">{{ __('Refunded') }}</span><strong>{{ $currency }} {{ number_format($order->refund_total, 2) }}</strong></div>
                     @endif
                 </div>
                 <hr>
-                <div class="d-flex justify-content-between fs-5"><span class="fw-bold">{{ __('Grand Total') }}</span><span class="fw-bold">EGP {{ number_format($order->grand_total, 2) }}</span></div>
+                <div class="d-flex justify-content-between fs-5"><span class="fw-bold">{{ __('Grand Total') }}</span><span class="fw-bold">{{ $currency }} {{ number_format($order->grand_total, 2) }}</span></div>
                 @if((float) $order->refund_total > 0)
-                    <div class="d-flex justify-content-between mt-2"><span class="text-muted">{{ __('Net after refunds') }}</span><strong>EGP {{ number_format(max(0, (float) $order->grand_total - (float) $order->refund_total), 2) }}</strong></div>
+                    <div class="d-flex justify-content-between mt-2"><span class="text-muted">{{ __('Net after refunds') }}</span><strong>{{ $currency }} {{ number_format(max(0, (float) $order->grand_total - (float) $order->refund_total), 2) }}</strong></div>
                 @endif
                 @if($order->notes)
                     <hr>
@@ -335,8 +337,8 @@
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Refund') }}</h4>
                 <div class="admin-refund-balance mb-3">
-                    <div><span class="text-muted small">{{ __('Refundable balance') }}</span><div class="fw-bold fs-5">EGP {{ number_format($order->refundable_balance, 2) }}</div></div>
-                    @if((float) $order->refund_total > 0)<span class="badge badge-soft-warning">{{ __('Already refunded') }}: EGP {{ number_format($order->refund_total, 2) }}</span>@endif
+                    <div><span class="text-muted small">{{ __('Refundable balance') }}</span><div class="fw-bold fs-5">{{ $currency }} {{ number_format($order->refundable_balance, 2) }}</div></div>
+                    @if((float) $order->refund_total > 0)<span class="badge badge-soft-warning">{{ __('Already refunded') }}: {{ $currency }} {{ number_format($order->refund_total, 2) }}</span>@endif
                 </div>
                 @if($order->canBeRefunded())
                     @if($can('orders.manage'))
