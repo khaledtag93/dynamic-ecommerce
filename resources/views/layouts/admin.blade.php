@@ -3054,43 +3054,47 @@ select option {
                 <div class="content-wrapper">
                     <div class="admin-toast-stack" id="adminToastStack" aria-live="polite" aria-atomic="false">
                         @if (session('message'))
-                            <div class="alert alert-success admin-flash admin-flash--success ">
+                            <div class="alert alert-success admin-flash admin-flash--success">
                                 <div class="admin-flash-icon"><i class="mdi mdi-check-circle-outline"></i></div>
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Update completed') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('message') }}</div>
+                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
                             </div>
                         @endif
                         @if (session('success'))
-                            <div class="alert alert-success admin-flash admin-flash--success ">
+                            <div class="alert alert-success admin-flash admin-flash--success">
                                 <div class="admin-flash-icon"><i class="mdi mdi-check-circle-outline"></i></div>
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Changes saved successfully') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('success') }}</div>
+                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
                             </div>
                         @endif
                         @if (session('warning'))
-                            <div class="alert alert-warning admin-flash admin-flash--warning ">
+                            <div class="alert alert-warning admin-flash admin-flash--warning">
                                 <div class="admin-flash-icon"><i class="mdi mdi-alert-outline"></i></div>
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Please review this note') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('warning') }}</div>
+                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
                             </div>
                         @endif
                         @if (session('error'))
-                            <div class="alert alert-danger admin-flash admin-flash--danger ">
+                            <div class="alert alert-danger admin-flash admin-flash--danger">
                                 <div class="admin-flash-icon"><i class="mdi mdi-alert-circle-outline"></i></div>
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Action needs attention') }}</div>
                                     <div class="admin-flash-subtitle">{{ session('error') }}</div>
+                                </div>
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
                             </div>
                         @endif
                         @if ($errors->any())
-                            <div class="alert alert-danger admin-flash admin-flash--danger ">
+                            <div class="alert alert-danger admin-flash admin-flash--danger">
                                 <div class="admin-flash-icon"><i class="mdi mdi-alert-circle-outline"></i></div>
                                 <div class="admin-flash-content">
                                     <div class="admin-flash-title">{{ __('Please review the highlighted fields') }}</div>
@@ -3104,8 +3108,7 @@ select option {
                                 <button type="button" class="admin-flash-close" data-admin-toast-close aria-label="{{ __('Dismiss notification') }}"><i class="mdi mdi-close"></i></button>
                             </div>
                         @endif
-    
-                        </div>
+                    </div>
 
                     @hasSection('content')
                         @yield('content')
