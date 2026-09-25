@@ -4291,5 +4291,6 @@
     "Payment was confirmed, but the online stock reservation could not be fully restored. Review inventory and fulfillment before processing this order.": "تم تأكيد الدفع، لكن تعذر استعادة حجز المخزون بالكامل. راجع المخزون والتنفيذ قبل معالجة الطلب.",
     "Payment received — fulfillment review required": "تم استلام الدفع — مطلوب مراجعة التنفيذ",
     "Your payment was confirmed, but one or more items need an inventory review before fulfillment. Your payment record is preserved; support can help with the next step.": "تم تأكيد دفعتك، لكن عنصرًا واحدًا أو أكثر يحتاج مراجعة المخزون قبل التنفيذ. سجل الدفع محفوظ ويمكن للدعم مساعدتك في الخطوة التالية.",
-    "Use the configured hosted gateway for secure online payment.": "استخدم بوابة الدفع المستضافة والمُعدة لإتمام الدفع الإلكتروني بأمان."
+    "Use the configured hosted gateway for secure online payment.": "استخدم بوابة الدفع المستضافة والمُعدة لإتمام الدفع الإلكتروني بأمان.",
+    "Online payment session started after stock availability was confirmed.": "بدأت جلسة الدفع الإلكتروني بعد تأكيد توفر المخزون."
 }
