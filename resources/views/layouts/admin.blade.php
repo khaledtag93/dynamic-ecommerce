@@ -463,6 +463,37 @@
             border-color: color-mix(in srgb, var(--admin-primary) 18%, white);
         }
 
+        .admin-toast-stack {
+            position: fixed;
+            top: 5.5rem;
+            inset-inline-end: 1.25rem;
+            z-index: 1090;
+            width: min(26rem, calc(100vw - 2rem));
+            display: grid;
+            gap: .75rem;
+            pointer-events: none;
+        }
+
+        .admin-toast-stack .admin-flash {
+            pointer-events: auto;
+            margin: 0 !important;
+            backdrop-filter: blur(14px);
+            animation: adminToastIn .22s ease-out;
+        }
+
+        @keyframes adminToastIn {
+            from { opacity: 0; transform: translateY(-8px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @media (max-width: 767.98px) {
+            .admin-toast-stack {
+                top: 4.75rem;
+                inset-inline: .75rem;
+                width: auto;
+            }
+        }
+
         .admin-flash {
             display: flex;
             align-items: flex-start;
@@ -2964,56 +2995,59 @@ select option {
 
             <div class="main-panel">
                 <div class="content-wrapper">
-                    @if (session('message'))
-                        <div class="alert alert-success admin-flash admin-flash--success mb-4">
-                            <div class="admin-flash-icon"><i class="mdi mdi-check-circle-outline"></i></div>
-                            <div class="admin-flash-content">
-                                <div class="admin-flash-title">{{ __('Update completed') }}</div>
-                                <div class="admin-flash-subtitle">{{ session('message') }}</div>
+                    <div class="admin-toast-stack" id="adminToastStack" aria-live="polite" aria-atomic="false">
+                        @if (session('message'))
+                            <div class="alert alert-success admin-flash admin-flash--success ">
+                                <div class="admin-flash-icon"><i class="mdi mdi-check-circle-outline"></i></div>
+                                <div class="admin-flash-content">
+                                    <div class="admin-flash-title">{{ __('Update completed') }}</div>
+                                    <div class="admin-flash-subtitle">{{ session('message') }}</div>
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                    @if (session('success'))
-                        <div class="alert alert-success admin-flash admin-flash--success mb-4">
-                            <div class="admin-flash-icon"><i class="mdi mdi-check-circle-outline"></i></div>
-                            <div class="admin-flash-content">
-                                <div class="admin-flash-title">{{ __('Changes saved successfully') }}</div>
-                                <div class="admin-flash-subtitle">{{ session('success') }}</div>
+                        @endif
+                        @if (session('success'))
+                            <div class="alert alert-success admin-flash admin-flash--success ">
+                                <div class="admin-flash-icon"><i class="mdi mdi-check-circle-outline"></i></div>
+                                <div class="admin-flash-content">
+                                    <div class="admin-flash-title">{{ __('Changes saved successfully') }}</div>
+                                    <div class="admin-flash-subtitle">{{ session('success') }}</div>
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                    @if (session('warning'))
-                        <div class="alert alert-warning admin-flash admin-flash--warning mb-4">
-                            <div class="admin-flash-icon"><i class="mdi mdi-alert-outline"></i></div>
-                            <div class="admin-flash-content">
-                                <div class="admin-flash-title">{{ __('Please review this note') }}</div>
-                                <div class="admin-flash-subtitle">{{ session('warning') }}</div>
+                        @endif
+                        @if (session('warning'))
+                            <div class="alert alert-warning admin-flash admin-flash--warning ">
+                                <div class="admin-flash-icon"><i class="mdi mdi-alert-outline"></i></div>
+                                <div class="admin-flash-content">
+                                    <div class="admin-flash-title">{{ __('Please review this note') }}</div>
+                                    <div class="admin-flash-subtitle">{{ session('warning') }}</div>
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                    @if (session('error'))
-                        <div class="alert alert-danger admin-flash admin-flash--danger mb-4">
-                            <div class="admin-flash-icon"><i class="mdi mdi-alert-circle-outline"></i></div>
-                            <div class="admin-flash-content">
-                                <div class="admin-flash-title">{{ __('Action needs attention') }}</div>
-                                <div class="admin-flash-subtitle">{{ session('error') }}</div>
+                        @endif
+                        @if (session('error'))
+                            <div class="alert alert-danger admin-flash admin-flash--danger ">
+                                <div class="admin-flash-icon"><i class="mdi mdi-alert-circle-outline"></i></div>
+                                <div class="admin-flash-content">
+                                    <div class="admin-flash-title">{{ __('Action needs attention') }}</div>
+                                    <div class="admin-flash-subtitle">{{ session('error') }}</div>
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                    @if ($errors->any())
-                        <div class="alert alert-danger admin-flash admin-flash--danger mb-4">
-                            <div class="admin-flash-icon"><i class="mdi mdi-alert-circle-outline"></i></div>
-                            <div class="admin-flash-content">
-                                <div class="admin-flash-title">{{ __('Please review the highlighted fields') }}</div>
-                                <div class="admin-flash-subtitle">{{ __('A few entries still need attention before this form can be saved.') }}</div>
-                                <ul class="admin-flash-list">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
+                        @endif
+                        @if ($errors->any())
+                            <div class="alert alert-danger admin-flash admin-flash--danger ">
+                                <div class="admin-flash-icon"><i class="mdi mdi-alert-circle-outline"></i></div>
+                                <div class="admin-flash-content">
+                                    <div class="admin-flash-title">{{ __('Please review the highlighted fields') }}</div>
+                                    <div class="admin-flash-subtitle">{{ __('A few entries still need attention before this form can be saved.') }}</div>
+                                    <ul class="admin-flash-list">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
                             </div>
+                        @endif
+    
                         </div>
-                    @endif
 
                     @hasSection('content')
                         @yield('content')
@@ -3540,6 +3574,17 @@ function adminApplyResidualTranslations() {
 
 document.addEventListener('DOMContentLoaded', function () {
   adminApplyResidualTranslations();
+
+  document.querySelectorAll('#adminToastStack .admin-flash').forEach((toast) => {
+    const isPersistent = toast.classList.contains('admin-flash--danger') || toast.classList.contains('admin-flash--warning');
+    if (isPersistent) return;
+    window.setTimeout(() => {
+      toast.style.transition = 'opacity .2s ease, transform .2s ease';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-6px)';
+      window.setTimeout(() => toast.remove(), 220);
+    }, 4200);
+  });
 
   if (window.bootstrap && bootstrap.Tooltip) {
     document.querySelectorAll('[data-bs-toggle="tooltip"], [data-admin-tooltip]').forEach((element) => {
