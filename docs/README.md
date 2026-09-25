@@ -163,3 +163,6 @@ Each slice is reviewable on its own and follows CI → QAS → user review → P
 
 ### 2026-09-25 — Storefront Cart Live Quantity Update
 - [Storefront Cart Live Quantity Update](STOREFRONT_CART_LIVE_UPDATE_2026-09-25.md)
+
+### 2026-09-25 — Customer Notifications Live Actions
+- [Customer Notifications Live Actions](CUSTOMER_NOTIFICATIONS_LIVE_ACTIONS_2026-09-25.md)
