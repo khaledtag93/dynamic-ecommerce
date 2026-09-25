@@ -5176,5 +5176,8 @@
     "Report link copied to clipboard.": "تم نسخ رابط التقرير إلى الحافظة.",
     "Copy failed. Copy the current browser address manually.": "تعذر النسخ. انسخ عنوان المتصفح الحالي يدويًا.",
     "Dismiss notification": "إغلاق الإشعار",
-    "Search admin workspace": "البحث في مساحة الإدارة"
+    "Search admin workspace": "البحث في مساحة الإدارة",
+  "Social channels": "قنوات التواصل الاجتماعي",
+  "Only configured channels are shown in the storefront footer.": "تظهر في تذييل المتجر قنوات التواصل التي تم إعدادها فقط.",
+  "Show social links": "إظهار روابط التواصل الاجتماعي"
 }
