@@ -14,7 +14,9 @@ Finish the active workstream to a strong, tested state before moving to the next
 
 Harden the persistent Admin and Customer navigation/feedback surfaces into a production-grade shared shell. Current Admin work includes a single mobile sidebar trigger, backdrop/scroll-lock/Escape lifecycle, active-route semantics, accessible expandable groups, keyboard-operable topbar menus, global search shortcuts, and a normalized dismissible toast stack. Preserve permission boundaries, responsive/RTL behavior, and inline field validation while removing duplicated shell behavior.
 
-The Admin shell is being finished first because it already has the shared toast/navigation foundation. Customer/storefront shell work remains part of this same workstream and should follow before closure.
+The Admin and Customer/storefront shells now share the same production-grade interaction direction. Admin has a single mobile sidebar lifecycle, accessible expandable groups, keyboard-operable topbar menus, global search shortcut, current-page semantics, and dismissible global toasts. Storefront now has current-page states across primary, utility, account and footer navigation; accessible mobile collapse behavior; keyboard-operable account/category dropdowns; a visible-search `/` shortcut; responsive RTL-safe focus states; and dismissible global success/status toasts while field validation remains inline.
+
+Before closing this workstream, run the latest branch-head Hardening CI and complete an authenticated QAS desktop/mobile EN/AR review when QAS is deliberately deployed. QAS deployment remains explicit and is never automatic.
 
 ### Recently closed
 
@@ -59,7 +61,7 @@ Examples:
 - filters/search update without disruptive full-page reloads where practical;
 - dependent totals, badges and summaries stay synchronized.
 
-### 4. Navigation shell quality — active major workstream
+### 4. Navigation shell quality — source hardening substantially complete
 
 Admin sidebar/top navigation and customer navigation are persistent product surfaces and need dedicated polish:
 - cleaner hierarchy and grouping;
