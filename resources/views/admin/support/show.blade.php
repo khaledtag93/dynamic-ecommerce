@@ -34,7 +34,7 @@
                                 <div class="d-flex justify-content-between gap-2 flex-wrap mb-2">
                                     <div class="fw-semibold">
                                         {{ $message->author?->name ?? __('System') }}
-                                        <span class="text-muted small">· {{ $message->author_type === AppModelsSupportCaseMessage::AUTHOR_CUSTOMER ? __('Customer') : __('Staff') }}</span>
+                                        <span class="text-muted small">· {{ $message->author_type === \App\Models\SupportCaseMessage::AUTHOR_CUSTOMER ? __('Customer') : __('Staff') }}</span>
                                     </div>
                                     <div class="d-flex gap-2 align-items-center">
                                         @if($message->isInternal())<span class="badge badge-soft-warning">{{ __('Internal note') }}</span>@endif
@@ -61,8 +61,8 @@
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">{{ __('Visibility') }}</label>
                                     <select name="visibility" class="form-select">
-                                        <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
-                                        <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_INTERNAL }}">{{ __('Internal note') }}</option>
+                                        <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
+                                        <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}">{{ __('Internal note') }}</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
@@ -116,7 +116,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">{{ __('Priority') }}</label>
                                 <select name="priority" class="form-select">
-                                    @foreach(AppModelsSupportCase::priorityOptions() as $value => $label)
+                                    @foreach(\App\Models\SupportCase::priorityOptions() as $value => $label)
                                         <option value="{{ $value }}" @selected($supportCase->priority === $value)>{{ $label }}</option>
                                     @endforeach
                                 </select>
@@ -124,7 +124,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">{{ __('Status') }}</label>
                                 <select name="status" class="form-select">
-                                    @foreach(AppModelsSupportCase::statusOptions() as $value => $label)
+                                    @foreach(\App\Models\SupportCase::statusOptions() as $value => $label)
                                         <option value="{{ $value }}" @selected($supportCase->status === $value)>{{ $label }}</option>
                                     @endforeach
                                 </select>

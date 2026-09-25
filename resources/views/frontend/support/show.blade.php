@@ -12,14 +12,14 @@
             <div class="col-lg-8">
                 <div class="lc-card p-4 mb-4">
                     <div class="d-flex gap-2 flex-wrap mb-4">
-                        <span class="lc-status-badge {{ in_array($supportCase->status, [AppModelsSupportCase::STATUS_RESOLVED, AppModelsSupportCase::STATUS_CLOSED], true) ? 'lc-badge-success' : 'lc-badge-processing' }}">{{ $supportCase->status_label }}</span>
+                        <span class="lc-status-badge {{ in_array($supportCase->status, [\App\Models\SupportCase::STATUS_RESOLVED, \App\Models\SupportCase::STATUS_CLOSED], true) ? 'lc-badge-success' : 'lc-badge-processing' }}">{{ $supportCase->status_label }}</span>
                         <span class="badge text-bg-light">{{ $supportCase->priority_label }}</span>
                     </div>
                     <div class="d-grid gap-3">
                         @foreach($supportCase->customerMessages as $message)
                             <div class="border rounded-4 p-3">
                                 <div class="d-flex justify-content-between gap-2 flex-wrap mb-2">
-                                    <div class="fw-bold">{{ $message->author_type === AppModelsSupportCaseMessage::AUTHOR_CUSTOMER ? __('You') : ($message->author?->name ?? __('Support team')) }}</div>
+                                    <div class="fw-bold">{{ $message->author_type === \App\Models\SupportCaseMessage::AUTHOR_CUSTOMER ? __('You') : ($message->author?->name ?? __('Support team')) }}</div>
                                     <div class="text-muted small">{{ $message->created_at?->format('d M Y H:i') }}</div>
                                 </div>
                                 <div style="white-space:pre-wrap">{{ $message->body }}</div>
@@ -28,7 +28,7 @@
                     </div>
                 </div>
 
-                @if($supportCase->status !== AppModelsSupportCase::STATUS_CLOSED)
+                @if($supportCase->status !== \App\Models\SupportCase::STATUS_CLOSED)
                     <div class="lc-card p-4">
                         <h2 class="h5 fw-bold mb-3">{{ __('Add a reply') }}</h2>
                         <form method="POST" action="{{ route('support.reply', $supportCase) }}" data-submit-loading>

@@ -18,7 +18,7 @@
                         <tr>
                             <td>
                                 <div class="fw-semibold">{{ $supportCase->case_number }}</div>
-                                <div class="text-muted small">{{ IlluminateSupportStr::limit($supportCase->subject, 70) }}</div>
+                                <div class="text-muted small">{{ \Illuminate\Support\Str::limit($supportCase->subject, 70) }}</div>
                             </td>
                             <td>
                                 <div class="fw-semibold">{{ $supportCase->customer?->name ?? __('Guest / unlinked') }}</div>

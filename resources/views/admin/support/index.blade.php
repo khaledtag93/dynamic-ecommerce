@@ -38,7 +38,7 @@
                     <label class="form-label fw-semibold">{{ __('Status') }}</label>
                     <select name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
-                        @foreach(AppModelsSupportCase::statusOptions() as $value => $label)
+                        @foreach(\App\Models\SupportCase::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -47,7 +47,7 @@
                     <label class="form-label fw-semibold">{{ __('Priority') }}</label>
                     <select name="priority" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All priorities') }}</option>
-                        @foreach(AppModelsSupportCase::priorityOptions() as $value => $label)
+                        @foreach(\App\Models\SupportCase::priorityOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['priority'] === $value)>{{ $label }}</option>
                         @endforeach
                     </select>

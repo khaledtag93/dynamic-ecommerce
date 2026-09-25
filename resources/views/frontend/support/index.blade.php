@@ -19,10 +19,10 @@
                     <tbody>
                         @forelse($cases as $supportCase)
                             <tr>
-                                <td><div class="fw-bold">{{ $supportCase->case_number }}</div><div class="text-muted small">{{ IlluminateSupportStr::limit($supportCase->subject, 70) }}</div></td>
+                                <td><div class="fw-bold">{{ $supportCase->case_number }}</div><div class="text-muted small">{{ \Illuminate\Support\Str::limit($supportCase->subject, 70) }}</div></td>
                                 <td>{{ $supportCase->order?->order_number ?? '—' }}</td>
                                 <td>{{ $supportCase->priority_label }}</td>
-                                <td><span class="lc-status-badge {{ in_array($supportCase->status, [AppModelsSupportCase::STATUS_RESOLVED, AppModelsSupportCase::STATUS_CLOSED], true) ? 'lc-badge-success' : 'lc-badge-processing' }}">{{ $supportCase->status_label }}</span></td>
+                                <td><span class="lc-status-badge {{ in_array($supportCase->status, [\App\Models\SupportCase::STATUS_RESOLVED, \App\Models\SupportCase::STATUS_CLOSED], true) ? 'lc-badge-success' : 'lc-badge-processing' }}">{{ $supportCase->status_label }}</span></td>
                                 <td>{{ $supportCase->updated_at?->format('d M Y H:i') }}</td>
                                 <td class="text-end"><a href="{{ route('support.show', $supportCase) }}" class="btn lc-btn-soft btn-sm">{{ __('Open') }}</a></td>
                             </tr>

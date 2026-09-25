@@ -50,16 +50,16 @@
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('Priority') }}</label>
                         <select name="priority" class="form-select" required>
-                            @foreach(AppModelsSupportCase::priorityOptions() as $value => $label)
-                                <option value="{{ $value }}" @selected(old('priority', AppModelsSupportCase::PRIORITY_NORMAL) === $value)>{{ $label }}</option>
+                            @foreach(\App\Models\SupportCase::priorityOptions() as $value => $label)
+                                <option value="{{ $value }}" @selected(old('priority', \App\Models\SupportCase::PRIORITY_NORMAL) === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('First message visibility') }}</label>
                         <select name="visibility" class="form-select" required>
-                            <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
-                            <option value="{{ AppModelsSupportCaseMessage::VISIBILITY_INTERNAL }}" @selected(old('visibility') === AppModelsSupportCaseMessage::VISIBILITY_INTERNAL)>{{ __('Internal note') }}</option>
+                            <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
+                            <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}" @selected(old('visibility') === \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL)>{{ __('Internal note') }}</option>
                         </select>
                     </div>
                     <div class="col-12">
