@@ -864,3 +864,15 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Admin V2 consistency can now be treated as source-complete for the known high-impact Admin workspaces; future fixes should be targeted regressions or feature-driven UI work rather than another broad consistency pass.
 - Detailed note: docs/FINAL_ADMIN_V2_CLEANUP_2026-09-25.md.
 - CI/QAS verification pending for the current head; Production unchanged.
+
+
+## Consolidated QAS deployment checkpoint — 2026-09-25
+- QAS deployment is operator-confirmed successful on `https://v42.tag-marketplace.com`.
+- Deployed commit: `899e6410331543fa3c2a807c788ccf4d066a25f5` (`899e6410`) from `v42-clean-baseline`.
+- The deploy script safety gates prevented unsafe continuation twice before the final successful deployment:
+  - route verification exposed duplicate frontend Return routes referencing non-imported `FrontendReturnController`; the duplicate invalid block was removed in `64740cb3`;
+  - Blade namespace preflight exposed corrupted class references in Inventory, Payment details and Purchases; they were corrected before deployment.
+- Added `BladeNamespacePreflightTest` to recursively scan Admin Blade files for corrupted `AppModels...` / `IlluminateSupport...` namespace patterns.
+- QAS now contains the accumulated 2026-09-25 source work: Returns/RMA, explicit admin-role hardening, Roles & Permissions V2, Admin UI consistency foundation, Analytics/Branding/Categories/Catalog workspaces, Admin consistency/form/settings sweeps and final Admin V2 cleanup.
+- QAS deployment confirmation establishes code integration only; authenticated functional, EN/AR, RTL, responsive and workflow acceptance remains the next phase.
+- Production is unchanged and no Production deployment is implied by this checkpoint.
