@@ -62,3 +62,9 @@ Run the consolidated authenticated QAS acceptance pass on the operator-confirmed
 
 ### Reference
 See `docs/PROJECT_CHECKPOINT_2026-09-25.md` for the detailed checkpoint and remaining roadmap.
+
+
+### Latest QAS verification note
+- Media-root regression is verified resolved in QAS.
+- Category list/edit images now render correctly after the isolated QAS public-root fix and one-time uploads synchronization.
+- Continue with the remaining consolidated QAS acceptance backlog; do not reopen the media issue unless it regresses.
