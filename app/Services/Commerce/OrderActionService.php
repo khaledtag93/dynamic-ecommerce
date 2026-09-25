@@ -182,7 +182,7 @@ class OrderActionService
         });
     }
 
-    public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null): Order
+    public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null): Order
     {
         if ($amount <= 0) {
             throw ValidationException::withMessages([
@@ -190,7 +190,7 @@ class OrderActionService
             ]);
         }
 
-        return DB::transaction(function () use ($order, $amount, $reason, $notes, $processedBy) {
+        return DB::transaction(function () use ($order, $amount, $reason, $notes, $processedBy, $returnRequestId) {
             $lockedOrder = Order::query()
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
@@ -215,6 +215,7 @@ class OrderActionService
             }
 
             $lockedOrder->refunds()->create([
+                'return_request_id' => $returnRequestId,
                 'amount' => $amount,
                 'reason' => $reason,
                 'notes' => $notes,
