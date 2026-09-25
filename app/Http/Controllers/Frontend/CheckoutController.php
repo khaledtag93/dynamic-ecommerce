@@ -17,6 +17,7 @@ use App\Services\Commerce\ProductRecommendationService;
 use App\Services\Commerce\SmartMerchandisingService;
 use App\Services\Commerce\ShippingService;
 use App\Services\Commerce\ReturnRequestService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -276,7 +277,7 @@ public function store(Request $request): RedirectResponse
         ]);
     }
 
-    public function cancelOrder(Request $request, Order $order): RedirectResponse
+    public function cancelOrder(Request $request, Order $order): RedirectResponse|JsonResponse
     {
         abort_unless((int) $order->user_id === (int) auth()->id(), 403);
 
@@ -289,11 +290,27 @@ public function store(Request $request): RedirectResponse
         ]);
 
         try {
-            $this->orderActionService->cancel($order, $data['cancelled_reason'] ?? 'Cancelled by customer.', (int) auth()->id());
+            $cancelledOrder = $this->orderActionService->cancel($order, $data['cancelled_reason'] ?? 'Cancelled by customer.', (int) auth()->id());
+            $message = __('Order cancelled successfully. Stock was restored and the order timeline was updated.');
+
+            if ($request->expectsJson() || $request->header('X-Order-Cancel-Live') === '1') {
+                return response()->json([
+                    'message' => $message,
+                    'order' => [
+                        'status' => $cancelledOrder->status,
+                        'status_label' => $cancelledOrder->status_label,
+                        'payment_status' => $cancelledOrder->payment_status,
+                        'payment_status_label' => $cancelledOrder->payment_status_label,
+                        'delivery_status' => $cancelledOrder->delivery_status,
+                        'delivery_status_label' => $cancelledOrder->delivery_status_label,
+                        'can_user_cancel' => $cancelledOrder->can_user_cancel,
+                    ],
+                ]);
+            }
 
             return redirect()
                 ->route('orders.show', $order)
-                ->with('success', __('Order cancelled successfully. Stock was restored and the order timeline was updated.'));
+                ->with('success', $message);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }

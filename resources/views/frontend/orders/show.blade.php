@@ -27,7 +27,8 @@
                         data-confirm-message="{{ __('Are you sure you want to cancel this order?') }}"
                         data-confirm-subtitle="{{ __('If cancellation is still allowed, stock and the order timeline will be updated through the normal cancellation flow.') }}"
                         data-confirm-ok="{{ __('Cancel order') }}"
-                        data-confirm-cancel="{{ __('Keep order') }}">
+                        data-confirm-cancel="{{ __('Keep order') }}"
+                        data-order-cancel-live>
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="cancelled_reason" value="Cancelled by customer from account area.">
@@ -37,6 +38,8 @@
             </div>
         </div>
 
+        <div class="small text-muted mb-3 d-none" data-order-live-status role="status" aria-live="polite"></div>
+
         <div class="row g-4">
             <div class="col-lg-8">
                 <div class="lc-card p-4 mb-4">
@@ -44,9 +47,9 @@
                         <div>
                             <div class="text-muted small text-uppercase fw-bold mb-2">{{ __('Status overview') }}</div>
                             <div class="d-flex gap-2 flex-wrap">
-                                <span class="lc-status-badge {{ $order->status === \App\Models\Order::STATUS_COMPLETED ? 'lc-badge-success' : ($order->status === \App\Models\Order::STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->status_label }}</span>
-                                <span class="lc-status-badge {{ $order->payment_status === \App\Models\Order::PAYMENT_STATUS_PAID ? 'lc-badge-success' : ($order->payment_status === \App\Models\Order::PAYMENT_STATUS_FAILED ? 'lc-badge-danger' : 'lc-badge-unpaid') }}">{{ $order->payment_status_label }}</span>
-                                <span class="lc-status-badge {{ $order->delivery_status === \App\Models\Order::DELIVERY_STATUS_DELIVERED ? 'lc-badge-success' : ($order->delivery_status === \App\Models\Order::DELIVERY_STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->delivery_status_label }}</span>
+                                <span data-order-status class="lc-status-badge {{ $order->status === \App\Models\Order::STATUS_COMPLETED ? 'lc-badge-success' : ($order->status === \App\Models\Order::STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->status_label }}</span>
+                                <span data-order-payment-status class="lc-status-badge {{ $order->payment_status === \App\Models\Order::PAYMENT_STATUS_PAID ? 'lc-badge-success' : ($order->payment_status === \App\Models\Order::PAYMENT_STATUS_FAILED ? 'lc-badge-danger' : 'lc-badge-unpaid') }}">{{ $order->payment_status_label }}</span>
+                                <span data-order-delivery-status class="lc-status-badge {{ $order->delivery_status === \App\Models\Order::DELIVERY_STATUS_DELIVERED ? 'lc-badge-success' : ($order->delivery_status === \App\Models\Order::DELIVERY_STATUS_CANCELLED ? 'lc-badge-danger' : 'lc-badge-processing') }}">{{ $order->delivery_status_label }}</span>
                             </div>
                         </div>
                         <div class="text-end">
@@ -170,3 +173,65 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form[data-order-cancel-live]');
+    if (!form) return;
+
+    form.addEventListener('submit', async function (event) {
+        if (form.dataset.confirmed !== '1') return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const button = event.submitter || form.querySelector('button[type="submit"]');
+        if (button) button.disabled = true;
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Order-Cancel-Live': '1',
+                    'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    cancelled_reason: form.querySelector('input[name="cancelled_reason"]')?.value || null,
+                }),
+            });
+
+            if (!response.ok) throw new Error('order-cancel-failed');
+
+            const payload = await response.json();
+            const order = payload.order || {};
+            const status = document.querySelector('[data-order-status]');
+            const payment = document.querySelector('[data-order-payment-status]');
+            const delivery = document.querySelector('[data-order-delivery-status]');
+            const liveStatus = document.querySelector('[data-order-live-status]');
+
+            if (status) {
+                status.textContent = order.status_label || status.textContent;
+                status.className = 'lc-status-badge lc-badge-danger';
+            }
+            if (payment) payment.textContent = order.payment_status_label || payment.textContent;
+            if (delivery) {
+                delivery.textContent = order.delivery_status_label || delivery.textContent;
+                delivery.className = 'lc-status-badge lc-badge-danger';
+            }
+            if (liveStatus) {
+                liveStatus.textContent = payload.message || @json(__('Order cancelled successfully. Stock was restored and the order timeline was updated.'));
+                liveStatus.classList.remove('d-none');
+            }
+
+            form.remove();
+        } catch (error) {
+            form.submit();
+        }
+    }, true);
+});
+</script>
+@endpush
