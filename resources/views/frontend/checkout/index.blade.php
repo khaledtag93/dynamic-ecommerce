@@ -168,11 +168,29 @@
                                     <p class="text-muted small mb-2">{{ __('Choose before completing the rest of the form. You can still edit the filled fields for this order.') }}</p>
                                     <div class="d-flex flex-wrap gap-2">
                                         @foreach($savedAddresses as $savedAddress)
-                                            <a href="{{ route('checkout.index', ['address' => $savedAddress->id]) }}" class="btn btn-sm {{ $selectedShippingAddress?->id === $savedAddress->id ? 'lc-btn-primary' : 'lc-btn-soft' }}" @if($selectedShippingAddress?->id === $savedAddress->id) aria-current="true" @endif>
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm {{ $selectedShippingAddress?->id === $savedAddress->id ? 'lc-btn-primary' : 'lc-btn-soft' }}"
+                                                data-checkout-saved-address
+                                                data-recipient-name="{{ $savedAddress->recipient_name }}"
+                                                data-phone="{{ $savedAddress->phone }}"
+                                                data-address-line-1="{{ $savedAddress->address_line_1 }}"
+                                                data-address-line-2="{{ $savedAddress->address_line_2 }}"
+                                                data-city="{{ $savedAddress->city }}"
+                                                data-state="{{ $savedAddress->state }}"
+                                                data-postal-code="{{ $savedAddress->postal_code }}"
+                                                data-country="{{ $savedAddress->country }}"
+                                                aria-pressed="{{ $selectedShippingAddress?->id === $savedAddress->id ? 'true' : 'false' }}"
+                                            >
                                                 {{ $savedAddress->label }} · {{ $savedAddress->city }}
-                                            </a>
+                                            </button>
                                         @endforeach
-                                        <a href="{{ route('checkout.index', ['address' => 'new']) }}" class="btn btn-sm {{ $selectedShippingAddress ? 'lc-btn-soft' : 'lc-btn-primary' }}">{{ __('Enter a new address') }}</a>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm {{ $selectedShippingAddress ? 'lc-btn-soft' : 'lc-btn-primary' }}"
+                                            data-checkout-new-address
+                                            aria-pressed="{{ $selectedShippingAddress ? 'false' : 'true' }}"
+                                        >{{ __('Enter a new address') }}</button>
                                     </div>
                                     <a href="{{ route('account.addresses.index') }}" class="small d-inline-block mt-2">{{ __('Manage saved addresses') }}</a>
                                 </div>
@@ -520,6 +538,62 @@ document.addEventListener('DOMContentLoaded', function () {
         clearTimeout(timer);
         timer = setTimeout(requestQuote, 350);
     };
+
+    const addressButtons = Array.from(form.querySelectorAll('[data-checkout-saved-address]'));
+    const newAddressButton = form.querySelector('[data-checkout-new-address]');
+    const addressFields = {
+        line1: form.querySelector('#checkoutShippingAddress1'),
+        line2: form.querySelector('#checkoutShippingAddress2'),
+        city: form.querySelector('#checkoutShippingCity'),
+        state: form.querySelector('#checkoutShippingState'),
+        postal: form.querySelector('#checkoutShippingPostal'),
+        country: form.querySelector('#checkoutShippingCountry'),
+        customerName: form.querySelector('#checkoutCustomerName'),
+        customerPhone: form.querySelector('#checkoutCustomerPhone'),
+    };
+
+    const setAddressButtonState = (activeButton = null) => {
+        [...addressButtons, newAddressButton].filter(Boolean).forEach((button) => {
+            const active = button === activeButton;
+            button.classList.toggle('lc-btn-primary', active);
+            button.classList.toggle('lc-btn-soft', !active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+    };
+
+    addressButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            if (addressFields.customerName && button.dataset.recipientName) {
+                addressFields.customerName.value = button.dataset.recipientName;
+            }
+            if (addressFields.customerPhone && button.dataset.phone) {
+                addressFields.customerPhone.value = button.dataset.phone;
+            }
+
+            if (addressFields.line1) addressFields.line1.value = button.dataset.addressLine1 || '';
+            if (addressFields.line2) addressFields.line2.value = button.dataset.addressLine2 || '';
+            if (addressFields.city) addressFields.city.value = button.dataset.city || '';
+            if (addressFields.state) addressFields.state.value = button.dataset.state || '';
+            if (addressFields.postal) addressFields.postal.value = button.dataset.postalCode || '';
+            if (addressFields.country) addressFields.country.value = button.dataset.country || '';
+
+            setAddressButtonState(button);
+            requestQuote();
+        });
+    });
+
+    newAddressButton?.addEventListener('click', () => {
+        if (addressFields.line1) addressFields.line1.value = '';
+        if (addressFields.line2) addressFields.line2.value = '';
+        if (addressFields.city) addressFields.city.value = '';
+        if (addressFields.state) addressFields.state.value = '';
+        if (addressFields.postal) addressFields.postal.value = '';
+        if (addressFields.country) addressFields.country.value = @json(old('shipping_country', 'Egypt'));
+
+        setAddressButtonState(newAddressButton);
+        invalidate(@json(__('Enter a city and country to calculate shipping.')));
+        addressFields.line1?.focus({ preventScroll: true });
+    });
 
     method?.addEventListener('change', requestQuote);
     city?.addEventListener('input', scheduleQuote);
