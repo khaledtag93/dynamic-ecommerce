@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Rules\SafeStorefrontLink;
+
 use App\Http\Controllers\Controller;
 use App\Models\WebsiteSetting;
 use App\Services\Commerce\StoreSettingsService;
@@ -436,9 +438,9 @@ class SettingController extends Controller
             'hero_subtitle' => ['nullable', 'string', 'max:1000'],
             'hero_badge_text' => ['nullable', 'string', 'max:120'],
             'hero_primary_button_text' => ['nullable', 'string', 'max:100'],
-            'hero_primary_button_link' => ['nullable', 'string', 'max:255'],
+            'hero_primary_button_link' => ['nullable', 'string', 'max:255', new SafeStorefrontLink],
             'hero_secondary_button_text' => ['nullable', 'string', 'max:100'],
-            'hero_secondary_button_link' => ['nullable', 'string', 'max:255'],
+            'hero_secondary_button_link' => ['nullable', 'string', 'max:255', new SafeStorefrontLink],
             'logo_path' => ['nullable', 'string', 'max:255'],
             'favicon_path' => ['nullable', 'string', 'max:255'],
             'admin_logo_path' => ['nullable', 'string', 'max:255'],
@@ -467,7 +469,7 @@ class SettingController extends Controller
             'home_manual_featured_products_limit' => ['nullable', 'integer', 'min:1', 'max:24'],
             'home_manual_featured_products_ids' => ['nullable', 'string', 'max:1000'],
             'home_manual_featured_products_action_text' => ['nullable', 'string', 'max:100'],
-            'home_manual_featured_products_action_link' => ['nullable', 'string', 'max:255'],
+            'home_manual_featured_products_action_link' => ['nullable', 'string', 'max:255', new SafeStorefrontLink],
             'home_categories_title' => ['nullable', 'string', 'max:120'],
             'home_categories_subtitle' => ['nullable', 'string', 'max:120'],
             'home_categories_limit' => ['nullable', 'integer', 'min:1', 'max:24'],
@@ -490,9 +492,9 @@ class SettingController extends Controller
             'home_promo_title' => ['nullable', 'string', 'max:160'],
             'home_promo_subtitle' => ['nullable', 'string', 'max:500'],
             'home_promo_button_text' => ['nullable', 'string', 'max:100'],
-            'home_promo_button_link' => ['nullable', 'string', 'max:255'],
+            'home_promo_button_link' => ['nullable', 'string', 'max:255', new SafeStorefrontLink],
             'home_promo_secondary_button_text' => ['nullable', 'string', 'max:100'],
-            'home_promo_secondary_button_link' => ['nullable', 'string', 'max:255'],
+            'home_promo_secondary_button_link' => ['nullable', 'string', 'max:255', new SafeStorefrontLink],
 
             'trust_block_1_icon' => ['nullable', 'string', 'max:100'],
             'trust_block_1_title' => ['nullable', 'string', 'max:120'],
@@ -526,7 +528,7 @@ class SettingController extends Controller
             $rules["promo_banner_{$index}_title"] = ['nullable', 'string', 'max:160'];
             $rules["promo_banner_{$index}_subtitle"] = ['nullable', 'string', 'max:500'];
             $rules["promo_banner_{$index}_button_text"] = ['nullable', 'string', 'max:100'];
-            $rules["promo_banner_{$index}_button_link"] = ['nullable', 'string', 'max:255'];
+            $rules["promo_banner_{$index}_button_link"] = ['nullable', 'string', 'max:255', new SafeStorefrontLink];
             $rules["promo_banner_{$index}_image_path"] = ['nullable', 'string', 'max:255'];
             $rules["promo_banner_{$index}_active"] = ['nullable', 'boolean'];
             $rules["promo_banner_{$index}_sort_order"] = ['nullable', 'integer', 'min:1', 'max:99'];
