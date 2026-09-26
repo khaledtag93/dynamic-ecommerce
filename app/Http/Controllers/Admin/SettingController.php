@@ -293,7 +293,6 @@ class SettingController extends Controller
                 'customer_card_radius' => '16',
                 'customer_badge_style' => 'soft',
             ],
-,
             'luxury_noir' => [
                 'theme_preset'=>'luxury_noir','theme_label'=>'Luxury Noir','brand_primary_color'=>'#b88a44','brand_secondary_color'=>'#11100e','brand_accent_color'=>'#d7b56d','brand_background_color'=>'#f7f5f0','brand_surface_color'=>'#fffdf8','brand_soft_color'=>'#eee8dc','brand_border_color'=>'#d8cfbf','brand_muted_bg_color'=>'#f1eee7','brand_table_head_color'=>'#eee8dc','brand_row_hover_color'=>'#faf7f0','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#11100e','admin_header_color'=>'#fffdf8','admin_surface_color'=>'#fffdf8','admin_card_border_color'=>'#ded6c8','admin_accent_soft_color'=>'#f5ead1','admin_primary_soft_color'=>'#eee8dc','customer_card_radius'=>'12','customer_badge_style'=>'outline',
             ],
