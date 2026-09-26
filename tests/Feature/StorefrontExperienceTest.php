@@ -549,7 +549,21 @@ class StorefrontExperienceTest extends TestCase
         $login
             ->assertOk()
             ->assertSee('Login to your account')
-            ->assertSee('lc-card p-4 p-lg-5', false);
+            ->assertSee('lc-card p-4 p-lg-5', false)
+            ->assertSee('lc-page-shell', false)
+            ->assertSee('for="email"', false)
+            ->assertSee('for="password"', false);
+
+        $register = $this->get(route('register'));
+
+        $register
+            ->assertOk()
+            ->assertSee('Create account')
+            ->assertSee('lc-page-shell', false)
+            ->assertSee('for="name"', false)
+            ->assertSee('for="email"', false)
+            ->assertSee('for="password"', false)
+            ->assertSee('for="password-confirm"', false);
 
         $reset = $this->get(route('password.request'));
 
@@ -609,10 +623,26 @@ class StorefrontExperienceTest extends TestCase
     {
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
 
-        $this->assertStringContainsString('class="d-md-none" href="{{ route(\'account.index\') }}" @if(request()->routeIs(\'account.*\')) aria-current="page" @endif', $layout);
+        $this->assertStringContainsString('class="d-md-none" href="{{ route(\'account.index\') }}" @if(request()->routeIs(\'account.index\')) aria-current="page" @endif', $layout);
         $this->assertStringContainsString('class="d-md-none" href="{{ route(\'orders.index\') }}" @if(request()->routeIs(\'orders.*\')) aria-current="page" @endif', $layout);
         $this->assertStringContainsString('class="d-md-none" href="{{ route(\'account.addresses.index\') }}" @if(request()->routeIs(\'account.addresses.*\')) aria-current="page" @endif', $layout);
         $this->assertStringContainsString('class="d-md-none" href="{{ route(\'notifications.index\') }}" @if(request()->routeIs(\'notifications.*\')) aria-current="page" @endif', $layout);
+    }
+
+    public function test_address_book_page_has_one_logical_current_account_destination(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('account.addresses.index'));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringNotContainsString('href="'.route('account.index').'" aria-current="page"', $html);
+        $this->assertGreaterThanOrEqual(2, substr_count($html, 'href="'.route('account.addresses.index').'" aria-current="page"'));
+
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+        $this->assertStringContainsString('.retail-account-menu .dropdown-item[aria-current="page"]', $layout);
     }
 
     public function test_account_navigation_keeps_current_section_visible_on_mobile(): void
