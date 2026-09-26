@@ -20,7 +20,8 @@
     $selectedVariantStock = (int) ($defaultVariant->stock ?? $stockQty);
     $displayStock = $activeVariants->isNotEmpty() ? $selectedVariantStock : $stockQty;
     $selectedAvailable = $product->in_stock && $displayStock > 0;
-    $isLowStock = $product->in_stock && $displayStock > 0 && $displayStock <= max(5, (int) ($product->low_stock_threshold ?? 3));
+    $lowStockThreshold = max(5, (int) ($product->low_stock_threshold ?? 3));
+    $isLowStock = $product->in_stock && $displayStock > 0 && $displayStock <= $lowStockThreshold;
     $bundleProducts = ($bundleProducts ?? collect())->values();
     $addonProducts = ($addonProducts ?? collect())->values();
     $bundleSeedTotal = $currentPrice + $bundleProducts->sum(fn ($item) => (float) ($item->current_price ?? 0));
@@ -97,7 +98,7 @@
                         @endif
                     </div>
 
-                    <div class="product-urgency-banner mb-3 {{ $selectedAvailable ? ($isLowStock ? 'is-warning' : 'is-success') : 'is-muted' }}" id="productStockBanner">
+                    <div class="product-urgency-banner mb-3 {{ $selectedAvailable ? ($isLowStock ? 'is-warning' : 'is-success') : 'is-muted' }}" id="productStockBanner" role="status" aria-live="polite">
                         <i class="bi {{ $selectedAvailable ? ($isLowStock ? 'bi-alarm' : 'bi-check2-circle') : 'bi-exclamation-octagon' }}"></i>
                         <div>
                             <strong id="productStockHeadline">
@@ -125,11 +126,11 @@
                         @if($activeVariants->isNotEmpty())
                             <div>
                                 <div class="d-flex justify-content-between align-items-center gap-2 mb-2 flex-wrap">
-                                    <label class="form-label fw-bold mb-0">{{ __('Choose variant') }}</label>
+                                    <label class="form-label fw-bold mb-0" for="productVariantSelect">{{ __('Choose variant') }}</label>
                                     <span class="small text-muted" id="selectedVariantLabel">{{ $defaultVariant?->variant_name ?: __('Standard option') }}</span>
                                 </div>
 
-                                <select name="variant_id" class="form-select lc-form-select d-none" id="productVariantSelect" required>
+                                <select name="variant_id" class="form-select lc-form-select d-none" id="productVariantSelect" required aria-required="true">
                                     @foreach($activeVariants as $variant)
                                         <option
                                             value="{{ $variant->id }}"
@@ -155,6 +156,7 @@
                                             data-price="{{ number_format((float) $variant->current_price, 2, '.', '') }}"
                                             data-stock="{{ (int) ($variant->stock ?? 0) }}"
                                             data-label="{{ e($variantLabel) }}"
+                                            aria-pressed="{{ $defaultVariant && $defaultVariant->id === $variant->id ? 'true' : 'false' }}"
                                             @disabled((int) ($variant->stock ?? 0) < 1)
                                         >
                                             <span class="variant-pill__title">{{ $variantLabel }}</span>
@@ -173,10 +175,10 @@
                         @endif
 
                         <div>
-                            <label class="form-label fw-bold">{{ __('Quantity') }}</label>
+                            <label class="form-label fw-bold" for="productQtyInput">{{ __('Quantity') }}</label>
                             <div class="product-qty-control">
                                 <button type="button" class="btn product-qty-control__btn" data-qty-step="down" aria-label="{{ __('Decrease quantity') }}">−</button>
-                                <input type="number" class="form-control lc-form-control text-center" name="quantity" id="productQtyInput" value="1" min="1" max="{{ max(1, $selectedVariantStock ?: $stockQty ?: 1) }}">
+                                <input type="number" class="form-control lc-form-control text-center" name="quantity" id="productQtyInput" value="1" min="1" max="{{ max(1, $selectedVariantStock ?: $stockQty ?: 1) }}" required aria-required="true">
                                 <button type="button" class="btn product-qty-control__btn" data-qty-step="up" aria-label="{{ __('Increase quantity') }}">+</button>
                             </div>
                         </div>
@@ -406,7 +408,7 @@
             <div class="small text-muted fw-semibold">{{ __('Today’s price') }}</div>
             <strong id="mobileStickyPrice">EGP {{ number_format((float) ($defaultVariant?->current_price ?? $currentPrice), 2) }}</strong>
         </div>
-        <a href="#productPurchaseForm" class="btn lc-btn-primary">{{ __('Add to cart') }}</a>
+        <button type="button" class="btn lc-btn-primary" id="mobileStickyAddButton" aria-controls="productPurchaseForm">{{ $selectedAvailable ? __('Add to cart') : __('View options') }}</button>
     </div>
 
     <div class="product-desktop-sticky d-none d-lg-flex" id="desktopStickyBar">
@@ -419,7 +421,7 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="#productPurchaseForm" class="btn lc-btn-soft">{{ __('View options') }}</a>
-            <button type="button" class="btn lc-btn-primary" id="desktopStickyAddButton">{{ __('Add to cart') }}</button>
+            <button type="button" class="btn lc-btn-primary" id="desktopStickyAddButton" aria-controls="productPurchaseForm" @disabled(!$selectedAvailable)>{{ __('Add to cart') }}</button>
         </div>
     </div>
 @endif
@@ -528,9 +530,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const quickFactAvailability = document.getElementById('quickFactAvailability');
     const addToCartButton = document.getElementById('addToCartButton');
     const buyNowButton = document.getElementById('buyNowButton');
+    const mobileStickyAddButton = document.getElementById('mobileStickyAddButton');
+    const desktopStickyAddButton = document.getElementById('desktopStickyAddButton');
     const mobileStickyPrice = document.getElementById('mobileStickyPrice');
     const desktopStickyPrice = document.getElementById('desktopStickyPrice');
     const desktopStickyVariant = document.getElementById('desktopStickyVariant');
+    const lowStockThreshold = {{ $lowStockThreshold }};
 
     const formatPrice = function (value) {
         return 'EGP ' + Number(value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -569,7 +574,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 stockBanner.classList.add('is-muted');
                 stockHeadline.textContent = '{{ __('Selected option is out of stock') }}';
                 stockMeta.textContent = '{{ __('Pick another option to continue with add to cart or buy now.') }}';
-            } else if (optionStock <= 5) {
+            } else if (optionStock <= lowStockThreshold) {
                 stockBanner.classList.add('is-warning');
                 stockHeadline.textContent = '{{ __('Only :count pieces left', ['count' => '__count__']) }}'.replace('__count__', optionStock);
                 stockMeta.textContent = '{{ __('Stock shown for the selected option.') }}';
@@ -580,13 +585,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        [addToCartButton, buyNowButton].forEach(function (button) {
+        [addToCartButton, buyNowButton, desktopStickyAddButton].forEach(function (button) {
             if (!button) return;
             button.disabled = optionStock < 1;
         });
+        if (mobileStickyAddButton) {
+            mobileStickyAddButton.textContent = optionStock > 0 ? @json(__('Add to cart')) : @json(__('View options'));
+        }
 
         variantButtons.forEach(function (button) {
-            button.classList.toggle('is-active', button.getAttribute('data-variant-id') === option.value);
+            const isSelected = button.getAttribute('data-variant-id') === option.value;
+            button.classList.toggle('is-active', isSelected);
+            button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
         });
     };
 
@@ -605,7 +615,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const desktopStickyBar = document.getElementById('desktopStickyBar');
     const purchaseCard = document.getElementById('productPurchaseCard');
-    const desktopStickyAddButton = document.getElementById('desktopStickyAddButton');
     const purchaseForm = document.getElementById('productPurchaseForm');
 
     if (desktopStickyBar && purchaseCard) {
@@ -623,9 +632,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const initialSelectedOption = document.querySelector('#productVariantSelect option:checked');
     updateBundleSummary(Number(initialSelectedOption?.getAttribute('data-price') || {{ number_format((float) ($defaultVariant?->current_price ?? $currentPrice), 2, '.', '') }}), initialSelectedOption?.getAttribute('data-label') || '{{ addslashes($defaultVariant?->variant_name ?: __('Selected main option')) }}');
 
-    if (desktopStickyAddButton && purchaseForm) {
+    const focusPurchaseForm = function () {
+        if (!purchaseForm) return;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        purchaseForm.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block: 'center'});
+    };
+
+    if (desktopStickyAddButton) {
         desktopStickyAddButton.addEventListener('click', function () {
-            purchaseForm.scrollIntoView({behavior: 'smooth', block: 'center'});
+            if (addToCartButton && !addToCartButton.disabled) {
+                addToCartButton.click();
+                return;
+            }
+            focusPurchaseForm();
+        });
+    }
+
+    if (mobileStickyAddButton) {
+        mobileStickyAddButton.addEventListener('click', function () {
+            if (addToCartButton && !addToCartButton.disabled) {
+                addToCartButton.click();
+                return;
+            }
+            focusPurchaseForm();
         });
     }
 });

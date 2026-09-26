@@ -134,6 +134,29 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('Availability is checked again before checkout.');
     }
 
+    public function test_product_details_keeps_variant_stock_and_sticky_actions_consistent(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/products/show.blade.php'));
+
+        $this->assertStringContainsString('$lowStockThreshold = max(5, (int) ($product->low_stock_threshold ?? 3));', $view);
+        $this->assertStringContainsString('$displayStock <= $lowStockThreshold', $view);
+        $this->assertStringContainsString('const lowStockThreshold = {{ $lowStockThreshold }};', $view);
+        $this->assertStringContainsString('optionStock <= lowStockThreshold', $view);
+        $this->assertStringNotContainsString('optionStock <= 5', $view);
+
+        $this->assertStringContainsString('for="productVariantSelect"', $view);
+        $this->assertStringContainsString('aria-pressed="{{ $defaultVariant && $defaultVariant->id === $variant->id ? \'true\' : \'false\' }}"', $view);
+        $this->assertStringContainsString("button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');", $view);
+        $this->assertStringContainsString('for="productQtyInput"', $view);
+        $this->assertStringContainsString('required aria-required="true"', $view);
+        $this->assertStringContainsString('id="productStockBanner" role="status" aria-live="polite"', $view);
+
+        $this->assertStringContainsString('id="mobileStickyAddButton"', $view);
+        $this->assertStringContainsString('id="desktopStickyAddButton"', $view);
+        $this->assertStringContainsString('addToCartButton.click();', $view);
+        $this->assertStringContainsString("behavior: reduceMotion ? 'auto' : 'smooth'", $view);
+    }
+
     public function test_checkout_uses_aligned_billing_toggle_and_real_payment_options(): void
     {
         $user = User::factory()->create();
