@@ -15,6 +15,29 @@ class ReturnWorkspaceClosureTest extends TestCase
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
     }
 
+    public function test_admin_return_lifecycle_controls_have_explicit_labels(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/returns/show.blade.php'));
+
+        foreach ([
+            'approvedQuantity-{{ $item->id }}',
+            'approveReviewNotes',
+            'rejectReviewNotes',
+            'receivedQuantity-{{ $item->id }}',
+            'restockQuantity-{{ $item->id }}',
+            'returnRefundAmount',
+            'returnExchangeOrderId',
+            'returnCompletionNotes',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $view);
+            $this->assertStringContainsString('id="' . $controlId . '"', $view);
+        }
+
+        $this->assertStringContainsString('id="approvedQuantity-{{ $item->id }}" type="number"', $view);
+        $this->assertStringContainsString('id="rejectReviewNotes"', $view);
+        $this->assertStringContainsString('aria-required="true"', $view);
+    }
+
     public function test_return_list_filters_and_customer_request_controls_have_explicit_labels(): void
     {
         $admin = file_get_contents(resource_path('views/admin/returns/index.blade.php'));
