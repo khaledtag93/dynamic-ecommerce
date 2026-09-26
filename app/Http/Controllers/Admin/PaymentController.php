@@ -17,8 +17,12 @@ class PaymentController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => (string) $request->string('status'),
             'method' => (string) $request->string('method'),
             'queue' => (string) $request->string('queue'),
@@ -27,11 +31,11 @@ class PaymentController extends Controller
 
         $payments = Payment::query()
             ->with('order')
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('transaction_reference', 'like', "%{$search}%")
-                        ->orWhere('provider', 'like', "%{$search}%")
-                        ->orWhereHas('order', fn ($orderQuery) => $orderQuery->where('order_number', 'like', "%{$search}%"));
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('transaction_reference', 'like', $like)
+                        ->orWhere('provider', 'like', $like)
+                        ->orWhereHas('order', fn ($orderQuery) => $orderQuery->where('order_number', 'like', $like));
                 });
             })
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
