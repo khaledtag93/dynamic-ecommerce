@@ -131,12 +131,14 @@ class Index extends Component
 
         if (! $brand) {
             $this->pendingDeleteId = null;
+            $this->dispatch('close-brand-delete-confirmation');
             session()->flash('error', __('Brand no longer exists.'));
             return;
         }
 
         if ($brand->products_count > 0) {
             $this->pendingDeleteId = null;
+            $this->dispatch('close-brand-delete-confirmation');
             session()->flash('error', __('This brand is linked to products and cannot be deleted.'));
             return;
         }
@@ -145,6 +147,7 @@ class Index extends Component
         $brand->delete();
         $this->pendingDeleteId = null;
         $this->resetPage();
+        $this->dispatch('close-brand-delete-confirmation');
 
         session()->flash('message', __('Brand :name deleted successfully.', ['name' => $brandName]));
     }
