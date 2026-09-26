@@ -23,8 +23,12 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => (string) $request->string('status'),
             'payment_status' => (string) $request->string('payment_status'),
             'payment_method' => (string) $request->string('payment_method'),
@@ -48,14 +52,14 @@ class OrderController extends Controller
 
         $orders = Order::query()
             ->withCount('items')
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($innerQuery) use ($search) {
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($innerQuery) use ($like) {
                     $innerQuery
-                        ->where('order_number', 'like', "%{$search}%")
-                        ->orWhere('customer_name', 'like', "%{$search}%")
-                        ->orWhere('customer_email', 'like', "%{$search}%")
-                        ->orWhere('customer_phone', 'like', "%{$search}%")
-                        ->orWhere('coupon_code', 'like', "%{$search}%");
+                        ->where('order_number', 'like', $like)
+                        ->orWhere('customer_name', 'like', $like)
+                        ->orWhere('customer_email', 'like', $like)
+                        ->orWhere('customer_phone', 'like', $like)
+                        ->orWhere('coupon_code', 'like', $like);
                 });
             })
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
