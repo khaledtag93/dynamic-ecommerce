@@ -159,9 +159,10 @@
                     <details class="mt-3">
                         <summary class="fw-semibold" style="cursor:pointer"><i class="mdi mdi-magnify me-1"></i>{{ __('Find product manually') }}</summary>
                         <div class="pos-live-search mt-3" data-pos-live-search data-url="{{ route('admin.pos.lookups.products') }}" data-kind="product">
+                            <label for="posProductSearch" class="form-label small fw-semibold">{{ __('Find product') }}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="mdi mdi-package-variant-closed"></i></span>
-                                <input id="posProductSearch" type="search" minlength="2" maxlength="255" class="form-control" placeholder="{{ __('Search by product name, SKU, or barcode') }}" autocomplete="off" aria-autocomplete="list" aria-expanded="false">
+                                <input id="posProductSearch" type="search" minlength="2" maxlength="100" class="form-control" placeholder="{{ __('Search by product name, SKU, or barcode') }}" autocomplete="off" aria-autocomplete="list" aria-expanded="false">
                             </div>
                             <div class="form-text">{{ __('Type at least 2 characters. Use arrow keys and Enter to add an item.') }}</div>
                             <div class="pos-live-results d-none" role="listbox"></div>
@@ -422,7 +423,7 @@
                             <label for="posCustomerSearch" class="form-label small fw-semibold">{{ __('Find customer') }}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="mdi mdi-account-search-outline"></i></span>
-                                <input id="posCustomerSearch" type="search" class="form-control" minlength="2" maxlength="255" placeholder="{{ __('Search by name, email, or phone') }}" autocomplete="off" aria-autocomplete="list" aria-expanded="false">
+                                <input id="posCustomerSearch" type="search" class="form-control" minlength="2" maxlength="100" placeholder="{{ __('Search by name, email, or phone') }}" autocomplete="off" aria-autocomplete="list" aria-expanded="false">
                             </div>
                             <div class="form-text">{{ __('Type at least 2 characters. Use arrow keys and Enter to attach a customer.') }}</div>
                             <div class="pos-live-results d-none" role="listbox"></div>
