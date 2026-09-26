@@ -349,6 +349,7 @@ class SettingController extends Controller
         $allowedHomepageSections = $this->homepageSectionKeys();
         $requestedHomepageSections = collect(explode(',', (string) ($data['homepage_sections_order'] ?? '')))
             ->map(fn (string $key) => trim($key))
+            ->map(fn (string $key) => $key === 'promo_banner' ? 'promo_banners' : $key)
             ->filter(fn (string $key) => in_array($key, $allowedHomepageSections, true))
             ->unique()
             ->values()
@@ -551,7 +552,6 @@ class SettingController extends Controller
             'on_sale_products',
             'trust_blocks',
             'categories',
-            'promo_banner',
         ];
     }
 
