@@ -30,6 +30,16 @@ class DeployScriptSafetyTest extends TestCase
         $this->assertStringContainsString('_$$.backup', $script);
     }
 
+    public function test_deploys_signal_queue_workers_to_reload_code(): void
+    {
+        foreach (['deploy.sh', 'deploy-qas.sh'] as $path) {
+            $script = file_get_contents(base_path($path));
+
+            $this->assertIsString($script);
+            $this->assertStringContainsString('artisan queue:restart', $script);
+        }
+    }
+
     public function test_deploys_install_upload_execution_guard_without_syncing_user_uploads(): void
     {
         $production = file_get_contents(base_path('deploy.sh'));
