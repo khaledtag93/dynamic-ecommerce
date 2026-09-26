@@ -21,8 +21,12 @@ class ProductReviewController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => (string) $request->string('status'),
             'rating' => (string) $request->string('rating'),
             'per_page' => max(12, min(100, (int) $request->integer('per_page', 20))),
@@ -30,15 +34,15 @@ class ProductReviewController extends Controller
 
         $reviews = ProductReview::query()
             ->with(['product:id,name,slug', 'user:id,name,email', 'moderator:id,name'])
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
                     $inner
-                        ->where('comment', 'like', "%{$search}%")
-                        ->orWhereHas('product', fn ($productQuery) => $productQuery->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('user', function ($userQuery) use ($search) {
+                        ->where('comment', 'like', $like)
+                        ->orWhereHas('product', fn ($productQuery) => $productQuery->where('name', 'like', $like))
+                        ->orWhereHas('user', function ($userQuery) use ($like) {
                             $userQuery
-                                ->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                                ->where('name', 'like', $like)
+                                ->orWhere('email', 'like', $like);
                         });
                 });
             })
