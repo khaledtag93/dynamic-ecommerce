@@ -55,6 +55,19 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString('html[dir="rtl"] .lc-order-step', $storefront);
     }
 
+    public function test_storefront_navigation_uses_a_consistent_compact_breakpoint(): void
+    {
+        $storefront = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('@media(min-width:1200px){.retail-nav-collapse.collapse{display:block!important}}', $storefront);
+        $this->assertStringContainsString('class="retail-search d-none d-xl-flex"', $storefront);
+        $this->assertStringContainsString('class="retail-menu-toggle d-xl-none"', $storefront);
+        $this->assertStringContainsString('class="retail-search retail-search--mobile d-xl-none"', $storefront);
+        $this->assertStringContainsString("window.matchMedia('(max-width: 1199.98px)')", $storefront);
+        $this->assertStringNotContainsString("(max-width: 991.98px), (pointer: coarse) and (max-width: 1366px)", $storefront);
+        $this->assertSame(2, substr_count($storefront, 'type="search" name="q" maxlength="100"'));
+    }
+
     public function test_mobile_admin_sidebar_stays_reachable_above_the_backdrop_in_both_directions(): void
     {
         $admin = file_get_contents(resource_path('views/layouts/admin.blade.php'));
