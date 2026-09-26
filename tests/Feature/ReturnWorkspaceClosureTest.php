@@ -10,7 +10,7 @@ class ReturnWorkspaceClosureTest extends TestCase
     {
         $controller = file_get_contents(app_path('Http/Controllers/Admin/ReturnRequestController.php'));
 
-        $this->assertStringContainsString("mb_substr(trim((string) $request->string('search')), 0, 100)", $controller);
+        $this->assertStringContainsString('mb_substr(trim((string) $request->string(\'search\')), 0, 100)', $controller);
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $controller);
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
     }
