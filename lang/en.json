@@ -4601,5 +4601,8 @@
     "The review will become visible on the storefront immediately.": "The review will become visible on the storefront immediately.",
     "Reject review": "Reject review",
     "Reject and hide this review?": "Reject and hide this review?",
-    "The review will remain hidden from the storefront and the moderation note will be recorded.": "The review will remain hidden from the storefront and the moderation note will be recorded."
+    "The review will remain hidden from the storefront and the moderation note will be recorded.": "The review will remain hidden from the storefront and the moderation note will be recorded.",
+    "Remove all Growth validation test data?": "Remove all Growth validation test data?",
+    "This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.": "This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.",
+    "Keep test data": "Keep test data"
 }
