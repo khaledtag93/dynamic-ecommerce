@@ -47,8 +47,8 @@ html[dir="rtl"] .growth-form-page .growth-switch{justify-content:flex-start}
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">{{ __('Name') }}</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $rule->name) }}" placeholder="{{ __('Example: Returning customer follow-up') }}" required>
+                            <label class="form-label fw-semibold" for="growthRuleName">{{ __('Name') }}</label>
+                            <input id="growthRuleName" type="text" name="name" aria-required="true" class="form-control" value="{{ old('name', $rule->name) }}" placeholder="{{ __('Example: Returning customer follow-up') }}" required>
                         </div>
 
                         <div class="col-md-6">
@@ -56,8 +56,8 @@ html[dir="rtl"] .growth-form-page .growth-switch{justify-content:flex-start}
                                 $selectedRuleKey = (string) old('rule_key', $rule->rule_key);
                                 $hasSelectedCampaign = $campaigns->contains(fn ($campaign) => (string) $campaign->campaign_key === $selectedRuleKey);
                             @endphp
-                            <label class="form-label fw-semibold">{{ __('Linked campaign') }}</label>
-                            <select name="rule_key" class="form-select" required>
+                            <label class="form-label fw-semibold" for="growthRuleCampaign">{{ __('Linked campaign') }}</label>
+                            <select id="growthRuleCampaign" name="rule_key" class="form-select" required aria-required="true">
                                 <option value="">{{ __('Select campaign') }}</option>
                                 @if($selectedRuleKey !== '' && ! $hasSelectedCampaign)
                                     <option value="{{ $selectedRuleKey }}" selected>{{ __('Unmatched campaign key') }} · {{ $selectedRuleKey }}</option>
@@ -72,8 +72,8 @@ html[dir="rtl"] .growth-form-page .growth-switch{justify-content:flex-start}
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">{{ __('Trigger type') }}</label>
-                            <input type="text" name="trigger_type" class="form-control" value="{{ old('trigger_type', $rule->trigger_type) }}" placeholder="{{ __('Example: event') }}" required>
+                            <label class="form-label fw-semibold" for="growthRuleTriggerType">{{ __('Trigger type') }}</label>
+                            <input id="growthRuleTriggerType" type="text" name="trigger_type" aria-required="true" class="form-control" value="{{ old('trigger_type', $rule->trigger_type) }}" placeholder="{{ __('Example: event') }}" required>
                         </div>
 
                         <div class="col-md-4">
