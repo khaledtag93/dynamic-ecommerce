@@ -50,20 +50,20 @@
                             @csrf
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">{{ __('Corrected clock-in') }}</label>
-                                    <input type="datetime-local" name="requested_clock_in_at" class="form-control @error('requested_clock_in_at') is-invalid @enderror"
+                                    <label class="form-label fw-semibold" for="correctionClockIn">{{ __('Corrected clock-in') }}</label>
+                                    <input id="correctionClockIn" type="datetime-local" name="requested_clock_in_at" aria-required="true" class="form-control @error('requested_clock_in_at') is-invalid @enderror"
                                            value="{{ old('requested_clock_in_at', $session->effectiveClockInAt()->format('Y-m-d\TH:i')) }}" required>
                                     @error('requested_clock_in_at')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">{{ __('Corrected clock-out') }}</label>
-                                    <input type="datetime-local" name="requested_clock_out_at" class="form-control @error('requested_clock_out_at') is-invalid @enderror"
+                                    <label class="form-label fw-semibold" for="correctionClockOut">{{ __('Corrected clock-out') }}</label>
+                                    <input id="correctionClockOut" type="datetime-local" name="requested_clock_out_at" aria-required="true" class="form-control @error('requested_clock_out_at') is-invalid @enderror"
                                            value="{{ old('requested_clock_out_at', $session->effectiveClockOutAt()?->format('Y-m-d\TH:i')) }}" required>
                                     @error('requested_clock_out_at')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold">{{ __('Reason') }}</label>
-                                    <textarea name="reason" rows="5" maxlength="2000" class="form-control @error('reason') is-invalid @enderror" required placeholder="{{ __('Explain what is wrong and why the correction is needed') }}">{{ old('reason') }}</textarea>
+                                    <label class="form-label fw-semibold" for="correctionReason">{{ __('Reason') }}</label>
+                                    <textarea id="correctionReason" name="reason" aria-required="true" rows="5" maxlength="2000" class="form-control @error('reason') is-invalid @enderror" required placeholder="{{ __('Explain what is wrong and why the correction is needed') }}">{{ old('reason') }}</textarea>
                                     @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
