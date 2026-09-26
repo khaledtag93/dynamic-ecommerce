@@ -53,7 +53,7 @@
 
     <div class="notification-center-nav sticky-nav">
         @foreach($moduleLinks as $key => $item)
-            <a href="{{ $item['route'] }}" @class(['active' => ($currentSection ?? 'overview') === $key])>
+            <a href="{{ $item['route'] }}" @class(['active' => ($currentSection ?? 'overview') === $key]) @if(($currentSection ?? 'overview') === $key) aria-current="page" @endif>
                 {{ $item['label'] }}
             </a>
         @endforeach
