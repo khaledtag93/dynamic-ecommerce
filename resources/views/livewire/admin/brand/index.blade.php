@@ -40,28 +40,28 @@
             </div>
             <div class="row g-3 align-items-end">
                 <div class="col-lg-7">
-                    <label class="form-label fw-semibold">{{ __('Search brands') }}</label>
-                    <input type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search by brand name or slug') }}">
+                    <label class="form-label fw-semibold" for="brandSearch">{{ __('Search brands') }}</label>
+                    <input id="brandSearch" type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search by brand name or slug') }}">
                 </div>
                 <div class="col-lg-2">
-                    <label class="form-label fw-semibold">{{ __('Visibility') }}</label>
-                    <select wire:model.live="visibility" class="form-select">
+                    <label class="form-label fw-semibold" for="brandVisibility">{{ __('Visibility') }}</label>
+                    <select id="brandVisibility" wire:model.live="visibility" class="form-select">
                         <option value="">{{ __('All brands') }}</option>
                         <option value="visible">{{ __('Visible') }}</option>
                         <option value="hidden">{{ __('Hidden') }}</option>
                     </select>
                 </div>
                 <div class="col-lg-2">
-                    <label class="form-label fw-semibold">{{ __('Product usage') }}</label>
-                    <select wire:model.live="usage" class="form-select">
+                    <label class="form-label fw-semibold" for="brandUsage">{{ __('Product usage') }}</label>
+                    <select id="brandUsage" wire:model.live="usage" class="form-select">
                         <option value="">{{ __('All brands') }}</option>
                         <option value="linked">{{ __('With products') }}</option>
                         <option value="empty">{{ __('Empty brands') }}</option>
                     </select>
                 </div>
                 <div class="col-lg-1">
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select wire:model.live="perPage" class="form-select">
+                    <label class="form-label fw-semibold" for="brandPerPage">{{ __('Per page') }}</label>
+                    <select id="brandPerPage" wire:model.live="perPage" class="form-select">
                         <option value="10">10</option><option value="25">25</option><option value="50">50</option>
                     </select>
                 </div>
@@ -84,13 +84,13 @@
             <form wire:submit.prevent="saveBrand">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-5">
-                        <label class="form-label">{{ __('Name') }}</label>
-                        <input type="text" wire:model="name" class="form-control @error('name') is-invalid @enderror">
+                        <label class="form-label" for="brandName">{{ __('Name') }}</label>
+                        <input id="brandName" type="text" wire:model="name" aria-required="true" class="form-control @error('name') is-invalid @enderror">
                         @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">{{ __('Slug') }}</label>
-                        <input type="text" wire:model="slug" class="form-control @error('slug') is-invalid @enderror">
+                        <label class="form-label" for="brandSlug">{{ __('Slug') }}</label>
+                        <input id="brandSlug" type="text" wire:model="slug" aria-required="true" class="form-control @error('slug') is-invalid @enderror">
                         @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-3">
@@ -103,7 +103,10 @@
                 </div>
                 <div class="d-flex justify-content-end gap-2 mt-3">
                     <button type="button" class="btn btn-light admin-btn-soft" wire:click="resetForm">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ $brandIdToEdit ? __('Update brand') : __('Add brand') }}</button>
+                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="saveBrand">
+                        <span wire:loading.remove wire:target="saveBrand">{{ $brandIdToEdit ? __('Update brand') : __('Add brand') }}</span>
+                        <span wire:loading wire:target="saveBrand">{{ __('Saving...') }}</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -129,7 +132,7 @@
                                 <td><div class="fw-semibold">{{ $brand->name }}</div><div class="small text-muted">{{ $brand->slug }}</div></td>
                                 <td>{{ $brand->products_count }}</td>
                                 <td>@if($brand->status)<span class="badge admin-status-badge badge-soft-secondary">{{ __('Hidden') }}</span>@else<span class="badge admin-status-badge badge-soft-success">{{ __('Visible') }}</span>@endif</td>
-                                <td class="rtl-text-start"><div class="d-flex gap-2 flex-wrap rtl-justify-start"><button wire:click="edit({{ $brand->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit brand') }}"><i class="mdi mdi-pencil-outline"></i></button><button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete brand') }}" wire:click="requestDelete({{ $brand->id }})" @disabled($brand->products_count > 0)><i class="mdi mdi-trash-can-outline"></i></button></div></td>
+                                <td class="rtl-text-start"><div class="d-flex gap-2 flex-wrap rtl-justify-start"><button type="button" wire:click="edit({{ $brand->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit brand') }}" aria-label="{{ __('Edit brand :name', ['name' => $brand->name]) }}"><i class="mdi mdi-pencil-outline"></i></button><button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete brand') }}" aria-label="{{ __('Delete brand :name', ['name' => $brand->name]) }}" wire:click="requestDelete({{ $brand->id }})" @disabled($brand->products_count > 0)><i class="mdi mdi-trash-can-outline"></i></button></div></td>
                             </tr>
                         @empty
                             <tr><td colspan="5" class="text-center py-4 text-muted">{{ __('No brands found.') }}</td></tr>
