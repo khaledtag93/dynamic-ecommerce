@@ -121,4 +121,65 @@ class BrandingSettingsExperienceTest extends TestCase
         $this->assertFalse(filter_var(WebsiteSetting::getValue('show_home_manual_featured_products'), FILTER_VALIDATE_BOOLEAN));
         $this->assertFalse(filter_var(WebsiteSetting::getValue('show_home_trust_blocks'), FILTER_VALIDATE_BOOLEAN));
     }
+    public function test_trust_blocks_can_be_explicitly_disabled_by_omitting_checkbox_fields(): void
+    {
+        $owner = $this->createSuperAdmin();
+        foreach (range(1, 4) as $index) {
+            WebsiteSetting::setValue("trust_block_{$index}_active", true, 'branding');
+        }
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'professional_commerce',
+                'default_locale' => 'en',
+            ])
+            ->assertSessionHasNoErrors();
+
+        foreach (range(1, 4) as $index) {
+            $this->assertFalse(filter_var(WebsiteSetting::getValue("trust_block_{$index}_active"), FILTER_VALIDATE_BOOLEAN));
+        }
+    }
+
+    public function test_unknown_theme_preset_is_rejected(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'not_a_real_theme',
+                'default_locale' => 'en',
+            ])
+            ->assertSessionHasErrors('theme_preset');
+
+        $this->assertNotSame('not_a_real_theme', WebsiteSetting::getValue('theme_preset'));
+    }
+
+    public function test_homepage_section_order_is_normalized_before_persistence(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'professional_commerce',
+                'default_locale' => 'en',
+                'homepage_sections_order' => 'trust_blocks,hero,trust_blocks,unknown_section',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $order = explode(',', (string) WebsiteSetting::getValue('homepage_sections_order'));
+
+        $this->assertSame('trust_blocks', $order[0] ?? null);
+        $this->assertSame('hero', $order[1] ?? null);
+        $this->assertSame(1, count(array_keys($order, 'trust_blocks', true)));
+        $this->assertNotContains('unknown_section', $order);
+        $this->assertContains('featured_products', $order);
+        $this->assertContains('categories', $order);
+    }
+
 }
