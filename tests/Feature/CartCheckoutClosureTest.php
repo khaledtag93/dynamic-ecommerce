@@ -168,6 +168,57 @@ class CartCheckoutClosureTest extends TestCase
         $this->assertStringNotContainsString("route('checkout.index', ['address' => 'new'])", $view);
     }
 
+    public function test_checkout_input_limits_billing_requirements_and_submit_guard_match_server_contract(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/checkout/index.blade.php'));
+        $controller = file_get_contents(app_path('Http/Controllers/Frontend/CheckoutController.php'));
+
+        foreach ([
+            'checkoutCustomerName' => 255,
+            'checkoutCustomerEmail' => 255,
+            'checkoutCustomerPhone' => 50,
+            'checkoutShippingAddress1' => 255,
+            'checkoutShippingAddress2' => 255,
+            'checkoutShippingCity' => 255,
+            'checkoutShippingState' => 255,
+            'checkoutShippingPostal' => 50,
+            'checkoutShippingCountry' => 120,
+            'checkoutBillingAddress1' => 255,
+            'checkoutBillingAddress2' => 255,
+            'checkoutBillingCity' => 255,
+            'checkoutBillingState' => 255,
+            'checkoutBillingPostal' => 50,
+            'checkoutBillingCountry' => 120,
+            'checkoutNotes' => 1000,
+        ] as $controlId => $maxLength) {
+            $this->assertMatchesRegularExpression(
+                '/id="' . preg_quote($controlId, '/') . '"[^>]*maxlength="' . $maxLength . '"/',
+                $view
+            );
+        }
+
+        $this->assertStringContainsString('role="radiogroup" aria-label="{{ __(\'Payment method\') }}" aria-required="true"', $view);
+        $this->assertMatchesRegularExpression('/name="payment_method"[^>]*required/', $view);
+        $this->assertStringContainsString('data-billing-same', $view);
+        $this->assertStringContainsString('const syncBillingRequired = () => {', $view);
+        $this->assertStringContainsString("field.required = !sameAsShipping;", $view);
+        $this->assertStringContainsString('let checkoutSubmitting = false;', $view);
+        $this->assertStringContainsString('if (checkoutSubmitting) {', $view);
+        $this->assertStringContainsString('controller?.abort();', $view);
+        $this->assertStringContainsString('if (!checkoutSubmitting) {', $view);
+
+        foreach ([
+            "'customer_name' => ['required', 'string', 'max:255']",
+            "'customer_email' => ['required', 'email', 'max:255']",
+            "'customer_phone' => ['required', 'string', 'max:50']",
+            "'shipping_postal_code' => ['nullable', 'string', 'max:50']",
+            "'shipping_country' => ['required', 'string', 'max:120']",
+            "'notes' => ['nullable', 'string', 'max:1000']",
+        ] as $serverRule) {
+            $this->assertStringContainsString($serverRule, $controller);
+        }
+    }
+
     private function createCategory(string $name, string $slug): Category
     {
         return Category::create([
