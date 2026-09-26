@@ -4,6 +4,7 @@
 
 - Permanent workflow: **Global Foundation -> Page-by-Page Closure -> consolidated QAS -> defect closure -> release review**.
 - Authoritative method: [Page Closure System](docs/PAGE_CLOSURE_SYSTEM_2026-09-26.md).
+- Global shared-layer audit: [Global Foundation Audit](docs/GLOBAL_FOUNDATION_AUDIT_2026-09-26.md).
 - Current source baseline for this pass: `sec03-framework-upgrade` (Laravel 13 / Livewire 4 rehearsal line); Production remains unchanged.
 - First global-shell source fix in this pass: collapsed Admin sidebar utility actions are icon-only in mini mode, with accessible labels/tooltips retained. CI/QAS acceptance is still required before this item is CLOSED.
 - Do not call a page CLOSED because styling alone is finished; all relevant product, interaction, bilingual, mobile, accessibility, security, performance, help, code-quality and test gates must be reviewed.

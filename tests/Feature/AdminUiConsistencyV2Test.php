@@ -159,4 +159,19 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString("summary.setAttribute('aria-expanded', this.open ? 'true' : 'false')", $sidebar);
     }
 
+    public function test_collapsed_admin_sidebar_keeps_utility_actions_inside_icon_rail(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+        $sidebar = file_get_contents(resource_path('views/layouts/inc/admin/sidebar.blade.php'));
+
+        $this->assertStringContainsString('.sidebar-icon-only .custom-sidebar .sidebar-utility-links', $layout);
+        $this->assertStringContainsString('.sidebar-icon-only .custom-sidebar .sidebar-utility-link span', $layout);
+        $this->assertStringContainsString('display: none !important;', $layout);
+        $this->assertStringContainsString('justify-content: center;', $layout);
+        $this->assertStringContainsString("aria-label=\"{{ __('Open storefront') }}\"", $sidebar);
+        $this->assertStringContainsString("title=\"{{ __('Open storefront') }}\"", $sidebar);
+        $this->assertStringContainsString("aria-label=\"{{ __('Sign out') }}\"", $sidebar);
+        $this->assertStringContainsString("title=\"{{ __('Sign out') }}\"", $sidebar);
+    }
+
 }
