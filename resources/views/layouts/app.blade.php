@@ -72,9 +72,9 @@
             --lc-media-radius: {{ $themeProfile['media_radius'] }};
             --lc-hover-lift: {{ $themeProfile['lift'] }};
             --lc-theme-shadow-strength: {{ $themeProfile['shadow_scale'] }};
-            --lc-shadow-color: color-mix(in srgb, var(--lc-primary) 16%, transparent);
+            --lc-shadow-color: color-mix(in srgb, var(--lc-primary) var(--lc-theme-shadow-strength), transparent);
             --lc-shadow-soft: 0 10px 30px var(--lc-shadow-color);
-            --lc-shadow-card: 0 18px 50px color-mix(in srgb, var(--lc-dark) 10%, transparent);
+            --lc-shadow-card: 0 18px 50px color-mix(in srgb, var(--lc-dark) var(--lc-theme-shadow-strength), transparent);
             --lc-shadow-strong: 0 20px 55px color-mix(in srgb, var(--lc-dark) 12%, transparent);
         }
         body {
