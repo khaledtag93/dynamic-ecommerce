@@ -33,12 +33,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.support.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Search cases') }}</label>
-                    <input type="search" name="search" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Case, subject, customer, email, or order') }}" autocomplete="off" data-live-search>
+                    <label class="form-label fw-semibold" for="supportCaseSearch">{{ __('Search cases') }}</label>
+                    <input id="supportCaseSearch" type="search" name="search" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Case, subject, customer, email, or order') }}" autocomplete="off" data-live-search>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="supportCaseStatus">{{ __('Status') }}</label>
+                    <select id="supportCaseStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
                         @foreach(\App\Models\SupportCase::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -46,8 +46,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Priority') }}</label>
-                    <select name="priority" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="supportCasePriority">{{ __('Priority') }}</label>
+                    <select id="supportCasePriority" name="priority" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All priorities') }}</option>
                         @foreach(\App\Models\SupportCase::priorityOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['priority'] === $value)>{{ $label }}</option>
@@ -55,8 +55,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Owner') }}</label>
-                    <select name="assigned_to_user_id" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="supportCaseOwner">{{ __('Owner') }}</label>
+                    <select id="supportCaseOwner" name="assigned_to_user_id" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All owners') }}</option>
                         @foreach($staff as $member)
                             <option value="{{ $member->id }}" @selected((int)$filters['assigned_to_user_id'] === (int)$member->id)>{{ $member->name }}</option>
@@ -64,8 +64,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="supportCasePerPage">{{ __('Per page') }}</label>
+                    <select id="supportCasePerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([20,40,80] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
