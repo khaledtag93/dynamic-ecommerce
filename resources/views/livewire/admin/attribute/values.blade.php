@@ -131,14 +131,10 @@
             const element = document.getElementById('attributeValueDeleteConfirmationModal');
             if (element && window.bootstrap) bootstrap.Modal.getOrCreateInstance(element).show();
         });
-        document.addEventListener('livewire:load', () => {
-            Livewire.hook('message.processed', () => {
-                if (@this.get('pendingDeleteId')) return;
-                const element = document.getElementById('attributeValueDeleteConfirmationModal');
-                if (!element || !window.bootstrap) return;
-                const modal = bootstrap.Modal.getInstance(element);
-                if (modal) modal.hide();
-            });
+        window.addEventListener('close-attribute-value-delete-confirmation', () => {
+            const element = document.getElementById('attributeValueDeleteConfirmationModal');
+            if (!element || !window.bootstrap) return;
+            bootstrap.Modal.getInstance(element)?.hide();
         });
     </script>
     @endpush
