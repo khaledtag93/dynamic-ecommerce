@@ -1490,6 +1490,37 @@
                     }
                 });
 
+                const draftMutationMethods = [
+                    'addGeneratorAttribute',
+                    'removeGeneratorAttribute',
+                    'generateVariants',
+                    'addVariant',
+                    'duplicateVariant',
+                    'moveVariantUp',
+                    'moveVariantDown',
+                    'removeVariant',
+                    'setDefaultVariant',
+                    'addVariantAttribute',
+                    'removeVariantAttribute',
+                    'applyBulkToVariants',
+                    'addAovRelation',
+                    'removeAovRelation',
+                    'moveAovRelationUp',
+                    'moveAovRelationDown',
+                    'toggleAovRelationActive',
+                    'removeNewImage',
+                ];
+
+                form.addEventListener('click', function (e) {
+                    const trigger = e.target.closest('[wire\\:click]');
+                    if (!trigger) return;
+
+                    const action = trigger.getAttribute('wire:click') || '';
+                    if (draftMutationMethods.some((method) => action === method || action.startsWith(method + '('))) {
+                        markProductFormDirty();
+                    }
+                });
+
                 form.addEventListener('submit', function () {
                     markProductFormSaving();
                 }, true);
