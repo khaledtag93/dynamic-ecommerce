@@ -30,6 +30,20 @@ class AdminProductEditorExperienceTest extends TestCase
             ->assertSee('wire:model="barcode"', false);
     }
 
+    public function test_product_editor_protects_unsaved_navigation_and_restores_dirty_state_after_failed_save(): void
+    {
+        $view = file_get_contents(resource_path('views/livewire/admin/product/product-form.blade.php'));
+
+        $this->assertStringContainsString('data-product-editor-exit', $view);
+        $this->assertStringContainsString('function initProductUnsavedChangesGuard()', $view);
+        $this->assertStringContainsString("root.dataset.dirty = '1';", $view);
+        $this->assertStringContainsString('window.adminConfirmAction(leave', $view);
+        $this->assertStringContainsString("window.addEventListener('beforeunload'", $view);
+        $this->assertStringContainsString('Discard unsaved product changes?', $view);
+        $this->assertStringNotContainsString('window.confirm(', $view);
+        $this->assertStringNotContainsString('confirm(', $view);
+    }
+
     public function test_simple_product_sku_is_saved_from_livewire_editor(): void
     {
         $category = $this->createCategory('Retail Test', 'retail-test');
