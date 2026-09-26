@@ -198,4 +198,44 @@ class BrandingSettingsExperienceTest extends TestCase
         $this->assertNotSame('fr', WebsiteSetting::getValue('default_locale'));
     }
 
+    public function test_unsafe_branding_storefront_links_are_rejected(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'professional_commerce',
+                'default_locale' => 'en',
+                'hero_primary_button_link' => 'javascript:alert(1)',
+                'promo_banner_1_button_link' => 'data:text/html,<script>alert(1)</script>',
+            ])
+            ->assertSessionHasErrors(['hero_primary_button_link', 'promo_banner_1_button_link']);
+    }
+
+    public function test_safe_branding_relative_anchor_and_web_links_are_accepted(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'professional_commerce',
+                'default_locale' => 'en',
+                'hero_primary_button_link' => '#featured-products',
+                'hero_secondary_button_link' => '/categories',
+                'home_manual_featured_products_action_link' => '?sort=latest',
+                'home_promo_button_link' => 'https://example.com/offers',
+                'home_promo_secondary_button_link' => 'mailto:sales@example.com',
+                'promo_banner_1_button_link' => 'tel:+201234567890',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('#featured-products', WebsiteSetting::getValue('hero_primary_button_link'));
+        $this->assertSame('/categories', WebsiteSetting::getValue('hero_secondary_button_link'));
+        $this->assertSame('https://example.com/offers', WebsiteSetting::getValue('home_promo_button_link'));
+    }
+
 }
