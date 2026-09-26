@@ -35,12 +35,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.workforce.leave.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                    <input type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, or reason') }}">
+                    <label class="form-label fw-semibold" for="workforceLeaveSearch">{{ __('Search') }}</label>
+                    <input id="workforceLeaveSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, or reason') }}">
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceLeaveStatus">{{ __('Status') }}</label>
+                    <select id="workforceLeaveStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
                         @foreach(\App\Models\EmployeeLeaveRequest::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -48,8 +48,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Leave type') }}</label>
-                    <select name="type" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceLeaveType">{{ __('Leave type') }}</label>
+                    <select id="workforceLeaveType" name="type" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All leave types') }}</option>
                         @foreach($leaveTypes as $type)
                             <option value="{{ $type->id }}" @selected((int)$filters['type'] === (int)$type->id)>{{ $type->displayName() }}</option>
@@ -57,8 +57,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceLeavePerPage">{{ __('Per page') }}</label>
+                    <select id="workforceLeavePerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([20,40,80] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
