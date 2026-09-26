@@ -1,35 +1,45 @@
-(function($) {
-    'use strict';
-    $(function() {
-        if ($.cookie('majestic-pro-banner')!="true") {
-            document.querySelector('#proBanner').classList.add('d-flex');
-            document.querySelector('.navbar').classList.remove('fixed-top');
-          }
-          else {
-            document.querySelector('#proBanner').classList.add('d-none');
-            document.querySelector('.navbar').classList.add('fixed-top');
-          }
-          
-          if ($( ".navbar" ).hasClass( "fixed-top" )) {
-            document.querySelector('.page-body-wrapper').classList.remove('pt-0');
-            document.querySelector('.navbar').classList.remove('pt-5');
-          }
-          else {
-            document.querySelector('.page-body-wrapper').classList.add('pt-0');
-            document.querySelector('.navbar').classList.add('pt-5');
-            document.querySelector('.navbar').classList.add('mt-3');
-            
-          }
-          document.querySelector('#bannerClose').addEventListener('click',function() {
-            document.querySelector('#proBanner').classList.add('d-none');
-            document.querySelector('#proBanner').classList.remove('d-flex');
-            document.querySelector('.navbar').classList.remove('pt-5');
-            document.querySelector('.navbar').classList.add('fixed-top');
-            document.querySelector('.page-body-wrapper').classList.add('proBanner-padding-top');
-            document.querySelector('.navbar').classList.remove('mt-3');
-            var date = new Date();
-            date.setTime(date.getTime() + 24 * 60 * 60 * 1000); 
-            $.cookie('majestic-pro-banner', "true", { expires: date });
-          });
-    })
-})(jQuery)
+(function () {
+  'use strict';
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const banner = document.getElementById('proBanner');
+    if (!banner) return;
+
+    const navbar = document.querySelector('.navbar');
+    const pageBody = document.querySelector('.page-body-wrapper');
+    const closeButton = document.getElementById('bannerClose');
+    const storageKey = 'majestic-pro-banner';
+
+    let dismissed = false;
+    try {
+      dismissed = window.localStorage.getItem(storageKey) === 'true';
+    } catch (error) {
+      dismissed = false;
+    }
+
+    function syncBannerState(isDismissed) {
+      banner.classList.toggle('d-none', isDismissed);
+      banner.classList.toggle('d-flex', !isDismissed);
+
+      if (!navbar || !pageBody) return;
+
+      navbar.classList.toggle('fixed-top', isDismissed);
+      navbar.classList.toggle('pt-5', !isDismissed);
+      navbar.classList.toggle('mt-3', !isDismissed);
+      pageBody.classList.toggle('pt-0', !isDismissed);
+      pageBody.classList.toggle('proBanner-padding-top', isDismissed);
+    }
+
+    syncBannerState(dismissed);
+
+    closeButton?.addEventListener('click', function () {
+      try {
+        window.localStorage.setItem(storageKey, 'true');
+      } catch (error) {
+        // Storage can be unavailable in private/restricted browsing; UI still closes safely.
+      }
+
+      syncBannerState(true);
+    });
+  }, { once: true });
+})();

@@ -86,7 +86,7 @@
             @endif
 
             @if($canAdmin('catalog.manage') || $canAdmin('promotions.manage') || $canAdmin('orders.view'))
-            <li class="nav-item d-none d-xl-flex align-items-center position-relative admin-menu-wrap">
+            <li class="nav-item d-none d-xl-flex align-items-center position-relative admin-menu-wrap admin-quick-create-slot">
                 <button type="button" class="admin-topbar-action admin-custom-menu-toggle" data-admin-menu-target="quick-create-menu" aria-expanded="false" aria-controls="quick-create-menu" aria-haspopup="menu">
                     <i class="mdi mdi-plus-circle-outline"></i>
                     <span class="d-none d-xxl-inline">{{ __('Quick create') }}</span>
@@ -104,7 +104,7 @@
             </li>
             @endif
 
-            <li class="nav-item nav-profile position-relative admin-menu-wrap">
+            <li class="nav-item nav-profile position-relative admin-menu-wrap admin-profile-slot">
                 <button type="button" class="nav-link admin-profile-trigger admin-custom-menu-toggle" data-admin-menu-target="profile-menu" aria-expanded="false" aria-controls="profile-menu" aria-haspopup="menu">
                     <span class="admin-profile-avatar">
                         {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
@@ -440,13 +440,59 @@ html[dir='ltr'] .admin-custom-menu { inset-inline-start: auto; inset-inline-end:
     }
 }
 
-@media (max-width: 390px) {
-    .admin-mobile-brand {
+@media (max-width: 575.98px) {
+    .admin-mobile-brand,
+    .admin-quick-create-slot {
         display: none !important;
     }
 
     .admin-topbar .navbar-menu-wrapper {
         padding-inline: .5rem !important;
+    }
+
+    .admin-topbar-start {
+        flex: 0 0 auto !important;
+    }
+
+    .admin-topbar .navbar-nav-right {
+        flex: 0 1 auto !important;
+        max-width: calc(100vw - 4.9rem);
+        justify-content: flex-end;
+        overflow: visible !important;
+        gap: .25rem !important;
+    }
+
+    html[dir='rtl'] .admin-topbar .navbar-nav-right {
+        justify-content: flex-start;
+    }
+
+    .admin-profile-slot,
+    .admin-notification-slot,
+    .admin-language-slot {
+        flex: 0 0 auto !important;
+    }
+
+    .admin-profile-trigger {
+        margin: 0 !important;
+    }
+}
+
+@media (max-width: 359.98px) {
+    .admin-language-slot .language-switcher__link {
+        padding: .12rem !important;
+    }
+
+    .admin-language-slot .language-switcher__code {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+    }
+
+    .admin-topbar-action--icon,
+    .admin-profile-trigger,
+    .admin-mobile-sidebar-toggle-inline {
+        width: 2.65rem !important;
+        height: 2.65rem !important;
+        min-height: 2.65rem !important;
     }
 }
 </style>

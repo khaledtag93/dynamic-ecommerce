@@ -3259,6 +3259,7 @@ select option {
     </div>
 
     <script src="{{ asset('admin/vendors/js/vendor.bundle.base.js') }}"></script>
+    <script src="{{ asset('admin/vendors/datatables.net/jquery.dataTables.js') }}"></script>
     <script src="{{ asset('admin/vendors/datatables.net-bs4/dataTables.bootstrap4.js') }}"></script>
     <script src="{{ asset('admin/js/off-canvas.js') }}?v={{ @filemtime(public_path('admin/js/off-canvas.js')) ?: '1' }}"></script>
     <script src="{{ asset('admin/js/hoverable-collapse.js') }}"></script>

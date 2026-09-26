@@ -176,4 +176,55 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString("title=\"{{ __('Sign out') }}\"", $sidebar);
     }
 
+
+    public function test_admin_shared_assets_load_datatables_in_dependency_order_and_guard_optional_dashboard_table(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+        $dashboard = file_get_contents(public_path('admin/js/dashboard.js'));
+
+        $core = strpos($layout, "admin/vendors/datatables.net/jquery.dataTables.js");
+        $bootstrap = strpos($layout, "admin/vendors/datatables.net-bs4/dataTables.bootstrap4.js");
+
+        $this->assertNotFalse($core);
+        $this->assertNotFalse($bootstrap);
+        $this->assertTrue($core < $bootstrap);
+        $this->assertStringContainsString("typeof $.fn.DataTable === 'function'", $dashboard);
+        $this->assertStringContainsString("$('#recent-purchases-listing').length", $dashboard);
+    }
+
+    public function test_admin_demo_banner_has_no_legacy_jquery_cookie_dependency(): void
+    {
+        $script = file_get_contents(public_path('admin/js/proBanner.js'));
+
+        $this->assertStringNotContainsString('$.cookie', $script);
+        $this->assertStringContainsString("const banner = document.getElementById('proBanner')", $script);
+        $this->assertStringContainsString('if (!banner) return;', $script);
+        $this->assertStringContainsString('window.localStorage', $script);
+    }
+
+    public function test_admin_roboto_font_urls_are_relative_to_admin_css_directory(): void
+    {
+        $style = file_get_contents(public_path('admin/css/style.css'));
+
+        $this->assertStringContainsString('../fonts/Roboto/Roboto-Regular.woff2', $style);
+        $this->assertStringContainsString('../fonts/Roboto/Roboto-Bold.woff2', $style);
+        $this->assertStringNotContainsString('../../fonts/Roboto/', $style);
+        $this->assertFileExists(public_path('admin/fonts/Roboto/Roboto-Regular.woff2'));
+        $this->assertFileExists(public_path('admin/fonts/Roboto/Roboto-Bold.woff2'));
+    }
+
+    public function test_mobile_admin_topbar_preserves_profile_control_in_rtl_portrait(): void
+    {
+        $navbar = file_get_contents(resource_path('views/layouts/inc/admin/navbar.blade.php'));
+
+        $this->assertStringContainsString('admin-profile-slot', $navbar);
+        $this->assertStringContainsString('admin-quick-create-slot', $navbar);
+        $this->assertStringContainsString('@media (max-width: 575.98px)', $navbar);
+        $this->assertStringContainsString('.admin-mobile-brand,', $navbar);
+        $this->assertStringContainsString('.admin-quick-create-slot {', $navbar);
+        $this->assertStringContainsString("html[dir='rtl'] .admin-topbar .navbar-nav-right", $navbar);
+        $this->assertStringContainsString('max-width: calc(100vw - 4.9rem);', $navbar);
+        $this->assertStringContainsString('.admin-profile-slot,', $navbar);
+    }
+
 }
