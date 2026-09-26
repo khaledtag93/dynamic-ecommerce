@@ -5716,5 +5716,10 @@
     "Save the category first if you want to keep these changes.": "احفظ التصنيف أولًا إذا كنت تريد الاحتفاظ بهذه التغييرات.",
     "Discard changes and leave": "تجاهل التغييرات والمغادرة",
     "This order is not eligible for another online payment attempt. Review the order details or contact support if you need help.": "هذا الطلب غير مؤهل لمحاولة دفع إلكتروني أخرى. راجع تفاصيل الطلب أو تواصل مع الدعم إذا احتجت إلى مساعدة.",
-    "Online payment cannot be retried right now. Review the order details or contact support for the next step.": "لا يمكن إعادة محاولة الدفع الإلكتروني الآن. راجع تفاصيل الطلب أو تواصل مع الدعم لمعرفة الخطوة التالية."
+    "Online payment cannot be retried right now. Review the order details or contact support for the next step.": "لا يمكن إعادة محاولة الدفع الإلكتروني الآن. راجع تفاصيل الطلب أو تواصل مع الدعم لمعرفة الخطوة التالية.",
+    "Change staff role?": "تغيير دور الموظف؟",
+    "The account permissions will change immediately after you save this assignment.": "ستتغير صلاحيات الحساب فور حفظ هذا التعيين.",
+    "Review the selected role before continuing.": "راجع الدور المحدد قبل المتابعة.",
+    "Change role": "تغيير الدور",
+    "Keep current role": "الاحتفاظ بالدور الحالي"
 }
