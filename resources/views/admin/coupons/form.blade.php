@@ -32,17 +32,17 @@
                     <div id="coupon-editor-panel-offer" role="tabpanel" aria-labelledby="coupon-editor-tab-offer" data-admin-section-panel="offer">
                         <div class="row g-4">
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Name') }}</label>
-                        <input type="text" name="name" class="form-control" value="{{ old('name', $coupon->name) }}" placeholder="{{ __('Optional internal label') }}">
+                        <label class="form-label fw-semibold" for="couponName">{{ __('Name') }}</label>
+                        <input id="couponName" type="text" name="name" class="form-control" value="{{ old('name', $coupon->name) }}" placeholder="{{ __('Optional internal label') }}">
                         <div class="form-text">{{ __('Useful when your team wants a readable internal title for the promotion.') }}</div>
                     </div>
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Code') }} <span class="required-star">*</span></label>
-                        <input type="text" name="code" class="form-control text-uppercase" autocomplete="off" value="{{ old('code', $coupon->code) }}" placeholder="{{ __('SAVE10') }}">
+                        <label class="form-label fw-semibold" for="couponCode">{{ __('Code') }} <span class="required-star">*</span></label>
+                        <input id="couponCode" type="text" name="code" aria-required="true" class="form-control text-uppercase" autocomplete="off" value="{{ old('code', $coupon->code) }}" placeholder="{{ __('SAVE10') }}">
                         <div class="form-text">{{ __('Customers will enter this code during cart or checkout.') }}</div>
                     </div>
                     <div class="col-lg-4">
-                        <label class="form-label fw-semibold">{{ __('Type') }}</label>
+                        <label class="form-label fw-semibold" for="couponType">{{ __('Type') }}</label>
                         <select name="type" id="couponType" class="form-select">
                             @foreach($typeOptions as $value => $label)
                                 <option value="{{ $value }}" @selected(old('type', $coupon->type) === $value)>{{ $label }}</option>
@@ -50,7 +50,7 @@
                         </select>
                     </div>
                     <div class="col-lg-4">
-                        <label class="form-label fw-semibold">{{ __('Value') }}</label>
+                        <label class="form-label fw-semibold" for="couponValue">{{ __('Value') }}</label>
                         <input type="number" step="0.01" min="0.01" name="value" id="couponValue" class="form-control" value="{{ old('value', $coupon->value) }}">
                     </div>
                         </div>
@@ -59,16 +59,16 @@
                     <div id="coupon-editor-panel-limits" role="tabpanel" aria-labelledby="coupon-editor-tab-limits" data-admin-section-panel="limits">
                         <div class="row g-4">
                     <div class="col-lg-4">
-                        <label class="form-label fw-semibold">{{ __('Usage limit') }}</label>
-                        <input type="number" min="1" name="usage_limit" class="form-control" value="{{ old('usage_limit', $coupon->usage_limit) }}" placeholder="{{ __('Optional') }}">
+                        <label class="form-label fw-semibold" for="couponUsageLimit">{{ __('Usage limit') }}</label>
+                        <input id="couponUsageLimit" type="number" min="1" name="usage_limit" class="form-control" value="{{ old('usage_limit', $coupon->usage_limit) }}" placeholder="{{ __('Optional') }}">
                     </div>
                     <div class="col-lg-4">
-                        <label class="form-label fw-semibold">{{ __('Min order amount') }}</label>
-                        <input type="number" step="0.01" min="0" name="min_order_amount" class="form-control" value="{{ old('min_order_amount', $coupon->min_order_amount) }}">
+                        <label class="form-label fw-semibold" for="couponMinOrderAmount">{{ __('Min order amount') }}</label>
+                        <input id="couponMinOrderAmount" type="number" step="0.01" min="0" name="min_order_amount" class="form-control" value="{{ old('min_order_amount', $coupon->min_order_amount) }}">
                     </div>
                     <div class="col-lg-4">
-                        <label class="form-label fw-semibold">{{ __('Max discount') }}</label>
-                        <input type="number" step="0.01" min="0" name="max_discount_amount" class="form-control" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}">
+                        <label class="form-label fw-semibold" for="couponMaxDiscount">{{ __('Max discount') }}</label>
+                        <input id="couponMaxDiscount" type="number" step="0.01" min="0" name="max_discount_amount" class="form-control" value="{{ old('max_discount_amount', $coupon->max_discount_amount) }}">
                     </div>
                     <div class="col-lg-4 d-flex align-items-end">
                         <div class="form-check form-switch mb-2">
@@ -82,16 +82,16 @@
                     <div id="coupon-editor-panel-schedule" role="tabpanel" aria-labelledby="coupon-editor-tab-schedule" data-admin-section-panel="schedule">
                         <div class="row g-4">
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Starts at') }}</label>
-                        <input type="datetime-local" name="starts_at" class="form-control" value="{{ old('starts_at', optional($coupon->starts_at)->format('Y-m-d\TH:i')) }}">
+                        <label class="form-label fw-semibold" for="couponStartsAt">{{ __('Starts at') }}</label>
+                        <input id="couponStartsAt" type="datetime-local" name="starts_at" class="form-control" value="{{ old('starts_at', optional($coupon->starts_at)->format('Y-m-d\TH:i')) }}">
                     </div>
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Ends at') }}</label>
-                        <input type="datetime-local" name="ends_at" class="form-control" value="{{ old('ends_at', optional($coupon->ends_at)->format('Y-m-d\TH:i')) }}">
+                        <label class="form-label fw-semibold" for="couponEndsAt">{{ __('Ends at') }}</label>
+                        <input id="couponEndsAt" type="datetime-local" name="ends_at" class="form-control" value="{{ old('ends_at', optional($coupon->ends_at)->format('Y-m-d\TH:i')) }}">
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-                        <textarea name="notes" rows="4" class="form-control" placeholder="{{ __('Optional notes') }}">{{ old('notes', $coupon->notes) }}</textarea>
+                        <label class="form-label fw-semibold" for="couponNotes">{{ __('Notes') }}</label>
+                        <textarea id="couponNotes" name="notes" rows="4" class="form-control" placeholder="{{ __('Optional notes') }}">{{ old('notes', $coupon->notes) }}</textarea>
                     </div>
                         </div>
                     </div>
