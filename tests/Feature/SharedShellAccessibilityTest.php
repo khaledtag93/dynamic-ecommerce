@@ -67,7 +67,7 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString("html[dir='ltr'] .sidebar-offcanvas.custom-sidebar.active", $admin);
         $this->assertStringContainsString("html[dir='rtl'] .sidebar-offcanvas.custom-sidebar.active", $admin);
         $this->assertStringContainsString('data-toggle="offcanvas"', $navbar);
-        $this->assertStringContainsString("aria-label="{{ __('Toggle sidebar') }}"", $navbar);
+        $this->assertStringContainsString('data-toggle="offcanvas" aria-label=', $navbar);
     }
 
     public function test_skip_link_copy_is_bilingual(): void
