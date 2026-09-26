@@ -22,8 +22,12 @@ class InventoryController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'type' => (string) $request->string('type'),
             'reference' => (string) $request->string('reference'),
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
@@ -31,12 +35,12 @@ class InventoryController extends Controller
 
         $movements = InventoryMovement::query()
             ->with(['product', 'variant', 'purchase', 'order'])
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('reason', 'like', "%{$search}%")
-                        ->orWhereHas('product', fn ($product) => $product->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas('variant', fn ($variant) => $variant->where('sku', 'like', "%{$search}%"))
-                        ->orWhereHas('order', fn ($order) => $order->where('order_number', 'like', "%{$search}%"));
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('reason', 'like', $like)
+                        ->orWhereHas('product', fn ($product) => $product->where('name', 'like', $like))
+                        ->orWhereHas('variant', fn ($variant) => $variant->where('sku', 'like', $like))
+                        ->orWhereHas('order', fn ($order) => $order->where('order_number', 'like', $like));
                 });
             })
             ->when($filters['type'], fn ($query, $type) => $query->where('type', $type))
@@ -172,12 +176,15 @@ class InventoryController extends Controller
 
     public function adjustForm(Request $request)
     {
-        $search = trim((string) $request->string('search'));
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $products = Product::query()
             ->when($search, fn ($query) => $query->where(fn ($matches) => $matches
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('sku', 'like', "%{$search}%")
-                ->orWhere('barcode', 'like', "%{$search}%")))
+                ->where('name', 'like', $like)
+                ->orWhere('sku', 'like', $like)
+                ->orWhere('barcode', 'like', $like)))
             ->orderBy('name')
             ->limit(30)
             ->get();
