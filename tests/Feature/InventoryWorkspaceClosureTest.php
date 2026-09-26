@@ -10,7 +10,7 @@ class InventoryWorkspaceClosureTest extends TestCase
     {
         $controller = file_get_contents(app_path('Http/Controllers/Admin/InventoryController.php'));
 
-        $this->assertSame(2, substr_count($controller, "mb_substr(trim((string) \\$request->string('search')), 0, 100)"));
+        $this->assertSame(2, substr_count($controller, 'mb_substr(trim((string) $request->string(\'search\')), 0, 100)'));
         $this->assertSame(2, substr_count($controller, "str_replace(['\\\\', '%', '_']"));
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
     }
