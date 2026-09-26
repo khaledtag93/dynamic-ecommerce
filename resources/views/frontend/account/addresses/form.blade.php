@@ -16,21 +16,21 @@
                     <h2 class="h4 fw-bold mb-3">{{ __('Contact and delivery') }}</h2>
                     <div class="row g-3 mb-4">
                         @foreach([
-                            ['label', __('Address label'), 'text', 'off', 6],
-                            ['recipient_name', __('Recipient name'), 'text', 'name', 6],
-                            ['phone', __('Phone number'), 'tel', 'tel', 6],
-                            ['country', __('Country'), 'text', 'country-name', 6],
-                            ['address_line_1', __('Address line 1'), 'text', 'address-line1', 12],
-                            ['address_line_2', __('Address line 2 (optional)'), 'text', 'address-line2', 12],
-                            ['city', __('City'), 'text', 'address-level2', 4],
-                            ['state', __('State / Area'), 'text', 'address-level1', 4],
-                            ['postal_code', __('Postal code'), 'text', 'postal-code', 4],
-                        ] as [$field, $label, $type, $autocomplete, $width])
+                            ['label', __('Address label'), 'text', 'off', 6, 80],
+                            ['recipient_name', __('Recipient name'), 'text', 'name', 6, 255],
+                            ['phone', __('Phone number'), 'tel', 'tel', 6, 50],
+                            ['country', __('Country'), 'text', 'country-name', 6, 120],
+                            ['address_line_1', __('Address line 1'), 'text', 'address-line1', 12, 255],
+                            ['address_line_2', __('Address line 2 (optional)'), 'text', 'address-line2', 12, 255],
+                            ['city', __('City'), 'text', 'address-level2', 4, 255],
+                            ['state', __('State / Area'), 'text', 'address-level1', 4, 255],
+                            ['postal_code', __('Postal code'), 'text', 'postal-code', 4, 50],
+                        ] as [$field, $label, $type, $autocomplete, $width, $maxLength])
                             <div class="col-md-{{ $width }}">
                                 <label for="address_{{ $field }}" class="form-label fw-bold">{{ $label }}</label>
-                                <input id="address_{{ $field }}" name="{{ $field }}" type="{{ $type }}" autocomplete="{{ $autocomplete }}"
+                                <input id="address_{{ $field }}" name="{{ $field }}" type="{{ $type }}" autocomplete="{{ $autocomplete }}" maxlength="{{ $maxLength }}"
                                        value="{{ old($field, $address?->{$field} ?? ($field === 'country' ? 'Egypt' : '')) }}"
-                                       class="form-control lc-form-control @error($field) is-invalid @enderror" @if(in_array($field, ['label', 'recipient_name', 'phone', 'country', 'address_line_1', 'city'])) required @endif>
+                                       class="form-control lc-form-control @error($field) is-invalid @enderror" @if(in_array($field, ['label', 'recipient_name', 'phone', 'country', 'address_line_1', 'city'])) required aria-required="true" @endif>
                                 @error($field)<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         @endforeach

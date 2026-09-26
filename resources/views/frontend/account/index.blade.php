@@ -26,12 +26,12 @@
                         @csrf @method('PATCH')
                         <div>
                             <label for="accountName" class="form-label fw-bold">{{ __('Full name') }}</label>
-                            <input id="accountName" name="name" autocomplete="name" value="{{ old('name', auth()->user()->name) }}" class="form-control lc-form-control @error('name') is-invalid @enderror" required>
+                            <input id="accountName" name="name" maxlength="255" aria-required="true" autocomplete="name" value="{{ old('name', auth()->user()->name) }}" class="form-control lc-form-control @error('name') is-invalid @enderror" required>
                             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label for="accountEmail" class="form-label fw-bold">{{ __('Email address') }}</label>
-                            <input id="accountEmail" type="email" name="email" autocomplete="email" value="{{ old('email', auth()->user()->email) }}" class="form-control lc-form-control @error('email') is-invalid @enderror" required>
+                            <input id="accountEmail" type="email" name="email" maxlength="255" aria-required="true" autocomplete="email" value="{{ old('email', auth()->user()->email) }}" class="form-control lc-form-control @error('email') is-invalid @enderror" required>
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
@@ -50,17 +50,17 @@
                         @csrf @method('PATCH')
                         <div>
                             <label for="passwordCurrent" class="form-label fw-bold">{{ __('Current password') }}</label>
-                            <input id="passwordCurrent" type="password" name="current_password" autocomplete="current-password" class="form-control lc-form-control @error('current_password', 'passwordUpdate') is-invalid @enderror" required>
+                            <input id="passwordCurrent" type="password" name="current_password" aria-required="true" autocomplete="current-password" class="form-control lc-form-control @error('current_password', 'passwordUpdate') is-invalid @enderror" required>
                             @error('current_password', 'passwordUpdate')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label for="passwordNew" class="form-label fw-bold">{{ __('New password') }}</label>
-                            <input id="passwordNew" type="password" name="password" autocomplete="new-password" class="form-control lc-form-control @error('password', 'passwordUpdate') is-invalid @enderror" required minlength="8">
+                            <input id="passwordNew" type="password" name="password" aria-required="true" autocomplete="new-password" class="form-control lc-form-control @error('password', 'passwordUpdate') is-invalid @enderror" required minlength="8">
                             @error('password', 'passwordUpdate')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label for="passwordConfirm" class="form-label fw-bold">{{ __('Confirm new password') }}</label>
-                            <input id="passwordConfirm" type="password" name="password_confirmation" autocomplete="new-password" class="form-control lc-form-control" required minlength="8">
+                            <input id="passwordConfirm" type="password" name="password_confirmation" aria-required="true" autocomplete="new-password" class="form-control lc-form-control" required minlength="8">
                         </div>
                         <div><button type="submit" class="btn lc-btn-soft">{{ __('Update password') }}</button></div>
                     </form>

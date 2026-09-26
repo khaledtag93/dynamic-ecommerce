@@ -246,6 +246,30 @@ class CustomerAccountTest extends TestCase
             'country' => 'Egypt',
         ], $extra);
     }
+    public function test_customer_account_forms_match_server_input_limits(): void
+    {
+        $account = file_get_contents(resource_path('views/frontend/account/index.blade.php'));
+        $address = file_get_contents(resource_path('views/frontend/account/addresses/form.blade.php'));
+        $accountController = file_get_contents(app_path('Http/Controllers/Frontend/AccountController.php'));
+        $addressController = file_get_contents(app_path('Http/Controllers/Frontend/AddressBookController.php'));
+
+        $this->assertStringContainsString('id="accountName" name="name" maxlength="255" aria-required="true"', $account);
+        $this->assertStringContainsString('id="accountEmail" type="email" name="email" maxlength="255" aria-required="true"', $account);
+        $this->assertStringContainsString("'name' => ['required', 'string', 'max:255']", $accountController);
+        $this->assertStringContainsString("'email' => ['required', 'email', 'max:255'", $accountController);
+
+        foreach ([80, 255, 50, 120] as $limit) {
+            $this->assertStringContainsString(', ' . $limit . ']', $address);
+        }
+
+        $this->assertStringContainsString('maxlength="{{ $maxLength }}"', $address);
+        $this->assertStringContainsString('required aria-required="true"', $address);
+        $this->assertStringContainsString("'label' => ['required', 'string', 'max:80']", $addressController);
+        $this->assertStringContainsString("'phone' => ['required', 'string', 'max:50']", $addressController);
+        $this->assertStringContainsString("'country' => ['required', 'string', 'max:120']", $addressController);
+        $this->assertStringContainsString("'address_line_1' => ['required', 'string', 'max:255']", $addressController);
+    }
+
     public function test_account_navigation_exposes_current_page_semantics(): void
     {
         $navigation = file_get_contents(resource_path('views/frontend/account/partials/navigation.blade.php'));
