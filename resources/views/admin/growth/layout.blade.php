@@ -103,10 +103,10 @@ html[dir="rtl"] .gm-setting-row{text-align:right}
     </header>
 
     <nav class="gm-nav" aria-label="{{ __('Growth workspace navigation') }}">
-        <a href="{{ $quickLinks['overview'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'overview' ? 'active' : '' }}"><i class="mdi mdi-view-dashboard-outline"></i>{{ __('Overview') }}</a>
-        <a href="{{ $quickLinks['content'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'content' ? 'active' : '' }}"><i class="mdi mdi-source-branch"></i>{{ __('Content & Journeys') }}</a>
-        <a href="{{ $quickLinks['operations'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'operations' ? 'active' : '' }}"><i class="mdi mdi-cog-sync-outline"></i>{{ __('Operations') }}</a>
-        <a href="{{ $quickLinks['insights'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'insights' ? 'active' : '' }}"><i class="mdi mdi-chart-box-outline"></i>{{ __('Insights') }}</a>
+        <a href="{{ $quickLinks['overview'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'overview' ? 'active' : '' }}" @if(($pageMeta['key'] ?? 'overview') === 'overview') aria-current="page" @endif><i class="mdi mdi-view-dashboard-outline"></i>{{ __('Overview') }}</a>
+        <a href="{{ $quickLinks['content'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'content' ? 'active' : '' }}" @if(($pageMeta['key'] ?? 'overview') === 'content') aria-current="page" @endif><i class="mdi mdi-source-branch"></i>{{ __('Content & Journeys') }}</a>
+        <a href="{{ $quickLinks['operations'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'operations' ? 'active' : '' }}" @if(($pageMeta['key'] ?? 'overview') === 'operations') aria-current="page" @endif><i class="mdi mdi-cog-sync-outline"></i>{{ __('Operations') }}</a>
+        <a href="{{ $quickLinks['insights'] }}" class="{{ ($pageMeta['key'] ?? 'overview') === 'insights' ? 'active' : '' }}" @if(($pageMeta['key'] ?? 'overview') === 'insights') aria-current="page" @endif><i class="mdi mdi-chart-box-outline"></i>{{ __('Insights') }}</a>
     </nav>
 
     <div
