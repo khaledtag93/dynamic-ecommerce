@@ -21,7 +21,7 @@
                 @foreach($categories as $category)
                     @php
                         $cover = $category->image_url ?: ($category->image ? asset('uploads/category/' . $category->image) : null);
-                        $productCount = method_exists($category, 'products') ? $category->products()->where('status', true)->count() : null;
+                        $productCount = $category->visible_products_count ?? null;
                     @endphp
                     <a href="{{ route('category.products', $category->id) }}" class="retail-category-tile {{ $loop->first ? 'retail-category-tile--featured' : '' }}">
                         <div class="retail-category-tile__media">

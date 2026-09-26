@@ -38,6 +38,8 @@ class FrontendController extends Controller
 
         $categories = Category::query()
             ->visibleOnStorefront()
+            ->with('translations')
+            ->withCount(['products as visible_products_count' => fn ($query) => $query->where('status', true)])
             ->latest('id')
             ->take($categoryLimit)
             ->get();
@@ -285,6 +287,8 @@ class FrontendController extends Controller
             $categories = Category::query()
                 ->visibleOnStorefront()
                 ->whereIn('id', $ids)
+                ->with('translations')
+                ->withCount(['products as visible_products_count' => fn ($query) => $query->where('status', true)])
                 ->get()
                 ->keyBy('id');
 
@@ -297,6 +301,8 @@ class FrontendController extends Controller
 
         return Category::query()
             ->visibleOnStorefront()
+            ->with('translations')
+            ->withCount(['products as visible_products_count' => fn ($query) => $query->where('status', true)])
             ->latest('id')
             ->take($limit)
             ->get();

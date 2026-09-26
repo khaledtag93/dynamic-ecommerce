@@ -48,64 +48,84 @@ class AppServiceProvider extends ServiceProvider
         }
 
         View::composer('*', function ($view) {
-            $settings = [];
-            $layoutCategories = collect();
-            $layoutCartCount = 0;
-            $notificationCount = 0;
+            $storefrontView = $view->getName() === 'layouts.app'
+                || str_starts_with($view->getName(), 'frontend.')
+                || str_starts_with($view->getName(), 'auth.');
 
-            try {
-                if (Schema::hasTable('website_settings')) {
-                    $settings = app(StoreSettingsService::class)->all();
+            // Request attributes avoid process-wide state leaking between customers or queue jobs.
+            // Views rendered outside a matched HTTP route retain the original uncached behavior.
+            $request = request();
+            $cacheable = $request->route() !== null;
+            $context = $cacheable ? $request->attributes->get('dynamic.shared_view_context', []) : [];
+
+            if (! isset($context['common'])) {
+                $context['common'] = ['settings' => [], 'notificationCount' => 0];
+
+                try {
+                    if (Schema::hasTable('website_settings')) {
+                        $context['common']['settings'] = app(StoreSettingsService::class)->all();
+                    }
+
+                    if (! LocalSafeBoot::shouldSkipBootDatabaseTouches()) {
+                        $user = Auth::user();
+                        if ($user && Schema::hasTable('notifications')) {
+                            $context['common']['notificationCount'] = $user->unreadNotifications()->count();
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Keep boot safe until the database is ready.
                 }
+            }
 
-                if (in_array($view->getName(), ['layouts.app']) || str_starts_with($view->getName(), 'frontend.') || str_starts_with($view->getName(), 'auth.')) {
-                    // Customer navigation must keep working in local development too.
-                    // LOCAL_SAFE_BOOT should not hide real storefront categories from the header/footer.
+            if ($storefrontView && ! isset($context['storefront'])) {
+                $context['storefront'] = ['categories' => collect(), 'cartCount' => 0];
+
+                try {
+                    // Local safe boot still shows real categories when the database is available.
                     if (Schema::hasTable('categories')) {
                         try {
-                            $layoutCategories = Category::query()
+                            $categories = Category::query()
                                 ->visibleOnStorefront()
                                 ->with('translations')
                                 ->latest('id')
                                 ->take(14)
                                 ->get();
 
-                            if ($layoutCategories->isEmpty()) {
-                                $layoutCategories = Category::query()
+                            if ($categories->isEmpty()) {
+                                $categories = Category::query()
                                     ->with('translations')
                                     ->latest('id')
                                     ->take(14)
                                     ->get();
                             }
+
+                            $context['storefront']['categories'] = $categories;
                         } catch (\Throwable $categoryException) {
-                            $layoutCategories = collect();
+                            // Keep the storefront usable if category lookup fails.
                         }
                     }
 
                     try {
-                        $layoutCartCount = app(CartService::class)->count();
+                        $context['storefront']['cartCount'] = app(CartService::class)->count();
                     } catch (\Throwable $cartException) {
-                        $layoutCartCount = 0;
+                        // Keep the cart badge stable until the database is ready.
                     }
+                } catch (\Throwable $e) {
+                    // Keep the storefront usable until the database is ready.
                 }
-
-                if (! LocalSafeBoot::shouldSkipBootDatabaseTouches()) {
-                    $user = Auth::user();
-                    if ($user && Schema::hasTable('notifications')) {
-                        $notificationCount = $user->unreadNotifications()->count();
-                    }
-                }
-            } catch (\Throwable $e) {
-                // Fall back to empty shared view data until the database connection is available.
             }
 
-            if (in_array($view->getName(), ['layouts.app']) || str_starts_with($view->getName(), 'frontend.') || str_starts_with($view->getName(), 'auth.')) {
-                $view->with('layoutCategories', $layoutCategories);
-                $view->with('layoutCartCount', $layoutCartCount);
+            if ($cacheable) {
+                $request->attributes->set('dynamic.shared_view_context', $context);
             }
 
-            $view->with('authNotificationCount', $notificationCount);
-            $view->with('storeSettings', $settings);
+            if ($storefrontView) {
+                $view->with('layoutCategories', $context['storefront']['categories']);
+                $view->with('layoutCartCount', $context['storefront']['cartCount']);
+            }
+
+            $view->with('authNotificationCount', $context['common']['notificationCount']);
+            $view->with('storeSettings', $context['common']['settings']);
             $view->with('currentLocale', app()->getLocale());
             $view->with('isRtl', app()->getLocale() === 'ar');
         });
