@@ -116,6 +116,10 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("fragment('growth-campaigns')->links()", $content);
         $this->assertStringContainsString("fragment('growth-deliveries')->links()", $operations);
         $this->assertStringContainsString("fragment('growth-experiment-performance')->links()", $insights);
+        $this->assertStringContainsString('GrowthAttributionService::class)->campaignBreakdown()', $service);
+        $this->assertStringContainsString('GrowthCohortRetentionService::class)->latestRows()', $service);
+        $this->assertStringContainsString('GrowthPredictiveIntelligenceService::class)->topRows(5)', $service);
+        $this->assertStringContainsString('GrowthAdaptiveLearningService::class)->topRows(5)', $service);
     }
 
 }
