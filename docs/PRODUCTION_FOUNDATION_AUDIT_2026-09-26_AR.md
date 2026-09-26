@@ -45,7 +45,7 @@ Dynamic تجاوز مرحلة متجر تجريبي بسيط من ناحية ا�
 - Laravel 13 request-forgery middleware الحديث مستخدم عبر wrapper التطبيق.
 - Session serialization أصبح explicit مع default `php` لحماية sessions الحالية أثناء الترقية؛ التحويل إلى JSON مؤجل إلى نافذة re-login مقصودة.
 - QAS انتقل عمداً إلى `QUEUE_CONNECTION=database`. الاختبار اليدوي أثبت أن heartbeat job يدخل `jobs` ثم يستهلكه worker فعلياً حتى `Pending=0` و`Failed=0` ويمر `ops:health --strict`.
-- أضيف في hPanel Cron Job للـLaravel scheduler وآخر bounded queue worker كل دقيقة. أول تحقق بعد الحفظ بقي `STALE` للـscheduler والـqueue، لذلك الإعداد محفوظ لكن التنفيذ التلقائي لم يُقبل بعد؛ نراجع Cron output/بيئة PHP ثم نطلب heartbeats تلقائية جديدة قبل غلق OPS-03.
+- تم تفعيل hPanel Cron فعلياً للـLaravel scheduler والـbounded database queue worker كل دقيقة باستخدام wrapper scripts تسجل stdout/stderr. التحقق على عدة دورات أثبت أن Scheduler وQueue worker يظلان `OK` تلقائياً، و`Failed jobs=0`، كما نُفذت أوامر `growth:run` و`notifications:scan-escalations` و`payments:expire-stock-reservations` من الـscheduler بنجاح. قد يظهر heartbeat واحد Pending مؤقتاً بسبب تزامن دورتَي cron في نفس الدقيقة ثم يستهلكه worker في الدورة التالية. بذلك يُعتبر إثبات OPS-03 على QAS مكتملًا؛ Production يحتاج نفس الإعداد والتحقق قبل النشر.
 - هذا لا يعني Production-ready: الدمج إلى working line، authenticated QAS acceptance، Paymob E2E، secret rotation evidence، DB restore rehearsal، وإثبات التشغيل التلقائي النهائي للـscheduler/queue ما زالت release gates.
 
 ## 3. تقييم النضج بدون نسب مضللة
