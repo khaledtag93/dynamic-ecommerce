@@ -36,7 +36,7 @@
 
 <div class="gm-two">
     <section class="gm-panel">
-        <div class="gm-section"><div><h4>{{ __('Attribution breakdown') }}</h4><div class="gm-mini">{{ __('Top campaigns by attributed revenue and conversions.') }}</div></div></div>
+        <div class="gm-section"><div><h4>{{ __('Attribution breakdown') }}</h4><div class="gm-mini">{{ __('Top campaigns by attributed revenue and conversions. Up to 12 rows are shown in this snapshot.') }}</div></div></div>
         @if($attributionBreakdown->isEmpty())
             <div class="gm-empty">{{ __('No attribution rows yet.') }}</div>
         @else
@@ -49,7 +49,7 @@
     </section>
 
     <section class="gm-panel">
-        <div class="gm-section"><div><h4>{{ __('Experiment performance') }}</h4><div class="gm-mini">{{ __('Compare active variants using messages, conversions, and revenue.') }}</div></div></div>
+        <div class="gm-section"><div><h4>{{ __('Experiment performance') }}</h4><div class="gm-mini">{{ __('Compare active variants using messages, conversions, and revenue from the current insights snapshot.') }}</div></div></div>
         @if($experimentPerformance->isEmpty())
             <div class="gm-empty">{{ __('No experiment performance yet.') }}</div>
         @else
@@ -58,9 +58,6 @@
                 <tr><td>{{ $row['name'] ?? $row['experiment_name'] ?? '—' }}</td><td>{{ $row['messages'] ?? $row['message_count'] ?? 0 }}</td><td>{{ $row['conversions'] ?? $row['conversion_count'] ?? 0 }}</td><td>{{ number_format((float) ($row['revenue'] ?? 0), 2) }}</td></tr>
             @endforeach
             </tbody></table></div>
-            @if(method_exists($experiments, 'hasPages') && $experiments->hasPages())
-                <div class="mt-3">{{ $experiments->fragment('growth-experiment-performance')->links() }}</div>
-            @endif
         @endif
     </section>
 </div>
@@ -74,7 +71,7 @@
 
 <div class="gm-two">
     <section class="gm-panel">
-        <div class="gm-section"><div><h4>{{ __('Cohort retention') }}</h4><div class="gm-mini">{{ __('Recent customer groups and their repeat activity.') }}</div></div></div>
+        <div class="gm-section"><div><h4>{{ __('Cohort retention') }}</h4><div class="gm-mini">{{ __('Recent customer groups and their repeat activity. Up to 12 cohorts are shown in this snapshot.') }}</div></div></div>
         @if($cohortRows->isEmpty())
             <div class="gm-empty">{{ __('No cohort snapshots yet.') }}</div>
         @else
