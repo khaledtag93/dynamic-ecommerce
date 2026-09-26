@@ -11,8 +11,12 @@ class SupplierController extends Controller
 {
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => (string) $request->string('status'),
             'usage' => (string) $request->string('usage'),
             'per_page' => max(12, min(100, (int) $request->integer('per_page', 12))),
@@ -35,14 +39,13 @@ class SupplierController extends Controller
 
         $suppliers = Supplier::query()
             ->withCount(['items', 'purchases'])
-            ->when($filters['search'] !== '', function ($query) use ($filters) {
-                $search = $filters['search'];
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('company', 'like', "%{$search}%")
-                        ->orWhere('contact_name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
+            ->when($filters['search'] !== '', function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('name', 'like', $like)
+                        ->orWhere('company', 'like', $like)
+                        ->orWhere('contact_name', 'like', $like)
+                        ->orWhere('email', 'like', $like)
+                        ->orWhere('phone', 'like', $like);
                 });
             })
             ->when($filters['status'] !== '', function ($query) use ($filters) {
