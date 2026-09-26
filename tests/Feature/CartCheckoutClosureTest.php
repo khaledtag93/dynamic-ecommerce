@@ -72,6 +72,9 @@ class CartCheckoutClosureTest extends TestCase
 
     public function test_cart_quantity_update_rejects_item_that_became_out_of_stock(): void
     {
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+
         $category = $this->createCategory('Stock Change', 'stock-change');
 
         $product = Product::create([
@@ -160,8 +163,8 @@ class CartCheckoutClosureTest extends TestCase
         $this->assertStringContainsString('data-checkout-new-address', $view);
         $this->assertStringContainsString('setAddressButtonState', $view);
         $this->assertStringContainsString('requestQuote();', $view);
-        $this->assertStringContainsString("button.dataset.addressLine1", $view);
-        $this->assertStringNotContainsString("route('checkout.index', ['address' => $savedAddress->id])", $view);
+        $this->assertStringContainsString('button.dataset.addressLine1', $view);
+        $this->assertStringNotContainsString("route('checkout.index', ['address' => " . '$savedAddress->id' . "])", $view);
         $this->assertStringNotContainsString("route('checkout.index', ['address' => 'new'])", $view);
     }
 
