@@ -230,8 +230,8 @@
                     @csrf
                     @method('PATCH')
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ __('Order status') }}</label>
-                        <select name="status" class="form-select">
+                        <label class="form-label fw-semibold" for="orderStatusSelect">{{ __('Order status') }}</label>
+                        <select id="orderStatusSelect" name="status" class="form-select">
                             @foreach($statusOptions as $value => $label)
                                 <option value="{{ $value }}" @selected($order->status === $value) @disabled(!$order->canTransitionTo($value) && $order->status !== $value)>{{ $label }}</option>
                             @endforeach
@@ -300,8 +300,8 @@
                     @csrf
                     @method('PATCH')
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ __('Delivery status') }}</label>
-                        <select name="delivery_status" class="form-select">
+                        <label class="form-label fw-semibold" for="orderDeliveryStatus">{{ __('Delivery status') }}</label>
+                        <select id="orderDeliveryStatus" name="delivery_status" class="form-select">
                             @foreach($deliveryStatusOptions as $value => $label)
                                 <option value="{{ $value }}" @selected($order->delivery_status === $value) @disabled(!$order->canTransitionDeliveryTo($value))>{{ $label }}</option>
                             @endforeach
@@ -309,20 +309,20 @@
                         <div class="section-note">{{ __('Only valid next delivery statuses are enabled. Customer notifications and WhatsApp updates are sent only when the status actually changes.') }}</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ __('Courier') }}</label>
-                        <input type="text" name="shipping_provider" class="form-control" value="{{ old('shipping_provider', $order->shipping_provider) }}" placeholder="{{ __('Courier name') }}">
+                        <label class="form-label fw-semibold" for="orderShippingProvider">{{ __('Courier') }}</label>
+                        <input id="orderShippingProvider" type="text" name="shipping_provider" class="form-control" value="{{ old('shipping_provider', $order->shipping_provider) }}" placeholder="{{ __('Courier name') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ __('Tracking number') }}</label>
-                        <input type="text" name="tracking_number" class="form-control" value="{{ old('tracking_number', $order->tracking_number) }}" placeholder="{{ __('Tracking number') }}">
+                        <label class="form-label fw-semibold" for="orderTrackingNumber">{{ __('Tracking number') }}</label>
+                        <input id="orderTrackingNumber" type="text" name="tracking_number" class="form-control" value="{{ old('tracking_number', $order->tracking_number) }}" placeholder="{{ __('Tracking number') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ __('Estimated delivery date') }}</label>
-                        <input type="date" name="estimated_delivery_date" class="form-control" value="{{ old('estimated_delivery_date', optional($order->estimated_delivery_date)->format('Y-m-d')) }}">
+                        <label class="form-label fw-semibold" for="orderEstimatedDeliveryDate">{{ __('Estimated delivery date') }}</label>
+                        <input id="orderEstimatedDeliveryDate" type="date" name="estimated_delivery_date" class="form-control" value="{{ old('estimated_delivery_date', optional($order->estimated_delivery_date)->format('Y-m-d')) }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ __('Delivery notes') }}</label>
-                        <textarea name="delivery_notes" rows="3" class="form-control">{{ old('delivery_notes', $order->delivery_notes) }}</textarea>
+                        <label class="form-label fw-semibold" for="orderDeliveryNotes">{{ __('Delivery notes') }}</label>
+                        <textarea id="orderDeliveryNotes" name="delivery_notes" rows="3" class="form-control">{{ old('delivery_notes', $order->delivery_notes) }}</textarea>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save delivery details') }}</span></button>
                 </form>
@@ -385,16 +385,16 @@
                     <form method="POST" action="{{ route('admin.orders.refund', $order) }}" data-submit-loading data-refund-form data-refund-currency="{{ $currency }}">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">{{ __('Amount') }}</label>
-                            <input type="number" step="0.01" min="0.01" max="{{ $order->refundable_balance }}" name="amount" class="form-control" value="{{ old('amount', $order->refundable_balance) }}">
+                            <label class="form-label fw-semibold" for="orderRefundAmount">{{ __('Amount') }}</label>
+                            <input id="orderRefundAmount" type="number" step="0.01" min="0.01" max="{{ $order->refundable_balance }}" name="amount" class="form-control" value="{{ old('amount', $order->refundable_balance) }}">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">{{ __('Reason') }}</label>
-                            <input type="text" name="reason" class="form-control" value="{{ old('reason') }}" placeholder="{{ __('Refund reason') }}">
+                            <label class="form-label fw-semibold" for="orderRefundReason">{{ __('Reason') }}</label>
+                            <input id="orderRefundReason" type="text" name="reason" class="form-control" value="{{ old('reason') }}" placeholder="{{ __('Refund reason') }}">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-                            <textarea name="notes" rows="3" class="form-control" placeholder="{{ __('Optional refund notes') }}">{{ old('notes') }}</textarea>
+                            <label class="form-label fw-semibold" for="orderRefundNotes">{{ __('Notes') }}</label>
+                            <textarea id="orderRefundNotes" name="notes" rows="3" class="form-control" placeholder="{{ __('Optional refund notes') }}">{{ old('notes') }}</textarea>
                         </div>
                         <button type="submit" class="btn btn-light border w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Recording...') }}"><i class="mdi mdi-cash-refund"></i><span>{{ __('Record refund') }}</span></button>
                     </form>
