@@ -82,6 +82,20 @@ The buyer may independently inspect source, dependencies, clean installation, up
 
 **Gate:** [Hardening CI 36252296274](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36252296274) passed on source `7ceff28f05cd7e79c5007a74ee2e2195a2f959a3`. EN/AR desktop/mobile QAS checks from Home, product/category, cart and account routes, including enabled/disabled Home-section settings, remain outstanding. GF-14 remains IN REVIEW until matching-revision acceptance.
 
+### GF-15 — Storefront action destinations and shared-view query efficiency
+**Finding:** after the shared header navigation fix, configurable Home/page actions still had two cross-page risks. Known Home fragments used by hero/banner/suggestion actions could point to sections the merchant had hidden, and the shared view composer recalculated Storefront settings/categories/cart state for multiple partials inside one HTTP request. Category tiles also counted visible products per category, creating avoidable repeated queries.
+
+**Source action:** known Home action fragments now resolve against the sections actually rendered: valid local sections keep their anchor, hidden known sections fall back to a real product/search destination, on-sale falls back to the filtered offers result, and merchant-controlled external/custom destinations are preserved. Product/cart/checkout suggestion actions no longer use dead local Home fragments. Shared Storefront view data is memoized only in the current request via request attributes (no process-wide state), and category product totals are loaded with `withCount` rather than one count query per tile.
+
+**Gate:** [Hardening CI 36256650267](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36256650267) passed on source `3fe0f28d2d1f5f1980155c9250e9d23e19a91d5b`; [Hardening CI 36256978023](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36256978023) passed on `a536b22bf815ec616afa1c9b36a7f3ec075cb5b2`. Matching-revision QAS checks still need to verify enabled/disabled Home sections plus representative Home/product/cart/checkout navigation and real request/query behavior. GF-15 remains IN REVIEW until that acceptance.
+
+### GF-16 — Shared keyboard landmarks and reduced-motion behavior
+**Finding:** neither shared shell exposed a skip-to-content link; the Admin content wrapper was not a `<main>` landmark; and both shells used motion without a common `prefers-reduced-motion` baseline. Storefront account-nav auto-scroll was also nested inside the `/` search shortcut, so pressing the search shortcut could trigger unrelated navigation motion, and the JavaScript scroll was always smooth even when the user requested reduced motion.
+
+**Source action:** Admin and Storefront now expose localized EN/AR skip links targeting focusable main landmarks. Both shells apply a reduced-motion CSS baseline while keeping normal motion for users who have not requested reduction. The mobile account-nav reveal runs independently during shell initialization and switches JavaScript scrolling to `auto` under reduced-motion preference; the `/` keyboard shortcut now only focuses the visible Storefront search. Regression coverage protects the landmarks, bilingual copy, motion preference and shortcut separation.
+
+**Gate:** the initial landmark/motion source `72cf678010b35ff6967fe4c1077feece790f8ba6` passed [Hardening CI 36257428543](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36257428543). An intermediate follow-up correctly exposed one stale existing test that required unconditional smooth scrolling; that assertion was aligned with the accessible contract. Final source `ba00f303b2e32fb8cb76ce84f25af89d449fadf7` passed [Hardening CI 36257847029](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36257847029): 470 PHP tests / 13,982 assertions, shared Node interaction tests, clean MySQL migration, Composer audit, Blade/config compilation and frontend build. QAS keyboard/mobile/EN/AR/reduced-motion acceptance remains open, so GF-16 is IN REVIEW.
+
 ## Global Foundation execution order
 1. Admin shell/navigation closure.
 2. Storefront shell/navigation/footer visual foundation.

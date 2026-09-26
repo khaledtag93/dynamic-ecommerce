@@ -1,5 +1,15 @@
 # MASTER PROJECT STATUS
 
+## Shared Storefront foundation ledger — 2026-09-26
+
+- Active hardening line `sec03-framework-upgrade` application HEAD: `ba00f303b2e32fb8cb76ce84f25af89d449fadf7`.
+- Storefront action destinations were hardened through `3fe0f28`; request-scoped shared-view/query efficiency through `a536b22`; shared keyboard landmarks/reduced motion plus the decoupled mobile account-nav/search shortcut contract through `ba00f303`.
+- Green evidence: CI `36256650267` on `3fe0f28`, CI `36256978023` on `a536b22`, CI `36257428543` on `72cf678`, and final CI `36257847029` on `ba00f303` with 470 PHP tests / 13,982 assertions, JS interaction tests, dependency audit, clean MySQL migration, Laravel boot/routes, Blade/config compile and frontend build.
+- QAS separation is unchanged: last documented deployed application `f1f20297`. These newer GF-14/15/16 source slices remain IN REVIEW pending matching-revision authenticated EN/AR/mobile/keyboard/reduced-motion checks. Production unchanged.
+- Continue Global Foundation with the remaining Storefront/customer shared shell and then strict Page Closure; do not bypass OPS-01/PAY-01/OPS-02 for Production.
+
+### Earlier checkpoints below
+
 ## Buyer-grade route evidence and foundation ledger — 2026-09-26
 
 - On `sec03-framework-upgrade`, GF-01 source passed Hardening CI `36249023102`, GF-11 passed `36250710952`, and GF-12 passed `36250969555`. All three still need authenticated matching-revision QAS acceptance; none is CLOSED or Production-verified.

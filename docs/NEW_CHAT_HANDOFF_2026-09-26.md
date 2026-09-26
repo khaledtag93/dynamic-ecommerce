@@ -1,5 +1,17 @@
 # New Chat Handoff — Dynamic — 2026-09-26
 
+## Current checkpoint — Storefront shared foundation through `ba00f303`
+
+Continue on `sec03-framework-upgrade`. Final application HEAD in this checkpoint is `ba00f303b2e32fb8cb76ce84f25af89d449fadf7`, green in [Hardening CI 36257847029](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36257847029) with 470 PHP tests / 13,982 assertions plus shared JS checks/build. Since the prior route/navigation checkpoint, `3fe0f28` hardened configurable Home/hero/banner action destinations, `a536b22` removed repeated shared-view work inside the same HTTP request and category-count N+1 behavior, and `72cf678`/final `ba00f303` added Admin/Storefront skip-to-content landmarks, reduced-motion behavior, and separated mobile account-nav auto-scroll from the `/` search shortcut. Source CI is green; this is **not** QAS acceptance. Last documented QAS application remains `f1f20297`; Production unchanged; OPS-01/PAY-01/OPS-02 remain release blockers.
+
+**Next source slice:** continue the remaining shared Storefront/customer shell foundation — footer/account/auth conditional navigation, EN/AR + RTL/LTR, mobile/accessibility and targeted CSS/JS cleanup only where it removes repeated risk — then begin strict page-by-page closure. When the newer source is deployed to QAS, perform exact-revision desktop/mobile keyboard/reduced-motion checks before closing GF-14/15/16.
+
+Paste-ready continuation message:
+
+> نكمل Dynamic على `sec03-framework-upgrade` من `ba00f303` حسب `CURRENT_PHASE.md` و`docs/NEW_CHAT_HANDOFF_2026-09-26.md`. آخر CI أخضر هو `36257847029`. آخر QAS موثق ما زال `f1f20297` وProduction لم يتغير. كمل Global Foundation من shared Storefront/customer shell (footer/account/auth + conditional navigation + EN/AR/RTL + mobile/accessibility + targeted cleanup)، وبعدها Page Closure صفحة صفحة. لا تعتبر GF-14/15/16 CLOSED قبل QAS على نفس النسخة، واحتفظ ببوابات OPS-01/PAY-01/OPS-02.
+
+### Earlier checkpoints below
+
 ## Current checkpoint — registered route inventory
 
 Continue on `sec03-framework-upgrade`, reading `CURRENT_PHASE.md` first. Source GF-01/11/12 passed CI runs `36249023102`, `36250710952` and `36250969555` respectively, but matching-revision authenticated QAS acceptance remains open. The route-export application commit `11cd7770` passed CI `36251293003`; its 337-entry Laravel route artifact was reconciled with all 142 literal GET seed URIs, yielding a [160-entry GET discovery register](PAGE_INVENTORY_2026-09-26.md) and reproducible CSV scripts. These are route candidates, not 160 accepted pages. GF-13 public health-probe/trace fix passed CI `36251884894` at `39c6a87`. GF-14 Storefront shared-navigation fix passed CI `36252296274` at `7ceff28` (463 PHP tests / 13,936 assertions plus JS checks/build). Next inspect remaining actual navigation, conditional screens, roles and journeys, including user-configured Home/hero/banner anchors, while continuing shared Admin/Storefront foundation. QAS is still documented at `f1f20297`; Production unchanged. OPS-01/PAY-01/OPS-02 remain blockers.

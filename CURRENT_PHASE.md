@@ -1,5 +1,16 @@
 # CURRENT PHASE
 
+## Shared Storefront performance/accessibility checkpoint — 2026-09-26
+
+- Active source branch: `sec03-framework-upgrade`. Final application HEAD for this checkpoint is `ba00f303b2e32fb8cb76ce84f25af89d449fadf7`.
+- GF-14 follow-up/page actions: `3fe0f28` keeps merchant-configured Home/hero/banner actions navigable when known target sections are hidden; [CI 36256650267](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36256650267) passed.
+- GF-15 performance: `a536b22` reuses shared Storefront view data once per HTTP request and replaces per-category product-count queries with bounded `withCount`; [CI 36256978023](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36256978023) passed.
+- GF-16 accessibility/motion: Admin + Storefront now have bilingual skip-to-content links, explicit focusable main landmarks and reduced-motion behavior. Storefront account-nav auto-scroll is decoupled from the `/` search shortcut and respects reduced-motion preference. Final `ba00f303` passed [Hardening CI 36257847029](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36257847029): 470 PHP tests / 13,982 assertions plus shared JS interaction tests, clean MySQL, Composer audit, Blade/config compile and frontend build.
+- Last documented QAS application remains `f1f20297a27e2236603788ac7cc343dbbf86d0b6`; none of GF-14/15/16 is QAS-accepted merely because source CI is green. Production remains unchanged. OPS-01, PAY-01 and OPS-02 remain P0 release gates.
+- **Next:** continue the shared Storefront/customer shell review (footer/account/auth, conditional navigation, mobile/RTL/accessibility and only worthwhile CSS/JS cleanup), then move into strict page-by-page closure. When this newer source is deployed to QAS, perform exact-revision EN/AR desktop/mobile keyboard/reduced-motion acceptance before marking these findings CLOSED.
+
+### Earlier checkpoints below
+
 ## Registered route inventory checkpoint — 2026-09-26
 
 - Active branch: `sec03-framework-upgrade`. GF-01 Page Closure/mini-sidebar passed [CI 36249023102](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36249023102); GF-11 shared confirmation passed [CI 36250710952](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36250710952); GF-12 collapsed-group labels/sidebar-only scroll passed [CI 36250969555](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36250969555). Their source CI is green, but authenticated QAS acceptance has not occurred.
