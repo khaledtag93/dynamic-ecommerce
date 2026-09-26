@@ -31,36 +31,36 @@
     <div class="admin-card-body">
         <form method="GET" action="{{ route('admin.customers.index') }}" class="admin-filter-grid admin-filter-grid-customers" data-live-filter>
             <div>
-                <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                <input type="search" name="search" data-live-search autocomplete="off" value="{{ $search }}" class="form-control" placeholder="{{ __('Customer name or email') }}">
+                <label class="form-label fw-semibold" for="customerSearch">{{ __('Search') }}</label>
+                <input id="customerSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $search }}" class="form-control" placeholder="{{ __('Customer name or email') }}">
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Role') }}</label>
-                <select name="role" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="customerRoleFilter">{{ __('Role') }}</label>
+                <select id="customerRoleFilter" name="role" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All roles') }}</option>
                     <option value="0" @selected($role === '0')>{{ __('Customers') }}</option>
                     <option value="1" @selected($role === '1')>{{ __('Admins') }}</option>
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Order activity') }}</label>
-                <select name="activity" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="customerActivityFilter">{{ __('Order activity') }}</label>
+                <select id="customerActivityFilter" name="activity" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All accounts') }}</option>
                     <option value="buyers" @selected($activity === 'buyers')>{{ __('Buyers') }}</option>
                     <option value="no_orders" @selected($activity === 'no_orders')>{{ __('No orders yet') }}</option>
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Customer value') }}</label>
-                <select name="value" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="customerValueFilter">{{ __('Customer value') }}</label>
+                <select id="customerValueFilter" name="value" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All customer values') }}</option>
                     <option value="repeat" @selected($value === 'repeat')>{{ __('Repeat buyers') }}</option>
                     <option value="high_value" @selected($value === 'high_value')>{{ __('Highest spend first') }}</option>
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                <select name="per_page" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="customerPerPage">{{ __('Per page') }}</label>
+                <select id="customerPerPage" name="per_page" class="form-select" data-live-filter-control>
                     @foreach([12,24,48] as $size)
                         <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }}</option>
                     @endforeach
