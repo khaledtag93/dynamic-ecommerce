@@ -16,12 +16,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.workforce.payroll.compensation.index') }}" class="row g-3 align-items-end">
                 <div class="col-lg-6">
-                    <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                    <input type="search" name="search" class="form-control" value="{{ $search }}" placeholder="{{ __('Employee, code, department, or job title') }}">
+                    <label class="form-label fw-semibold" for="compensationSearch">{{ __('Search') }}</label>
+                    <input id="compensationSearch" type="search" name="search" class="form-control" value="{{ $search }}" placeholder="{{ __('Employee, code, department, or job title') }}">
                 </div>
                 <div class="col-lg-3">
-                    <label class="form-label fw-semibold">{{ __('Pay basis') }}</label>
-                    <select name="pay_basis" class="form-select">
+                    <label class="form-label fw-semibold" for="compensationBasisFilter">{{ __('Pay basis') }}</label>
+                    <select id="compensationBasisFilter" name="pay_basis" class="form-select">
                         <option value="">{{ __('All pay bases') }}</option>
                         @foreach(\App\Models\EmployeeCompensation::payBasisOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($basis === $value)>{{ $label }}</option>
