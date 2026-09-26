@@ -30,6 +30,15 @@ class DeployScriptSafetyTest extends TestCase
         $this->assertStringContainsString('_$$.backup', $script);
     }
 
+    public function test_qas_deploy_fetches_the_requested_branch_even_when_origin_refspec_is_narrow(): void
+    {
+        $script = file_get_contents(base_path('deploy-qas.sh'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('git fetch --prune origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"', $script);
+        $this->assertStringContainsString('git rev-parse "origin/$BRANCH"', $script);
+    }
+
     public function test_deploys_signal_queue_workers_to_reload_code(): void
     {
         foreach (['deploy.sh', 'deploy-qas.sh'] as $path) {

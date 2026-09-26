@@ -99,7 +99,7 @@ mkdir -p "$PUBLIC_DIR/uploads"
 chmod 600 .env
 
 log "⬇️ Fetching latest QAS code..."
-git fetch --prune origin
+git fetch --prune origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
 
 git rev-parse "origin/$BRANCH" >/dev/null 2>&1 || fail "Remote branch not found: origin/$BRANCH"
 
