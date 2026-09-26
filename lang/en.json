@@ -4605,5 +4605,8 @@
     "Remove all Growth validation test data?": "Remove all Growth validation test data?",
     "This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.": "This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.",
     "Keep test data": "Keep test data",
-    "Some information could not be saved. Fix the items below and try again.": "Some information could not be saved. Fix the items below and try again."
+    "Some information could not be saved. Fix the items below and try again.": "Some information could not be saved. Fix the items below and try again.",
+    "Top campaigns by attributed revenue and conversions. Up to 12 rows are shown in this snapshot.": "Top campaigns by attributed revenue and conversions. Up to 12 rows are shown in this snapshot.",
+    "Compare active variants using messages, conversions, and revenue from the current insights snapshot.": "Compare active variants using messages, conversions, and revenue from the current insights snapshot.",
+    "Recent customer groups and their repeat activity. Up to 12 cohorts are shown in this snapshot.": "Recent customer groups and their repeat activity. Up to 12 cohorts are shown in this snapshot."
 }
