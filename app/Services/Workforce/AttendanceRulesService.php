@@ -34,7 +34,7 @@ class AttendanceRulesService
 
         $clockIn = $session->effectiveClockInAt();
         $clockOut = $session->effectiveClockOutAt();
-        $startDelta = $shift->starts_at->diffInMinutes($clockIn, false);
+        $startDelta = (int) $shift->starts_at->diffInMinutes($clockIn, false);
 
         $startStatus = 'on_time';
         if ($startDelta > self::START_GRACE_MINUTES) {
@@ -47,7 +47,7 @@ class AttendanceRulesService
         $endDelta = null;
 
         if ($clockOut) {
-            $endDelta = $shift->ends_at->diffInMinutes($clockOut, false);
+            $endDelta = (int) $shift->ends_at->diffInMinutes($clockOut, false);
 
             if ($endDelta < -self::END_GRACE_MINUTES) {
                 $endStatus = 'early_departure';

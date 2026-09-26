@@ -27,7 +27,7 @@ class DeployScriptSafetyTest extends TestCase
         $this->assertStringContainsString('health_check', $script);
         $this->assertStringContainsString('artisan up', $script);
         $this->assertStringContainsString('curl -L -sS', $script);
-        $this->assertStringContainsString('_$.backup', $script);
+        $this->assertStringContainsString('_$$.backup', $script);
     }
 
     public function test_deploys_install_upload_execution_guard_without_syncing_user_uploads(): void
