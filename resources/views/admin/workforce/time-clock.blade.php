@@ -73,23 +73,23 @@
                             @else
                                 <form method="POST" action="{{ route('admin.workforce.break-start') }}" data-submit-loading class="mb-3">
                                     @csrf
-                                    <label class="form-label fw-semibold">{{ __('Break note') }}</label>
-                                    <input type="text" name="notes" class="form-control mb-3" maxlength="1000" placeholder="{{ __('Optional break note') }}">
+                                    <label class="form-label fw-semibold" for="breakNote">{{ __('Break note') }}</label>
+                                    <input id="breakNote" type="text" name="notes" class="form-control mb-3" maxlength="1000" placeholder="{{ __('Optional break note') }}">
                                     <button class="btn btn-light border w-100 btn-text-icon" data-loading-text="{{ __('Starting break...') }}"><i class="mdi mdi-pause-circle-outline"></i><span>{{ __('Start break') }}</span></button>
                                 </form>
 
                                 <form method="POST" action="{{ route('admin.workforce.clock-out') }}" data-submit-loading>
                                     @csrf
-                                    <label class="form-label fw-semibold">{{ __('Clock-out notes') }}</label>
-                                    <textarea name="notes" rows="3" class="form-control mb-3" maxlength="1000" placeholder="{{ __('Optional handover or attendance note') }}"></textarea>
+                                    <label class="form-label fw-semibold" for="clockOutNotes">{{ __('Clock-out notes') }}</label>
+                                    <textarea id="clockOutNotes" name="notes" rows="3" class="form-control mb-3" maxlength="1000" placeholder="{{ __('Optional handover or attendance note') }}"></textarea>
                                     <button class="btn btn-primary w-100 btn-text-icon" data-loading-text="{{ __('Clocking out...') }}"><i class="mdi mdi-clock-out"></i><span>{{ __('Clock out') }}</span></button>
                                 </form>
                             @endif
                         @elseif($employee->canClockTime())
                             <form method="POST" action="{{ route('admin.workforce.clock-in') }}" data-submit-loading>
                                 @csrf
-                                <label class="form-label fw-semibold">{{ __('Clock-in notes') }}</label>
-                                <textarea name="notes" rows="3" class="form-control mb-3" maxlength="1000" placeholder="{{ __('Optional note for this attendance session') }}"></textarea>
+                                <label class="form-label fw-semibold" for="clockInNotes">{{ __('Clock-in notes') }}</label>
+                                <textarea id="clockInNotes" name="notes" rows="3" class="form-control mb-3" maxlength="1000" placeholder="{{ __('Optional note for this attendance session') }}"></textarea>
                                 <button class="btn btn-primary w-100 btn-text-icon" data-loading-text="{{ __('Clocking in...') }}"><i class="mdi mdi-clock-in"></i><span>{{ __('Clock in') }}</span></button>
                             </form>
                         @else
