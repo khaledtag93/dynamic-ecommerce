@@ -143,6 +143,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Audit frontend dependencies
+        run: |
+          mkdir -p storage/test-results
+          npm audit --json > storage/test-results/npm-audit.json || true
+          node scripts/check-npm-audit.mjs storage/test-results/npm-audit.json
+
       - name: Test shared browser interactions
         run: npm run test:ui
 
