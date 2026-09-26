@@ -834,14 +834,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('.lc-account-nav [aria-current="page"]').forEach((current) => {
+        if (!window.matchMedia('(max-width: 767.98px)').matches) return;
+        window.requestAnimationFrame(() => current.scrollIntoView({
+            block: 'nearest',
+            inline: 'center',
+            behavior: reduceMotion ? 'auto' : 'smooth',
+        }));
+    });
+
     document.addEventListener('keydown', (event) => {
         if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey) return;
         const target = event.target;
         if (target && (target.matches('input, textarea, select') || target.isContentEditable)) return;
-        document.querySelectorAll('.lc-account-nav [aria-current="page"]').forEach((current) => {
-            if (!window.matchMedia('(max-width: 767.98px)').matches) return;
-            window.requestAnimationFrame(() => current.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }));
-        });
 
         const searches = Array.from(document.querySelectorAll('[data-storefront-search]'));
         const search = searches.find((input) => input.offsetParent !== null);

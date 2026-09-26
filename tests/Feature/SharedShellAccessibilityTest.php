@@ -28,6 +28,20 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString('animation-iteration-count:1 !important;', $storefront);
     }
 
+    public function test_mobile_account_navigation_scroll_is_independent_from_search_shortcut_and_respects_motion_preference(): void
+    {
+        $storefront = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $accountScroll = strpos($storefront, "document.querySelectorAll('.lc-account-nav [aria-current=\"page\"]')");
+        $searchShortcut = strpos($storefront, "document.addEventListener('keydown', (event) => {");
+
+        $this->assertNotFalse($accountScroll);
+        $this->assertNotFalse($searchShortcut);
+        $this->assertTrue($accountScroll < $searchShortcut);
+        $this->assertStringContainsString("const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;", $storefront);
+        $this->assertStringContainsString("behavior: reduceMotion ? 'auto' : 'smooth'", $storefront);
+    }
+
     public function test_skip_link_copy_is_bilingual(): void
     {
         $english = json_decode(file_get_contents(lang_path('en.json')), true, 512, JSON_THROW_ON_ERROR);
