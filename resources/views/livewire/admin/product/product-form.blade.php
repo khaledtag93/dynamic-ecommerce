@@ -1698,7 +1698,7 @@
                 initSortableGrid('#newImagesGrid', '.new-image-item', 'reorderNewImages');
             }
 
-            document.addEventListener('livewire:load', () => {
+            document.addEventListener('livewire:init', () => {
                 initProductFormHelpers();
 
                 window.addEventListener('product-form-toast', (event) => {
