@@ -182,4 +182,20 @@ class BrandingSettingsExperienceTest extends TestCase
         $this->assertContains('categories', $order);
     }
 
+    public function test_unsupported_default_locale_is_rejected(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->put(route('admin.settings.branding.update'), [
+                'project_name' => 'Tag Marketplace',
+                'store_name' => 'Tag Market Place',
+                'theme_preset' => 'professional_commerce',
+                'default_locale' => 'fr',
+            ])
+            ->assertSessionHasErrors('default_locale');
+
+        $this->assertNotSame('fr', WebsiteSetting::getValue('default_locale'));
+    }
+
 }
