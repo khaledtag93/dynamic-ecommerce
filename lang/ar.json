@@ -3040,7 +3040,7 @@
     "Please review the form and fix the highlighted fields.": "يرجى مراجعة النموذج وتصحيح الحقول المظللة.",
     "Please review the form details:": "يرجى مراجعة تفاصيل النموذج:",
     "Please review the highlighted fields": "يرجى مراجعة الحقول المحددة",
-    "Please review the highlighted fields.": "يرجى مراجعة الحقول المظللة.",
+    "Please review the highlighted fields.": "يرجى مراجعة الحقول المحددة.",
     "Please review the promotion details:": "يرجى مراجعة تفاصيل العرض:",
     "Please review the purchase form details:": "يرجى مراجعة تفاصيل نموذج الشراء:",
     "Please review the return request": "راجع طلب الإرجاع",
@@ -5608,5 +5608,6 @@
     "The review will remain hidden from the storefront and the moderation note will be recorded.": "ستظل المراجعة مخفية من واجهة المتجر وسيتم تسجيل ملاحظة الإشراف.",
     "Remove all Growth validation test data?": "هل تريد إزالة جميع بيانات الاختبار الخاصة بالتحقق من محرك النمو؟",
     "This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.": "سيؤدي هذا إلى إزالة عملاء وطلبات وأحداث السلوك التجريبية المعلّمة التي تم إنشاؤها للتحقق من محرك النمو. بيانات العملاء الفعلية في بيئة الإنتاج ليست ضمن عملية تنظيف بيانات الاختبار هذه.",
-    "Keep test data": "الاحتفاظ ببيانات الاختبار"
+    "Keep test data": "الاحتفاظ ببيانات الاختبار",
+    "Some information could not be saved. Fix the items below and try again.": "تعذر حفظ بعض المعلومات. صحّح العناصر الموضحة أدناه ثم حاول مرة أخرى."
 }
