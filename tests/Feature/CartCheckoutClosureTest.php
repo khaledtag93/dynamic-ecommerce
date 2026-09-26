@@ -106,6 +106,65 @@ class CartCheckoutClosureTest extends TestCase
         ]);
     }
 
+    public function test_checkout_core_fields_have_explicit_accessible_labels(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/checkout/index.blade.php'));
+
+        foreach ([
+            'checkoutCustomerName',
+            'checkoutCustomerEmail',
+            'checkoutCustomerPhone',
+            'checkoutDeliveryMethod',
+            'checkoutShippingAddress1',
+            'checkoutShippingAddress2',
+            'checkoutShippingCity',
+            'checkoutShippingState',
+            'checkoutShippingPostal',
+            'checkoutShippingCountry',
+            'checkoutBillingAddress1',
+            'checkoutBillingAddress2',
+            'checkoutBillingCity',
+            'checkoutBillingState',
+            'checkoutBillingPostal',
+            'checkoutBillingCountry',
+            'checkoutNotes',
+        ] as $controlId) {
+            $this->assertStringContainsString('id="' . $controlId . '"', $view);
+            $this->assertStringContainsString('for="' . $controlId . '"', $view);
+        }
+
+        foreach ([
+            'checkoutCustomerName',
+            'checkoutCustomerEmail',
+            'checkoutCustomerPhone',
+            'checkoutDeliveryMethod',
+            'checkoutShippingAddress1',
+            'checkoutShippingCity',
+            'checkoutShippingCountry',
+        ] as $requiredControlId) {
+            $this->assertMatchesRegularExpression(
+                '/id="' . preg_quote($requiredControlId, '/') . '"[^>]*aria-required="true"/',
+                $view
+            );
+        }
+
+        $this->assertStringContainsString('id="checkoutShippingQuoteStatus"', $view);
+        $this->assertStringContainsString('role="status" aria-live="polite"', $view);
+    }
+
+    public function test_checkout_saved_address_switching_is_in_place_without_page_reload_links(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/checkout/index.blade.php'));
+
+        $this->assertStringContainsString('data-checkout-saved-address', $view);
+        $this->assertStringContainsString('data-checkout-new-address', $view);
+        $this->assertStringContainsString('setAddressButtonState', $view);
+        $this->assertStringContainsString('requestQuote();', $view);
+        $this->assertStringContainsString("button.dataset.addressLine1", $view);
+        $this->assertStringNotContainsString("route('checkout.index', ['address' => $savedAddress->id])", $view);
+        $this->assertStringNotContainsString("route('checkout.index', ['address' => 'new'])", $view);
+    }
+
     private function createCategory(string $name, string $slug): Category
     {
         return Category::create([
