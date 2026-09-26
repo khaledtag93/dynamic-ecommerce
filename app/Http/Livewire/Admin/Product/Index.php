@@ -339,10 +339,11 @@ class Index extends Component
         $product = Product::findOrFail($id);
 
         $this->pendingDeleteId = $product->id;
-        $this->dispatchBrowserEvent('open-product-delete-confirmation', [
-            'id' => $product->id,
-            'name' => $product->name,
-        ]);
+        $this->dispatch(
+            'open-product-delete-confirmation',
+            id: $product->id,
+            name: $product->name,
+        );
     }
 
     public function cancelDelete(): void
@@ -397,9 +398,10 @@ class Index extends Component
         $this->selectedProducts = $actualIds;
         $this->pendingBulkDeleteCount = count($actualIds);
 
-        $this->dispatchBrowserEvent('open-product-bulk-delete-confirmation', [
-            'count' => $this->pendingBulkDeleteCount,
-        ]);
+        $this->dispatch(
+            'open-product-bulk-delete-confirmation',
+            count: $this->pendingBulkDeleteCount,
+        );
     }
 
     public function cancelBulkDelete(): void
