@@ -145,4 +145,18 @@ class CatalogWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('return $this->productsQuery(false);', $component);
     }
 
+
+    public function test_product_row_controls_have_mobile_touch_targets_and_accessible_names(): void
+    {
+        $source = file_get_contents(resource_path('views/livewire/admin/product/index.blade.php'));
+
+        $this->assertStringContainsString("aria-label=\"{{ __('Select product :name'", $source);
+        $this->assertStringContainsString("aria-label=\"{{ __('Edit product :name'", $source);
+        $this->assertStringContainsString("aria-label=\"{{ __('Duplicate product :name'", $source);
+        $this->assertStringContainsString("aria-label=\"{{ __('Delete product :name'", $source);
+        $this->assertStringContainsString("aria-label=\"{{ __('Edit quantity for :name'", $source);
+        $this->assertStringContainsString('width: 44px;', $source);
+        $this->assertStringContainsString('min-height: 44px;', $source);
+    }
+
 }

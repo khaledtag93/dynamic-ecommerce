@@ -5698,5 +5698,17 @@
     "product image": "صورة المنتج",
     "For safety, bulk delete is limited to explicitly selected products. Clear the all-results selection and choose the rows you want to delete.": "للسلامة، الحذف الجماعي متاح فقط للمنتجات التي تحددها صراحةً. ألغِ تحديد كل النتائج واختر الصفوف التي تريد حذفها.",
     "Bulk delete requires explicit row selection for safety.": "للسلامة، يتطلب الحذف الجماعي تحديد الصفوف بشكل صريح.",
-    "All filtered results": "كل النتائج المفلترة"
+    "All filtered results": "كل النتائج المفلترة",
+    "Select product :name": "تحديد المنتج :name",
+    "Edit base price for :name": "تعديل سعر الأساس للمنتج :name",
+    "Edit base price": "تعديل سعر الأساس",
+    "Edit sale price for :name": "تعديل سعر البيع للمنتج :name",
+    "Edit sale price": "تعديل سعر البيع",
+    "Edit quantity for :name": "تعديل كمية المنتج :name",
+    "Edit quantity": "تعديل الكمية",
+    "Hide product :name": "إخفاء المنتج :name",
+    "Activate product :name": "تفعيل المنتج :name",
+    "Edit product :name": "تعديل المنتج :name",
+    "Duplicate product :name": "نسخ المنتج :name",
+    "Delete product :name": "حذف المنتج :name"
 }

@@ -5032,5 +5032,17 @@
     "product image": "product image",
     "For safety, bulk delete is limited to explicitly selected products. Clear the all-results selection and choose the rows you want to delete.": "For safety, bulk delete is limited to explicitly selected products. Clear the all-results selection and choose the rows you want to delete.",
     "Bulk delete requires explicit row selection for safety.": "Bulk delete requires explicit row selection for safety.",
-    "All filtered results": "All filtered results"
+    "All filtered results": "All filtered results",
+    "Select product :name": "Select product :name",
+    "Edit base price for :name": "Edit base price for :name",
+    "Edit base price": "Edit base price",
+    "Edit sale price for :name": "Edit sale price for :name",
+    "Edit sale price": "Edit sale price",
+    "Edit quantity for :name": "Edit quantity for :name",
+    "Edit quantity": "Edit quantity",
+    "Hide product :name": "Hide product :name",
+    "Activate product :name": "Activate product :name",
+    "Edit product :name": "Edit product :name",
+    "Duplicate product :name": "Duplicate product :name",
+    "Delete product :name": "Delete product :name"
 }

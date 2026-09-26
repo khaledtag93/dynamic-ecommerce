@@ -499,6 +499,7 @@
                                             @checked($selectAll)
                                             @disabled($selectAll)
                                             @if(!$selectAll) wire:model.live="selectedProducts" @endif
+                                            aria-label="{{ __('Select product :name', ['name' => $product->name]) }}"
                                         >
                                         <span class="text-muted small">#{{ $product->id }}</span>
                                     </div>
@@ -621,6 +622,8 @@
                                                     type="button"
                                                     class="btn btn-link btn-inline-edit"
                                                     wire:click="startEditBasePrice({{ $product->id }}, {{ (float) ($product->base_price ?? 0) }})"
+                                                    aria-label="{{ __('Edit base price for :name', ['name' => $product->name]) }}"
+                                                    title="{{ __('Edit base price') }}"
                                                 >
                                                     <i class="mdi mdi-pencil-outline"></i>
                                                 </button>
@@ -693,6 +696,8 @@
                                                     type="button"
                                                     class="btn btn-link btn-inline-edit"
                                                     wire:click="startEditSalePrice({{ $product->id }}, {{ is_null($product->sale_price) ? 'null' : (float) $product->sale_price }})"
+                                                    aria-label="{{ __('Edit sale price for :name', ['name' => $product->name]) }}"
+                                                    title="{{ __('Edit sale price') }}"
                                                 >
                                                     <i class="mdi mdi-pencil-outline"></i>
                                                 </button>
@@ -762,6 +767,8 @@
                                                     type="button"
                                                     class="btn btn-link btn-inline-edit"
                                                     wire:click="startEditQty({{ $product->id }}, {{ (int) ($product->quantity ?? 0) }})"
+                                                    aria-label="{{ __('Edit quantity for :name', ['name' => $product->name]) }}"
+                                                    title="{{ __('Edit quantity') }}"
                                                 >
                                                     <i class="mdi mdi-pencil-outline"></i>
                                                 </button>
@@ -799,6 +806,7 @@
                                             wire:loading.attr="disabled"
                                             wire:target="toggleStatus({{ $product->id }})"
                                             title="{{ $product->status ? __('Click to hide product') : __('Click to activate product') }}"
+                                            aria-label="{{ $product->status ? __('Hide product :name', ['name' => $product->name]) : __('Activate product :name', ['name' => $product->name]) }}"
                                         >
                                             <span class="status-toggle-track">
                                                 <span class="status-toggle-thumb"></span>
@@ -828,6 +836,7 @@
                                             href="{{ route('admin.products.edit', $product->id) }}"
                                             class="btn btn-light btn-action"
                                             title="{{ __('Edit Product') }}"
+                                            aria-label="{{ __('Edit product :name', ['name' => $product->name]) }}"
                                         >
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </a>
@@ -839,6 +848,7 @@
                                             wire:loading.attr="disabled"
                                             wire:target="duplicate({{ $product->id }})"
                                             title="{{ __('Duplicate product') }}"
+                                            aria-label="{{ __('Duplicate product :name', ['name' => $product->name]) }}"
                                         >
                                             <i class="mdi mdi-content-copy"></i>
                                         </button>
@@ -849,6 +859,7 @@
                                             wire:click="requestDelete({{ $product->id }})"
                                             wire:loading.attr="disabled"
                                             title="{{ __('Delete') }}"
+                                            aria-label="{{ __('Delete product :name', ['name' => $product->name]) }}"
                                         >
                                             <i class="mdi mdi-trash-can-outline"></i>
                                         </button>
@@ -1327,11 +1338,17 @@
         }
 
         .btn-inline-edit {
+            width: 44px;
+            height: 44px;
             padding: 0;
-            font-size: 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.92rem;
             text-decoration: none;
             color: var(--primary-color);
             font-weight: 700;
+            border-radius: 12px;
         }
 
         .inline-edit-box {
@@ -1349,12 +1366,13 @@
         }
 
         .status-toggle {
+            min-height: 44px;
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
             border: 0;
             background: transparent;
-            padding: 0;
+            padding: .35rem .15rem;
             font-weight: 700;
         }
 
@@ -1413,8 +1431,8 @@
         }
 
         .btn-action {
-            width: 38px;
-            height: 38px;
+            width: 44px;
+            height: 44px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
