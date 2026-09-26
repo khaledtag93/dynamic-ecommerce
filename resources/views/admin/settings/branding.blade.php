@@ -249,17 +249,94 @@
                         </summary>
                         <div class="p-3 pt-0">
                     <div class="row g-3">
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_hero" value="1" @checked(old('show_home_hero', $settings['show_home_hero'] ?? true))><label class="form-check-label ms-2">{{ __('Show hero') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_categories" value="1" @checked(old('show_home_categories', $settings['show_home_categories'] ?? true))><label class="form-check-label ms-2">{{ __('Show categories') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_featured_categories" value="1" @checked(old('show_home_featured_categories', $settings['show_home_featured_categories'] ?? true))><label class="form-check-label ms-2">{{ __('Show featured categories') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_featured_products" value="1" @checked(old('show_home_featured_products', $settings['show_home_featured_products'] ?? true))><label class="form-check-label ms-2">{{ __('Show featured') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_latest_products" value="1" @checked(old('show_home_latest_products', $settings['show_home_latest_products'] ?? true))><label class="form-check-label ms-2">{{ __('Show latest') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_best_sellers" value="1" @checked(old('show_home_best_sellers', $settings['show_home_best_sellers'] ?? true))><label class="form-check-label ms-2">{{ __('Show best sellers') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_on_sale_products" value="1" @checked(old('show_home_on_sale_products', $settings['show_home_on_sale_products'] ?? true))><label class="form-check-label ms-2">{{ __('Show on sale') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_manual_featured_products" value="1" @checked(old('show_home_manual_featured_products', $settings['show_home_manual_featured_products'] ?? false))><label class="form-check-label ms-2">{{ __('Show manual featured') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_promo_banners" value="1" @checked(old('show_home_promo_banners', $settings['show_home_promo_banners'] ?? true))><label class="form-check-label ms-2">{{ __('Show promo banners') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_trust_blocks" value="1" @checked(old('show_home_trust_blocks', $settings['show_home_trust_blocks'] ?? true))><label class="form-check-label ms-2">{{ __('Show trust blocks') }}</label></div></div>
-                        <div class="col-md-3"><div class="form-check form-switch pt-4"><input class="form-check-input" type="checkbox" name="show_home_promo_banner" value="1" @checked(old('show_home_promo_banner', $settings['show_home_promo_banner'] ?? false))><label class="form-check-label ms-2">{{ __('Keep legacy promo block') }}</label></div></div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_hero">{{ __('Show hero') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_hero" name="show_home_hero" value="1" @checked(old('show_home_hero', $settings['show_home_hero'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_categories">{{ __('Show categories') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_categories" name="show_home_categories" value="1" @checked(old('show_home_categories', $settings['show_home_categories'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_featured_categories">{{ __('Show featured categories') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_featured_categories" name="show_home_featured_categories" value="1" @checked(old('show_home_featured_categories', $settings['show_home_featured_categories'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_featured_products">{{ __('Show featured') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_featured_products" name="show_home_featured_products" value="1" @checked(old('show_home_featured_products', $settings['show_home_featured_products'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_latest_products">{{ __('Show latest') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_latest_products" name="show_home_latest_products" value="1" @checked(old('show_home_latest_products', $settings['show_home_latest_products'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_best_sellers">{{ __('Show best sellers') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_best_sellers" name="show_home_best_sellers" value="1" @checked(old('show_home_best_sellers', $settings['show_home_best_sellers'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_on_sale_products">{{ __('Show on sale') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_on_sale_products" name="show_home_on_sale_products" value="1" @checked(old('show_home_on_sale_products', $settings['show_home_on_sale_products'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_manual_featured_products">{{ __('Show manual featured') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_manual_featured_products" name="show_home_manual_featured_products" value="1" @checked(old('show_home_manual_featured_products', $settings['show_home_manual_featured_products'] ?? false))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_promo_banners">{{ __('Show promo banners') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_promo_banners" name="show_home_promo_banners" value="1" @checked(old('show_home_promo_banners', $settings['show_home_promo_banners'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_trust_blocks">{{ __('Show trust blocks') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_trust_blocks" name="show_home_trust_blocks" value="1" @checked(old('show_home_trust_blocks', $settings['show_home_trust_blocks'] ?? true))>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="branding-toggle-row">
+                                <label class="branding-toggle-copy" for="show_home_promo_banner">{{ __('Keep legacy promo block') }}</label>
+                                <div class="form-check form-switch branding-toggle-control">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="show_home_promo_banner" name="show_home_promo_banner" value="1" @checked(old('show_home_promo_banner', $settings['show_home_promo_banner'] ?? false))>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="col-12"><label class="form-label fw-semibold">{{ __('Homepage sections order') }}</label><input type="text" name="homepage_sections_order" value="{{ old('homepage_sections_order', $settings['homepage_sections_order'] ?? 'hero,promo_banners,featured_categories,manual_featured_products,featured_products,best_sellers,latest_products,on_sale_products,trust_blocks,categories') }}" class="form-control" placeholder="hero,promo_banners,featured_categories,manual_featured_products,featured_products,best_sellers,latest_products,on_sale_products,trust_blocks,categories"><div class="form-text">{{ __('Use comma-separated section keys: hero, promo_banners, featured_categories, manual_featured_products, featured_products, best_sellers, categories, latest_products, on_sale_products, trust_blocks.') }}</div></div>
                     </div>
@@ -696,6 +773,11 @@
 .branding-advanced-palette summary small{color:var(--admin-muted);font-weight:500}
 .branding-advanced-palette summary i{font-size:1.1rem;transition:transform .18s ease}
 .branding-advanced-palette[open] summary i{transform:rotate(180deg)}
+.branding-toggle-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1rem;min-height:58px;padding:.8rem .9rem;border:1px solid var(--admin-border);border-radius:1rem;background:color-mix(in srgb,var(--admin-surface) 96%,var(--admin-primary-soft))}
+.branding-toggle-copy{margin:0;color:var(--admin-text);font-weight:750;line-height:1.4;cursor:pointer}
+.branding-toggle-control{padding:0!important;margin:0!important;min-height:0}
+.branding-toggle-control .form-check-input{float:none!important;margin:0!important;cursor:pointer}
+html[dir="rtl"] .branding-toggle-row{text-align:right}
 .branding-save-state{display:inline-flex;align-items:center;gap:.42rem;padding:.52rem .72rem;border-radius:999px;background:#f0fdf4;color:#166534;font-size:.78rem;font-weight:800;white-space:nowrap}
 .branding-save-state.is-dirty{background:#fffbeb;color:#92400e}
 .admin-color-field{display:flex;gap:.75rem;align-items:center}
