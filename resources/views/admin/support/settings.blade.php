@@ -37,10 +37,12 @@
                                 <tr>
                                     <td><span class="fw-semibold">{{ $label }}</span></td>
                                     <td>
-                                        <input type="number" min="1" max="720" name="sla[{{ $priority }}][first_response_hours]" value="{{ old("sla.$priority.first_response_hours", $sla[$priority]['first_response_hours']) }}" class="form-control" required>
+                                        <label class="visually-hidden" for="supportSlaFirst-{{ $priority }}">{{ $label }} · {{ __('First response target (hours)') }}</label>
+                                        <input id="supportSlaFirst-{{ $priority }}" type="number" min="1" max="720" name="sla[{{ $priority }}][first_response_hours]" aria-required="true" value="{{ old("sla.$priority.first_response_hours", $sla[$priority]['first_response_hours']) }}" class="form-control" required>
                                     </td>
                                     <td>
-                                        <input type="number" min="1" max="720" name="sla[{{ $priority }}][resolution_hours]" value="{{ old("sla.$priority.resolution_hours", $sla[$priority]['resolution_hours']) }}" class="form-control" required>
+                                        <label class="visually-hidden" for="supportSlaResolution-{{ $priority }}">{{ $label }} · {{ __('Resolution target (hours)') }}</label>
+                                        <input id="supportSlaResolution-{{ $priority }}" type="number" min="1" max="720" name="sla[{{ $priority }}][resolution_hours]" aria-required="true" value="{{ old("sla.$priority.resolution_hours", $sla[$priority]['resolution_hours']) }}" class="form-control" required>
                                     </td>
                                 </tr>
                             @endforeach
@@ -63,35 +65,35 @@
                 @csrf
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Name (English)') }}</label>
-                        <input name="name" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" maxlength="160" required>
+                        <label class="form-label fw-semibold" for="supportTemplateNewNameEn">{{ __('Name (English)') }}</label>
+                        <input id="supportTemplateNewNameEn" name="name" aria-required="true" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" maxlength="160" required>
                         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Name (Arabic)') }}</label>
-                        <input name="name_ar" value="{{ old('name_ar') }}" class="form-control @error('name_ar') is-invalid @enderror" maxlength="160" dir="rtl">
+                        <label class="form-label fw-semibold" for="supportTemplateNewNameAr">{{ __('Name (Arabic)') }}</label>
+                        <input id="supportTemplateNewNameAr" name="name_ar" value="{{ old('name_ar') }}" class="form-control @error('name_ar') is-invalid @enderror" maxlength="160" dir="rtl">
                         @error('name_ar')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Body (English)') }}</label>
-                        <textarea name="body" rows="5" class="form-control @error('body') is-invalid @enderror" maxlength="5000" required>{{ old('body') }}</textarea>
+                        <label class="form-label fw-semibold" for="supportTemplateNewBodyEn">{{ __('Body (English)') }}</label>
+                        <textarea id="supportTemplateNewBodyEn" name="body" aria-required="true" rows="5" class="form-control @error('body') is-invalid @enderror" maxlength="5000" required>{{ old('body') }}</textarea>
                         @error('body')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Body (Arabic)') }}</label>
-                        <textarea name="body_ar" rows="5" class="form-control @error('body_ar') is-invalid @enderror" maxlength="5000" dir="rtl">{{ old('body_ar') }}</textarea>
+                        <label class="form-label fw-semibold" for="supportTemplateNewBodyAr">{{ __('Body (Arabic)') }}</label>
+                        <textarea id="supportTemplateNewBodyAr" name="body_ar" rows="5" class="form-control @error('body_ar') is-invalid @enderror" maxlength="5000" dir="rtl">{{ old('body_ar') }}</textarea>
                         @error('body_ar')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Default visibility') }}</label>
-                        <select name="visibility" class="form-select">
+                        <label class="form-label fw-semibold" for="supportTemplateNewVisibility">{{ __('Default visibility') }}</label>
+                        <select id="supportTemplateNewVisibility" name="visibility" class="form-select">
                             <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
                             <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}">{{ __('Internal note') }}</option>
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Sort order') }}</label>
-                        <input type="number" min="0" max="10000" name="sort_order" value="{{ old('sort_order', 100) }}" class="form-control" required>
+                        <label class="form-label fw-semibold" for="supportTemplateNewSort">{{ __('Sort order') }}</label>
+                        <input id="supportTemplateNewSort" type="number" min="0" max="10000" name="sort_order" aria-required="true" value="{{ old('sort_order', 100) }}" class="form-control" required>
                     </div>
                     <div class="col-12 text-end">
                         <button class="btn btn-primary" data-loading-text="{{ __('Creating template...') }}">{{ __('Create reply template') }}</button>
@@ -124,31 +126,31 @@
                         @csrf @method('PUT')
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Name (English)') }}</label>
-                                <input name="name" value="{{ old('name_'.$template->id, $template->name) }}" class="form-control" maxlength="160" required>
+                                <label class="form-label fw-semibold" for="supportTemplateNameEn-{{ $template->id }}">{{ __('Name (English)') }}</label>
+                                <input id="supportTemplateNameEn-{{ $template->id }}" name="name" aria-required="true" value="{{ old('name_'.$template->id, $template->name) }}" class="form-control" maxlength="160" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Name (Arabic)') }}</label>
-                                <input name="name_ar" value="{{ old('name_ar_'.$template->id, $template->name_ar) }}" class="form-control" maxlength="160" dir="rtl">
+                                <label class="form-label fw-semibold" for="supportTemplateNameAr-{{ $template->id }}">{{ __('Name (Arabic)') }}</label>
+                                <input id="supportTemplateNameAr-{{ $template->id }}" name="name_ar" value="{{ old('name_ar_'.$template->id, $template->name_ar) }}" class="form-control" maxlength="160" dir="rtl">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Body (English)') }}</label>
-                                <textarea name="body" rows="4" class="form-control" maxlength="5000" required>{{ old('body_'.$template->id, $template->body) }}</textarea>
+                                <label class="form-label fw-semibold" for="supportTemplateBodyEn-{{ $template->id }}">{{ __('Body (English)') }}</label>
+                                <textarea id="supportTemplateBodyEn-{{ $template->id }}" name="body" aria-required="true" rows="4" class="form-control" maxlength="5000" required>{{ old('body_'.$template->id, $template->body) }}</textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Body (Arabic)') }}</label>
-                                <textarea name="body_ar" rows="4" class="form-control" maxlength="5000" dir="rtl">{{ old('body_ar_'.$template->id, $template->body_ar) }}</textarea>
+                                <label class="form-label fw-semibold" for="supportTemplateBodyAr-{{ $template->id }}">{{ __('Body (Arabic)') }}</label>
+                                <textarea id="supportTemplateBodyAr-{{ $template->id }}" name="body_ar" rows="4" class="form-control" maxlength="5000" dir="rtl">{{ old('body_ar_'.$template->id, $template->body_ar) }}</textarea>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">{{ __('Default visibility') }}</label>
-                                <select name="visibility" class="form-select">
+                                <label class="form-label fw-semibold" for="supportTemplateVisibility-{{ $template->id }}">{{ __('Default visibility') }}</label>
+                                <select id="supportTemplateVisibility-{{ $template->id }}" name="visibility" class="form-select">
                                     <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}" @selected($template->visibility === \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER)>{{ __('Customer-visible reply') }}</option>
                                     <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}" @selected($template->visibility === \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL)>{{ __('Internal note') }}</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">{{ __('Sort order') }}</label>
-                                <input type="number" min="0" max="10000" name="sort_order" value="{{ $template->sort_order }}" class="form-control" required>
+                                <label class="form-label fw-semibold" for="supportTemplateSort-{{ $template->id }}">{{ __('Sort order') }}</label>
+                                <input id="supportTemplateSort-{{ $template->id }}" type="number" min="0" max="10000" name="sort_order" aria-required="true" value="{{ $template->sort_order }}" class="form-control" required>
                             </div>
                             <div class="col-md-4 d-flex align-items-end justify-content-end">
                                 <button class="btn btn-outline-primary" data-loading-text="{{ __('Saving template...') }}">{{ __('Save template') }}</button>

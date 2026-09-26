@@ -39,5 +39,37 @@ class SupportWorkspaceAccessibilityTest extends TestCase
         $this->assertStringContainsString('id="supportAdminSubject" name="subject" aria-required="true"', $create);
         $this->assertStringContainsString('id="supportAdminMessage" name="message" aria-required="true"', $create);
         $this->assertStringContainsString('id="supportAdminReplyMessage" name="message" aria-required="true"', $show);
+
+        $settings = file_get_contents(resource_path('views/admin/support/settings.blade.php'));
+
+        foreach ([
+            'supportTemplateNewNameEn',
+            'supportTemplateNewNameAr',
+            'supportTemplateNewBodyEn',
+            'supportTemplateNewBodyAr',
+            'supportTemplateNewVisibility',
+            'supportTemplateNewSort',
+        ] as $id) {
+            $this->assertStringContainsString('for="' . $id . '"', $settings);
+            $this->assertStringContainsString('id="' . $id . '"', $settings);
+        }
+
+        foreach ([
+            'supportSlaFirst-{{ $priority }}',
+            'supportSlaResolution-{{ $priority }}',
+            'supportTemplateNameEn-{{ $template->id }}',
+            'supportTemplateNameAr-{{ $template->id }}',
+            'supportTemplateBodyEn-{{ $template->id }}',
+            'supportTemplateBodyAr-{{ $template->id }}',
+            'supportTemplateVisibility-{{ $template->id }}',
+            'supportTemplateSort-{{ $template->id }}',
+        ] as $id) {
+            $this->assertStringContainsString('for="' . $id . '"', $settings);
+            $this->assertStringContainsString('id="' . $id . '"', $settings);
+        }
+
+        $this->assertStringContainsString('id="supportTemplateNewNameEn" name="name" aria-required="true"', $settings);
+        $this->assertStringContainsString('id="supportTemplateNewBodyEn" name="body" aria-required="true"', $settings);
+        $this->assertStringContainsString('id="supportSlaFirst-{{ $priority }}" type="number"', $settings);
     }
 }
