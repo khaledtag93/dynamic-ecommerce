@@ -79,6 +79,23 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringNotContainsString("button.innerHTML = '<span class=\"lc-loading-spinner\"></span>' + button.getAttribute('data-loading-text');", $storefront);
     }
 
+    public function test_storefront_auth_and_language_controls_expose_complete_semantics(): void
+    {
+        $login = file_get_contents(resource_path('views/auth/login.blade.php'));
+        $register = file_get_contents(resource_path('views/auth/register.blade.php'));
+        $reset = file_get_contents(resource_path('views/auth/passwords/reset.blade.php'));
+        $language = file_get_contents(resource_path('views/layouts/inc/language-switcher.blade.php'));
+
+        $this->assertStringContainsString('data-submit-loading', $login);
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Signing in...\') }}"', $login);
+        $this->assertStringContainsString('maxlength="255" required aria-required="true" autocomplete="name"', $register);
+        $this->assertStringContainsString('minlength="8" required aria-required="true" autocomplete="new-password"', $register);
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Saving new password...\') }}"', $reset);
+        $this->assertStringContainsString('lang="en" hreflang="en"', $language);
+        $this->assertStringContainsString('lang="ar" hreflang="ar"', $language);
+        $this->assertSame(2, substr_count($language, 'aria-current="true"'));
+    }
+
     public function test_mobile_admin_sidebar_stays_reachable_above_the_backdrop_in_both_directions(): void
     {
         $admin = file_get_contents(resource_path('views/layouts/admin.blade.php'));

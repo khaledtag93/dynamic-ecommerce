@@ -14,15 +14,15 @@
                         <p class="text-muted mb-0">{{ __('Enter the email address used for your account and we will send a reset link if it matches an account.') }}</p>
                     </div>
 
-                    <form method="POST" action="{{ route('password.email') }}" class="d-grid gap-3">
+                    <form method="POST" action="{{ route('password.email') }}" class="d-grid gap-3" data-submit-loading>
                         @csrf
                         <div>
                             <label for="email" class="form-label fw-bold">{{ __('Email address') }}</label>
-                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required aria-required="true" autocomplete="email" autofocus>
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <button type="submit" class="btn lc-btn-primary">{{ __('Send reset link') }}</button>
+                        <button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Sending reset link...') }}">{{ __('Send reset link') }}</button>
                         <div class="text-center text-muted">{{ __('Remembered your password?') }} <a href="{{ route('login') }}">{{ __('Back to login') }}</a></div>
                     </form>
                 </div>

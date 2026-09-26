@@ -13,28 +13,28 @@
                         <h1 class="fw-bold mb-2">{{ __('Join :store', ['store' => $storeSettings['store_name'] ?? __('our store')]) }}</h1>
                         <p class="text-muted mb-0">{{ __('Save your orders and continue smoothly through checkout.') }}</p>
                     </div>
-                    <form method="POST" action="{{ route('register') }}" class="d-grid gap-3">
+                    <form method="POST" action="{{ route('register') }}" class="d-grid gap-3" data-submit-loading>
                         @csrf
                         <div>
                             <label for="name" class="form-label fw-bold">{{ __('Full name') }}</label>
-                            <input id="name" type="text" class="form-control lc-form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
+                            <input id="name" type="text" class="form-control lc-form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" maxlength="255" required aria-required="true" autocomplete="name" autofocus>
                             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label for="email" class="form-label fw-bold">{{ __('Email address') }}</label>
-                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
+                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" maxlength="255" required aria-required="true" autocomplete="email">
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label for="password" class="form-label fw-bold">{{ __('Password') }}</label>
-                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
+                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" minlength="8" required aria-required="true" autocomplete="new-password">
                             @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label for="password-confirm" class="form-label fw-bold">{{ __('Confirm password') }}</label>
-                            <input id="password-confirm" type="password" class="form-control lc-form-control" name="password_confirmation" required autocomplete="new-password">
+                            <input id="password-confirm" type="password" class="form-control lc-form-control" name="password_confirmation" minlength="8" required aria-required="true" autocomplete="new-password">
                         </div>
-                        <button type="submit" class="btn lc-btn-primary">{{ __('Create account') }}</button>
+                        <button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Creating account...') }}">{{ __('Create account') }}</button>
                         <div class="text-center text-muted">{{ __('Already have an account?') }} <a href="{{ route('login') }}">{{ __('Login') }}</a></div>
                     </form>
                 </div>

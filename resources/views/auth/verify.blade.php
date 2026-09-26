@@ -22,9 +22,9 @@
 
                     <div class="d-grid gap-3">
                         <p class="text-muted mb-0">{{ __('Did not receive the email? You can request another verification link.') }}</p>
-                        <form method="POST" action="{{ route('verification.resend') }}">
+                        <form method="POST" action="{{ route('verification.resend') }}" data-submit-loading>
                             @csrf
-                            <button type="submit" class="btn lc-btn-primary w-100">{{ __('Send another verification link') }}</button>
+                            <button type="submit" class="btn lc-btn-primary w-100" data-loading-text="{{ __('Sending verification link...') }}">{{ __('Send another verification link') }}</button>
                         </form>
                         <a href="{{ route('frontend.home') }}" class="btn lc-btn-soft">{{ __('Back to store') }}</a>
                     </div>

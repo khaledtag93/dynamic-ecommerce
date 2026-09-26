@@ -13,16 +13,16 @@
                         <h1 class="fw-bold mb-2">{{ __('Login to your account') }}</h1>
                         <p class="text-muted mb-0">{{ __('Continue to cart, checkout, and orders.') }}</p>
                     </div>
-                    <form method="POST" action="{{ route('login') }}" class="d-grid gap-3">
+                    <form method="POST" action="{{ route('login') }}" class="d-grid gap-3" data-submit-loading>
                         @csrf
                         <div>
                             <label for="email" class="form-label fw-bold">{{ __('Email address') }}</label>
-                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required aria-required="true" autocomplete="email" autofocus>
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
                             <label for="password" class="form-label fw-bold">{{ __('Password') }}</label>
-                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
+                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required aria-required="true" autocomplete="current-password">
                             @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -34,7 +34,7 @@
                                 <a href="{{ route('password.request') }}">{{ __('Forgot password?') }}</a>
                             @endif
                         </div>
-                        <button type="submit" class="btn lc-btn-primary">{{ __('Login') }}</button>
+                        <button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Signing in...') }}">{{ __('Login') }}</button>
                         <div class="text-center text-muted">{{ __('New here?') }} <a href="{{ route('register') }}">{{ __('Create an account') }}</a></div>
                     </form>
                 </div>

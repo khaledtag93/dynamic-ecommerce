@@ -14,28 +14,28 @@
                         <p class="text-muted mb-0">{{ __('Choose a new password for your account, then sign in with your updated credentials.') }}</p>
                     </div>
 
-                    <form method="POST" action="{{ route('password.update') }}" class="d-grid gap-3">
+                    <form method="POST" action="{{ route('password.update') }}" class="d-grid gap-3" data-submit-loading>
                         @csrf
                         <input type="hidden" name="token" value="{{ $token }}">
 
                         <div>
                             <label for="email" class="form-label fw-bold">{{ __('Email address') }}</label>
-                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus>
+                            <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required aria-required="true" autocomplete="email" autofocus>
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
                         <div>
                             <label for="password" class="form-label fw-bold">{{ __('New password') }}</label>
-                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
+                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required aria-required="true" autocomplete="new-password">
                             @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
                         <div>
                             <label for="password-confirm" class="form-label fw-bold">{{ __('Confirm new password') }}</label>
-                            <input id="password-confirm" type="password" class="form-control lc-form-control" name="password_confirmation" required autocomplete="new-password">
+                            <input id="password-confirm" type="password" class="form-control lc-form-control" name="password_confirmation" required aria-required="true" autocomplete="new-password">
                         </div>
 
-                        <button type="submit" class="btn lc-btn-primary">{{ __('Save new password') }}</button>
+                        <button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Saving new password...') }}">{{ __('Save new password') }}</button>
                         <div class="text-center text-muted"><a href="{{ route('login') }}">{{ __('Back to login') }}</a></div>
                     </form>
                 </div>

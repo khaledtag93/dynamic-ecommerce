@@ -14,15 +14,15 @@
                         <p class="text-muted mb-0">{{ __('For your security, enter your password again before continuing.') }}</p>
                     </div>
 
-                    <form method="POST" action="{{ route('password.confirm') }}" class="d-grid gap-3">
+                    <form method="POST" action="{{ route('password.confirm') }}" class="d-grid gap-3" data-submit-loading>
                         @csrf
                         <div>
                             <label for="password" class="form-label fw-bold">{{ __('Password') }}</label>
-                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
+                            <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required aria-required="true" autocomplete="current-password">
                             @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <button type="submit" class="btn lc-btn-primary">{{ __('Continue securely') }}</button>
+                        <button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Continuing securely...') }}">{{ __('Continue securely') }}</button>
 
                         @if (Route::has('password.request'))
                             <div class="text-center"><a href="{{ route('password.request') }}">{{ __('Forgot password?') }}</a></div>

@@ -5723,5 +5723,11 @@
     "Review the selected role before continuing.": "راجع الدور المحدد قبل المتابعة.",
     "Change role": "تغيير الدور",
     "Keep current role": "الاحتفاظ بالدور الحالي",
-    "Country code": "رمز الدولة"
+    "Country code": "رمز الدولة",
+    "Signing in...": "جارٍ تسجيل الدخول...",
+    "Creating account...": "جارٍ إنشاء الحساب...",
+    "Sending reset link...": "جارٍ إرسال رابط إعادة التعيين...",
+    "Saving new password...": "جارٍ حفظ كلمة المرور الجديدة...",
+    "Continuing securely...": "جارٍ المتابعة بأمان...",
+    "Sending verification link...": "جارٍ إرسال رابط التحقق..."
 }
