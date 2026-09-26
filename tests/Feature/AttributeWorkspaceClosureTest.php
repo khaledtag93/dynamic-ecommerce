@@ -11,10 +11,10 @@ class AttributeWorkspaceClosureTest extends TestCase
         $index = file_get_contents(app_path('Http/Livewire/Admin/Attribute/Index.php'));
         $values = file_get_contents(app_path('Http/Livewire/Admin/Attribute/Values.php'));
 
-        $this->assertStringContainsString("mb_substr(trim((string) $this->search), 0, 100)", $index);
+        $this->assertStringContainsString('mb_substr(trim((string) $this->search), 0, 100)', $index);
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $index);
 
-        $this->assertStringContainsString("mb_substr(trim((string) $this->search), 0, 100)", $values);
+        $this->assertStringContainsString('mb_substr(trim((string) $this->search), 0, 100)', $values);
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $values);
     }
 
@@ -24,8 +24,8 @@ class AttributeWorkspaceClosureTest extends TestCase
 
         $this->assertStringContainsString('use WithPagination;', $component);
         $this->assertStringContainsString('->paginate($this->perPage)', $component);
-        $this->assertStringContainsString("selectSub(function ($query)", $component);
-        $this->assertStringContainsString("->whereExists(function ($query)", $component);
+        $this->assertStringContainsString('selectSub(function ($query)', $component);
+        $this->assertStringContainsString('->whereExists(function ($query)', $component);
 
         $renderStart = strpos($component, 'public function render()');
         $render = $renderStart === false ? '' : substr($component, $renderStart);
