@@ -52,6 +52,13 @@ The initial shared-foundation list did not itself enumerate every route/page var
 ### GF-10 — Reproducibility and buyer review
 The buyer may independently inspect source, dependencies, clean installation, upgrade migrations, authorization, browser behavior, performance and operational recovery. Add repeatable evidence and product-scope claims to the [buyer-grade execution plan](BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md), then use it as a gate. Passing tests alone does not prove visual or operational acceptance.
 
+### GF-11 — Shared Admin confirmation and submit feedback
+**Finding:** the confirmation dialog was used by destructive, stock, payroll and deployment forms. Without a typed phrase it did not take keyboard focus, did not trap Tab or restore focus, and `data-submit-loading` could disable the submit button before the confirmation was accepted. A native validation failure after `requestSubmit()` could leave the one-time confirmation flag set for the next attempt.
+
+**Source action:** moved the common dialog contract to `public/admin/js/admin-confirm-dialog.js`, added focus/Tab/Escape restoration and background inertness, accessible typed-phrase errors, conditional confirmation, original submitter preservation and a flag reset after native validation. Loading starts only on the accepted submission. Inactive coupon saves no longer show a misleading publish confirmation. Four Node interaction tests are wired into Hardening CI without adding frontend dependencies.
+
+**Gate:** latest-head CI plus authenticated QAS checks for cancel/confirm/invalid-input/keyboard flow on representative destructive, deploy-phrase and publish forms in EN/AR and mobile. This finding remains IN REVIEW until those checks pass on the deployed application SHA.
+
 ## Global Foundation execution order
 1. Admin shell/navigation closure.
 2. Storefront shell/navigation/footer visual foundation.

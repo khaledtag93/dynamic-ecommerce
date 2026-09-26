@@ -2505,6 +2505,7 @@ select option {
         .admin-wide-modal .modal-footer { background:var(--admin-surface); border-top:1px solid color-mix(in srgb, var(--admin-border) 65%, white); }
         .admin-confirm-backdrop { position:fixed; inset:0; background:rgba(15,23,42,.55); backdrop-filter: blur(3px); z-index:1050; display:none; }
         .admin-confirm-backdrop.show { display:block; }
+        body.admin-confirm-open { overflow:hidden; }
         .admin-confirm-modal { position:fixed; inset:0; z-index:1055; display:none; align-items:center; justify-content:center; padding:1rem; }
         .admin-confirm-modal.show { display:flex; }
         .admin-confirm-card { width:min(520px, 100%); background:var(--admin-surface); border-radius:1.25rem; border:1px solid var(--admin-border); box-shadow:var(--admin-shadow); overflow:hidden; }
@@ -3187,8 +3188,8 @@ select option {
                 <div class="admin-confirm-subtitle" id="adminConfirmSubtitle">{{ __('This change will be applied immediately after confirmation.') }}</div>
                 <div class="admin-confirm-input-wrap" id="adminConfirmInputWrap" hidden>
                     <label class="form-label fw-semibold mt-3 mb-2" for="adminConfirmInput" id="adminConfirmInputLabel">{{ __('Type the required phrase to continue') }}</label>
-                    <input type="text" class="form-control" id="adminConfirmInput" autocomplete="off">
-                    <div class="small text-danger mt-2 d-none" id="adminConfirmInputError">{{ __('The typed phrase does not match the required value yet.') }}</div>
+                    <input type="text" class="form-control" id="adminConfirmInput" autocomplete="off" aria-invalid="false" aria-describedby="adminConfirmInputError">
+                    <div class="small text-danger mt-2 d-none" id="adminConfirmInputError" role="alert">{{ __('The typed phrase does not match the required value yet.') }}</div>
                 </div>
             </div>
             <div class="admin-confirm-actions">
@@ -3198,121 +3199,8 @@ select option {
         </div>
     </div>
 
+<script src="{{ asset('admin/js/admin-confirm-dialog.js') }}"></script>
 <script>
-
-function adminConfirmAction(callback, options = {}) {
-  const modal = document.getElementById('adminConfirmModal');
-  const backdrop = document.getElementById('adminConfirmBackdrop');
-  const ok = document.getElementById('adminConfirmOk');
-  const cancel = document.getElementById('adminConfirmCancel');
-  const title = document.getElementById('adminConfirmTitle');
-  const body = document.getElementById('adminConfirmMessage');
-  const subtitle = document.getElementById('adminConfirmSubtitle');
-  const inputWrap = document.getElementById('adminConfirmInputWrap');
-  const inputLabel = document.getElementById('adminConfirmInputLabel');
-  const input = document.getElementById('adminConfirmInput');
-  const inputError = document.getElementById('adminConfirmInputError');
-  const expectedValue = (options.requiredInput || '').trim();
-
-  title.textContent = options.title || '{{ __('Confirm this action') }}';
-  body.textContent = options.message || '{{ __('Are you sure you want to continue?') }}';
-  subtitle.textContent = options.subtitle || '{{ __('This change will be applied immediately after confirmation.') }}';
-  ok.textContent = options.confirmLabel || '{{ __('Confirm and continue') }}';
-  cancel.textContent = options.cancelLabel || '{{ __('Keep editing') }}';
-
-  if (expectedValue) {
-    inputWrap.hidden = false;
-    inputLabel.textContent = options.requiredInputLabel || '{{ __('Type the required phrase to continue') }}';
-    input.value = '';
-    input.placeholder = options.requiredInputPlaceholder || expectedValue;
-    inputError.classList.add('d-none');
-  } else {
-    inputWrap.hidden = true;
-    input.value = '';
-    input.placeholder = '';
-    inputError.classList.add('d-none');
-  }
-
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden', 'false');
-  backdrop.classList.add('show');
-
-  const cleanup = () => {
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden', 'true');
-    backdrop.classList.remove('show');
-    ok.onclick = null;
-    cancel.onclick = null;
-    backdrop.onclick = null;
-    document.removeEventListener('keydown', escapeHandler);
-    input.removeEventListener('input', handleInput);
-  };
-
-  const handleInput = () => {
-    if (!expectedValue) return;
-    inputError.classList.toggle('d-none', input.value.trim() === expectedValue);
-  };
-
-  const escapeHandler = (event) => {
-    if (event.key === 'Escape') cleanup();
-  };
-
-  cancel.onclick = cleanup;
-  backdrop.onclick = cleanup;
-  ok.onclick = function(){
-    if (expectedValue && input.value.trim() !== expectedValue) {
-      inputError.classList.remove('d-none');
-      input.focus();
-      return;
-    }
-    cleanup();
-    callback && callback(input.value.trim());
-  };
-
-  input.addEventListener('input', handleInput);
-  document.addEventListener('keydown', escapeHandler);
-
-  if (expectedValue) {
-    setTimeout(() => input.focus(), 0);
-  }
-}
-
-document.addEventListener('submit', function (event) {
-  const form = event.target;
-  if (!form.matches('[data-confirm-message]')) return;
-  if (form.dataset.confirmed === '1') { form.dataset.confirmed = '0'; return; }
-
-  const confirmWhenField = form.getAttribute('data-confirm-when-field');
-  if (confirmWhenField) {
-    const field = form.elements.namedItem(confirmWhenField);
-    const expectedValue = form.getAttribute('data-confirm-when-value');
-    const currentValue = field?.type === 'checkbox'
-      ? (field.checked ? (field.value || '1') : '0')
-      : field?.value;
-
-    if (String(currentValue ?? '') !== String(expectedValue ?? '1')) return;
-  }
-
-  event.preventDefault();
-  adminConfirmAction((typedValue) => {
-    const targetSelector = form.getAttribute('data-confirm-input-target');
-    if (targetSelector) {
-      const targetField = form.querySelector(targetSelector);
-      if (targetField) targetField.value = typedValue || '';
-    }
-    form.dataset.confirmed = '1';
-    form.requestSubmit();
-  }, {
-    title: form.getAttribute('data-confirm-title'),
-    message: form.getAttribute('data-confirm-message'),
-    subtitle: form.getAttribute('data-confirm-subtitle'),
-    confirmLabel: form.getAttribute('data-confirm-ok'),
-    cancelLabel: form.getAttribute('data-confirm-cancel'),
-    requiredInput: form.getAttribute('data-confirm-input-expected'),
-    requiredInputLabel: form.getAttribute('data-confirm-input-label'),
-    requiredInputPlaceholder: form.getAttribute('data-confirm-input-placeholder')
-  });
-});
 
 @php
     $adminTranslations = [
@@ -3698,6 +3586,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.querySelectorAll('form[data-submit-loading]').forEach(function (form) {
     form.addEventListener('submit', function (event) {
+      // The dialog owns the first submit; show loading only after confirmation.
+      if (form.dataset.confirmed !== '1' && window.adminFormNeedsConfirmation?.(form)) return;
       const button = event.submitter || form.querySelector('[data-loading-text]');
       if (!button || button.dataset.loadingApplied === '1') return;
 

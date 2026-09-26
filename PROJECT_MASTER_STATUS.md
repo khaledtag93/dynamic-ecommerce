@@ -1,5 +1,15 @@
 # MASTER PROJECT STATUS
 
+## Admin shared-action source checkpoint — 2026-09-26
+
+- The earlier Page Closure/mini-sidebar source commit `3ba6d5a` passed Hardening CI `36249023102`. GF-01 still requires authenticated QAS visual acceptance.
+- GF-11 shared Admin confirmation/submit feedback has a source fix and four Node interaction checks; see [Global Foundation Audit](docs/GLOBAL_FOUNDATION_AUDIT_2026-09-26.md). The latest-head CI and QAS acceptance for this slice are not yet recorded at this checkpoint.
+- Last documented QAS application revision remains `f1f20297`; Production unchanged. Keep the source/CI/QAS/Production states separate, and retain OPS-01/PAY-01/OPS-02 as Production blockers.
+
+### Earlier audit checkpoints below
+
+Read `CURRENT_PHASE.md` for the next action.
+
 ## Buyer-grade modernization checkpoint — 2026-09-26
 
 - Source plan-review baseline: `sec03-framework-upgrade` at `3ba6d5ab0a6196d32805ce9e7f64585c2d6682a3`. Its Page Closure/mini-sidebar CI and authenticated QAS checks must be confirmed before GF-01 is CLOSED. Latest QAS application evidence in this ledger is `f1f20297`; Production unchanged.

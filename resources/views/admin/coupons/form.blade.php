@@ -19,7 +19,7 @@
     <div class="col-xl-8">
         <div class="admin-card">
             <div class="admin-card-body">
-                <form method="POST" action="{{ $action }}" data-submit-loading data-admin-section-tabs="coupon-editor" data-active-rule-confirm data-active-field="is_active" data-confirm-title="{{ __('Publish active coupon?') }}" data-confirm-message="{{ __('This coupon will be usable in checkout according to its limits and schedule. Review the value, caps, usage limit, and dates before saving.') }}" data-confirm-ok="{{ __('Save active coupon') }}">
+                <form method="POST" action="{{ $action }}" data-submit-loading data-admin-section-tabs="coupon-editor" data-active-rule-confirm data-active-field="is_active" data-confirm-when-field="is_active" data-confirm-when-value="1" data-confirm-title="{{ __('Publish active coupon?') }}" data-confirm-message="{{ __('This coupon will be usable in checkout according to its limits and schedule. Review the value, caps, usage limit, and dates before saving.') }}" data-confirm-ok="{{ __('Save active coupon') }}">
                     @csrf
                     @if($method !== 'POST') @method($method) @endif
 

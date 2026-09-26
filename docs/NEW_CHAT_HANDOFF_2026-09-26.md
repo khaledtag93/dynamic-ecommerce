@@ -1,5 +1,11 @@
 # New Chat Handoff — Dynamic — 2026-09-26
 
+## Latest shared-foundation continuation
+
+The Page Closure/mini-sidebar commit `3ba6d5a` passed Hardening CI `36249023102`. The next source slice fixes GF-11 shared Admin confirmation, focus and submit-loading behavior with four Node interaction tests; check `CURRENT_PHASE.md` and the branch HEAD for its exact commit and CI result before relying on it. The last documented QAS application code is still `f1f20297`, so GF-01/GF-11 need matching-revision authenticated QAS checks; Production is unchanged. The next work is latest-head CI, targeted QAS acceptance when deployed, and continued Admin shell/page inventory work. OPS-01/PAY-01/OPS-02 remain release blockers.
+
+The buyer-grade plan and initial inventory linked below remain authoritative; work in coherent batches and keep the next checkpoint current.
+
 ## Latest continuation — buyer-grade completion pass
 
 Start with [the buyer-grade execution plan](BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md), [Page Closure System](PAGE_CLOSURE_SYSTEM_2026-09-26.md), `CURRENT_PHASE.md` and `PROJECT_MASTER_STATUS.md`. The plan-review source starting SHA is `3ba6d5ab0a6196d32805ce9e7f64585c2d6682a3` on `sec03-framework-upgrade`; verify the live branch HEAD when resuming. The last application code documented as deployed to QAS is `f1f20297a27e2236603788ac7cc343dbbf86d0b6`. Production remains unchanged. CI/QAS acceptance for the later mini-sidebar and Page Closure source changes is still unconfirmed in this note.

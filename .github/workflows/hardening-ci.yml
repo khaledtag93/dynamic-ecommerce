@@ -132,5 +132,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Test shared browser interactions
+        run: npm run test:ui
+
       - name: Build frontend assets
         run: npm run build
