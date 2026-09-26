@@ -5721,5 +5721,6 @@
     "The account permissions will change immediately after you save this assignment.": "ستتغير صلاحيات الحساب فور حفظ هذا التعيين.",
     "Review the selected role before continuing.": "راجع الدور المحدد قبل المتابعة.",
     "Change role": "تغيير الدور",
-    "Keep current role": "الاحتفاظ بالدور الحالي"
+    "Keep current role": "الاحتفاظ بالدور الحالي",
+    "Country code": "رمز الدولة"
 }
