@@ -73,7 +73,14 @@ The buyer may independently inspect source, dependencies, clean installation, up
 
 **Source action:** both JSON health probes now expose only their minimal `ok`/`message` contract. The unused environment-report method was removed. Front-controller trace and shutdown logging run only when `LOCAL_SAFE_BOOT` is explicitly enabled; the local pre-boot ping shortcut remains available. A feature test asserts exact public probe bodies.
 
-**Gate:** branch-head Hardening CI and QAS checks of both probe variants with diagnostics disabled and local safe boot enabled where appropriate. Source change is IN REVIEW until the gate is recorded; QAS/Production have not been changed by this finding.
+**Gate:** [Hardening CI 36251884894](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36251884894) passed on source `39c6a87b7e475f70d9d81b4d569e3208c443a999`. QAS checks of both probe variants with diagnostics disabled and local safe boot enabled where appropriate remain outstanding. QAS/Production have not been changed by this finding.
+
+### GF-14 — Storefront navigation destinations
+**Finding:** the shared storefront header used local fragment URLs for Offers, Best sellers, New arrivals and the category dropdown's View all action on every page. Outside Home these fragments had no target. Home sections are configurable, so a disabled section could also leave a visible dead navigation link. A source-to-route check found all 45 sidebar, 11 Admin topbar, 18 Storefront shell and 6 account-navigation literal route names registered; the failure was the destination behavior, not a missing named route.
+
+**Source action:** shared Storefront navigation now keeps in-page jumps for enabled Home sections; off Home, Offers and New arrivals go to their real filtered/sorted product list. Category/Best sellers links reach their Home sections from other pages only when those sections are enabled, and disappear when disabled. Three focused tests cover Home, another page and disabled sections. Storefront page content and user-configured hero/banner links will receive their own page-level review.
+
+**Gate:** branch-head CI plus EN/AR desktop/mobile QAS checks from Home, product/category, cart and account routes, including enabled/disabled Home-section settings. Remains IN REVIEW until matching-revision acceptance.
 
 ## Global Foundation execution order
 1. Admin shell/navigation closure.

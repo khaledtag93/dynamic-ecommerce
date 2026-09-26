@@ -32,6 +32,7 @@
     $localizedFooterCopyright = ($isRtl ?? false)
         ? ($storeSettings['footer_copyright_ar'] ?? $storeSettings['footer_copyright'] ?? __('جميع الحقوق محفوظة.'))
         : ($storeSettings['footer_copyright_en'] ?? $storeSettings['footer_copyright'] ?? __('All rights reserved.'));
+    $storefrontNavigation = \App\Support\StorefrontNavigation::links($storeSettings, request()->routeIs('frontend.home'));
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ ($isRtl ?? false) ? 'rtl' : 'ltr' }}">
 <head>
@@ -721,7 +722,9 @@
                                     <strong>{{ __('Shop by department') }}</strong>
                                     <span>{{ __('Choose a category and start browsing faster.') }}</span>
                                 </div>
-                                <a href="#categories" role="menuitem">{{ __('View all') }} <i class="bi bi-arrow-up-right"></i></a>
+                                @if($storefrontNavigation['categories'])
+                                    <a href="{{ $storefrontNavigation['categories'] }}" role="menuitem">{{ __('View all') }} <i class="bi bi-arrow-up-right"></i></a>
+                                @endif
                             </div>
                             <div class="retail-mega-menu__grid">
                                 @forelse($layoutCategories as $category)
@@ -747,9 +750,11 @@
 
                     <div class="retail-links">
                         <a href="{{ route('frontend.home') }}" @if(request()->routeIs('frontend.home')) aria-current="page" @endif>{{ __('Home') }}</a>
-                        <a href="#on-sale-products">{{ __('Offers') }}</a>
-                        <a href="#best-sellers">{{ __('Best sellers') }}</a>
-                        <a href="#latest-products">{{ __('New arrivals') }}</a>
+                        <a href="{{ $storefrontNavigation['offers'] }}">{{ __('Offers') }}</a>
+                        @if($storefrontNavigation['best_sellers'])
+                            <a href="{{ $storefrontNavigation['best_sellers'] }}">{{ __('Best sellers') }}</a>
+                        @endif
+                        <a href="{{ $storefrontNavigation['new_arrivals'] }}">{{ __('New arrivals') }}</a>
                         <a href="{{ route('frontend.contact') }}" @if(request()->routeIs('frontend.contact')) aria-current="page" @endif>{{ __('Contact') }}</a>
                         @auth
                             <a class="d-md-none" href="{{ route('account.index') }}" @if(request()->routeIs('account.*')) aria-current="page" @endif><i class="bi bi-person me-1"></i>{{ __('My account') }}</a>

@@ -63,6 +63,7 @@ All groups are OPEN for this new strict closure pass. Prior source hardening of 
 - POS live mutation, focus and scroll preservation require actual browser checks. Growth and Branding need hierarchy and long-form action-placement review. Permissions is reported as long and mixed-language.
 - The source audit also records an unbounded customer-statement read, an incomplete CSV import execution path, and Paymob E2E/restore/credential evidence gaps. Their page and release gates remain separate.
 - The route reconciliation exposed public ping responses that included environment metadata and unconditional local-boot tracing. The shared-source fix is GF-13 in the [Global Foundation Audit](GLOBAL_FOUNDATION_AUDIT_2026-09-26.md); verify its branch-head CI and QAS separately.
+- Static route names in the Admin sidebar/topbar, Storefront shell and account navigation all matched registered names (45/11/18/6 distinct per file). Their destinations still require behavior review: GF-14 fixes Storefront header fragment links that went nowhere off Home or when their Home sections were disabled. This is source work pending branch-head CI/QAS, not a claim that all navigation variants were inspected.
 
 ## Next inventory action
 
