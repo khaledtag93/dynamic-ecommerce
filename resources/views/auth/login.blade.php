@@ -3,10 +3,10 @@
 @section('title', __('Login') . ' | ' . ($storeSettings['store_name'] ?? 'Storefront'))
 
 @section('content')
-<section class="py-5">
+<section class="py-5 lc-page-shell">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-5">
+            <div class="col-xl-5 col-lg-6">
                 <div class="lc-card p-4 p-lg-5">
                     <div class="text-center mb-4">
                         <div class="text-uppercase small text-muted fw-bold">{{ __('Welcome back') }}</div>
@@ -16,12 +16,12 @@
                     <form method="POST" action="{{ route('login') }}" class="d-grid gap-3">
                         @csrf
                         <div>
-                            <label class="form-label fw-bold">{{ __('Email address') }}</label>
+                            <label for="email" class="form-label fw-bold">{{ __('Email address') }}</label>
                             <input id="email" type="email" class="form-control lc-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div>
-                            <label class="form-label fw-bold">{{ __('Password') }}</label>
+                            <label for="password" class="form-label fw-bold">{{ __('Password') }}</label>
                             <input id="password" type="password" class="form-control lc-form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
                             @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
