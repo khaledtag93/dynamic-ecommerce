@@ -22,12 +22,12 @@
     <div class="admin-card-body">
         <form method="GET" action="{{ route('admin.payments.index') }}" class="admin-filter-grid" data-live-filter>
             <div>
-                <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                <input type="search" class="form-control" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" placeholder="{{ __('Reference, order number, provider') }}">
+                <label class="form-label fw-semibold" for="paymentSearch">{{ __('Search') }}</label>
+                <input id="paymentSearch" type="search" class="form-control" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" placeholder="{{ __('Reference, order number, provider') }}">
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                <select name="status" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="paymentStatus">{{ __('Status') }}</label>
+                <select id="paymentStatus" name="status" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All statuses') }}</option>
                     @foreach($statusOptions as $value => $label)
                         <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -35,8 +35,8 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Method') }}</label>
-                <select name="method" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="paymentMethod">{{ __('Method') }}</label>
+                <select id="paymentMethod" name="method" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All methods') }}</option>
                     @foreach($methodOptions as $value => $label)
                         <option value="{{ $value }}" @selected($filters['method'] === $value)>{{ $label }}</option>
@@ -44,8 +44,8 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                <select name="per_page" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="paymentPerPage">{{ __('Per page') }}</label>
+                <select id="paymentPerPage" name="per_page" class="form-select" data-live-filter-control>
                     @foreach([20,40,80] as $size)
                         <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                     @endforeach
