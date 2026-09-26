@@ -527,7 +527,6 @@
             body.admin-sidebar-open {
                 overflow: hidden;
                 overscroll-behavior: none;
-                touch-action: none;
             }
 
             .page-body-wrapper {
