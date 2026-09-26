@@ -544,6 +544,10 @@ class SettingController extends Controller
             'promo_banner_1_active',
             'promo_banner_2_active',
             'promo_banner_3_active',
+            'trust_block_1_active',
+            'trust_block_2_active',
+            'trust_block_3_active',
+            'trust_block_4_active',
         ];
     }
 
