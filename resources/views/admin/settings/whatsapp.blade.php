@@ -112,12 +112,12 @@
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold">{{ __('Default provider') }}</label>
-                                        <input type="text" class="form-control" name="whatsapp_default_provider" value="{{ old('whatsapp_default_provider', $storeSettings['whatsapp_default_provider'] ?? 'meta') }}">
+                                        <label class="form-label fw-semibold" for="whatsappDefaultProvider">{{ __('Default provider') }}</label>
+                                        <input id="whatsappDefaultProvider" type="text" class="form-control" name="whatsapp_default_provider" aria-required="true" value="{{ old('whatsapp_default_provider', $storeSettings['whatsapp_default_provider'] ?? 'meta') }}">
                                     </div>
                                     <div>
-                                        <label class="form-label fw-semibold">{{ __('Fallback locale') }}</label>
-                                        <select name="whatsapp_fallback_locale" class="form-select">
+                                        <label class="form-label fw-semibold" for="whatsappFallbackLocale">{{ __('Fallback locale') }}</label>
+                                        <select id="whatsappFallbackLocale" name="whatsapp_fallback_locale" aria-required="true" class="form-select">
                                             <option value="ar" @selected(old('whatsapp_fallback_locale', $storeSettings['whatsapp_fallback_locale'] ?? 'ar') === 'ar')>{{ __('Arabic') }}</option>
                                             <option value="en" @selected(old('whatsapp_fallback_locale', $storeSettings['whatsapp_fallback_locale'] ?? 'ar') === 'en')>{{ __('English') }}</option>
                                         </select>
@@ -137,36 +137,36 @@
                                     </div>
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label class="form-label fw-semibold">{{ __('Queue connection') }}</label>
-                                            <input type="text" class="form-control" name="whatsapp_queue_connection" value="{{ old('whatsapp_queue_connection', $storeSettings['whatsapp_queue_connection'] ?? '') }}">
+                                            <label class="form-label fw-semibold" for="whatsappQueueConnection">{{ __('Queue connection') }}</label>
+                                            <input id="whatsappQueueConnection" type="text" class="form-control" name="whatsapp_queue_connection" value="{{ old('whatsapp_queue_connection', $storeSettings['whatsapp_queue_connection'] ?? '') }}">
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label fw-semibold">{{ __('Queue name') }}</label>
-                                            <input type="text" class="form-control" name="whatsapp_queue_queue" value="{{ old('whatsapp_queue_queue', $storeSettings['whatsapp_queue_queue'] ?? 'default') }}">
+                                            <label class="form-label fw-semibold" for="whatsappQueueName">{{ __('Queue name') }}</label>
+                                            <input id="whatsappQueueName" type="text" class="form-control" name="whatsapp_queue_queue" value="{{ old('whatsapp_queue_queue', $storeSettings['whatsapp_queue_queue'] ?? 'default') }}">
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">{{ __('Tries') }}</label>
-                                            <input type="number" min="1" max="20" class="form-control" name="whatsapp_queue_tries" value="{{ old('whatsapp_queue_tries', $storeSettings['whatsapp_queue_tries'] ?? '3') }}">
+                                            <label class="form-label fw-semibold" for="whatsappQueueTries">{{ __('Tries') }}</label>
+                                            <input id="whatsappQueueTries" type="number" min="1" max="20" class="form-control" name="whatsapp_queue_tries" value="{{ old('whatsapp_queue_tries', $storeSettings['whatsapp_queue_tries'] ?? '3') }}">
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">{{ __('Backoff seconds') }}</label>
-                                            <input type="text" class="form-control" name="whatsapp_queue_backoff_seconds" value="{{ old('whatsapp_queue_backoff_seconds', $storeSettings['whatsapp_queue_backoff_seconds'] ?? '60,180,300') }}">
+                                            <label class="form-label fw-semibold" for="whatsappQueueBackoff">{{ __('Backoff seconds') }}</label>
+                                            <input id="whatsappQueueBackoff" type="number" min="0" max="3600" class="form-control" name="whatsapp_queue_backoff_seconds" value="{{ old('whatsapp_queue_backoff_seconds', $storeSettings['whatsapp_queue_backoff_seconds'] ?? '30') }}">
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">{{ __('Job timeout') }}</label>
-                                            <input type="number" min="30" max="600" class="form-control" name="whatsapp_queue_timeout" value="{{ old('whatsapp_queue_timeout', $storeSettings['whatsapp_queue_timeout'] ?? '120') }}">
+                                            <label class="form-label fw-semibold" for="whatsappQueueTimeout">{{ __('Job timeout') }}</label>
+                                            <input id="whatsappQueueTimeout" type="number" min="10" max="600" class="form-control" name="whatsapp_queue_timeout" value="{{ old('whatsapp_queue_timeout', $storeSettings['whatsapp_queue_timeout'] ?? '120') }}">
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">{{ __('Duplicate window') }}</label>
-                                            <input type="number" min="0" max="1440" class="form-control" name="whatsapp_duplicate_window_minutes" value="{{ old('whatsapp_duplicate_window_minutes', $storeSettings['whatsapp_duplicate_window_minutes'] ?? '30') }}">
+                                            <label class="form-label fw-semibold" for="whatsappDuplicateWindow">{{ __('Duplicate window') }}</label>
+                                            <input id="whatsappDuplicateWindow" type="number" min="1" max="1440" class="form-control" name="whatsapp_duplicate_window_minutes" value="{{ old('whatsapp_duplicate_window_minutes', $storeSettings['whatsapp_duplicate_window_minutes'] ?? '30') }}">
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">{{ __('Rate-limit window') }}</label>
-                                            <input type="number" min="1" max="1440" class="form-control" name="whatsapp_rate_limit_window_minutes" value="{{ old('whatsapp_rate_limit_window_minutes', $storeSettings['whatsapp_rate_limit_window_minutes'] ?? '15') }}">
+                                            <label class="form-label fw-semibold" for="whatsappRateLimitWindow">{{ __('Rate-limit window') }}</label>
+                                            <input id="whatsappRateLimitWindow" type="number" min="1" max="1440" class="form-control" name="whatsapp_rate_limit_window_minutes" value="{{ old('whatsapp_rate_limit_window_minutes', $storeSettings['whatsapp_rate_limit_window_minutes'] ?? '15') }}">
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">{{ __('Max attempts') }}</label>
-                                            <input type="number" min="1" max="100" class="form-control" name="whatsapp_rate_limit_max_attempts" value="{{ old('whatsapp_rate_limit_max_attempts', $storeSettings['whatsapp_rate_limit_max_attempts'] ?? '5') }}">
+                                            <label class="form-label fw-semibold" for="whatsappRateLimitAttempts">{{ __('Max attempts') }}</label>
+                                            <input id="whatsappRateLimitAttempts" type="number" min="1" max="100" class="form-control" name="whatsapp_rate_limit_max_attempts" value="{{ old('whatsapp_rate_limit_max_attempts', $storeSettings['whatsapp_rate_limit_max_attempts'] ?? '5') }}">
                                         </div>
                                     </div>
                                     <div class="small text-muted mt-3">{{ __('Queue needs a live worker in production. Guards prevent duplicates and burst sends to the same customer.') }}</div>
@@ -390,12 +390,12 @@
 
                         <form method="GET" class="row g-3 mb-4" data-submit-loading>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                                <input type="text" class="form-control" name="search" value="{{ request('search') }}" placeholder="{{ __('Order number, customer, phone, template...') }}">
+                                <label class="form-label fw-semibold" for="whatsappLogSearch">{{ __('Search') }}</label>
+                                <input id="whatsappLogSearch" type="text" class="form-control" name="search" value="{{ request('search') }}" placeholder="{{ __('Order number, customer, phone, template...') }}">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                                <select name="status" class="form-select">
+                                <label class="form-label fw-semibold" for="whatsappLogStatus">{{ __('Status') }}</label>
+                                <select id="whatsappLogStatus" name="status" class="form-select">
                                     <option value="">{{ __('All statuses') }}</option>
                                     @foreach(['sent' => __('Sent'),'failed' => __('Failed'),'skipped' => __('Skipped'),'pending' => __('Pending')] as $value => $label)
                                         <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
@@ -403,8 +403,8 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-semibold">{{ __('Message type') }}</label>
-                                <select name="message_type" class="form-select">
+                                <label class="form-label fw-semibold" for="whatsappLogMessageType">{{ __('Message type') }}</label>
+                                <select id="whatsappLogMessageType" name="message_type" class="form-select">
                                     <option value="">{{ __('All messages') }}</option>
                                     <option value="order_confirmation" @selected(request('message_type') === 'order_confirmation')>{{ __('Order confirmation') }}</option>
                                     <option value="order_status_update" @selected(request('message_type') === 'order_status_update')>{{ __('Order status update') }}</option>
