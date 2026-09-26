@@ -919,7 +919,38 @@ document.addEventListener('DOMContentLoaded', function () {
     const saveState = document.getElementById('brandingSaveState');
     const presets = @json($presets);
     const presetSelect = document.getElementById('theme_preset');
+    const errorFields = (() => {
+        try { return JSON.parse(form?.dataset.adminErrorFields || '[]'); } catch (_) { return []; }
+    })();
+    const errorSectionPrefixes = {
+        theme: ['theme_preset', 'save_as_custom_theme', 'custom_theme_name'],
+        identity: ['default_locale', 'project_name', 'store_name', 'store_tagline', 'footer_'],
+        colors: ['brand_', 'customer_'],
+        homepage: ['hero_', 'show_home_', 'home_featured_', 'home_manual_', 'home_categories_', 'home_latest_', 'home_best_', 'home_on_sale_', 'homepage_sections_order'],
+        promos: ['promo_banner_'],
+        trust: ['trust_block_', 'home_trust_'],
+        admin: ['admin_'],
+        media: ['logo_', 'favicon_', 'hero_banner_', 'admin_logo_'],
+    };
     let isDirty = false;
+
+    function revealValidationError() {
+        if (!form || !errorFields.length) return;
+        const firstField = errorFields[0];
+        const section = Object.entries(errorSectionPrefixes).find(([, prefixes]) => prefixes.some((prefix) => firstField === prefix || firstField.startsWith(prefix)))?.[0];
+        const tab = section ? document.querySelector('[data-admin-section-tab="' + section + '"]') : null;
+        tab?.click();
+
+        const escaped = window.CSS?.escape ? CSS.escape(firstField) : firstField.replace(/"/g, '\\"');
+        const field = form.querySelector('[name="' + escaped + '"]') || document.getElementById(firstField);
+        if (field) {
+            field.setAttribute('aria-invalid', 'true');
+            window.setTimeout(() => {
+                field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                field.focus({ preventScroll: true });
+            }, 80);
+        }
+    }
 
     function setDirtyState(dirty) {
         isDirty = dirty;
@@ -1029,7 +1060,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (icon) icon.className = compact ? 'mdi mdi-unfold-more-horizontal' : 'mdi mdi-unfold-less-horizontal';
     });
 
-    document.querySelectorAll('[data-sync-color]').forEach(syncColor);
+    revealValidationError();
+        document.querySelectorAll('[data-sync-color]').forEach(syncColor);
 
     presetSelect?.addEventListener('change', function () {
         applyPreset(this.value);
