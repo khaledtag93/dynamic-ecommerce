@@ -100,7 +100,18 @@ jobs:
       - name: Verify Laravel boot and routes
         run: |
           php artisan about
-          php artisan route:list
+          mkdir -p storage/test-results
+          php artisan route:list --json > storage/test-results/routes.json
+          php -r '$routes = json_decode(file_get_contents("storage/test-results/routes.json"), true, 512, JSON_THROW_ON_ERROR); if (!is_array($routes) || count($routes) === 0) { throw new RuntimeException("Empty route manifest"); } echo "Laravel route manifest: ".count($routes)." routes\n";'
+
+      - name: Upload route manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: route-manifest-${{ github.run_id }}
+          path: storage/test-results/routes.json
+          if-no-files-found: ignore
+          retention-days: 30
 
       - name: Compile config and Blade views
         run: |
