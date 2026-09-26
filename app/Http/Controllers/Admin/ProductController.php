@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -28,13 +27,6 @@ class ProductController extends Controller
         return view('admin.products.create', compact('categories', 'brands'));
     }
 
-    public function store(Request $request)
-    {
-        return redirect()
-            ->route('admin.products.index')
-            ->with('message', 'Product create flow is handled elsewhere currently.');
-    }
-
     public function edit(Product $product)
     {
         $categories = Category::where('status', 0)->get();
@@ -43,17 +35,4 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories', 'brands'));
     }
 
-    public function update(Request $request, Product $product)
-    {
-        return redirect()
-            ->route('admin.products.index')
-            ->with('message', 'Product update flow is handled elsewhere currently.');
-    }
-
-    public function destroy(Product $product)
-    {
-        return redirect()
-            ->route('admin.products.index')
-            ->with('message', 'Product delete flow is handled elsewhere currently.');
-    }
 }
