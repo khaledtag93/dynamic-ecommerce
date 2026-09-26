@@ -638,8 +638,11 @@ class StorefrontExperienceTest extends TestCase
         $response->assertOk();
         $html = $response->getContent();
 
-        $this->assertStringNotContainsString('href="'.route('account.index').'" aria-current="page"', $html);
-        $this->assertGreaterThanOrEqual(2, substr_count($html, 'href="'.route('account.addresses.index').'" aria-current="page"'));
+        $accountCurrentPattern = '/href="'.preg_quote(route('account.index'), '/').'"\\s+aria-current="page"/';
+        $addressCurrentPattern = '/href="'.preg_quote(route('account.addresses.index'), '/').'"\\s+aria-current="page"/';
+
+        $this->assertDoesNotMatchRegularExpression($accountCurrentPattern, $html);
+        $this->assertGreaterThanOrEqual(2, preg_match_all($addressCurrentPattern, $html));
 
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
         $this->assertStringContainsString('.retail-account-menu .dropdown-item[aria-current="page"]', $layout);
