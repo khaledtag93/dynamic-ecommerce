@@ -155,6 +155,19 @@ Return to the recorded completion plan:
 
 Keep the existing rule: finish and harden implemented areas before starting unrelated expansion unless the new item is a blocker, security issue, direct dependency, or prevents immediate rework.
 
+## Exact next action
+
+Start the next chat with **OPS-01 credential rotation evidence**.
+
+Goal:
+- inventory every credential/service that may have been exposed historically through Git;
+- rotate or revoke old values without writing secret values into chat, Git, logs, or documentation;
+- record only the service name, whether rotation/revocation is complete, and the completion date;
+- verify the application still works with the new credentials;
+- then move to PAY-01 Paymob E2E and OPS-02 database restore rehearsal.
+
+Do not deploy Production while any of those P0 gates remain open.
+
 ## Primary references
 
 - `PROJECT_MASTER_STATUS.md`
