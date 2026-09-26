@@ -127,6 +127,7 @@ class Values extends Component
 
         if (! $value) {
             $this->pendingDeleteId = null;
+            $this->dispatch('close-attribute-value-delete-confirmation');
             session()->flash('error', __('Attribute value no longer exists.'));
             return;
         }
@@ -135,6 +136,7 @@ class Values extends Component
 
         if ($usageCount > 0) {
             $this->pendingDeleteId = null;
+            $this->dispatch('close-attribute-value-delete-confirmation');
             session()->flash('error', __('This value is used by :count product variant(s) and cannot be deleted.', ['count' => $usageCount]));
             return;
         }
@@ -142,6 +144,7 @@ class Values extends Component
         $label = $value->value;
         $value->delete();
         $this->pendingDeleteId = null;
+        $this->dispatch('close-attribute-value-delete-confirmation');
 
         session()->flash('message', __('Value :value deleted successfully.', ['value' => $label]));
     }
