@@ -184,11 +184,29 @@ class CartService
     {
         $this->ensureOwns($item);
 
+        if (! $item->product || ! (bool) $item->product->status) {
+            throw ValidationException::withMessages([
+                'cart' => __('This product is no longer available for purchase.'),
+            ]);
+        }
+
+        if ($item->variant && ! (bool) $item->variant->status) {
+            throw ValidationException::withMessages([
+                'cart' => __('The selected product option is no longer available.'),
+            ]);
+        }
+
         $availableStock = $item->variant
             ? (int) ($item->variant->stock ?? 0)
-            : (int) optional($item->product)->quantity_value;
+            : (int) $item->product->quantity_value;
 
-        $quantity = max(1, min($quantity, max(1, $availableStock)));
+        if ($availableStock < 1) {
+            throw ValidationException::withMessages([
+                'cart' => __('This product is currently out of stock.'),
+            ]);
+        }
+
+        $quantity = max(1, min($quantity, $availableStock));
 
         $item->update([
             'quantity' => $quantity,
