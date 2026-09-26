@@ -211,4 +211,18 @@ return [
 
     'partitioned' => false,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Session Serialization
+    |--------------------------------------------------------------------------
+    |
+    | Keep PHP serialization during the framework upgrade so existing sessions
+    | remain valid. Production can opt into Laravel 13's safer JSON strategy
+    | with SESSION_SERIALIZATION=json after session payload compatibility is
+    | verified and a forced re-login window is accepted.
+    |
+    */
+
+    'serialization' => env('SESSION_SERIALIZATION', 'php'),
+
 ];
