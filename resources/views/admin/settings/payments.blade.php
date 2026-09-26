@@ -32,12 +32,12 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Transaction Processed Callback URL') }}</label>
-                                <input type="text" class="form-control" value="{{ route('payments.paymob.callback') }}" readonly>
+                                <label class="form-label fw-semibold" for="paymobProcessedCallback">{{ __('Transaction Processed Callback URL') }}</label>
+                                <input id="paymobProcessedCallback" type="text" class="form-control" value="{{ route('payments.paymob.callback') }}" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Transaction Response Callback URL') }}</label>
-                                <input type="text" class="form-control" value="{{ route('payments.paymob.callback') }}" readonly>
+                                <label class="form-label fw-semibold" for="paymobResponseCallback">{{ __('Transaction Response Callback URL') }}</label>
+                                <input id="paymobResponseCallback" type="text" class="form-control" value="{{ route('payments.paymob.callback') }}" readonly>
                             </div>
                         </div>
                     </div>
@@ -73,20 +73,20 @@
             <div id="payment-settings-panel-gateway" role="tabpanel" aria-labelledby="payment-settings-tab-gateway" data-admin-section-panel="gateway">
             <div class="row g-4 mb-4 admin-settings-section">
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">{{ __('Gateway provider') }}</label>
-                    <input type="text" class="form-control" name="payment_gateway_provider" value="{{ old('payment_gateway_provider', $storeSettings['payment_gateway_provider'] ?? 'paymob') }}">
+                    <label class="form-label fw-semibold" for="paymentGatewayProvider">{{ __('Gateway provider') }}</label>
+                    <input id="paymentGatewayProvider" type="text" class="form-control" name="payment_gateway_provider" value="{{ old('payment_gateway_provider', $storeSettings['payment_gateway_provider'] ?? 'paymob') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">{{ __('Gateway mode') }}</label>
-                    <select name="payment_gateway_mode" class="form-select">
+                    <label class="form-label fw-semibold" for="paymentGatewayMode">{{ __('Gateway mode') }}</label>
+                    <select id="paymentGatewayMode" name="payment_gateway_mode" class="form-select">
                         <option value="sandbox" @selected(($storeSettings['payment_gateway_mode'] ?? 'sandbox') === 'sandbox')>{{ __('Sandbox') }}</option>
                         <option value="live" @selected(($storeSettings['payment_gateway_mode'] ?? 'sandbox') === 'live')>{{ __('Live') }}</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">{{ __('Online stock reservation') }}</label>
+                    <label class="form-label fw-semibold" for="paymentStockReservationMinutes">{{ __('Online stock reservation') }}</label>
                     <div class="input-group">
-                        <input type="number" min="5" max="1440" name="payment_stock_reservation_minutes" class="form-control" value="{{ old('payment_stock_reservation_minutes', $storeSettings['payment_stock_reservation_minutes'] ?? 30) }}" required>
+                        <input id="paymentStockReservationMinutes" type="number" min="5" max="1440" name="payment_stock_reservation_minutes" aria-required="true" class="form-control" value="{{ old('payment_stock_reservation_minutes', $storeSettings['payment_stock_reservation_minutes'] ?? 30) }}" required>
                         <span class="input-group-text">{{ __('minutes') }}</span>
                     </div>
                     <div class="text-muted small mt-2">{{ __('Unpaid online orders hold stock for this period. Failed, cancelled, or expired reservations release stock safely.') }}</div>
@@ -124,12 +124,12 @@
                                 <div class="alert alert-info mb-0">{{ __('Paymob API/HMAC/Secret credentials are server-managed. Only non-secret integration identifiers are editable here.') }}</div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Paymob integration ID') }}</label>
-                                <input type="text" class="form-control" name="paymob_integration_id" value="{{ old('paymob_integration_id', $storeSettings['paymob_integration_id'] ?? '') }}">
+                                <label class="form-label fw-semibold" for="paymobIntegrationId">{{ __('Paymob integration ID') }}</label>
+                                <input id="paymobIntegrationId" type="text" class="form-control" name="paymob_integration_id" value="{{ old('paymob_integration_id', $storeSettings['paymob_integration_id'] ?? '') }}">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Paymob iframe ID') }}</label>
-                                <input type="text" class="form-control" name="paymob_iframe_id" value="{{ old('paymob_iframe_id', $storeSettings['paymob_iframe_id'] ?? '') }}">
+                                <label class="form-label fw-semibold" for="paymobIframeId">{{ __('Paymob iframe ID') }}</label>
+                                <input id="paymobIframeId" type="text" class="form-control" name="paymob_iframe_id" value="{{ old('paymob_iframe_id', $storeSettings['paymob_iframe_id'] ?? '') }}">
                             </div>
 
                         </div>
@@ -142,12 +142,12 @@
             <div id="payment-settings-panel-bank" role="tabpanel" aria-labelledby="payment-settings-tab-bank" data-admin-section-panel="bank">
             <div class="row g-4 mb-4 admin-settings-section">
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ __('Bank transfer instructions (EN)') }}</label>
-                    <textarea name="bank_transfer_instructions_en" rows="6" class="form-control">{{ old('bank_transfer_instructions_en', $storeSettings['bank_transfer_instructions_en'] ?? 'Transfer to your business bank account, then send the transfer reference to support.') }}</textarea>
+                    <label class="form-label fw-semibold" for="bankTransferInstructionsEn">{{ __('Bank transfer instructions (EN)') }}</label>
+                    <textarea id="bankTransferInstructionsEn" name="bank_transfer_instructions_en" rows="6" class="form-control">{{ old('bank_transfer_instructions_en', $storeSettings['bank_transfer_instructions_en'] ?? 'Transfer to your business bank account, then send the transfer reference to support.') }}</textarea>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ __('Bank transfer instructions (AR)') }}</label>
-                    <textarea name="bank_transfer_instructions_ar" rows="6" class="form-control">{{ old('bank_transfer_instructions_ar', $storeSettings['bank_transfer_instructions_ar'] ?? 'حوّل المبلغ على الحساب البنكي الخاص بالمتجر ثم احتفظ برقم التحويل للتأكيد مع الدعم.') }}</textarea>
+                    <label class="form-label fw-semibold" for="bankTransferInstructionsAr">{{ __('Bank transfer instructions (AR)') }}</label>
+                    <textarea id="bankTransferInstructionsAr" name="bank_transfer_instructions_ar" rows="6" class="form-control">{{ old('bank_transfer_instructions_ar', $storeSettings['bank_transfer_instructions_ar'] ?? 'حوّل المبلغ على الحساب البنكي الخاص بالمتجر ثم احتفظ برقم التحويل للتأكيد مع الدعم.') }}</textarea>
                 </div>
             </div>
 
