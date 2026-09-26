@@ -92,10 +92,11 @@ class Index extends Component
         }
 
         $this->pendingDeleteId = $attribute->id;
-        $this->dispatchBrowserEvent('open-attribute-delete-confirmation', [
-            'name' => $attribute->name,
-            'values' => $attribute->values_count,
-        ]);
+        $this->dispatch(
+            'open-attribute-delete-confirmation',
+            name: $attribute->name,
+            values: $attribute->values_count,
+        );
     }
 
     public function cancelDelete(): void
