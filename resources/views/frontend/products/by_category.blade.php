@@ -126,7 +126,7 @@
     </div>
 </section>
 
-<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true" aria-labelledby="quickViewName">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content quick-view-modal-content border-0">
             <div class="modal-body p-0">
@@ -143,7 +143,7 @@
                                     <span class="lc-badge mb-2" id="quickViewCategory">{{ __('Category') }}</span>
                                     <h3 class="h3 fw-bold mb-2" id="quickViewName">{{ __('Product') }}</h3>
                                 </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
                             </div>
 
                             <div class="d-flex align-items-center gap-3 flex-wrap mb-3">
@@ -218,14 +218,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const button = event.target.closest('.lc-quick-view-trigger');
         if (!button) return;
 
+        const productName = button.getAttribute('data-product-name') || '';
         elements.image.src = button.getAttribute('data-image-url') || elements.image.src;
+        elements.image.alt = productName;
         elements.category.textContent = button.getAttribute('data-category') || '';
-        elements.name.textContent = button.getAttribute('data-product-name') || '';
+        elements.name.textContent = productName;
         elements.price.textContent = button.getAttribute('data-price') || '';
         elements.basePrice.textContent = button.getAttribute('data-base-price') || '';
         elements.description.textContent = button.getAttribute('data-description') || '';
         elements.stock.textContent = button.getAttribute('data-stock') || '';
         elements.cartForm.action = button.getAttribute('data-add-to-cart') || '#';
+        const inStock = button.getAttribute('data-product-in-stock') === '1';
+        elements.cartForm.querySelectorAll('button[type="submit"]').forEach((cartButton) => {
+            cartButton.disabled = !inStock;
+            cartButton.setAttribute('aria-disabled', inStock ? 'false' : 'true');
+        });
         elements.openProduct.href = button.getAttribute('data-product-url') || '#';
 
         const discount = button.getAttribute('data-discount') || '';

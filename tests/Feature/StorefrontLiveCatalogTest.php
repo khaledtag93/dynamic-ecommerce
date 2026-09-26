@@ -141,6 +141,23 @@ class StorefrontLiveCatalogTest extends TestCase
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
     }
 
+    public function test_category_quick_view_is_accessible_and_respects_product_stock_state(): void
+    {
+        $category = $this->category('Quick View Category');
+        $this->product($category, 'Quick View In Stock', 5, 20, null);
+        $this->product($category, 'Quick View Unavailable', 0, 20, null);
+
+        $this->get(route('category.products', $category->id))
+            ->assertOk()
+            ->assertSee('aria-labelledby="quickViewName"', false)
+            ->assertSee('aria-label="' . __('Quick view') . ': Quick View In Stock"', false)
+            ->assertSee('aria-label="' . __('Quick view') . ': Quick View Unavailable"', false)
+            ->assertSee('data-product-in-stock="1"', false)
+            ->assertSee('data-product-in-stock="0"', false)
+            ->assertSee("elements.image.alt = productName", false)
+            ->assertSee("cartButton.disabled = !inStock", false);
+    }
+
     private function category(string $name): Category
     {
         $token = Str::lower(Str::random(8));
