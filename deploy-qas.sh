@@ -140,6 +140,9 @@ log "⚙️ Rebuilding QAS caches..."
 $PHP_BIN artisan config:cache
 $PHP_BIN artisan view:cache
 
+log "♻️ Signaling QAS queue workers to reload application code..."
+$PHP_BIN artisan queue:restart || true
+
 log "📁 Syncing QAS public files..."
 rsync -a --delete     --exclude='index.php'     --exclude='uploads'     --exclude='storage'     "$APP_DIR/public/" "$PUBLIC_DIR/"
 
