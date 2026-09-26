@@ -31,12 +31,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.purchases.index') }}" class="row g-3 align-items-end" data-live-filter>
                 <div class="col-lg-4">
-                    <label class="form-label fw-semibold">{{ __('Search purchases') }}</label>
-                    <input type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Reference, supplier, or company') }}">
+                    <label class="form-label fw-semibold" for="purchaseSearch">{{ __('Search purchases') }}</label>
+                    <input id="purchaseSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Reference, supplier, or company') }}">
                 </div>
                 <div class="col-md-4 col-lg-2">
-                    <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="purchaseStatus">{{ __('Status') }}</label>
+                    <select id="purchaseStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
                         @foreach(\App\Models\Purchase::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ __($label) }}</option>
@@ -44,8 +44,8 @@
                     </select>
                 </div>
                 <div class="col-md-4 col-lg-3">
-                    <label class="form-label fw-semibold">{{ __('Supplier') }}</label>
-                    <select name="supplier_id" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="purchaseSupplier">{{ __('Supplier') }}</label>
+                    <select id="purchaseSupplier" name="supplier_id" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All suppliers') }}</option>
                         @foreach($suppliers as $supplier)
                             <option value="{{ $supplier->id }}" @selected((string)$filters['supplier_id'] === (string)$supplier->id)>{{ $supplier->name }}{{ $supplier->company ? ' · '.$supplier->company : '' }}</option>
@@ -53,8 +53,8 @@
                     </select>
                 </div>
                 <div class="col-md-4 col-lg-1">
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="purchasePerPage">{{ __('Per page') }}</label>
+                    <select id="purchasePerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([15,30,60] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
