@@ -129,7 +129,7 @@ class CatalogWorkspaceV2Test extends TestCase
         $component = file_get_contents(app_path('Http/Livewire/Admin/Product/Index.php'));
         $view = file_get_contents(resource_path('views/livewire/admin/product/index.blade.php'));
 
-        $this->assertStringContainsString("if ($this->selectAll) {", $component);
+        $this->assertStringContainsString('if ($this->selectAll) {', $component);
         $this->assertStringContainsString('For safety, bulk delete is limited to explicitly selected products.', $component);
         $this->assertStringContainsString('@disabled($this->selectedCount === 0 || $selectAll)', $view);
     }
