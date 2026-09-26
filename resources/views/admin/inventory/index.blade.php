@@ -121,12 +121,12 @@
         </div>
         <form method="GET" action="{{ route('admin.inventory.index') }}" class="row g-3 align-items-end" data-live-filter>
             <div class="col-lg-4">
-                <label class="form-label fw-semibold">{{ __('Search movements') }}</label>
-                <input type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Product, SKU, order number, or reason') }}">
+                <label class="form-label fw-semibold" for="inventorySearch">{{ __('Search movements') }}</label>
+                <input id="inventorySearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Product, SKU, order number, or reason') }}">
             </div>
             <div class="col-md-4 col-lg-2">
-                <label class="form-label fw-semibold">{{ __('Movement type') }}</label>
-                <select name="type" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="inventoryMovementType">{{ __('Movement type') }}</label>
+                <select id="inventoryMovementType" name="type" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All types') }}</option>
                     @foreach($movementTypes as $type)
                         <option value="{{ $type }}" @selected($filters['type'] === $type)>{{ __(str_replace('_', ' ', \Illuminate\Support\Str::headline($type))) }}</option>
@@ -134,8 +134,8 @@
                 </select>
             </div>
             <div class="col-md-4 col-lg-2">
-                <label class="form-label fw-semibold">{{ __('Source') }}</label>
-                <select name="reference" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="inventorySource">{{ __('Source') }}</label>
+                <select id="inventorySource" name="reference" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All sources') }}</option>
                     <option value="order" @selected($filters['reference'] === 'order')>{{ __('Orders') }}</option>
                     <option value="purchase" @selected($filters['reference'] === 'purchase')>{{ __('Purchases') }}</option>
@@ -143,8 +143,8 @@
                 </select>
             </div>
             <div class="col-md-4 col-lg-2">
-                <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                <select name="per_page" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="inventoryPerPage">{{ __('Per page') }}</label>
+                <select id="inventoryPerPage" name="per_page" class="form-select" data-live-filter-control>
                     @foreach([20, 50, 100] as $size)
                         <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                     @endforeach
