@@ -746,25 +746,15 @@
                         </div>
                     </div>
                     <div class="customer-theme-preview mt-3" id="customerThemePreview">
-                        <div class="customer-theme-preview__nav">
-                            <span class="customer-theme-preview__logo"></span>
-                            <span class="customer-theme-preview__search"></span>
+                        <div class="customer-theme-preview__nav"><span class="customer-theme-preview__logo"></span><strong data-preview-store-name>{{ old('store_name', $settings['store_name'] ?? __('Your store')) }}</strong><span class="customer-theme-preview__search"><i class="mdi mdi-magnify"></i></span></div>
+                        <div class="customer-theme-preview__hero"><span class="customer-theme-preview__accent"></span><strong data-preview-hero-title>{{ old('hero_title', $settings['hero_title'] ?? __('Discover something new')) }}</strong><small data-preview-hero-subtitle>{{ old('hero_subtitle', $settings['hero_subtitle'] ?? __('A storefront preview that follows your brand direction.')) }}</small><span class="customer-theme-preview__hero-cta" data-preview-hero-cta>{{ old('hero_primary_button_text', $settings['hero_primary_button_text'] ?? __('Shop now')) }}</span></div>
+                        <div class="customer-theme-preview__section-head"><span><strong>{{ __('Featured products') }}</strong><small>{{ __('Curated for your customers') }}</small></span><span class="customer-theme-preview__link">{{ __('View all') }}</span></div>
+                        <div class="customer-theme-preview__products">
+                            @foreach([__('Signature item'), __('New arrival')] as $previewProduct)
+                                <div class="customer-theme-preview__product"><span class="customer-theme-preview__product-image"><i class="mdi mdi-shopping-outline"></i></span><span class="customer-theme-preview__product-copy"><span class="customer-theme-preview__badge" data-preview-badge>{{ $loop->first ? __('Featured') : __('New') }}</span><strong>{{ $previewProduct }}</strong><span class="customer-theme-preview__price">{{ $loop->first ? '$89' : '$64' }}</span></span></div>
+                            @endforeach
                         </div>
-                        <div class="customer-theme-preview__hero">
-                            <span class="customer-theme-preview__accent"></span>
-                            <span class="customer-theme-preview__hero-copy"></span>
-                            <span class="customer-theme-preview__hero-cta"></span>
-                        </div>
-                        <div class="customer-theme-preview__product">
-                            <span class="customer-theme-preview__product-image"></span>
-                            <span class="customer-theme-preview__product-copy">
-                                <i></i><i></i>
-                            </span>
-                        </div>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <div class="customer-theme-preview__button">{{ __('Primary action') }}</div>
-                            <div class="customer-theme-preview__badge" data-preview-badge>{{ __('Badge') }}</div>
-                        </div>
+                        <div class="customer-theme-preview__trust"><span><i class="mdi mdi-truck-fast-outline"></i>{{ __('Fast delivery') }}</span><span><i class="mdi mdi-shield-check-outline"></i>{{ __('Secure checkout') }}</span></div>
                     </div>
                 </div>
             </div>
@@ -866,24 +856,17 @@ html[dir="rtl"] .branding-toggle-row{text-align:right}
 .admin-theme-preview__header{height:52px;background:var(--preview-header,#fff);border-bottom:1px solid var(--preview-admin-border,#e2e8f0)}
 .admin-theme-preview__cards{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;padding:1rem}
 .admin-theme-preview__card{height:72px;border-radius:1rem;background:linear-gradient(135deg,var(--preview-primary,#2563eb),var(--preview-secondary,#0f172a));opacity:.14;border:1px solid var(--preview-admin-border,#e2e8f0)}
-.customer-theme-preview{padding:1rem;border:1px solid var(--preview-border,#dbe3ef);border-radius:1.25rem;background:var(--preview-bg,#f8fafc)}
-.customer-theme-preview__nav{display:flex;align-items:center;gap:.65rem;padding:.2rem 0 .85rem}
-.customer-theme-preview__logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--preview-primary,#2563eb),var(--preview-secondary,#0f172a))}
-.customer-theme-preview__search{height:30px;flex:1;border-radius:999px;background:var(--preview-admin-surface,#fff);border:1px solid var(--preview-border,#dbe3ef)}
-.customer-theme-preview__accent{display:block;width:2.4rem;height:.35rem;border-radius:999px;background:var(--preview-accent,#0891b2);margin-bottom:.55rem}
-.customer-theme-preview__hero{height:96px;border-radius:1rem;background:linear-gradient(135deg,color-mix(in srgb,var(--preview-primary,#2563eb) 18%,white),color-mix(in srgb,var(--preview-secondary,#0f172a) 12%,white));margin-bottom:.85rem;padding:1rem;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:.55rem}
-.customer-theme-preview__hero-copy{width:62%;height:12px;border-radius:999px;background:var(--preview-secondary,#0f172a);opacity:.78}
-.customer-theme-preview__hero-cta{width:32%;height:24px;border-radius:999px;background:var(--preview-primary,#2563eb)}
-.customer-theme-preview__product{display:grid;grid-template-columns:64px 1fr;gap:.75rem;align-items:center;padding:.75rem;margin-bottom:.85rem;border-radius:calc(var(--preview-radius,18) * 1px);background:var(--preview-admin-surface,#fff);border:1px solid var(--preview-border,#dbe3ef)}
-.customer-theme-preview__product-image{height:56px;border-radius:.8rem;background:var(--preview-soft,#eff6ff)}
-.customer-theme-preview__product-copy{display:grid;gap:.45rem}
-.customer-theme-preview__product-copy i{display:block;height:9px;border-radius:999px;background:var(--preview-secondary,#0f172a);opacity:.7}
-.customer-theme-preview__product-copy i:last-child{width:54%;background:var(--preview-primary,#2563eb);opacity:.8}
-.customer-theme-preview__button{display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1rem;border-radius:calc(var(--preview-radius,18) * 1px);background:linear-gradient(135deg,var(--preview-primary,#2563eb),color-mix(in srgb,var(--preview-primary,#2563eb) 55%,var(--preview-secondary,#0f172a)));color:var(--preview-button-text,#fff);font-weight:800}
-.customer-theme-preview__badge{display:inline-flex;align-items:center;padding:.45rem .9rem;border-radius:.7rem;background:var(--preview-soft,#eff6ff);border:1px solid var(--preview-border,#dbe3ef);font-weight:700;color:var(--preview-primary,#2563eb);transition:background .18s ease,border-color .18s ease,border-radius .18s ease}
-.customer-theme-preview__badge[data-style="pill"]{border-radius:999px}
-.customer-theme-preview__badge[data-style="outline"]{background:transparent;border-color:var(--preview-primary,#2563eb)}
-.customer-theme-preview__badge[data-style="soft"]{border-color:color-mix(in srgb,var(--preview-primary,#2563eb) 18%,var(--preview-border,#dbe3ef))}
+.customer-theme-preview{padding:1rem;border:1px solid var(--preview-border,#dbe3ef);border-radius:1.25rem;background:var(--preview-bg,#f8fafc);overflow:hidden}
+.customer-theme-preview__nav{display:flex;align-items:center;gap:.6rem;padding:.15rem 0 .85rem;color:var(--preview-secondary,#0f172a)}.customer-theme-preview__nav strong{font-size:.78rem;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.customer-theme-preview__logo{width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:linear-gradient(135deg,var(--preview-primary,#2563eb),var(--preview-secondary,#0f172a))}
+.customer-theme-preview__search{margin-inline-start:auto;width:34px;height:28px;border-radius:999px;display:grid;place-items:center;background:var(--preview-admin-surface,#fff);border:1px solid var(--preview-border,#dbe3ef);color:var(--preview-primary,#2563eb)}
+.customer-theme-preview__hero{min-height:132px;border-radius:calc(var(--preview-radius,18) * 1px);background:linear-gradient(135deg,color-mix(in srgb,var(--preview-primary,#2563eb) 20%,white),color-mix(in srgb,var(--preview-secondary,#0f172a) 13%,white));margin-bottom:1rem;padding:1rem;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:.38rem;color:var(--preview-secondary,#0f172a)}
+.customer-theme-preview__accent{display:block;width:2.4rem;height:.3rem;border-radius:999px;background:var(--preview-accent,#0891b2)}.customer-theme-preview__hero strong{font-size:1rem;line-height:1.15;max-width:90%}.customer-theme-preview__hero small{font-size:.66rem;line-height:1.35;opacity:.7;max-width:90%}
+.customer-theme-preview__hero-cta{display:inline-flex;margin-top:.25rem;padding:.42rem .7rem;border-radius:calc(var(--preview-radius,18) * .65px);background:var(--preview-primary,#2563eb);color:var(--preview-button-text,#fff);font-size:.65rem;font-weight:850}
+.customer-theme-preview__section-head{display:flex;justify-content:space-between;align-items:end;gap:.5rem;margin-bottom:.65rem;color:var(--preview-secondary,#0f172a)}.customer-theme-preview__section-head>span:first-child{display:grid}.customer-theme-preview__section-head strong{font-size:.76rem}.customer-theme-preview__section-head small{font-size:.58rem;opacity:.62}.customer-theme-preview__link{font-size:.6rem;font-weight:800;color:var(--preview-primary,#2563eb)}
+.customer-theme-preview__products{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}.customer-theme-preview__product{display:flex;flex-direction:column;gap:.5rem;padding:.55rem;border-radius:calc(var(--preview-radius,18) * 1px);background:var(--preview-admin-surface,#fff);border:1px solid var(--preview-border,#dbe3ef);min-width:0}.customer-theme-preview__product-image{height:64px;border-radius:calc(var(--preview-radius,18) * .7px);display:grid;place-items:center;background:linear-gradient(145deg,var(--preview-soft,#eff6ff),color-mix(in srgb,var(--preview-accent,#0891b2) 13%,white));color:var(--preview-primary,#2563eb);font-size:1.25rem}.customer-theme-preview__product-copy{display:grid;gap:.18rem;min-width:0;color:var(--preview-secondary,#0f172a)}.customer-theme-preview__product-copy strong{font-size:.66rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.customer-theme-preview__price{font-size:.72rem;font-weight:900;color:var(--preview-primary,#2563eb)}
+.customer-theme-preview__badge{width:max-content;display:inline-flex;padding:.18rem .38rem;border-radius:.45rem;background:var(--preview-soft,#eff6ff);border:1px solid var(--preview-border,#dbe3ef);font-size:.5rem;font-weight:800;color:var(--preview-primary,#2563eb)}.customer-theme-preview__badge[data-style="pill"]{border-radius:999px}.customer-theme-preview__badge[data-style="outline"]{background:transparent;border-color:var(--preview-primary,#2563eb)}.customer-theme-preview__badge[data-style="soft"]{border-color:color-mix(in srgb,var(--preview-primary,#2563eb) 18%,var(--preview-border,#dbe3ef))}
+.customer-theme-preview__trust{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.75rem;padding-top:.65rem;border-top:1px solid var(--preview-border,#dbe3ef)}.customer-theme-preview__trust span{display:inline-flex;align-items:center;gap:.25rem;font-size:.54rem;font-weight:750;color:var(--preview-secondary,#0f172a);opacity:.75}.customer-theme-preview__trust i{color:var(--preview-primary,#2563eb)}
 .admin-promo-meta{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:100%;padding:1.25rem;border:1px dashed var(--admin-border);border-radius:1rem;background:color-mix(in srgb,var(--admin-surface) 92%,var(--admin-primary-soft))}
 .admin-promo-meta__icon{width:72px;height:72px;border-radius:1.1rem;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--admin-accent-soft) 80%,white);color:var(--admin-primary-dark);font-size:1.65rem}
 @media(max-width:1199.98px){.theme-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.branding-side-stack{display:grid;grid-template-columns:1fr 1fr;align-items:start}.branding-side-stack>#branding-panel-media,.branding-side-stack>#branding-panel-preview{margin-bottom:0!important}}
@@ -967,8 +950,12 @@ document.addEventListener('DOMContentLoaded', function () {
         set('--preview-admin-surface', 'admin_surface_color', '#ffffff');
         set('--preview-admin-border', 'admin_card_border_color', '#e2e8f0');
         root.style.setProperty('--preview-radius', form?.querySelector('[name="customer_card_radius"]')?.value || 18);
-        const badge = document.querySelector('[data-preview-badge]');
-        if (badge) badge.dataset.style = form?.querySelector('[name="customer_badge_style"]')?.value || 'soft';
+        document.querySelectorAll('[data-preview-badge]').forEach((badge) => badge.dataset.style = form?.querySelector('[name="customer_badge_style"]')?.value || 'soft');
+        const copy = (name, selector, fallback) => { const input = form?.querySelector('[name="' + name + '"]'); const target = document.querySelector(selector); if (target) target.textContent = (input?.value || '').trim() || fallback; };
+        copy('store_name', '[data-preview-store-name]', @json(__('Your store')));
+        copy('hero_title', '[data-preview-hero-title]', @json(__('Discover something new')));
+        copy('hero_subtitle', '[data-preview-hero-subtitle]', @json(__('A storefront preview that follows your brand direction.')));
+        copy('hero_primary_button_text', '[data-preview-hero-cta]', @json(__('Shop now')));
     }
 
     function updateImagePreview(targetKey, src) {
