@@ -292,6 +292,7 @@
                 <a
                     href="{{ route('admin.products.index') }}"
                     class="btn btn-outline-secondary"
+                    data-product-editor-exit
                     wire:loading.attr="disabled"
                     wire:target="save"
                     @disabled($isSaving)
@@ -1240,6 +1241,7 @@
                 <a
                     href="{{ route('admin.products.index') }}"
                     class="btn btn-outline-secondary"
+                    data-product-editor-exit
                     wire:loading.attr="disabled"
                     wire:target="save"
                     @disabled($isSaving)
@@ -1341,6 +1343,7 @@
                 if (!root) return;
 
                 root.classList.remove('is-optimistic-saving');
+                root.dataset.dirty = '1';
                 setProductStatus('error', message, 'mdi-alert-circle-outline');
             }
 
@@ -1490,6 +1493,59 @@
                 form.addEventListener('submit', function () {
                     markProductFormSaving();
                 }, true);
+            }
+
+            function initProductUnsavedChangesGuard() {
+                const form = document.getElementById('productFormMain');
+                const root = getProductFormRoot();
+                if (!form || !root || form.dataset.unsavedGuardInitialized === '1') return;
+
+                form.dataset.unsavedGuardInitialized = '1';
+
+                document.addEventListener('click', function (event) {
+                    if (root.dataset.dirty !== '1' || root.classList.contains('is-optimistic-saving')) return;
+
+                    const link = event.target.closest('a[href]');
+                    if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+
+                    const href = link.getAttribute('href') || '';
+                    if (href === '' || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+                        return;
+                    }
+
+                    let destination;
+                    try {
+                        destination = new URL(link.href, window.location.href);
+                    } catch (error) {
+                        return;
+                    }
+
+                    if (destination.href === window.location.href) return;
+
+                    event.preventDefault();
+
+                    const leave = () => {
+                        root.dataset.dirty = '0';
+                        window.location.assign(destination.href);
+                    };
+
+                    if (typeof window.adminConfirmAction === 'function') {
+                        window.adminConfirmAction(leave, {
+                            title: @json(__('Discard unsaved product changes?')),
+                            message: @json(__('You have unsaved product changes. Leaving this page will discard them.')),
+                            subtitle: @json(__('Save the product first if you want to keep these changes.')),
+                            confirmLabel: @json(__('Discard changes and leave')),
+                            cancelLabel: @json(__('Keep editing')),
+                        });
+                        return;
+                    }
+                });
+
+                window.addEventListener('beforeunload', function (event) {
+                    if (root.dataset.dirty !== '1' || root.classList.contains('is-optimistic-saving')) return;
+                    event.preventDefault();
+                    event.returnValue = '';
+                });
             }
 
             function initProductDropzone() {
@@ -1692,6 +1748,7 @@
 
                 window.AdminSectionTabs?.init(document.getElementById('productFormMain'));
                 initDirtyTracking();
+                initProductUnsavedChangesGuard();
                 initProductReadiness();
                 initProductDropzone();
                 initSortableGrid('#existingImagesGrid', '.existing-image-item', 'reorderExistingImages');
