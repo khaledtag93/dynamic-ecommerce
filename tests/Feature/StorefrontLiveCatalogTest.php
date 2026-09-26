@@ -74,6 +74,73 @@ class StorefrontLiveCatalogTest extends TestCase
             ->assertDontSee('<html', false);
     }
 
+    public function test_storefront_search_treats_like_wildcards_as_literals_and_bounds_query_length(): void
+    {
+        $category = $this->category('Wildcard Search Category');
+        $percent = $this->product($category, 'Save 100% Cotton', 5, 20, null);
+        $underscore = $this->product($category, 'Model_A', 5, 20, null);
+        $this->product($category, 'ModelXA', 5, 20, null);
+        $this->product($category, 'Save 100 Cotton', 5, 20, null);
+
+        $this->get(route('frontend.search', ['q' => '100%']))
+            ->assertOk()
+            ->assertSee($percent->name)
+            ->assertDontSee('Save 100 Cotton');
+
+        $this->get(route('frontend.search', ['q' => 'Model_A']))
+            ->assertOk()
+            ->assertSee($underscore->name)
+            ->assertDontSee('ModelXA');
+
+        $longQuery = str_repeat('a', 140);
+
+        $this->get(route('frontend.search', ['q' => $longQuery]))
+            ->assertOk()
+            ->assertViewHas('filters', fn (array $filters) => mb_strlen($filters['q']) === 100);
+
+        $this->get(route('category.products', ['id' => $category->id, 'q' => $longQuery]))
+            ->assertOk()
+            ->assertViewHas('filters', fn (array $filters) => mb_strlen($filters['q']) === 100);
+    }
+
+    public function test_storefront_catalog_filters_have_explicit_labels_and_search_limits(): void
+    {
+        $search = file_get_contents(resource_path('views/frontend/products/search.blade.php'));
+        $category = file_get_contents(resource_path('views/frontend/products/by_category.blade.php'));
+
+        foreach ([
+            'catalogSearch',
+            'catalogAvailability',
+            'catalogOffer',
+            'catalogSort',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $search);
+            $this->assertStringContainsString('id="' . $controlId . '"', $search);
+        }
+
+        foreach ([
+            'categoryCatalogSearch',
+            'categoryAvailability',
+            'categoryOffer',
+            'categorySort',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $category);
+            $this->assertStringContainsString('id="' . $controlId . '"', $category);
+        }
+
+        $this->assertStringContainsString('maxlength="100"', $search);
+        $this->assertStringContainsString('maxlength="100"', $category);
+
+        $controller = file_get_contents(app_path('Http/Controllers/Frontend/FrontendController.php'));
+
+        $this->assertSame(
+            2,
+            substr_count($controller, "mb_substr(trim((string) \\$request->string('q')), 0, 100)")
+        );
+        $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $controller);
+        $this->assertStringNotContainsString('"%{$search}%"', $controller);
+    }
+
     private function category(string $name): Category
     {
         $token = Str::lower(Str::random(8));
