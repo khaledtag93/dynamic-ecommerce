@@ -28,28 +28,28 @@
 <div class="admin-card mb-4"><div class="admin-card-body">
     <form method="GET" action="{{ route('admin.suppliers.index') }}" class="admin-filter-grid" data-live-filter>
         <div>
-            <label class="form-label fw-semibold">{{ __('Search') }}</label>
-            <input type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Search suppliers') }}">
+            <label class="form-label fw-semibold" for="supplierSearch">{{ __('Search') }}</label>
+            <input id="supplierSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Search suppliers') }}">
         </div>
         <div>
-            <label class="form-label fw-semibold">{{ __('Status') }}</label>
-            <select name="status" class="form-select" data-live-filter-control>
+            <label class="form-label fw-semibold" for="supplierStatus">{{ __('Status') }}</label>
+            <select id="supplierStatus" name="status" class="form-select" data-live-filter-control>
                 <option value="">{{ __('All statuses') }}</option>
                 <option value="active" @selected(($filters['status'] ?? '') === 'active')>{{ __('Active') }}</option>
                 <option value="inactive" @selected(($filters['status'] ?? '') === 'inactive')>{{ __('Inactive') }}</option>
             </select>
         </div>
         <div>
-            <label class="form-label fw-semibold">{{ __('Purchase usage') }}</label>
-            <select name="usage" class="form-select" data-live-filter-control>
+            <label class="form-label fw-semibold" for="supplierUsage">{{ __('Purchase usage') }}</label>
+            <select id="supplierUsage" name="usage" class="form-select" data-live-filter-control>
                 <option value="">{{ __('All suppliers') }}</option>
                 <option value="with_purchases" @selected(($filters['usage'] ?? '') === 'with_purchases')>{{ __('With purchases') }}</option>
                 <option value="unused" @selected(($filters['usage'] ?? '') === 'unused')>{{ __('Unused') }}</option>
             </select>
         </div>
         <div>
-            <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-            <select name="per_page" class="form-select" data-live-filter-control>
+            <label class="form-label fw-semibold" for="supplierPerPage">{{ __('Per page') }}</label>
+            <select id="supplierPerPage" name="per_page" class="form-select" data-live-filter-control>
                 @foreach([12,24,48] as $size)
                     <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                 @endforeach
