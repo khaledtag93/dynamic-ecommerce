@@ -47,8 +47,47 @@
             color: var(--admin-text);
         }
 
+        .admin-skip-link {
+            position: fixed;
+            inset-block-start: .75rem;
+            inset-inline-start: .75rem;
+            z-index: 2000;
+            padding: .7rem 1rem;
+            border-radius: .75rem;
+            background: var(--admin-primary);
+            color: #fff;
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow: var(--admin-shadow);
+            transform: translateY(-180%);
+            transition: transform .16s ease;
+        }
+
+        .admin-skip-link:focus,
+        .admin-skip-link:focus-visible {
+            color: #fff;
+            transform: translateY(0);
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+        }
+
         html {
             scroll-behavior: smooth;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
         *,
@@ -3063,6 +3102,7 @@ select option {
 </head>
 
 <body>
+    <a class="admin-skip-link" href="#adminMainContent">{{ __('Skip to main content') }}</a>
     <div class="container-scroller">
         @include('layouts.inc.admin.navbar')
 
@@ -3070,7 +3110,7 @@ select option {
             @include('layouts.inc.admin.sidebar')
 
             <div class="main-panel">
-                <div class="content-wrapper">
+                <main id="adminMainContent" class="content-wrapper" tabindex="-1">
                     <div class="admin-toast-stack" id="adminToastStack" aria-live="polite" aria-atomic="false">
                         @if (session('message'))
                             <div class="alert alert-success admin-flash admin-flash--success">
@@ -3134,7 +3174,7 @@ select option {
                     @else
                         {{ $slot ?? '' }}
                     @endif
-                </div>
+                </main>
             </div>
         </div>
     </div>

@@ -5002,5 +5002,6 @@
     "The link must use a safe web, email, phone, relative, or anchor destination.": "The link must use a safe web, email, phone, relative, or anchor destination.",
     "Loading...": "Loading...",
     "Could not refresh this view. Use the fallback link to reload.": "Could not refresh this view. Use the fallback link to reload.",
-    "Reload results": "Reload results"
+    "Reload results": "Reload results",
+    "Skip to main content": "Skip to main content"
 }

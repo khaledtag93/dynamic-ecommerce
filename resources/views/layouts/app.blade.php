@@ -605,6 +605,10 @@
         .lc-flash-toast.is-leaving { opacity:0; transform:translateY(-8px); }
         @media (max-width:575.98px) { .lc-toast-stack { top:.75rem; inset-inline:.75rem; width:auto; } }
 
+        .lc-skip-link { position:fixed; inset-block-start:.75rem; inset-inline-start:.75rem; z-index:2000; padding:.7rem 1rem; border-radius:.75rem; background:var(--lc-primary); color:var(--lc-btn-text); font-weight:800; text-decoration:none; box-shadow:var(--lc-shadow-strong); transform:translateY(-180%); transition:transform .16s ease; }
+        .lc-skip-link:focus, .lc-skip-link:focus-visible { color:var(--lc-btn-text); transform:translateY(0); outline:3px solid var(--lc-surface); outline-offset:2px; }
+        @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+
         .retail-action[aria-current="page"] { box-shadow:0 0 0 3px color-mix(in srgb, var(--lc-primary) 24%, transparent); border-color:color-mix(in srgb, var(--lc-primary) 45%, white); }
         .retail-links a[aria-current="page"] { color:var(--lc-primary-dark); background:color-mix(in srgb, var(--lc-soft) 82%, white); }
         .retail-links a:focus-visible, .retail-link-button:focus-visible, .retail-menu-toggle:focus-visible, .retail-category-button:focus-visible, .retail-action:focus-visible { outline:3px solid var(--lc-primary); outline-offset:3px; }
@@ -627,6 +631,7 @@
     @stack('styles')
 </head>
 <body>
+<a class="lc-skip-link" href="#storefrontMainContent">{{ __('Skip to main content') }}</a>
 <header class="retail-header sticky-top">
     <div class="retail-topbar">
         <div class="container retail-topbar__inner">
@@ -904,7 +909,7 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
-<main>
+<main id="storefrontMainContent" tabindex="-1">
     @yield('hero')
     @yield('content')
 </main>
