@@ -1,5 +1,15 @@
 # New Chat Handoff — Dynamic — 2026-09-26
 
+## Current checkpoint — GF-17 account/auth semantics
+
+Continue on `sec03-framework-upgrade`. Application source for GF-17 is `e82b3f9d82afdc3be71506827b29f71fb377f967`: Account Overview current-state matching is now exact, Address Book no longer competes with it for `aria-current="page"`, the desktop account dropdown exposes active destinations, and Login/Register share the auth page shell with explicit label associations. Regression coverage was added in `StorefrontExperienceTest`.
+
+GF-17 is **IN REVIEW**. Do not call it green/closed until final push-triggered Hardening CI is verified; the current GitHub connector endpoint available in chat does not return push-run metadata for the commit. QAS still needs the exact revision with EN/AR desktop/mobile keyboard checks. Earlier GF-14/15/16 QAS separation and Production blockers OPS-01/PAY-01/OPS-02 remain unchanged.
+
+**Next:** verify CI evidence, continue remaining shared Storefront/customer shell only where there is a real cross-page risk, then begin strict Page Closure.
+
+### Earlier checkpoints below
+
 ## Current checkpoint — Storefront shared foundation through `ba00f303`
 
 Continue on `sec03-framework-upgrade`. Final application HEAD in this checkpoint is `ba00f303b2e32fb8cb76ce84f25af89d449fadf7`, green in [Hardening CI 36257847029](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36257847029) with 470 PHP tests / 13,982 assertions plus shared JS checks/build. Since the prior route/navigation checkpoint, `3fe0f28` hardened configurable Home/hero/banner action destinations, `a536b22` removed repeated shared-view work inside the same HTTP request and category-count N+1 behavior, and `72cf678`/final `ba00f303` added Admin/Storefront skip-to-content landmarks, reduced-motion behavior, and separated mobile account-nav auto-scroll from the `/` search shortcut. Source CI is green; this is **not** QAS acceptance. Last documented QAS application remains `f1f20297`; Production unchanged; OPS-01/PAY-01/OPS-02 remain release blockers.
