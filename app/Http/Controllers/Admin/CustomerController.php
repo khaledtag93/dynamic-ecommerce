@@ -26,7 +26,9 @@ class CustomerController extends Controller
 
     public function index(Request $request)
     {
-        $search = trim((string) $request->string('search'));
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
         $role = (string) $request->string('role');
         $activity = (string) $request->string('activity');
         $value = (string) $request->string('value');
@@ -36,10 +38,10 @@ class CustomerController extends Controller
             ->with('roles:id,name')
             ->withCount('orders')
             ->withSum('orders', 'grand_total')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+            ->when($search, function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('name', 'like', $like)
+                        ->orWhere('email', 'like', $like);
                 });
             })
             ->when($role !== '', fn ($query) => $query->where('role_as', (int) $role))
