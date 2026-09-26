@@ -242,6 +242,9 @@ $PHP_BIN artisan config:cache
 $PHP_BIN artisan route:cache || true
 $PHP_BIN artisan view:cache || true
 
+log "♻️ Signaling queue workers to reload application code..."
+$PHP_BIN artisan queue:restart || true
+
 log "📁 Syncing public assets to public_html ..."
 rsync -a \
     --delete \
