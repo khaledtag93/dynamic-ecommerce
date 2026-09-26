@@ -35,21 +35,21 @@
                                     <div><div class="fw-bold">{{ $method->displayName() }}</div><div class="text-muted small">{{ $method->code }}</div></div>
                                     <div>
                                         <input type="hidden" name="is_active" value="0">
-                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_active" value="1" @checked($rate?->is_active ?? true)></div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="shippingRateActive-{{ $zone->id }}-{{ $method->id }}" name="is_active" value="1" @checked($rate?->is_active ?? true)><label class="visually-hidden" for="shippingRateActive-{{ $zone->id }}-{{ $method->id }}">{{ __('Active') }}</label></div>
                                     </div>
                                 </div>
                                 <div class="row g-2">
                                     <div class="col-md-4">
-                                        <label class="form-label small fw-semibold">{{ __('Rate amount') }}</label>
-                                        <input type="number" name="amount" min="0" step="0.01" class="form-control" value="{{ $rate?->amount ?? '' }}" required>
+                                        <label class="form-label small fw-semibold" for="shippingRateAmount-{{ $zone->id }}-{{ $method->id }}">{{ __('Rate amount') }}</label>
+                                        <input id="shippingRateAmount-{{ $zone->id }}-{{ $method->id }}" type="number" name="amount" aria-required="true" min="0" step="0.01" class="form-control" value="{{ $rate?->amount ?? '' }}" required>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label small fw-semibold">{{ __('Free threshold') }}</label>
-                                        <input type="number" name="free_shipping_threshold" min="0.01" step="0.01" class="form-control" value="{{ $rate?->free_shipping_threshold ?? '' }}">
+                                        <label class="form-label small fw-semibold" for="shippingRateThreshold-{{ $zone->id }}-{{ $method->id }}">{{ __('Free threshold') }}</label>
+                                        <input id="shippingRateThreshold-{{ $zone->id }}-{{ $method->id }}" type="number" name="free_shipping_threshold" min="0.01" step="0.01" class="form-control" value="{{ $rate?->free_shipping_threshold ?? '' }}">
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label small fw-semibold">{{ __('Threshold basis') }}</label>
-                                        <select name="threshold_basis" class="form-select">
+                                        <label class="form-label small fw-semibold" for="shippingRateBasis-{{ $zone->id }}-{{ $method->id }}">{{ __('Threshold basis') }}</label>
+                                        <select id="shippingRateBasis-{{ $zone->id }}-{{ $method->id }}" name="threshold_basis" class="form-select">
                                             <option value="">{{ __('Not applicable') }}</option>
                                             @foreach(\App\Models\ShippingRate::thresholdBasisOptions() as $value => $label)
                                                 <option value="{{ $value }}" @selected($rate?->threshold_basis === $value)>{{ $label }}</option>
