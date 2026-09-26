@@ -131,4 +131,41 @@ class SharedShellTranslationIntegrityTest extends TestCase
             $this->assertNotSame('', trim((string) $arabic[$key]), "Empty Arabic shared-shell translation: {$key}");
         }
     }
+    public function test_product_aov_manager_translation_keys_exist_in_english_and_arabic(): void
+    {
+        $keys = [
+          'Variants',
+          'Upsells & Bundles',
+          'Control related products, bundle offers, and add-ons from one place.',
+          'AOV Manager',
+          'Related Products',
+          'Shown as recommendations across PDP, cart, and checkout.',
+          'No related products selected yet.',
+          'Bundle Products',
+          'Products that can be sold together in a single offer block.',
+          'No bundle products selected yet.',
+          'Add-ons',
+          'Small extras the customer can add before checkout.',
+          'No add-ons selected yet.',
+          'selected',
+          'Search product',
+          'Type at least 2 characters',
+          'Search by product name or slug, then add the result below.',
+          'No matching products found for this search.',
+          'Start typing to search for products to attach to this product.',
+          'Move, disable, or remove items. Active items appear on the storefront.',
+          'Review product data, pricing, stock, SEO fields, and image ordering, then save this product when you are ready.',
+          'Back'
+];
+
+        $english = json_decode(file_get_contents(lang_path('en.json')), true, 512, JSON_THROW_ON_ERROR);
+        $arabic = json_decode(file_get_contents(lang_path('ar.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        foreach ($keys as $key) {
+            $this->assertArrayHasKey($key, $english, "Missing English product AOV translation: {$key}");
+            $this->assertArrayHasKey($key, $arabic, "Missing Arabic product AOV translation: {$key}");
+            $this->assertNotSame($key, $arabic[$key], "Arabic product AOV translation still falls back to English: {$key}");
+        }
+    }
+
 }
