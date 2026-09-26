@@ -5710,5 +5710,9 @@
     "Activate product :name": "تفعيل المنتج :name",
     "Edit product :name": "تعديل المنتج :name",
     "Duplicate product :name": "نسخ المنتج :name",
-    "Delete product :name": "حذف المنتج :name"
+    "Delete product :name": "حذف المنتج :name",
+    "Discard unsaved category changes?": "تجاهل تغييرات التصنيف غير المحفوظة؟",
+    "You have unsaved category changes. Leaving this page will discard them.": "لديك تغييرات غير محفوظة على التصنيف. مغادرة الصفحة ستؤدي إلى تجاهلها.",
+    "Save the category first if you want to keep these changes.": "احفظ التصنيف أولًا إذا كنت تريد الاحتفاظ بهذه التغييرات.",
+    "Discard changes and leave": "تجاهل التغييرات والمغادرة"
 }
