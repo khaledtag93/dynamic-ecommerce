@@ -23,6 +23,6 @@ class NotificationWorkspaceClosureTest extends TestCase
         $layout = file_get_contents(resource_path('views/admin/settings/notification-center/layout.blade.php'));
 
         $this->assertStringContainsString('aria-current="page"', $layout);
-        $this->assertStringContainsString("($currentSection ?? 'overview') === $key", $layout);
+        $this->assertStringContainsString('(\$currentSection ?? \'overview\') === \$key', $layout);
     }
 }
