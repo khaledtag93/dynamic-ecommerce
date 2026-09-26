@@ -26,8 +26,8 @@ class AdminProductEditorExperienceTest extends TestCase
             ->assertOk()
             ->assertSee('productPublishReadiness', false)
             ->assertSee('data-readiness-key="identifier"', false)
-            ->assertSee('wire:model.defer="sku"', false)
-            ->assertSee('wire:model.defer="barcode"', false);
+            ->assertSee('wire:model="sku"', false)
+            ->assertSee('wire:model="barcode"', false);
     }
 
     public function test_simple_product_sku_is_saved_from_livewire_editor(): void
