@@ -26,8 +26,12 @@ class WorkShiftController extends Controller
         $dateFrom = $this->validDate((string) $request->string('date_from'));
         $dateTo = $this->validDate((string) $request->string('date_to'));
 
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => array_key_exists($status, EmployeeWorkShift::statusOptions()) ? $status : '',
             'department' => trim((string) $request->string('department')),
             'date_from' => $dateFrom,
@@ -37,16 +41,16 @@ class WorkShiftController extends Controller
 
         $shifts = EmployeeWorkShift::query()
             ->with(['employee.user'])
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('location', 'like', "%{$search}%")
-                        ->orWhereHas('employee', function ($employeeQuery) use ($search) {
-                            $employeeQuery->where('employee_code', 'like', "%{$search}%")
-                                ->orWhere('job_title', 'like', "%{$search}%")
-                                ->orWhere('department', 'like', "%{$search}%")
-                                ->orWhereHas('user', function ($userQuery) use ($search) {
-                                    $userQuery->where('name', 'like', "%{$search}%")
-                                        ->orWhere('email', 'like', "%{$search}%");
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('location', 'like', $like)
+                        ->orWhereHas('employee', function ($employeeQuery) use ($like) {
+                            $employeeQuery->where('employee_code', 'like', $like)
+                                ->orWhere('job_title', 'like', $like)
+                                ->orWhere('department', 'like', $like)
+                                ->orWhereHas('user', function ($userQuery) use ($like) {
+                                    $userQuery->where('name', 'like', $like)
+                                        ->orWhere('email', 'like', $like);
                                 });
                         });
                 });
