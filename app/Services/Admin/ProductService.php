@@ -5,6 +5,7 @@ namespace App\Services\Admin;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Support\MediaPath;
+use App\Support\SafeImageUpload;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -365,7 +366,7 @@ class ProductService
         }
 
         $realPath = method_exists($imageFile, 'getRealPath') ? $imageFile->getRealPath() : null;
-        $extension = strtolower($imageFile->getClientOriginalExtension() ?: 'jpg');
+        $extension = SafeImageUpload::extensionFor($imageFile);
         $filename = (string) Str::uuid() . '.' . $extension;
         $destinationPath = $destinationDirectory . DIRECTORY_SEPARATOR . $filename;
 

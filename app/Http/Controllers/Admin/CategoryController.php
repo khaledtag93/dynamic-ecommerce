@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryFormRequest;
 use App\Models\Category;
 use App\Support\MediaPath;
+use App\Support\SafeImageUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
@@ -258,7 +259,7 @@ class CategoryController extends Controller
 
     private function uploadImage($image): string
     {
-        $extension = strtolower($image->getClientOriginalExtension() ?: 'jpg');
+        $extension = SafeImageUpload::extensionFor($image);
         $filename = time() . '_' . Str::random(8) . '.' . $extension;
         $relativePath = 'category/' . $filename;
         $destination = MediaPath::uploadsRootPath('category');
