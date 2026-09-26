@@ -70,6 +70,42 @@ class CartCheckoutClosureTest extends TestCase
         ]);
     }
 
+    public function test_cart_quantity_update_rejects_item_that_became_out_of_stock(): void
+    {
+        $category = $this->createCategory('Stock Change', 'stock-change');
+
+        $product = Product::create([
+            'name' => 'Stock Change Product',
+            'slug' => 'stock-change-product',
+            'category_id' => $category->id,
+            'base_price' => 80,
+            'quantity' => 2,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+            'has_variants' => false,
+        ]);
+
+        $this->post(route('cart.store', $product), ['quantity' => 1])
+            ->assertSessionHasNoErrors();
+
+        $cartItem = \App\Models\CartItem::query()
+            ->where('product_id', $product->id)
+            ->firstOrFail();
+
+        $product->update([
+            'quantity' => 0,
+            'stock_status' => 'out_of_stock',
+        ]);
+
+        $this->patch(route('cart.update', $cartItem), ['quantity' => 2])
+            ->assertSessionHasErrors(['cart']);
+
+        $this->assertDatabaseHas('cart_items', [
+            'id' => $cartItem->id,
+            'quantity' => 1,
+        ]);
+    }
+
     private function createCategory(string $name, string $slug): Category
     {
         return Category::create([
