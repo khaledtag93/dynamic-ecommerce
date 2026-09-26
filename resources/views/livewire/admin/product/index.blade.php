@@ -198,12 +198,13 @@
             </div>
             <div class="row g-3 align-items-end">
                 <div class="col-12 col-lg-4">
-                    <label class="form-label filter-label">{{ __('Search') }}</label>
+                    <label class="form-label filter-label" for="catalogSearch">{{ __('Search') }}</label>
                     <div class="input-group modern-input-group">
                         <span class="input-group-text">
                             <i class="mdi mdi-magnify"></i>
                         </span>
                         <input
+                            id="catalogSearch"
                             type="text"
                             class="form-control"
                             placeholder="{{ __('Search by name, slug, SKU, or barcode...') }}"
@@ -213,8 +214,8 @@
                 </div>
 
                 <div class="col-6 col-lg-2">
-                    <label class="form-label filter-label">{{ __('Status') }}</label>
-                    <select class="form-select" wire:model.live="statusFilter">
+                    <label class="form-label filter-label" for="catalogStatusFilter">{{ __('Status') }}</label>
+                    <select id="catalogStatusFilter" class="form-select" wire:model.live="statusFilter">
                         <option value="">{{ __('All') }}</option>
                         <option value="1">{{ __('Active') }}</option>
                         <option value="0">{{ __('Hidden') }}</option>
@@ -222,8 +223,8 @@
                 </div>
 
                 <div class="col-6 col-lg-2">
-                    <label class="form-label filter-label">{{ __('Category') }}</label>
-                    <select class="form-select" wire:model.live="categoryFilter">
+                    <label class="form-label filter-label" for="catalogCategoryFilter">{{ __('Category') }}</label>
+                    <select id="catalogCategoryFilter" class="form-select" wire:model.live="categoryFilter">
                         <option value="">{{ __('All Categories') }}</option>
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -232,8 +233,8 @@
                 </div>
 
                 <div class="col-6 col-lg-2">
-                    <label class="form-label filter-label">{{ __('Brand') }}</label>
-                    <select class="form-select" wire:model.live="brandFilter">
+                    <label class="form-label filter-label" for="catalogBrandFilter">{{ __('Brand') }}</label>
+                    <select id="catalogBrandFilter" class="form-select" wire:model.live="brandFilter">
                         <option value="">{{ __('All Brands') }}</option>
                         @foreach ($brands as $brand)
                             <option value="{{ $brand->id }}">{{ $brand->name }}</option>
@@ -242,8 +243,8 @@
                 </div>
 
                 <div class="col-6 col-lg-2">
-                    <label class="form-label filter-label">{{ __('Content readiness') }}</label>
-                    <select class="form-select" wire:model.live="readinessFilter">
+                    <label class="form-label filter-label" for="catalogReadinessFilter">{{ __('Content readiness') }}</label>
+                    <select id="catalogReadinessFilter" class="form-select" wire:model.live="readinessFilter">
                         <option value="">{{ __('All products') }}</option>
                         <option value="ready">{{ __('Content complete') }}</option>
                         <option value="needs_attention">{{ __('Needs content') }}</option>
@@ -251,8 +252,8 @@
                 </div>
 
                 <div class="col-6 col-lg-2">
-                    <label class="form-label filter-label">{{ __('Inventory') }}</label>
-                    <select class="form-select" wire:model.live="stockFilter">
+                    <label class="form-label filter-label" for="catalogStockFilter">{{ __('Inventory') }}</label>
+                    <select id="catalogStockFilter" class="form-select" wire:model.live="stockFilter">
                         <option value="">{{ __('All stock levels') }}</option>
                         <option value="in">{{ __('In stock') }}</option>
                         <option value="low">{{ __('Low stock') }}</option>
@@ -261,8 +262,8 @@
                 </div>
 
                 <div class="col-6 col-lg-2">
-                    <label class="form-label filter-label">{{ __('Featured') }}</label>
-                    <select class="form-select" wire:model.live="featuredFilter">
+                    <label class="form-label filter-label" for="catalogFeaturedFilter">{{ __('Featured') }}</label>
+                    <select id="catalogFeaturedFilter" class="form-select" wire:model.live="featuredFilter">
                         <option value="">{{ __('All products') }}</option>
                         <option value="1">{{ __('Featured only') }}</option>
                         <option value="0">{{ __('Not featured') }}</option>
@@ -270,8 +271,8 @@
                 </div>
 
                 <div class="col-6 col-lg-1">
-                    <label class="form-label filter-label">{{ __('Per Page') }}</label>
-                    <select class="form-select" wire:model.live="perPage">
+                    <label class="form-label filter-label" for="catalogPerPage">{{ __('Per Page') }}</label>
+                    <select id="catalogPerPage" class="form-select" wire:model.live="perPage">
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
