@@ -9,7 +9,7 @@ Continue the Dynamic / Tag Marketplace Laravel project from this checkpoint.
 - Repository: `khaledtag93/dynamic-ecommerce`.
 - Stable working line: `v42-clean-baseline` — not yet updated with the Laravel 13 rehearsal work.
 - Active hardening branch: `sec03-framework-upgrade`.
-- Current documentation HEAD on the hardening branch: `a18af1e23b76f98162a7be2c881590a672f3984a`.
+- The hardening branch has documentation-only commits newer than the deployed application commit; do not confuse the branch documentation HEAD with the QAS application SHA.
 - Latest application/operations code deployed to QAS: `f1f20297a27e2236603788ac7cc343dbbf86d0b6`.
 - QAS URL: `https://v42.tag-marketplace.com`.
 - Production remains unchanged.
