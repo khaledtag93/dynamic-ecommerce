@@ -49,31 +49,31 @@
                     @csrf
                     <div class="row g-3">
                         <div class="col-lg-4">
-                            <label class="form-label fw-semibold">{{ __('Period name') }}</label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" maxlength="120" value="{{ old('name') }}" required placeholder="{{ __('Example: October 2026') }}">
+                            <label class="form-label fw-semibold" for="payrollPeriodName">{{ __('Period name') }}</label>
+                            <input id="payrollPeriodName" type="text" name="name" aria-required="true" class="form-control @error('name') is-invalid @enderror" maxlength="120" value="{{ old('name') }}" required placeholder="{{ __('Example: October 2026') }}">
                             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4 col-lg-2">
-                            <label class="form-label fw-semibold">{{ __('Starts on') }}</label>
-                            <input type="date" name="starts_on" class="form-control @error('starts_on') is-invalid @enderror" value="{{ old('starts_on') }}" required>
+                            <label class="form-label fw-semibold" for="payrollPeriodStartsOn">{{ __('Starts on') }}</label>
+                            <input id="payrollPeriodStartsOn" type="date" name="starts_on" aria-required="true" class="form-control @error('starts_on') is-invalid @enderror" value="{{ old('starts_on') }}" required>
                             @error('starts_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4 col-lg-2">
-                            <label class="form-label fw-semibold">{{ __('Ends on') }}</label>
-                            <input type="date" name="ends_on" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" required>
+                            <label class="form-label fw-semibold" for="payrollPeriodEndsOn">{{ __('Ends on') }}</label>
+                            <input id="payrollPeriodEndsOn" type="date" name="ends_on" aria-required="true" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" required>
                             @error('ends_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4 col-lg-2">
-                            <label class="form-label fw-semibold">{{ __('Pay date') }}</label>
-                            <input type="date" name="pay_date" class="form-control @error('pay_date') is-invalid @enderror" value="{{ old('pay_date') }}">
+                            <label class="form-label fw-semibold" for="payrollPeriodPayDate">{{ __('Pay date') }}</label>
+                            <input id="payrollPeriodPayDate" type="date" name="pay_date" class="form-control @error('pay_date') is-invalid @enderror" value="{{ old('pay_date') }}">
                             @error('pay_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-lg-2 d-flex align-items-end">
                             <button class="btn btn-primary w-100" data-loading-text="{{ __('Creating...') }}">{{ __('Create period') }}</button>
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-                            <textarea name="notes" rows="2" maxlength="2000" class="form-control">{{ old('notes') }}</textarea>
+                            <label class="form-label fw-semibold" for="payrollPeriodNotes">{{ __('Notes') }}</label>
+                            <textarea id="payrollPeriodNotes" name="notes" rows="2" maxlength="2000" class="form-control">{{ old('notes') }}</textarea>
                         </div>
                     </div>
                 </form>
