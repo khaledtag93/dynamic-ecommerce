@@ -107,9 +107,7 @@ class Values extends Component
         }
 
         $this->pendingDeleteId = $value->id;
-        $this->dispatchBrowserEvent('open-attribute-value-delete-confirmation', [
-            'value' => $value->value,
-        ]);
+        $this->dispatch('open-attribute-value-delete-confirmation', value: $value->value);
     }
 
     public function cancelDelete(): void
