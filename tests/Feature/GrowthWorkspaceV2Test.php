@@ -122,4 +122,22 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('GrowthAdaptiveLearningService::class)->topRows(5)', $service);
     }
 
+
+    public function test_growth_crud_returns_to_the_relevant_journey_module(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/GrowthController.php'));
+
+        foreach ([
+            '#growth-campaigns',
+            '#growth-rules',
+            '#growth-templates',
+            '#growth-segments',
+            '#growth-experiments',
+        ] as $fragment) {
+            $this->assertStringContainsString("route('admin.growth.content').'".$fragment."'", $controller);
+        }
+
+        $this->assertStringNotContainsString("redirect()->route('admin.growth.index')->with('success'", $controller);
+    }
+
 }
