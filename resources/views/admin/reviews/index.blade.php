@@ -33,8 +33,9 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.reviews.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Search reviews') }}</label>
+                    <label class="form-label fw-semibold" for="reviewSearch">{{ __('Search reviews') }}</label>
                     <input
+                        id="reviewSearch"
                         type="search"
                         name="search"
                         value="{{ $filters['search'] }}"
@@ -45,8 +46,8 @@
                     >
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="reviewStatusFilter">{{ __('Status') }}</label>
+                    <select id="reviewStatusFilter" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
                         @foreach(\App\Models\ProductReview::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -54,8 +55,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Rating') }}</label>
-                    <select name="rating" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="reviewRatingFilter">{{ __('Rating') }}</label>
+                    <select id="reviewRatingFilter" name="rating" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All ratings') }}</option>
                         @foreach([5,4,3,2,1] as $rating)
                             <option value="{{ $rating }}" @selected((string) $filters['rating'] === (string) $rating)>{{ $rating }} / 5</option>
@@ -63,8 +64,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="reviewPerPage">{{ __('Per page') }}</label>
+                    <select id="reviewPerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([20,40,80] as $size)
                             <option value="{{ $size }}" @selected((int) $filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
