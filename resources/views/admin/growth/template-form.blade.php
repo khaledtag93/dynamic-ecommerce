@@ -44,13 +44,13 @@ html[dir="rtl"] .template-form-page .template-switch{justify-content:flex-start}
                     <div class="admin-section-subtitle">{{ __('Name the template, choose its channel and locale, and keep tokens consistent for cleaner reuse.') }}</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ __('Template name') }}</label>
-                    <input type="text" name="name" class="form-control" value="{{ old('name', $template->name) }}" placeholder="{{ __('Example: Order recovery reminder') }}" required>
+                    <label class="form-label fw-semibold" for="growthTemplateName">{{ __('Template name') }}</label>
+                    <input id="growthTemplateName" type="text" name="name" aria-required="true" class="form-control" value="{{ old('name', $template->name) }}" placeholder="{{ __('Example: Order recovery reminder') }}" required>
                     <div class="form-text">{{ __('Use a clear internal name so the team can find this template quickly.') }}</div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ __('Template key') }}</label>
-                    <input type="text" name="template_key" class="form-control" value="{{ old('template_key', $template->template_key) }}" placeholder="order_recovery_reminder" required>
+                    <label class="form-label fw-semibold" for="growthTemplateKey">{{ __('Template key') }}</label>
+                    <input id="growthTemplateKey" type="text" name="template_key" aria-required="true" class="form-control" value="{{ old('template_key', $template->template_key) }}" placeholder="order_recovery_reminder" required>
                     <div class="form-text">{{ __('Keep this key stable because automations and flows can depend on it.') }}</div>
                 </div>
                 <div class="col-md-4">
@@ -77,8 +77,8 @@ html[dir="rtl"] .template-form-page .template-switch{justify-content:flex-start}
                     <input type="text" name="subject" class="form-control" value="{{ old('subject', $template->subject) }}" placeholder="{{ __('Optional for in-app messages, recommended for email templates') }}">
                 </div>
                 <div class="col-12">
-                    <label class="form-label fw-semibold">{{ __('Message body') }}</label>
-                    <textarea name="body" class="form-control" rows="6" required>{{ old('body', $template->body) }}</textarea>
+                    <label class="form-label fw-semibold" for="growthTemplateBody">{{ __('Message body') }}</label>
+                    <textarea id="growthTemplateBody" name="body" class="form-control" rows="6" required aria-required="true">{{ old('body', $template->body) }}</textarea>
                     <div class="form-text">{{ __('Write production-ready copy and keep placeholders consistent between Arabic and English versions.') }}</div>
                 </div>
                 <div class="col-12">
