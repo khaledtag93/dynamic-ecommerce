@@ -26,25 +26,25 @@
                             @csrf
                             @method('PUT')
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">{{ __('English name') }}</label>
-                                <input type="text" name="name" class="form-control" value="{{ old('name', $method->name) }}" required maxlength="120">
+                                <label class="form-label fw-semibold" for="shippingMethodName-{{ $method->id }}">{{ __('English name') }}</label>
+                                <input id="shippingMethodName-{{ $method->id }}" type="text" name="name" aria-required="true" class="form-control" value="{{ old('name', $method->name) }}" required maxlength="120">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">{{ __('Arabic name') }}</label>
-                                <input type="text" name="name_ar" dir="rtl" class="form-control" value="{{ old('name_ar', $method->name_ar) }}" maxlength="120">
+                                <label class="form-label fw-semibold" for="shippingMethodNameAr-{{ $method->id }}">{{ __('Arabic name') }}</label>
+                                <input id="shippingMethodNameAr-{{ $method->id }}" type="text" name="name_ar" dir="rtl" class="form-control" value="{{ old('name_ar', $method->name_ar) }}" maxlength="120">
                             </div>
                             <div class="row g-3">
                                 <div class="col-4">
-                                    <label class="form-label fw-semibold">{{ __('Sort') }}</label>
-                                    <input type="number" name="sort_order" min="1" max="999" class="form-control" value="{{ old('sort_order', $method->sort_order) }}" required>
+                                    <label class="form-label fw-semibold" for="shippingMethodSort-{{ $method->id }}">{{ __('Sort') }}</label>
+                                    <input id="shippingMethodSort-{{ $method->id }}" type="number" name="sort_order" aria-required="true" min="1" max="999" class="form-control" value="{{ old('sort_order', $method->sort_order) }}" required>
                                 </div>
                                 <div class="col-4">
-                                    <label class="form-label fw-semibold">{{ __('ETA min') }}</label>
-                                    <input type="number" name="eta_min_days" min="0" max="365" class="form-control" value="{{ old('eta_min_days', $method->eta_min_days) }}">
+                                    <label class="form-label fw-semibold" for="shippingMethodEtaMin-{{ $method->id }}">{{ __('ETA min') }}</label>
+                                    <input id="shippingMethodEtaMin-{{ $method->id }}" type="number" name="eta_min_days" min="0" max="365" class="form-control" value="{{ old('eta_min_days', $method->eta_min_days) }}">
                                 </div>
                                 <div class="col-4">
-                                    <label class="form-label fw-semibold">{{ __('ETA max') }}</label>
-                                    <input type="number" name="eta_max_days" min="0" max="365" class="form-control" value="{{ old('eta_max_days', $method->eta_max_days) }}">
+                                    <label class="form-label fw-semibold" for="shippingMethodEtaMax-{{ $method->id }}">{{ __('ETA max') }}</label>
+                                    <input id="shippingMethodEtaMax-{{ $method->id }}" type="number" name="eta_max_days" min="0" max="365" class="form-control" value="{{ old('eta_max_days', $method->eta_max_days) }}">
                                 </div>
                             </div>
                             <div class="mt-3">
@@ -55,8 +55,8 @@
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-                                <textarea name="notes" rows="3" maxlength="2000" class="form-control">{{ old('notes', $method->notes) }}</textarea>
+                                <label class="form-label fw-semibold" for="shippingMethodNotes-{{ $method->id }}">{{ __('Notes') }}</label>
+                                <textarea id="shippingMethodNotes-{{ $method->id }}" name="notes" rows="3" maxlength="2000" class="form-control">{{ old('notes', $method->notes) }}</textarea>
                             </div>
                             <button class="btn btn-primary w-100 mt-3" data-loading-text="{{ __('Saving...') }}">{{ __('Save method') }}</button>
                         </form>
