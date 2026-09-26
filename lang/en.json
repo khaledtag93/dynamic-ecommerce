@@ -4594,5 +4594,12 @@
     "Send test notification": "Send test notification",
     "Send this test notification now?": "Send this test notification now?",
     "The selected channel will be contacted immediately using the chosen order context and destination rules.": "The selected channel will be contacted immediately using the chosen order context and destination rules.",
-    "Send test now": "Send test now"
+    "Send test now": "Send test now",
+    "Product review moderation changed from :old to :new.": "Product review moderation changed from :old to :new.",
+    "Publish review": "Publish review",
+    "Approve and publish this review?": "Approve and publish this review?",
+    "The review will become visible on the storefront immediately.": "The review will become visible on the storefront immediately.",
+    "Reject review": "Reject review",
+    "Reject and hide this review?": "Reject and hide this review?",
+    "The review will remain hidden from the storefront and the moderation note will be recorded.": "The review will remain hidden from the storefront and the moderation note will be recorded."
 }
