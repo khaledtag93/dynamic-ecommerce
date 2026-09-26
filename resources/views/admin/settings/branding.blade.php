@@ -392,7 +392,41 @@
                             </div>
                         </div>
 
-                        <div class="col-12"><label class="form-label fw-semibold">{{ __('Homepage sections order') }}</label><input type="text" name="homepage_sections_order" value="{{ old('homepage_sections_order', $settings['homepage_sections_order'] ?? 'hero,promo_banners,featured_categories,manual_featured_products,featured_products,best_sellers,latest_products,on_sale_products,trust_blocks,categories') }}" class="form-control" placeholder="hero,promo_banners,featured_categories,manual_featured_products,featured_products,best_sellers,latest_products,on_sale_products,trust_blocks,categories"><div class="form-text">{{ __('Use comma-separated section keys: hero, promo_banners, featured_categories, manual_featured_products, featured_products, best_sellers, categories, latest_products, on_sale_products, trust_blocks.') }}</div></div>
+                        @php
+                            $homeSectionLabels = [
+                                'hero' => __('Hero'),
+                                'promo_banners' => __('Promo banners'),
+                                'featured_categories' => __('Featured categories'),
+                                'manual_featured_products' => __('Hand-picked products'),
+                                'featured_products' => __('Featured products'),
+                                'best_sellers' => __('Best sellers'),
+                                'latest_products' => __('Latest arrivals'),
+                                'on_sale_products' => __('On sale'),
+                                'trust_blocks' => __('Trust blocks'),
+                                'categories' => __('Categories'),
+                                'promo_banner' => __('Legacy promo banner'),
+                            ];
+                            $defaultHomeOrder = array_keys($homeSectionLabels);
+                            $savedHomeOrder = array_values(array_unique(array_filter(array_map('trim', explode(',', old('homepage_sections_order', $settings['homepage_sections_order'] ?? implode(',', $defaultHomeOrder)))), fn ($key) => isset($homeSectionLabels[$key]))));
+                            $savedHomeOrder = array_values(array_unique(array_merge($savedHomeOrder, $defaultHomeOrder)));
+                        @endphp
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">{{ __('Homepage sections order') }}</label>
+                            <input type="hidden" name="homepage_sections_order" id="homepage_sections_order" value="{{ implode(',', $savedHomeOrder) }}">
+                            <div class="homepage-order-editor" id="homepageOrderEditor">
+                                @foreach($savedHomeOrder as $sectionKey)
+                                    <div class="homepage-order-item" data-home-section="{{ $sectionKey }}">
+                                        <span class="homepage-order-handle"><i class="mdi mdi-drag-vertical"></i></span>
+                                        <span class="homepage-order-copy"><strong>{{ $homeSectionLabels[$sectionKey] }}</strong><small>{{ __('Homepage section') }}</small></span>
+                                        <span class="homepage-order-actions">
+                                            <button type="button" class="btn btn-sm btn-light" data-home-move="up" aria-label="{{ __('Move up') }}"><i class="mdi mdi-chevron-up"></i></button>
+                                            <button type="button" class="btn btn-sm btn-light" data-home-move="down" aria-label="{{ __('Move down') }}"><i class="mdi mdi-chevron-down"></i></button>
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="form-text">{{ __('Arrange the storefront sections visually. Your order is saved automatically with the branding form.') }}</div>
+                        </div>
                     </div>
                         </div>
                     </details>
@@ -828,6 +862,7 @@
 .branding-advanced-palette summary small{color:var(--admin-muted);font-weight:500}
 .branding-advanced-palette summary i{font-size:1.1rem;transition:transform .18s ease}
 .branding-advanced-palette[open] summary i{transform:rotate(180deg)}
+.homepage-order-editor{display:grid;gap:.55rem}.homepage-order-item{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.75rem;padding:.7rem .8rem;border:1px solid var(--admin-border);border-radius:.9rem;background:var(--admin-surface)}.homepage-order-handle{color:var(--admin-muted);font-size:1.2rem}.homepage-order-copy{display:grid;gap:.08rem}.homepage-order-copy strong{font-size:.86rem}.homepage-order-copy small{font-size:.7rem;color:var(--admin-muted)}.homepage-order-actions{display:flex;gap:.35rem}.homepage-order-actions .btn{width:32px;height:32px;padding:0;display:grid;place-items:center}html[dir="rtl"] .homepage-order-copy{text-align:right}
 .branding-toggle-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1rem;min-height:58px;padding:.8rem .9rem;border:1px solid var(--admin-border);border-radius:1rem;background:color-mix(in srgb,var(--admin-surface) 96%,var(--admin-primary-soft))}
 .branding-toggle-copy{margin:0;color:var(--admin-text);font-weight:750;line-height:1.4;cursor:pointer}
 .branding-toggle-control{padding:0!important;margin:0!important;min-height:0}
@@ -1003,6 +1038,23 @@ document.addEventListener('DOMContentLoaded', function () {
         card.addEventListener('click', function () {
             applyPreset(this.dataset.themePresetChoice);
         });
+    });
+
+    const homepageOrderEditor = document.getElementById('homepageOrderEditor');
+    const homepageOrderInput = document.getElementById('homepage_sections_order');
+    function syncHomepageOrder() {
+        if (!homepageOrderEditor || !homepageOrderInput) return;
+        homepageOrderInput.value = [...homepageOrderEditor.querySelectorAll('[data-home-section]')].map((item) => item.dataset.homeSection).join(',');
+        setDirtyState(true);
+    }
+    homepageOrderEditor?.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-home-move]');
+        if (!button) return;
+        const item = button.closest('[data-home-section]');
+        if (!item) return;
+        if (button.dataset.homeMove === 'up' && item.previousElementSibling) homepageOrderEditor.insertBefore(item, item.previousElementSibling);
+        if (button.dataset.homeMove === 'down' && item.nextElementSibling) homepageOrderEditor.insertBefore(item.nextElementSibling, item);
+        syncHomepageOrder();
     });
 
     const themeSearch = document.getElementById('themeGallerySearch');
