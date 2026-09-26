@@ -23,8 +23,12 @@ class PurchaseController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => (string) $request->string('status'),
             'supplier_id' => (string) $request->string('supplier_id'),
             'per_page' => max(15, min(100, (int) $request->integer('per_page', 15))),
@@ -32,12 +36,12 @@ class PurchaseController extends Controller
 
         $purchases = Purchase::query()
             ->with('supplier')
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('reference', 'like', "%{$search}%")
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('reference', 'like', $like)
                         ->orWhereHas('supplier', fn ($supplier) => $supplier
-                            ->where('name', 'like', "%{$search}%")
-                            ->orWhere('company', 'like', "%{$search}%"));
+                            ->where('name', 'like', $like)
+                            ->orWhere('company', 'like', $like));
                 });
             })
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
