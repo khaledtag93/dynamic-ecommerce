@@ -30,12 +30,12 @@
     <div class="admin-card-body">
         <form method="GET" action="{{ route('admin.coupons.index') }}" class="admin-filter-grid admin-filter-grid-coupons" data-live-filter>
             <div>
-                <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                <input type="search" name="search" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Name, code, notes') }}">
+                <label class="form-label fw-semibold" for="couponSearch">{{ __('Search') }}</label>
+                <input id="couponSearch" type="search" name="search" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Name, code, notes') }}">
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Type') }}</label>
-                <select name="type" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="couponTypeFilter">{{ __('Type') }}</label>
+                <select id="couponTypeFilter" name="type" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All types') }}</option>
                     @foreach($typeOptions as $value => $label)
                         <option value="{{ $value }}" @selected($filters['type'] === $value)>{{ $label }}</option>
@@ -43,8 +43,8 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                <select name="status" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="couponStatusFilter">{{ __('Status') }}</label>
+                <select id="couponStatusFilter" name="status" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All statuses') }}</option>
                     <option value="active" @selected($filters['status'] === 'active')>{{ __('Active') }}</option>
                     <option value="inactive" @selected($filters['status'] === 'inactive')>{{ __('Inactive') }}</option>
@@ -52,8 +52,8 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Redemption activity') }}</label>
-                <select name="usage" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="couponUsageFilter">{{ __('Redemption activity') }}</label>
+                <select id="couponUsageFilter" name="usage" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All coupons') }}</option>
                     <option value="used" @selected($filters['usage'] === 'used')>{{ __('Used') }}</option>
                     <option value="unused" @selected($filters['usage'] === 'unused')>{{ __('Unused') }}</option>
@@ -61,8 +61,8 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                <select name="per_page" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="couponPerPage">{{ __('Per page') }}</label>
+                <select id="couponPerPage" name="per_page" class="form-select" data-live-filter-control>
                     @foreach([12,24,48] as $size)
                         <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                     @endforeach
