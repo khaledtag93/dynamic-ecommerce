@@ -629,7 +629,7 @@
         @media (max-width:575.98px) { .lc-account-shortcut { padding:1rem; } }
 
         /* Mobile storefront navigation must scroll independently inside the sticky header. */
-        @media (max-width: 991.98px), (pointer: coarse) and (max-width: 1366px) {
+        @media (max-width: 1199.98px) {
             .retail-menu-toggle {
                 display: inline-flex !important;
             }
