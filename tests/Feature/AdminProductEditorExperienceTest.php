@@ -88,6 +88,28 @@ class AdminProductEditorExperienceTest extends TestCase
         }
     }
 
+    public function test_product_editor_tracks_non_field_draft_mutations_as_unsaved(): void
+    {
+        $view = file_get_contents(resource_path('views/livewire/admin/product/product-form.blade.php'));
+
+        foreach ([
+            'addVariant',
+            'duplicateVariant',
+            'removeVariant',
+            'setDefaultVariant',
+            'applyBulkToVariants',
+            'addAovRelation',
+            'removeAovRelation',
+            'toggleAovRelationActive',
+            'removeNewImage',
+        ] as $method) {
+            $this->assertStringContainsString("'" . $method . "'", $view);
+        }
+
+        $this->assertStringContainsString("action.startsWith(method + '(')", $view);
+        $this->assertStringContainsString('markProductFormDirty();', $view);
+    }
+
     public function test_simple_product_sku_is_saved_from_livewire_editor(): void
     {
         $category = $this->createCategory('Retail Test', 'retail-test');
