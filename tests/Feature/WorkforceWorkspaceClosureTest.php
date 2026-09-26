@@ -190,6 +190,35 @@ class WorkforceWorkspaceClosureTest extends TestCase
         }
     }
 
+    public function test_leave_type_editor_controls_have_explicit_labels_and_required_semantics(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/workforce/leave-types/_form.blade.php'));
+
+        foreach ([
+            'leaveTypeCode',
+            'leaveTypeName',
+            'leaveTypeNameAr',
+            'leaveTypeEntitlement',
+            'leaveTypePaid',
+            'leaveTypeActive',
+            'leaveTypeNotes',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $view);
+            $this->assertStringContainsString('id="' . $controlId . '"', $view);
+        }
+
+        foreach ([
+            'leaveTypeCode',
+            'leaveTypeName',
+            'leaveTypeEntitlement',
+        ] as $controlId) {
+            $this->assertMatchesRegularExpression(
+                '/id="' . preg_quote($controlId, '/') . '"[^>]*aria-required="true"/',
+                $view
+            );
+        }
+    }
+
     public function test_workforce_list_filters_have_explicit_labels(): void
     {
         $views = [
