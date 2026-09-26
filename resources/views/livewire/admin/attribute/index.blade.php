@@ -44,15 +44,18 @@
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     <div class="admin-search-inline">
-                        <input type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
+                        <label class="visually-hidden" for="attributeSearch">{{ __('Search attributes') }}</label>
+                        <input id="attributeSearch" type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
                     </div>
-                    <select wire:model.live="coverage" class="form-select" style="width:auto">
+                    <label class="visually-hidden" for="attributeCoverage">{{ __('Attribute coverage') }}</label>
+                    <select id="attributeCoverage" wire:model.live="coverage" class="form-select" style="width:auto">
                         <option value="">{{ __('All attributes') }}</option>
                         <option value="with_values">{{ __('With values') }}</option>
                         <option value="empty">{{ __('Needs values') }}</option>
                         <option value="in_use">{{ __('In use by variants') }}</option>
                     </select>
-                    <select wire:model.live="perPage" class="form-select" style="width:auto">
+                    <label class="visually-hidden" for="attributePerPage">{{ __('Per page') }}</label>
+                    <select id="attributePerPage" wire:model.live="perPage" class="form-select" style="width:auto">
                         <option value="10">10</option><option value="25">25</option><option value="50">50</option>
                     </select>
                 </div>
@@ -68,12 +71,15 @@
 
             <form wire:submit.prevent="save" class="row g-3 align-items-end">
                 <div class="col-md-8">
-                    <label for="name" class="form-label">{{ __('Attribute Name') }}</label>
-                    <input type="text" wire:model="name" id="name" class="form-control @error('name') is-invalid @enderror">
+                    <label for="attributeName" class="form-label">{{ __('Attribute Name') }}</label>
+                    <input type="text" wire:model="name" id="attributeName" aria-required="true" class="form-control @error('name') is-invalid @enderror">
                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-fill">{{ $editingId ? __('Update Attribute') : __('Add Attribute') }}</button>
+                    <button type="submit" class="btn btn-primary flex-fill" wire:loading.attr="disabled" wire:target="save">
+                        <span wire:loading.remove wire:target="save">{{ $editingId ? __('Update Attribute') : __('Add Attribute') }}</span>
+                        <span wire:loading wire:target="save">{{ __('Saving...') }}</span>
+                    </button>
                     @if($editingId)
                         <button type="button" class="btn btn-light admin-btn-soft" wire:click="resetForm">{{ __('Cancel') }}</button>
                     @endif
@@ -102,13 +108,13 @@
                                 <td><div class="fw-semibold">{{ $attr->values_count }}</div><small class="text-muted">{{ $attr->variant_attributes_count }} {{ __('variant links') }}</small></td>
                                 <td class="rtl-text-start">
                                     <div class="d-flex gap-2 flex-wrap rtl-justify-start">
-                                        <button wire:click="edit({{ $attr->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit attribute') }}">
+                                        <button type="button" wire:click="edit({{ $attr->id }})" class="btn-table-icon btn-edit" title="{{ __('Edit attribute') }}" aria-label="{{ __('Edit attribute :name', ['name' => $attr->name]) }}">
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </button>
-                                        <button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete attribute') }}" wire:click="requestDelete({{ $attr->id }})" @disabled($attr->variant_attributes_count > 0)>
+                                        <button type="button" class="btn-table-icon btn-delete" title="{{ __('Delete attribute') }}" aria-label="{{ __('Delete attribute :name', ['name' => $attr->name]) }}" wire:click="requestDelete({{ $attr->id }})" @disabled($attr->variant_attributes_count > 0)>
                                             <i class="mdi mdi-trash-can-outline"></i>
                                         </button>
-                                        <a href="{{ route('admin.attributes.values', $attr->id) }}" class="btn-table-icon btn-values" title="{{ __('Manage values') }}">
+                                        <a href="{{ route('admin.attributes.values', $attr->id) }}" class="btn-table-icon btn-values" title="{{ __('Manage values') }}" aria-label="{{ __('Manage values for :name', ['name' => $attr->name]) }}">
                                             <i class="mdi mdi-format-list-bulleted"></i>
                                         </a>
                                     </div>
