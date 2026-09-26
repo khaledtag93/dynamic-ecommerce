@@ -5670,5 +5670,7 @@
     "Loading...": "جارٍ التحميل...",
     "Could not refresh this view. Use the fallback link to reload.": "تعذر تحديث هذا العرض. استخدم رابط إعادة التحميل الاحتياطي.",
     "Reload results": "إعادة تحميل النتائج",
-    "Skip to main content": "تخطَّ إلى المحتوى الرئيسي"
+    "Skip to main content": "تخطَّ إلى المحتوى الرئيسي",
+    "No operational workspaces are available for your current permissions.": "لا توجد مساحات عمل تشغيلية متاحة ضمن صلاحياتك الحالية.",
+    "Ask an administrator to assign the workspace permissions you need.": "اطلب من المسؤول منحك صلاحيات مساحات العمل التي تحتاجها."
 }

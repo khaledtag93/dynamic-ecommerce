@@ -5004,5 +5004,7 @@
     "Loading...": "Loading...",
     "Could not refresh this view. Use the fallback link to reload.": "Could not refresh this view. Use the fallback link to reload.",
     "Reload results": "Reload results",
-    "Skip to main content": "Skip to main content"
+    "Skip to main content": "Skip to main content",
+    "No operational workspaces are available for your current permissions.": "No operational workspaces are available for your current permissions.",
+    "Ask an administrator to assign the workspace permissions you need.": "Ask an administrator to assign the workspace permissions you need."
 }

@@ -21,44 +21,16 @@
     </form>
 
     <nav class="admin-home-jump" aria-label="{{ __('Page sections') }}">
-        <a href="#home-overview">{{ __('Overview') }}</a>
-        <a href="#home-priorities">{{ __('Needs attention') }}</a>
-        <a href="#home-activity">{{ __('Recent activity') }}</a>
+        @if($kpiCards !== [])<a href="#home-overview">{{ __('Overview') }}</a>@endif
+        @if($hasPriorities)<a href="#home-priorities">{{ __('Needs attention') }}</a>@endif
+        @if($hasRecentActivity)<a href="#home-activity">{{ __('Recent activity') }}</a>@endif
     </nav>
 
-    @if($q !== '')
-        <section class="admin-card mb-4" id="dashboard-search" aria-labelledby="dashboard-search-title">
-            <div class="admin-card-body">
-                <div class="admin-home-section-heading mb-3">
-                    <div><div class="admin-kicker">{{ __('Quick lookup') }}</div><h2 id="dashboard-search-title">{{ __('Search results') }}</h2><p class="text-muted small mb-0">{{ __('Showing quick matches for') }} <strong>{{ $q }}</strong></p></div>
-                    <a href="{{ route('admin.dashboard') }}" class="btn btn-light border btn-sm">{{ __('Clear search') }}</a>
-                </div>
-                <div class="row g-3">
-                    @foreach([
-                        'orders' => ['label' => __('Orders'), 'route' => 'admin.orders.show', 'field' => 'order_number', 'permission' => 'orders.view'],
-                        'products' => ['label' => __('Products'), 'route' => 'admin.products.edit', 'field' => 'name', 'permission' => 'catalog.manage'],
-                        'customers' => ['label' => __('Customers'), 'route' => 'admin.customers.show', 'field' => 'name', 'permission' => 'customers.manage'],
-                        'coupons' => ['label' => __('Coupons'), 'route' => 'admin.coupons.edit', 'field' => 'code', 'permission' => 'promotions.manage'],
-                        'categories' => ['label' => __('Categories'), 'route' => 'admin.categories.edit', 'field' => 'name', 'permission' => 'catalog.manage'],
-                    ] as $key => $meta)
-                        @if($can($meta['permission']))
-                            <div class="col-md-6 col-xl-4">
-                                <div class="admin-home-search-group h-100">
-                                    <h3>{{ $meta['label'] }}</h3>
-                                    @forelse($searchResults[$key] as $item)
-                                        <a href="{{ route($meta['route'], $item) }}">{{ data_get($item, $meta['field']) }} <i class="mdi mdi-arrow-top-right"></i></a>
-                                    @empty
-                                        <p class="text-muted small mb-0">{{ __('No matches yet.') }}</p>
-                                    @endforelse
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
+    <div id="dashboard-search-region" aria-live="polite" aria-atomic="false">
+        @include('admin.dashboard._search-results')
+    </div>
 
+    @if($kpiCards !== [])
     <section id="home-overview" aria-labelledby="home-overview-title" class="mb-4">
         <div class="admin-home-section-heading">
             <div><div class="admin-kicker">{{ __('Last 30 days') }}</div><h2 id="home-overview-title">{{ __('At a glance') }}</h2></div>
@@ -77,7 +49,9 @@
             @endforeach
         </div>
     </section>
+    @endif
 
+    @if($hasPriorities)
     <section id="home-priorities" aria-labelledby="home-priorities-title" class="mb-4">
         <div class="admin-home-section-heading">
             <div><div class="admin-kicker">{{ __('Daily workflow') }}</div><h2 id="home-priorities-title">{{ __('Needs attention') }}</h2></div>
@@ -85,7 +59,7 @@
         <div class="row g-3">
             @if($can('orders.view'))
                 <div class="col-md-6 col-xl-4">
-                    <a href="{{ route('admin.orders.index') }}" class="admin-card admin-home-task d-flex h-100 text-decoration-none">
+                    <a href="{{ route('admin.orders.index', ['status' => \App\Models\Order::STATUS_PENDING]) }}" class="admin-card admin-home-task d-flex h-100 text-decoration-none">
                         <span class="admin-home-task-icon"><i class="mdi mdi-cart-outline"></i></span>
                         <span class="admin-home-task-copy"><strong>{{ __('Pending orders') }}</strong><small>{{ __('Review the order queue') }}</small></span>
                         <span class="admin-home-task-count">{{ number_format($stats['orders_pending']) }}</span>
@@ -94,7 +68,7 @@
             @endif
             @if($can('catalog.manage'))
                 <div class="col-md-6 col-xl-4">
-                    <a href="{{ route('admin.products.index') }}" class="admin-card admin-home-task d-flex h-100 text-decoration-none">
+                    <a href="{{ route('admin.products.index', ['stockFilter' => 'low']) }}" class="admin-card admin-home-task d-flex h-100 text-decoration-none">
                         <span class="admin-home-task-icon"><i class="mdi mdi-package-variant-closed"></i></span>
                         <span class="admin-home-task-copy"><strong>{{ __('Low-stock products') }}</strong><small>{{ __('Review inventory') }}</small></span>
                         <span class="admin-home-task-count">{{ number_format($stats['products_low_stock']) }}</span>
@@ -103,7 +77,7 @@
             @endif
             @if($can('payments.view'))
                 <div class="col-md-6 col-xl-4">
-                    <a href="{{ route('admin.payments.index') }}" class="admin-card admin-home-task d-flex h-100 text-decoration-none">
+                    <a href="{{ route('admin.payments.index', ['queue' => 'failed']) }}" class="admin-card admin-home-task d-flex h-100 text-decoration-none">
                         <span class="admin-home-task-icon"><i class="mdi mdi-credit-card-off-outline"></i></span>
                         <span class="admin-home-task-copy"><strong>{{ __('Failed payments') }}</strong><small>{{ __('Review payment records') }}</small></span>
                         <span class="admin-home-task-count">{{ number_format($failedPaymentsCount) }}</span>
@@ -112,6 +86,7 @@
             @endif
         </div>
     </section>
+    @endif
 
     <section class="mb-4" aria-labelledby="home-workspaces-title">
         <div class="admin-home-section-heading"><div><div class="admin-kicker">{{ __('Quick access') }}</div><h2 id="home-workspaces-title">{{ __('Your workspaces') }}</h2></div></div>
@@ -121,9 +96,19 @@
             @if($can('growth.view'))<a href="{{ route('admin.growth.index') }}"><i class="mdi mdi-chart-line"></i><span>{{ __('Growth Engine') }}</span><i class="mdi mdi-arrow-top-right"></i></a>@endif
             @if($can('settings.manage'))<a href="{{ route('admin.settings.branding') }}"><i class="mdi mdi-palette-outline"></i><span>{{ __('Brand & Identity') }}</span><i class="mdi mdi-arrow-top-right"></i></a>@endif
             @if($can('notifications.view'))<a href="{{ route('admin.notifications.index') }}"><i class="mdi mdi-bell-outline"></i><span>{{ __('Admin Inbox') }}</span><i class="mdi mdi-arrow-top-right"></i></a>@endif
+            @unless($hasWorkspaces)
+                <div class="admin-home-empty">
+                    <i class="mdi mdi-shield-account-outline" aria-hidden="true"></i>
+                    <div>
+                        <strong>{{ __('No operational workspaces are available for your current permissions.') }}</strong>
+                        <small>{{ __('Ask an administrator to assign the workspace permissions you need.') }}</small>
+                    </div>
+                </div>
+            @endunless
         </div>
     </section>
 
+    @if($hasRecentActivity)
     <section id="home-activity" aria-labelledby="home-activity-title">
         <div class="admin-home-section-heading"><div><div class="admin-kicker">{{ __('Daily workflow') }}</div><h2 id="home-activity-title">{{ __('Recent activity') }}</h2></div></div>
         <div class="row g-3">
@@ -167,6 +152,7 @@
             @endif
         </div>
     </section>
+    @endif
 </div>
 @endsection
 
@@ -199,6 +185,10 @@
 .admin-home-stock-list a:hover, .admin-home-search-group a:hover { color: var(--admin-primary-dark); }
 .admin-home-stock-list a strong { font-variant-numeric: tabular-nums; }.admin-home-search-group { padding: 1rem; border: 1px solid var(--admin-border); border-radius: 1rem; }
 .admin-home-search-group h3 { margin-bottom: .5rem; }
+.admin-home-empty { grid-column: 1 / -1; display:flex; align-items:center; gap:.85rem; padding:1rem; color:var(--admin-muted); }
+.admin-home-empty > i { width:2.6rem; height:2.6rem; flex:0 0 auto; display:grid; place-items:center; border-radius:.85rem; background:var(--admin-primary-soft); color:var(--admin-primary-dark); font-size:1.25rem; }
+.admin-home-empty strong, .admin-home-empty small { display:block; }
+#dashboard-search-region[aria-busy='true'] { opacity:.58; transition:opacity .15s ease; }
 @media (max-width: 767.98px) {
     .admin-home {
         width: 100%;
@@ -238,4 +228,87 @@
     .admin-home-stock-list { padding-inline: 1rem; }
 }
 </style>
+@endpush
+
+
+@push('scripts')
+<script>
+(function () {
+    const region = document.getElementById('dashboard-search-region');
+    if (!region) return;
+
+    const forms = Array.from(document.querySelectorAll('form[action="{{ route('admin.dashboard') }}"]'))
+        .filter((form) => form.querySelector('[name="q"]'));
+
+    if (!forms.length) return;
+
+    let timer = null;
+    let controller = null;
+
+    const inputs = forms.map((form) => form.querySelector('[name="q"]')).filter(Boolean);
+
+    function syncInputs(value, source) {
+        inputs.forEach((input) => {
+            if (input !== source) input.value = value;
+        });
+    }
+
+    async function runSearch(value, fallbackNavigation = false) {
+        const url = new URL("{{ route('admin.dashboard') }}", window.location.origin);
+        const query = value.trim().slice(0, 80);
+        if (query) url.searchParams.set('q', query);
+
+        controller?.abort();
+        controller = new AbortController();
+        region.setAttribute('aria-busy', 'true');
+
+        try {
+            const response = await fetch(url.toString(), {
+                headers: {
+                    'X-Live-Dashboard-Search': '1',
+                    'Accept': 'text/html',
+                },
+                signal: controller.signal,
+            });
+
+            if (!response.ok) throw new Error('dashboard search failed');
+
+            region.innerHTML = await response.text();
+            window.history.replaceState({}, '', url.pathname + url.search);
+        } catch (error) {
+            if (error.name !== 'AbortError' && fallbackNavigation) {
+                window.location.assign(url.toString());
+            }
+        } finally {
+            if (!controller.signal.aborted) region.removeAttribute('aria-busy');
+        }
+    }
+
+    inputs.forEach((input) => {
+        input.addEventListener('input', () => {
+            const value = input.value;
+            syncInputs(value, input);
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => runSearch(value), 350);
+        });
+    });
+
+    forms.forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const input = form.querySelector('[name="q"]');
+            runSearch(input?.value || '', true);
+        });
+    });
+
+    region.addEventListener('click', (event) => {
+        const clear = event.target.closest('[data-dashboard-search-clear]');
+        if (!clear) return;
+        event.preventDefault();
+        inputs.forEach((input) => { input.value = ''; });
+        runSearch('', true);
+        inputs[0]?.focus();
+    });
+})();
+</script>
 @endpush
