@@ -395,40 +395,40 @@
                     <div class="card-body pt-3">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Product Name') }}</label>
-                                <input type="text" class="form-control @error('name') is-invalid product-error-field @enderror" wire:model="name">
+                                <label class="form-label" for="productName">{{ __('Product Name') }}</label>
+                                <input id="productName" type="text" class="form-control @error('name') is-invalid product-error-field @enderror" wire:model="name" aria-required="true">
                                 @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Slug') }}</label>
-                                <input type="text" class="form-control @error('slug') is-invalid product-error-field @enderror" wire:model="slug">
+                                <label class="form-label" for="productSlug">{{ __('Slug') }}</label>
+                                <input id="productSlug" type="text" class="form-control @error('slug') is-invalid product-error-field @enderror" wire:model="slug">
                                 @error('slug') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">{{ __('SKU') }}</label>
-                                <input type="text" class="form-control @error('sku') is-invalid product-error-field @enderror" wire:model="sku" autocomplete="off">
+                                <label class="form-label" for="productSku">{{ __('SKU') }}</label>
+                                <input id="productSku" type="text" class="form-control @error('sku') is-invalid product-error-field @enderror" wire:model="sku" autocomplete="off">
                                 <div class="form-text">{{ __('SKU must be unique across products and variants so inventory and POS lookup stays deterministic.') }}</div>
                                 @error('sku') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">{{ __('Barcode') }}</label>
-                                <input type="text" class="form-control @error('barcode') is-invalid product-error-field @enderror" wire:model="barcode" inputmode="numeric" autocomplete="off">
+                                <label class="form-label" for="productBarcode">{{ __('Barcode') }}</label>
+                                <input id="productBarcode" type="text" class="form-control @error('barcode') is-invalid product-error-field @enderror" wire:model="barcode" inputmode="numeric" autocomplete="off">
                                 <div class="form-text">{{ __('Optional scannable identifier for retail and stock operations. It must be unique across products and variants.') }}</div>
                                 @error('barcode') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label">{{ __('Video URL') }}</label>
-                                <input type="url" class="form-control @error('video_url') is-invalid product-error-field @enderror" wire:model="video_url" placeholder="https://">
+                                <label class="form-label" for="productVideoUrl">{{ __('Video URL') }}</label>
+                                <input id="productVideoUrl" type="url" class="form-control @error('video_url') is-invalid product-error-field @enderror" wire:model="video_url" placeholder="https://">
                                 @error('video_url') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Category') }}</label>
-                                <select class="form-select @error('category_id') is-invalid product-error-field @enderror" wire:model="category_id">
+                                <label class="form-label" for="productCategory">{{ __('Category') }}</label>
+                                <select id="productCategory" class="form-select @error('category_id') is-invalid product-error-field @enderror" wire:model="category_id" aria-required="true">
                                     <option value="">Select {{ __('Category') }}</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
@@ -438,8 +438,8 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Brand') }}</label>
-                                <select class="form-select @error('brand_id') is-invalid product-error-field @enderror" wire:model="brand_id">
+                                <label class="form-label" for="productBrand">{{ __('Brand') }}</label>
+                                <select id="productBrand" class="form-select @error('brand_id') is-invalid product-error-field @enderror" wire:model="brand_id">
                                     <option value="">{{ __('Select Brand') }}</option>
                                     @foreach ($brands as $brand)
                                         <option value="{{ $brand['id'] }}">{{ $brand['name'] }}</option>
@@ -449,8 +449,8 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label">{{ __('Description') }}</label>
-                                <textarea class="form-control @error('description') is-invalid product-error-field @enderror" rows="5" wire:model="description"></textarea>
+                                <label class="form-label" for="productDescription">{{ __('Description') }}</label>
+                                <textarea id="productDescription" class="form-control @error('description') is-invalid product-error-field @enderror" rows="5" wire:model="description"></textarea>
                                 @error('description') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                         </div>
@@ -472,8 +472,8 @@
                     <div class="card-body pt-3">
                         <div class="row g-3">
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Base Price') }}</label>
-                                <input
+                                <label class="form-label" for="productBasePrice">{{ __('Base Price') }}</label>
+                                <input id="productBasePrice" aria-required="true"
                                     type="number"
                                     step="0.01"
                                     class="form-control @error('base_price') is-invalid product-error-field @enderror"
@@ -484,8 +484,8 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Sale Price') }}</label>
-                                <input
+                                <label class="form-label" for="productSalePrice">{{ __('Sale Price') }}</label>
+                                <input id="productSalePrice"
                                     type="number"
                                     step="0.01"
                                     class="form-control @error('sale_price') is-invalid product-error-field @enderror"
@@ -496,8 +496,8 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Quantity') }}</label>
-                                <input
+                                <label class="form-label" for="productQuantity">{{ __('Quantity') }}</label>
+                                <input id="productQuantity" aria-required="true"
                                     type="number"
                                     class="form-control @error('quantity') is-invalid product-error-field @enderror"
                                     wire:model="quantity"
@@ -510,8 +510,8 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Low Stock Threshold') }}</label>
-                                <input
+                                <label class="form-label" for="productLowStockThreshold">{{ __('Low Stock Threshold') }}</label>
+                                <input id="productLowStockThreshold"
                                     type="number"
                                     class="form-control @error('low_stock_threshold') is-invalid product-error-field @enderror"
                                     wire:model="low_stock_threshold"
@@ -520,8 +520,8 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Stock Status') }}</label>
-                                <select class="form-select @error('stock_status') is-invalid product-error-field @enderror" wire:model="stock_status" @if($hasVariants) disabled @endif>
+                                <label class="form-label" for="productStockStatus">{{ __('Stock Status') }}</label>
+                                <select id="productStockStatus" class="form-select @error('stock_status') is-invalid product-error-field @enderror" wire:model="stock_status" aria-required="true" @if($hasVariants) disabled @endif>
                                     <option value="in_stock" >{{ __('In Stock') }}</option>
                                     <option value="out_of_stock" >{{ __('Out of Stock') }}</option>
                                     <option value="preorder" >{{ __('Preorder') }}</option>
@@ -531,8 +531,8 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Storefront status') }}</label>
-                                <select class="form-select @error('status') is-invalid product-error-field @enderror" wire:model="status">
+                                <label class="form-label" for="productStorefrontStatus">{{ __('Storefront status') }}</label>
+                                <select id="productStorefrontStatus" class="form-select @error('status') is-invalid product-error-field @enderror" wire:model="status" aria-required="true">
                                     <option value="1">{{ __('Active — visible on storefront') }}</option>
                                     <option value="0">{{ __('Inactive — hidden from storefront') }}</option>
                                 </select>
@@ -541,8 +541,8 @@
                             </div>
 
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Featured') }}</label>
-                                <select class="form-select @error('is_featured') is-invalid product-error-field @enderror" wire:model="is_featured">
+                                <label class="form-label" for="productFeatured">{{ __('Featured') }}</label>
+                                <select id="productFeatured" class="form-select @error('is_featured') is-invalid product-error-field @enderror" wire:model="is_featured" aria-required="true">
                                     <option value="0">{{ __('No') }}</option>
                                     <option value="1">{{ __('Yes') }}</option>
                                 </select>
@@ -1082,14 +1082,14 @@
                     <div class="card-body pt-3">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Meta Title') }}</label>
-                                <input type="text" class="form-control @error('meta_title') is-invalid product-error-field @enderror" wire:model="meta_title">
+                                <label class="form-label" for="productMetaTitle">{{ __('Meta Title') }}</label>
+                                <input id="productMetaTitle" type="text" class="form-control @error('meta_title') is-invalid product-error-field @enderror" wire:model="meta_title">
                                 @error('meta_title') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Meta Description') }}</label>
-                                <textarea class="form-control @error('meta_description') is-invalid product-error-field @enderror" rows="3" wire:model="meta_description"></textarea>
+                                <label class="form-label" for="productMetaDescription">{{ __('Meta Description') }}</label>
+                                <textarea id="productMetaDescription" class="form-control @error('meta_description') is-invalid product-error-field @enderror" rows="3" wire:model="meta_description"></textarea>
                                 @error('meta_description') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                         </div>
@@ -1105,7 +1105,7 @@
                     </div>
 
                     <div class="card-body pt-3">
-                        <label class="form-label">{{ __('Product Images') }}</label>
+                        <label class="form-label" for="productImagesInput">{{ __('Product Images') }}</label>
 
                         <input
                             type="file"
