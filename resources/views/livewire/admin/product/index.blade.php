@@ -1044,24 +1044,18 @@
             }
         });
 
-        document.addEventListener('livewire:load', () => {
-            Livewire.hook('message.processed', () => {
-                if (!@this.pendingDeleteId) {
-                    const modalElement = document.getElementById('productDeleteConfirmationModal');
+        window.addEventListener('close-product-delete-confirmation', () => {
+            const modalElement = document.getElementById('productDeleteConfirmationModal');
+            if (modalElement && window.bootstrap) {
+                bootstrap.Modal.getInstance(modalElement)?.hide();
+            }
+        });
 
-                    if (modalElement && window.bootstrap) {
-                        bootstrap.Modal.getInstance(modalElement)?.hide();
-                    }
-                }
-
-                if (!@this.pendingBulkDeleteCount) {
-                    const bulkModalElement = document.getElementById('productBulkDeleteConfirmationModal');
-
-                    if (bulkModalElement && window.bootstrap) {
-                        bootstrap.Modal.getInstance(bulkModalElement)?.hide();
-                    }
-                }
-            });
+        window.addEventListener('close-product-bulk-delete-confirmation', () => {
+            const bulkModalElement = document.getElementById('productBulkDeleteConfirmationModal');
+            if (bulkModalElement && window.bootstrap) {
+                bootstrap.Modal.getInstance(bulkModalElement)?.hide();
+            }
         });
     </script>
 
