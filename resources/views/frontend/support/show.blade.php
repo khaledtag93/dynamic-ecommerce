@@ -33,7 +33,8 @@
                         <h2 class="h5 fw-bold mb-3">{{ __('Add a reply') }}</h2>
                         <form method="POST" action="{{ route('support.reply', $supportCase) }}" data-support-reply-form>
                             @csrf
-                            <textarea name="message" rows="5" class="form-control lc-form-control @error('message') is-invalid @enderror" maxlength="5000" required data-support-reply-input>{{ old('message') }}</textarea>
+                            <label class="visually-hidden" for="supportReplyMessage">{{ __('Reply') }}</label>
+                            <textarea id="supportReplyMessage" name="message" rows="5" class="form-control lc-form-control @error('message') is-invalid @enderror" maxlength="5000" required aria-required="true" data-support-reply-input>{{ old('message') }}</textarea>
                             @error('message')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             <div class="text-end mt-3"><button type="submit" class="btn lc-btn-primary" data-support-reply-submit data-loading-text="{{ __('Sending reply...') }}">{{ __('Send reply') }}</button></div>
                         </form>
