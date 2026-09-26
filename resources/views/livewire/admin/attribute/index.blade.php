@@ -44,15 +44,15 @@
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     <div class="admin-search-inline">
-                        <input type="text" wire:model.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
+                        <input type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
                     </div>
-                    <select wire:model="coverage" class="form-select" style="width:auto">
+                    <select wire:model.live="coverage" class="form-select" style="width:auto">
                         <option value="">{{ __('All attributes') }}</option>
                         <option value="with_values">{{ __('With values') }}</option>
                         <option value="empty">{{ __('Needs values') }}</option>
                         <option value="in_use">{{ __('In use by variants') }}</option>
                     </select>
-                    <select wire:model="perPage" class="form-select" style="width:auto">
+                    <select wire:model.live="perPage" class="form-select" style="width:auto">
                         <option value="10">10</option><option value="25">25</option><option value="50">50</option>
                     </select>
                 </div>
