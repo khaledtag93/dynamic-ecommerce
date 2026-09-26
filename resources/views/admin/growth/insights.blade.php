@@ -58,6 +58,9 @@
                 <tr><td>{{ $row['name'] ?? $row['experiment_name'] ?? '—' }}</td><td>{{ $row['messages'] ?? $row['message_count'] ?? 0 }}</td><td>{{ $row['conversions'] ?? $row['conversion_count'] ?? 0 }}</td><td>{{ number_format((float) ($row['revenue'] ?? 0), 2) }}</td></tr>
             @endforeach
             </tbody></table></div>
+            @if(method_exists($experiments, 'links'))
+                <div class="mt-3">{{ $experiments->fragment('growth-experiment-performance')->links() }}</div>
+            @endif
         @endif
     </section>
 </div>
