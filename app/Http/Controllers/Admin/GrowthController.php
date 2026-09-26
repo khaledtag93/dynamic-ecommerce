@@ -314,7 +314,7 @@ class GrowthController extends Controller
     {
         GrowthCampaign::query()->create($this->validateCampaign($request));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Campaign was created successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-campaigns')->with('success', __('Campaign was created successfully.'));
     }
 
     public function editCampaign(GrowthCampaign $campaign): View
@@ -330,7 +330,7 @@ class GrowthController extends Controller
     {
         $campaign->update($this->validateCampaign($request, $campaign));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Campaign was updated successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-campaigns')->with('success', __('Campaign was updated successfully.'));
     }
 
     public function destroyCampaign(GrowthCampaign $campaign): RedirectResponse
@@ -360,7 +360,7 @@ class GrowthController extends Controller
     {
         GrowthAutomationRule::query()->create($this->validateRule($request));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Automation rule was created successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-rules')->with('success', __('Automation rule was created successfully.'));
     }
 
     public function editRule(GrowthAutomationRule $rule): View
@@ -377,7 +377,7 @@ class GrowthController extends Controller
     {
         $rule->update($this->validateRule($request, $rule));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Automation rule was updated successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-rules')->with('success', __('Automation rule was updated successfully.'));
     }
 
     public function destroyRule(GrowthAutomationRule $rule): RedirectResponse
@@ -403,7 +403,7 @@ class GrowthController extends Controller
     {
         GrowthMessageTemplate::query()->create($this->validateTemplate($request));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Message template was created successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-templates')->with('success', __('Message template was created successfully.'));
     }
 
     public function editTemplate(GrowthMessageTemplate $template): View
@@ -417,7 +417,7 @@ class GrowthController extends Controller
     {
         $template->update($this->validateTemplate($request, $template));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Message template was updated successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-templates')->with('success', __('Message template was updated successfully.'));
     }
 
     public function destroyTemplate(GrowthMessageTemplate $template): RedirectResponse
@@ -443,7 +443,7 @@ class GrowthController extends Controller
     {
         GrowthAudienceSegment::query()->create($this->validateSegment($request));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Audience segment was created successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-segments')->with('success', __('Audience segment was created successfully.'));
     }
 
     public function editSegment(GrowthAudienceSegment $segment): View
@@ -457,7 +457,7 @@ class GrowthController extends Controller
     {
         $segment->update($this->validateSegment($request, $segment));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Audience segment was updated successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-segments')->with('success', __('Audience segment was updated successfully.'));
     }
 
     public function destroySegment(GrowthAudienceSegment $segment): RedirectResponse
@@ -490,7 +490,7 @@ class GrowthController extends Controller
     {
         GrowthExperiment::query()->create($this->validateExperiment($request));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Experiment was created successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-experiments')->with('success', __('Experiment was created successfully.'));
     }
 
     public function editExperiment(GrowthExperiment $experiment): View
@@ -505,7 +505,7 @@ class GrowthController extends Controller
     {
         $experiment->update($this->validateExperiment($request, $experiment));
 
-        return redirect()->route('admin.growth.index')->with('success', __('Experiment was updated successfully.'));
+        return redirect()->to(route('admin.growth.content').'#growth-experiments')->with('success', __('Experiment was updated successfully.'));
     }
 
     public function destroyExperiment(GrowthExperiment $experiment): RedirectResponse
