@@ -409,7 +409,7 @@ class SettingController extends Controller
     {
         $rules = [
             'theme_preset' => ['nullable', 'string', 'max:100', Rule::in(array_keys($this->allThemes()))],
-            'default_locale' => ['nullable', 'string', 'max:5'],
+            'default_locale' => ['nullable', Rule::in(['en', 'ar'])],
             'project_name' => ['required', 'string', 'max:255'],
             'store_name' => ['required', 'string', 'max:255'],
             'store_tagline' => ['nullable', 'string', 'max:255'],
