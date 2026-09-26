@@ -58,6 +58,18 @@ class OperationsHealthTest extends TestCase
         $this->assertSame(1, Artisan::call('ops:health', ['--max-age' => 60]));
     }
 
+    public function test_health_rejects_queue_heartbeat_from_another_connection(): void
+    {
+        config(['queue.default' => 'database']);
+
+        $heartbeats = app(HeartbeatService::class);
+        $heartbeats->beat('scheduler');
+        $heartbeats->beat('queue', ['connection' => 'sync']);
+
+        $this->assertSame(1, Artisan::call('ops:health', ['--max-age' => 180]));
+        $this->assertStringContainsString('connection mismatch: sync', Artisan::output());
+    }
+
     public function test_strict_database_queue_health_reports_pending_and_failed_jobs(): void
     {
         config(['queue.default' => 'database']);
