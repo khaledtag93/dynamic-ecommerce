@@ -56,6 +56,17 @@ class BrandingWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("setAttribute('data-applied-preset', key)", $source);
     }
 
+    public function test_theme_gallery_supports_market_discovery(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/settings/branding.blade.php'));
+
+        $this->assertStringContainsString('id="themeGallerySearch"', $source);
+        $this->assertStringContainsString('data-theme-filter="commerce"', $source);
+        $this->assertStringContainsString('data-theme-category=', $source);
+        $this->assertStringContainsString('id="themeGalleryEmpty"', $source);
+        $this->assertStringContainsString('filterThemeGallery()', $source);
+    }
+
     public function test_branding_workspace_translation_catalogs_cover_every_literal_key(): void
     {
         $source = file_get_contents(resource_path('views/admin/settings/branding.blade.php'));
