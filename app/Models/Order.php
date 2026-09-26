@@ -108,6 +108,7 @@ class Order extends Model
         'delivery_method_label',
         'refundable_balance',
         'can_user_cancel',
+        'can_retry_online_payment',
     ];
 
     protected $casts = [
@@ -369,5 +370,21 @@ class Order extends Model
     public function getCanUserCancelAttribute(): bool
     {
         return $this->canBeCancelledByUser();
+    }
+
+    public function canRetryOnlinePayment(): bool
+    {
+        return $this->payment_method === self::PAYMENT_METHOD_ONLINE
+            && $this->status !== self::STATUS_CANCELLED
+            && ! in_array($this->payment_status, [
+                self::PAYMENT_STATUS_PAID,
+                self::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                self::PAYMENT_STATUS_REFUNDED,
+            ], true);
+    }
+
+    public function getCanRetryOnlinePaymentAttribute(): bool
+    {
+        return $this->canRetryOnlinePayment();
     }
 }
