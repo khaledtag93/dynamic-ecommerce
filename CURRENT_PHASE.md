@@ -75,3 +75,44 @@ See `docs/PROJECT_CHECKPOINT_2026-09-25.md` for the detailed checkpoint and rema
 - Media-root regression is verified resolved in QAS.
 - Category list/edit images now render correctly after the isolated QAS public-root fix and one-time uploads synchronization.
 - Continue with the remaining consolidated QAS acceptance backlog; do not reopen the media issue unless it regresses.
+
+
+## 2026-09-26 — Green Growth closure checkpoint
+
+### Verified source / CI state
+- Working branch remains `v42-clean-baseline`.
+- Latest verified green source HEAD: `9526d27537f7e5268422a9422a450af87242edbb` (`9526d275`).
+- GitHub Actions run `36208265474` completed successfully on that exact HEAD.
+- This is the current source baseline for continuation unless a newer branch commit is verified.
+- Production remains unchanged.
+
+### QAS separation
+- Operator confirmed a QAS deployment earlier in this session from the prior green baseline `5e2a393abfa9e7773846a463ccd674afe717d0e3`.
+- Growth commits after `5e2a393a`, including the bounded-insight and CRUD-return-flow changes through `9526d275`, are source/CI verified but are **not yet recorded as deployed to QAS**.
+- Do not assume QAS contains `9526d275` until the operator explicitly deploys and confirms it.
+
+### Growth Workspace closure progress
+- Content lists are paginated independently: campaigns, automation rules, templates, audience segments and experiments.
+- Operations lists are paginated independently: deliveries, trigger logs and message logs.
+- Insights experiment performance is paginated.
+- Attribution, cohort, predictive and adaptive insight reads are database-bounded; predictive/adaptive top-row reads now request exactly the 5 rows displayed by the UI.
+- `GrowthWorkspaceV2Test` guards the pagination/bounded-read contract.
+- Growth CRUD create/update flows now return to `Content & Journeys` and the relevant module anchor instead of dumping the operator back on Overview.
+- Regression coverage guards the Growth journey return flow.
+- Latest Growth closure commits:
+  - `19fbb152` — align Growth insight query bounds.
+  - `3f46148f` — guard Growth insight result bounds.
+  - `84011ac4` — keep Growth CRUD in journey workspace.
+  - `9526d275` — guard Growth journey return flow.
+- Remaining acceptance is targeted authenticated QAS EN/AR/RTL/responsive/functional review, not another broad source redesign unless that review finds a real regression.
+
+### Newly recorded roadmap item — Social sign-in
+- Customer social login is **not implemented yet**.
+- Current authentication remains standard Laravel `Auth::routes()`; the repository currently has no Laravel Socialite dependency and no Google/Facebook/Apple OAuth routes/controllers.
+- Future Customer Account / Authentication slice: configurable social sign-in, with Google as the natural first provider, Apple important for the planned iOS/mobile product, and Facebook optional based on product need.
+- Provider enable/disable and credentials must be Admin-configurable and handled securely.
+- This is recorded for later and must not interrupt the current close-existing-work-first sequence.
+
+### Working rule reaffirmed
+- Close existing in-progress modules to production-grade quality before starting unrelated new features, unless a new finding is a blocker, regression, security issue or prevents avoidable rework.
+- New useful ideas should be recorded in the roadmap and picked up in dependency/priority order.
