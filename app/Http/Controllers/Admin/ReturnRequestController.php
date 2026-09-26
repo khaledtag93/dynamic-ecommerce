@@ -18,8 +18,12 @@ class ReturnRequestController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => (string) $request->string('status'),
             'per_page' => max(12, min(100, (int) $request->integer('per_page', 20))),
         ];
@@ -27,13 +31,13 @@ class ReturnRequestController extends Controller
         $returns = ReturnRequest::query()
             ->with(['order', 'user'])
             ->withCount('items')
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('reference', 'like', "%{$search}%")
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('reference', 'like', $like)
                         ->orWhereHas('order', fn ($order) => $order
-                            ->where('order_number', 'like', "%{$search}%")
-                            ->orWhere('customer_name', 'like', "%{$search}%")
-                            ->orWhere('customer_email', 'like', "%{$search}%"));
+                            ->where('order_number', 'like', $like)
+                            ->orWhere('customer_name', 'like', $like)
+                            ->orWhere('customer_email', 'like', $like));
                 });
             })
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
