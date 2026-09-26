@@ -300,13 +300,13 @@ class GrowthCampaignService
             ? app(GrowthPredictiveIntelligenceService::class)->summary()
             : [];
         $predictiveRows = ($isFull || $isInsights)
-            ? app(GrowthPredictiveIntelligenceService::class)->topRows()
+            ? app(GrowthPredictiveIntelligenceService::class)->topRows(5)
             : collect();
         $adaptiveLearningSummary = ($isFull || $isInsights)
             ? app(GrowthAdaptiveLearningService::class)->summary()
             : [];
         $adaptiveLearningRows = ($isFull || $isInsights)
-            ? app(GrowthAdaptiveLearningService::class)->topRows()
+            ? app(GrowthAdaptiveLearningService::class)->topRows(5)
             : collect();
 
         $experimentPerformance = collect();
