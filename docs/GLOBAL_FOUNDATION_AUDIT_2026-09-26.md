@@ -96,6 +96,13 @@ The buyer may independently inspect source, dependencies, clean installation, up
 
 **Gate:** the initial landmark/motion source `72cf678010b35ff6967fe4c1077feece790f8ba6` passed [Hardening CI 36257428543](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36257428543). An intermediate follow-up correctly exposed one stale existing test that required unconditional smooth scrolling; that assertion was aligned with the accessible contract. Final source `ba00f303b2e32fb8cb76ce84f25af89d449fadf7` passed [Hardening CI 36257847029](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36257847029): 470 PHP tests / 13,982 assertions, shared Node interaction tests, clean MySQL migration, Composer audit, Blade/config compilation and frontend build. QAS keyboard/mobile/EN/AR/reduced-motion acceptance remains open, so GF-16 is IN REVIEW.
 
+### GF-17 — Storefront account/auth current-state and label semantics
+**Finding:** the shared mobile Storefront navigation marked Account Overview with the broad `account.*` matcher while Address Book had its own `account.addresses.*` matcher. On address routes this could expose two different links as the current page. The desktop account dropdown did not expose current-page semantics, and the primary Login/Register forms were visually close to the newer auth pages but were missing the common page-shell geometry and explicit `label[for]` associations on credential fields.
+
+**Source action:** Account Overview now matches only `account.index` in mobile/footer navigation; the desktop account dropdown exposes current states for Account, Orders, Address Book and Notifications and styles the active item. Login/Register now use `lc-page-shell`, the shared auth width, and explicit field-label associations. A rendered Address Book regression test protects against a false Account Overview current state, and auth tests protect the label/shell contract.
+
+**Gate:** source `e82b3f9d82afdc3be71506827b29f71fb377f967` is implemented on `sec03-framework-upgrade`. GF-17 remains **IN REVIEW** pending readable final Hardening CI evidence and exact-revision EN/AR desktop/mobile keyboard QAS acceptance. No Production claim is made.
+
 ## Global Foundation execution order
 1. Admin shell/navigation closure.
 2. Storefront shell/navigation/footer visual foundation.
