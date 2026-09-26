@@ -45,11 +45,13 @@ html[dir="rtl"] .growth-form-page .growth-switch{justify-content:flex-start}
         <a href="{{ route('admin.growth.index') }}" class="btn btn-light border">{{ __('Back to growth workspace') }}</a>
     </x-admin.page-header>
 
-    <form method="POST" action="{{ $experiment->exists ? route('admin.growth.experiments.update', $experiment) : route('admin.growth.experiments.store') }}" data-submit-loading>
+    <form method="POST" action="{{ $experiment->exists ? route('admin.growth.experiments.update', $experiment) : route('admin.growth.experiments.store') }}" data-submit-loading data-growth-form>
         @csrf
         @if($experiment->exists)
             @method('PUT')
         @endif
+
+        <x-admin.growth-validation-summary :errors="$errors" />
 
         <div class="row g-4 align-items-start">
             <div class="col-xl-8">
