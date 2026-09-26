@@ -89,6 +89,49 @@ class GrowthWorkspaceV2Test extends TestCase
         $this->assertSame('سجلات تشغيل الأتمتة المتاحة للمراجعة.', $translations['Tracked automation trigger records available for review.'] ?? null);
     }
 
+    public function test_growth_workspace_navigation_and_core_forms_are_accessible(): void
+    {
+        $layout = file_get_contents(resource_path('views/admin/growth/layout.blade.php'));
+
+        $this->assertSame(4, substr_count($layout, 'aria-current="page"'));
+
+        $forms = [
+            resource_path('views/admin/growth/campaign-form.blade.php') => [
+                'growthCampaignName',
+                'growthCampaignType',
+            ],
+            resource_path('views/admin/growth/rule-form.blade.php') => [
+                'growthRuleName',
+                'growthRuleCampaign',
+                'growthRuleTriggerType',
+            ],
+            resource_path('views/admin/growth/template-form.blade.php') => [
+                'growthTemplateName',
+                'growthTemplateKey',
+                'growthTemplateBody',
+            ],
+            resource_path('views/admin/growth/segment-form.blade.php') => [
+                'growthSegmentName',
+            ],
+            resource_path('views/admin/growth/experiment-form.blade.php') => [
+                'growthExperimentName',
+            ],
+        ];
+
+        foreach ($forms as $path => $controlIds) {
+            $source = file_get_contents($path);
+
+            foreach ($controlIds as $controlId) {
+                $this->assertStringContainsString('for="' . $controlId . '"', $source);
+                $this->assertStringContainsString('id="' . $controlId . '"', $source);
+                $this->assertMatchesRegularExpression(
+                    '/id="' . preg_quote($controlId, '/') . '"[^>]*aria-required="true"/',
+                    $source
+                );
+            }
+        }
+    }
+
     public function test_growth_large_workspaces_use_real_pagination_and_bounded_overview_reads(): void
     {
         $service = file_get_contents(app_path('Services/Growth/GrowthCampaignService.php'));
