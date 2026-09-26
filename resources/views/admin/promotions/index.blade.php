@@ -31,12 +31,12 @@
     <div class="admin-card-body">
         <form method="GET" action="{{ route('admin.promotions.index') }}" class="admin-filter-grid" data-live-filter>
             <div>
-                <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                <input type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Promotion name') }}">
+                <label class="form-label fw-semibold" for="promotionSearch">{{ __('Search') }}</label>
+                <input id="promotionSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Promotion name') }}">
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Type') }}</label>
-                <select name="type" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="promotionTypeFilter">{{ __('Type') }}</label>
+                <select id="promotionTypeFilter" name="type" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All types') }}</option>
                     @foreach([
                         'order_percentage' => __('Order percentage'),
@@ -49,16 +49,16 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                <select name="status" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="promotionStatusFilter">{{ __('Status') }}</label>
+                <select id="promotionStatusFilter" name="status" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All statuses') }}</option>
                     <option value="active" @selected($filters['status'] === 'active')>{{ __('Active') }}</option>
                     <option value="inactive" @selected($filters['status'] === 'inactive')>{{ __('Inactive') }}</option>
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Schedule') }}</label>
-                <select name="schedule" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="promotionScheduleFilter">{{ __('Schedule') }}</label>
+                <select id="promotionScheduleFilter" name="schedule" class="form-select" data-live-filter-control>
                     <option value="">{{ __('All schedules') }}</option>
                     <option value="running" @selected($filters['schedule']==='running')>{{ __('Running now') }}</option>
                     <option value="upcoming" @selected($filters['schedule']==='upcoming')>{{ __('Upcoming') }}</option>
@@ -66,8 +66,8 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                <select name="per_page" class="form-select" data-live-filter-control>
+                <label class="form-label fw-semibold" for="promotionPerPage">{{ __('Per page') }}</label>
+                <select id="promotionPerPage" name="per_page" class="form-select" data-live-filter-control>
                     @foreach([20,40,80] as $size)
                         <option value="{{ $size }}" @selected((int)$filters['per_page']===$size)>{{ $size }}</option>
                     @endforeach
