@@ -168,7 +168,7 @@ class BrandingSettingsExperienceTest extends TestCase
                 'store_name' => 'Tag Market Place',
                 'theme_preset' => 'professional_commerce',
                 'default_locale' => 'en',
-                'homepage_sections_order' => 'trust_blocks,hero,trust_blocks,unknown_section',
+                'homepage_sections_order' => 'trust_blocks,hero,promo_banner,trust_blocks,unknown_section',
             ])
             ->assertSessionHasNoErrors();
 
@@ -178,6 +178,8 @@ class BrandingSettingsExperienceTest extends TestCase
         $this->assertSame('hero', $order[1] ?? null);
         $this->assertSame(1, count(array_keys($order, 'trust_blocks', true)));
         $this->assertNotContains('unknown_section', $order);
+        $this->assertNotContains('promo_banner', $order);
+        $this->assertContains('promo_banners', $order);
         $this->assertContains('featured_products', $order);
         $this->assertContains('categories', $order);
     }
