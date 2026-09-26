@@ -79,3 +79,19 @@ Production remains blocked until:
 - Stock reservation expiry is observed through the scheduler.
 - Deploy + `queue:restart` behavior is verified.
 - The same operational setup is documented for Production before enabling `QUEUE_CONNECTION=database`.
+
+
+## QAS automatic runtime acceptance — 2026-09-26
+
+Automatic hPanel Cron execution has now been verified across multiple minute cycles.
+
+Observed evidence:
+- Scheduler heartbeat remains fresh without manual commands.
+- Queue-worker heartbeat remains fresh without manual commands.
+- Queue driver is `database`.
+- Failed jobs remain `0`.
+- The scheduler executed `growth:run`, `notifications:scan-escalations`, and `payments:expire-stock-reservations` successfully in its scheduled cycle.
+- The bounded queue worker consumed `RecordQueueHeartbeat` jobs successfully and stopped cleanly when the queue emptied.
+- A single pending heartbeat job may be visible between cron launches because scheduler and queue jobs can start in the same minute. The following worker cycle consumes it; this is timing behavior, not a failed job.
+
+QAS OPS-03 automatic runtime proof is accepted. Production still requires the same cron/queue setup and verification before promotion.
