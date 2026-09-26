@@ -50,8 +50,8 @@ html[dir="rtl"] .growth-form-page .growth-switch{justify-content:flex-start}
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">{{ __('Name') }}</label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $campaign->name) }}" placeholder="{{ __('Example: Cart recovery reminder') }}" required>
+                            <label class="form-label fw-semibold" for="growthCampaignName">{{ __('Name') }}</label>
+                            <input id="growthCampaignName" type="text" name="name" aria-required="true" class="form-control" value="{{ old('name', $campaign->name) }}" placeholder="{{ __('Example: Cart recovery reminder') }}" required>
                             <div class="form-text">{{ __('Use a clear internal name so the team can identify this campaign quickly.') }}</div>
                         </div>
 
@@ -62,8 +62,8 @@ html[dir="rtl"] .growth-form-page .growth-switch{justify-content:flex-start}
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">{{ __('Campaign type') }}</label>
-                            <input type="text" name="campaign_type" class="form-control" value="{{ old('campaign_type', $campaign->campaign_type) }}" placeholder="{{ __('Example: retention') }}" required>
+                            <label class="form-label fw-semibold" for="growthCampaignType">{{ __('Campaign type') }}</label>
+                            <input id="growthCampaignType" type="text" name="campaign_type" aria-required="true" class="form-control" value="{{ old('campaign_type', $campaign->campaign_type) }}" placeholder="{{ __('Example: retention') }}" required>
                         </div>
 
                         <div class="col-md-6">
