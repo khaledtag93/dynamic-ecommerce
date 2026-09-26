@@ -1,5 +1,13 @@
 # MASTER PROJECT STATUS
 
+## GF-17 — Storefront account/auth semantics — 2026-09-26
+
+- Source `e82b3f9d82afdc3be71506827b29f71fb377f967` on `sec03-framework-upgrade` removes ambiguous Account Overview current-state matching, adds current-state semantics to the desktop account dropdown, and aligns Login/Register shell + form-label associations with the shared customer auth pattern.
+- Regression coverage now protects real Address Book rendering and auth field labels.
+- Status is **IN REVIEW**, not CLOSED: final push-triggered Hardening CI evidence is not readable through the current connector endpoint yet, and matching-revision QAS EN/AR/mobile/keyboard acceptance remains outstanding. Production is unchanged; OPS-01/PAY-01/OPS-02 remain release gates.
+
+### Earlier checkpoints below
+
 ## Shared Storefront foundation ledger — 2026-09-26
 
 - Active hardening line `sec03-framework-upgrade` application HEAD: `ba00f303b2e32fb8cb76ce84f25af89d449fadf7`.
