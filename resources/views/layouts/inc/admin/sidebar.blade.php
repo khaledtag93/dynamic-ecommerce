@@ -336,11 +336,11 @@
     @endif
 
     <div class="sidebar-utility-links px-3 pb-4">
-        <a class="sidebar-utility-link" href="{{ Route::has('frontend.home') ? route('frontend.home') : url('/') }}" target="_blank" rel="noopener">
+        <a class="sidebar-utility-link" href="{{ Route::has('frontend.home') ? route('frontend.home') : url('/') }}" target="_blank" rel="noopener" aria-label="{{ __('Open storefront') }}" title="{{ __('Open storefront') }}">
             <i class="mdi mdi-storefront-outline"></i>
             <span>{{ __('Open storefront') }}</span>
         </a>
-        <a class="sidebar-utility-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();">
+        <a class="sidebar-utility-link" href="{{ route('logout') }}" aria-label="{{ __('Sign out') }}" title="{{ __('Sign out') }}" onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();">
             <i class="mdi mdi-logout"></i>
             <span>{{ __('Sign out') }}</span>
         </a>

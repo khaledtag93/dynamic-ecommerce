@@ -2,6 +2,9 @@
 
 ## Authoritative audit checkpoint — 2026-09-26
 
+- **Product modernization execution mode:** Global Foundation first, then strict page-by-page closure across Admin and Customer/Storefront. See [Page Closure System](docs/PAGE_CLOSURE_SYSTEM_2026-09-26.md).
+- **Closure rule:** no page is considered CLOSED with known UI/UX, product-completeness, Livewire/reload, EN/AR/RTL, mobile, accessibility, security, validation, performance, help, maintainability or test/QAS gaps remaining.
+- **First global-shell source fix:** collapsed Admin sidebar utility actions now collapse to centered icons instead of leaving Open Storefront / Sign Out text outside the mini sidebar; CI/QAS acceptance pending.
 - Current audit and execution priorities: [Production foundation audit (Arabic)](docs/PRODUCTION_FOUNDATION_AUDIT_2026-09-26_AR.md).
 - **Framework/security rehearsal branch:** `sec03-framework-upgrade`.
 - **Current verified rehearsal HEAD:** `f1f20297a27e2236603788ac7cc343dbbf86d0b6`.

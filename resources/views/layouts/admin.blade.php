@@ -2303,6 +2303,24 @@ select option {
         .sidebar-utility-link { display: flex; align-items: center; gap: .7rem; min-height: 42px; padding: .8rem .95rem; border-radius: 14px; background: rgba(255,255,255,.04); color: rgba(255,255,255,.86); text-decoration: none; transition: all .18s ease; }
         .sidebar-utility-link:hover { background: rgba(255,255,255,.09); color: #fff; transform: translateY(-1px); }
         .sidebar-utility-link i { font-size: 1rem; }
+        .sidebar-icon-only .custom-sidebar .sidebar-utility-links {
+            padding-left: .5rem !important;
+            padding-right: .5rem !important;
+        }
+        .sidebar-icon-only .custom-sidebar .sidebar-utility-link {
+            justify-content: center;
+            gap: 0;
+            min-height: 46px;
+            padding: .8rem .5rem;
+            overflow: hidden;
+        }
+        .sidebar-icon-only .custom-sidebar .sidebar-utility-link span {
+            display: none !important;
+        }
+        .sidebar-icon-only .custom-sidebar .sidebar-utility-link i {
+            margin: 0 !important;
+            font-size: 1.2rem;
+        }
         .admin-navigation-card__icon { width: 48px; height: 48px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--admin-accent) 14%, white); color: color-mix(in srgb, var(--admin-accent) 70%, var(--admin-primary)); font-size: 1.25rem; }
         .admin-navigation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
         .admin-navigation-item { display: flex; gap: .9rem; min-height: 132px; padding: 1rem; border: 1px solid var(--admin-border); border-radius: 18px; background: #fff; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }

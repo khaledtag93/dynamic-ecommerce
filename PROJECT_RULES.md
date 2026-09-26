@@ -80,3 +80,27 @@
 - Create/confirm a recoverable backup before production changes.
 - Verify the application after deploy.
 - Use rollback when verification fails; database migrations/data changes need their own rollback plan.
+
+### 17) Global Foundation Before Page Closure
+- Before the full page-by-page pass, harden shared foundations once: Admin shell, Storefront shell, design tokens/components, forms, feedback states, responsive behavior, bilingual/RTL rules, motion, accessibility and Livewire interaction conventions.
+- Fix a shared defect at the shared layer instead of repeating local patches across pages.
+
+### 18) Strict Page Closure / Definition of Done
+- Treat every Admin and Customer page as a production closure milestone.
+- A page is not CLOSED until every relevant dimension has been reviewed and known issues are resolved: product completeness, UI/UX, information architecture, section/action placement, EN/AR/RTL, responsive/mobile behavior, accessibility, security/permissions, validation, loading/empty/error/success states, performance, help/onboarding, maintainability, automated regression coverage and QAS acceptance.
+- Reopen a CLOSED page only for a genuinely new requirement or a newly discovered regression/bug, not deferred polish.
+
+### 19) Livewire 4 Interaction Standard
+- Actively use Livewire 4 or an equivalent progressive live pattern to remove unnecessary full-page reloads, scroll jumps and lost UI state.
+- Prefer immediate server-confirmed calculations, live search/autocomplete, filters, pagination, inline actions and partial updates while preserving server authority for money, stock, permissions and destructive operations.
+- Preserve the user's useful context where possible: scroll position, focus, filters, pagination and open workspace state.
+
+### 20) Customer Experience Is First-Class
+- Storefront/Customer pages have the same quality priority as Admin pages because they directly shape merchant customer trust and conversion.
+- Existing layouts may be simplified, reorganized, replaced or rebuilt when that materially improves clarity, visual quality, responsiveness, trust or conversion.
+- Remove prototype-like, noisy or unnecessary UI even when technically functional.
+
+### 21) Completion Before Expansion
+- During this pass, new ideas are recorded but do not interrupt closure unless they are blockers, regressions, security issues, direct dependencies or prevent imminent rework.
+- Help and onboarding should explain unfamiliar flows proactively with contextual guidance, examples, useful validation messages and meaningful empty states.
+
