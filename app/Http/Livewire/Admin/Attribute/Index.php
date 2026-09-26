@@ -114,12 +114,14 @@ class Index extends Component
 
         if (! $attribute) {
             $this->pendingDeleteId = null;
+            $this->dispatch('close-attribute-delete-confirmation');
             session()->flash('error', __('Attribute no longer exists.'));
             return;
         }
 
         if ($attribute->variant_attributes_count > 0) {
             $this->pendingDeleteId = null;
+            $this->dispatch('close-attribute-delete-confirmation');
             session()->flash('error', __('This attribute is used by product variants and cannot be deleted.'));
             return;
         }
@@ -128,6 +130,7 @@ class Index extends Component
         $attribute->delete();
         $this->pendingDeleteId = null;
         $this->resetPage();
+        $this->dispatch('close-attribute-delete-confirmation');
 
         session()->flash('message', __('Attribute :name deleted successfully.', ['name' => $name]));
     }
