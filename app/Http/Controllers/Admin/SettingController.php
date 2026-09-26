@@ -356,18 +356,24 @@ class SettingController extends Controller
             ->all();
         $data['homepage_sections_order'] = implode(',', array_values(array_unique(array_merge($requestedHomepageSections, $allowedHomepageSections))));
 
+        $brandingUploads = [];
+
         foreach (['logo', 'admin_logo', 'hero_banner', 'favicon'] as $baseField) {
-            $this->handleBrandingUpload($request, $data, $baseField, $baseField . '_file', $baseField . '_path');
+            if ($upload = $this->handleBrandingUpload($request, $data, $baseField, $baseField . '_file', $baseField . '_path')) {
+                $brandingUploads[] = $upload;
+            }
         }
 
         foreach (range(1, 3) as $index) {
-            $this->handleBrandingUpload(
+            if ($upload = $this->handleBrandingUpload(
                 $request,
                 $data,
                 "promo_banner_{$index}",
                 "promo_banner_{$index}_file",
                 "promo_banner_{$index}_image_path"
-            );
+            )) {
+                $brandingUploads[] = $upload;
+            }
         }
 
         foreach ($this->booleanFields() as $booleanKey) {
@@ -403,7 +409,19 @@ class SettingController extends Controller
             unset($data[$key]);
         }
 
-        $this->settingsService->save($data);
+        try {
+            $this->settingsService->save($data);
+        } catch (\Throwable $exception) {
+            foreach ($brandingUploads as $upload) {
+                $this->deleteBrandingFile($upload['new_path'] ?? null);
+            }
+
+            throw $exception;
+        }
+
+        foreach ($brandingUploads as $upload) {
+            $this->deleteObsoleteBrandingFile($upload['old_path'] ?? null, $upload['new_path'] ?? null);
+        }
 
         return back()->with('success', __('Brand settings updated successfully.'));
     }
@@ -580,10 +598,10 @@ class SettingController extends Controller
         ];
     }
 
-    private function handleBrandingUpload(Request $request, array &$data, string $settingKeyBase, string $fileField, string $pathField): void
+    private function handleBrandingUpload(Request $request, array &$data, string $settingKeyBase, string $fileField, string $pathField): ?array
     {
         if (! $request->hasFile($fileField)) {
-            return;
+            return null;
         }
 
         $oldPath = WebsiteSetting::getValue($pathField) ?: WebsiteSetting::getValue($settingKeyBase);
@@ -603,7 +621,29 @@ class SettingController extends Controller
             $data[$settingKeyBase] = $data[$pathField];
         }
 
-        $this->deleteObsoleteBrandingFile($oldPath, $data[$pathField]);
+        return [
+            'old_path' => $oldPath,
+            'new_path' => $data[$pathField],
+        ];
+    }
+
+    private function deleteBrandingFile(?string $path): void
+    {
+        if (blank($path)) {
+            return;
+        }
+
+        $normalized = MediaPath::normalizeRelative($path, 'branding');
+
+        if (blank($normalized) || ! str_starts_with($normalized, 'branding/')) {
+            return;
+        }
+
+        $fullPath = MediaPath::uploadsRootPath($normalized);
+
+        if (File::exists($fullPath)) {
+            File::delete($fullPath);
+        }
     }
 
     private function deleteObsoleteBrandingFile(?string $oldPath, ?string $newPath = null): void
