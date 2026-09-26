@@ -43,12 +43,12 @@ class PaymobGatewayService
         Log::error($message, $context);
     }
 
-    public function __construct(?StoreSettingsService $storeSettingsService = null)
+    public function __construct(StoreSettingsService $storeSettingsService)
     {
         $settings = [];
 
         try {
-            if ($storeSettingsService && Schema::hasTable('website_settings')) {
+            if (Schema::hasTable('website_settings')) {
                 $settings = $storeSettingsService->all();
             }
         } catch (\Throwable $e) {
