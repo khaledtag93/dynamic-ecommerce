@@ -207,14 +207,14 @@
                             type="text"
                             class="form-control"
                             placeholder="{{ __('Search by name, slug, SKU, or barcode...') }}"
-                            wire:model.debounce.400ms="search"
+                            wire:model.live.debounce.400ms="search"
                         >
                     </div>
                 </div>
 
                 <div class="col-6 col-lg-2">
                     <label class="form-label filter-label">{{ __('Status') }}</label>
-                    <select class="form-select" wire:model="statusFilter">
+                    <select class="form-select" wire:model.live="statusFilter">
                         <option value="">{{ __('All') }}</option>
                         <option value="1">{{ __('Active') }}</option>
                         <option value="0">{{ __('Hidden') }}</option>
@@ -223,7 +223,7 @@
 
                 <div class="col-6 col-lg-2">
                     <label class="form-label filter-label">{{ __('Category') }}</label>
-                    <select class="form-select" wire:model="categoryFilter">
+                    <select class="form-select" wire:model.live="categoryFilter">
                         <option value="">{{ __('All Categories') }}</option>
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -233,7 +233,7 @@
 
                 <div class="col-6 col-lg-2">
                     <label class="form-label filter-label">{{ __('Brand') }}</label>
-                    <select class="form-select" wire:model="brandFilter">
+                    <select class="form-select" wire:model.live="brandFilter">
                         <option value="">{{ __('All Brands') }}</option>
                         @foreach ($brands as $brand)
                             <option value="{{ $brand->id }}">{{ $brand->name }}</option>
@@ -243,7 +243,7 @@
 
                 <div class="col-6 col-lg-2">
                     <label class="form-label filter-label">{{ __('Content readiness') }}</label>
-                    <select class="form-select" wire:model="readinessFilter">
+                    <select class="form-select" wire:model.live="readinessFilter">
                         <option value="">{{ __('All products') }}</option>
                         <option value="ready">{{ __('Content complete') }}</option>
                         <option value="needs_attention">{{ __('Needs content') }}</option>
@@ -252,7 +252,7 @@
 
                 <div class="col-6 col-lg-2">
                     <label class="form-label filter-label">{{ __('Inventory') }}</label>
-                    <select class="form-select" wire:model="stockFilter">
+                    <select class="form-select" wire:model.live="stockFilter">
                         <option value="">{{ __('All stock levels') }}</option>
                         <option value="in">{{ __('In stock') }}</option>
                         <option value="low">{{ __('Low stock') }}</option>
@@ -262,7 +262,7 @@
 
                 <div class="col-6 col-lg-2">
                     <label class="form-label filter-label">{{ __('Featured') }}</label>
-                    <select class="form-select" wire:model="featuredFilter">
+                    <select class="form-select" wire:model.live="featuredFilter">
                         <option value="">{{ __('All products') }}</option>
                         <option value="1">{{ __('Featured only') }}</option>
                         <option value="0">{{ __('Not featured') }}</option>
@@ -271,7 +271,7 @@
 
                 <div class="col-6 col-lg-1">
                     <label class="form-label filter-label">{{ __('Per Page') }}</label>
-                    <select class="form-select" wire:model="perPage">
+                    <select class="form-select" wire:model.live="perPage">
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
@@ -307,7 +307,7 @@
                             class="form-check-input"
                             type="checkbox"
                             id="selectPage"
-                            wire:model="selectPage"
+                            wire:model.live="selectPage"
                         >
                         <label class="form-check-label fw-semibold" for="selectPage">
                             {{ __('Select this page') }}
@@ -491,7 +491,7 @@
                                             type="checkbox"
                                             class="form-check-input row-checkbox"
                                             value="{{ $product->id }}"
-                                            wire:model="selectedProducts"
+                                            wire:model.live="selectedProducts"
                                         >
                                         <span class="text-muted small">#{{ $product->id }}</span>
                                     </div>
@@ -569,7 +569,7 @@
                                                     step="0.01"
                                                     min="0"
                                                     class="form-control"
-                                                    wire:model.defer="inlineBasePrice.{{ $product->id }}"
+                                                    wire:model="inlineBasePrice.{{ $product->id }}"
                                                     wire:keydown.enter="saveInlineBasePrice({{ $product->id }})"
                                                     wire:keydown.escape="cancelEditBasePrice"
                                                 >
@@ -633,7 +633,7 @@
                                                     step="0.01"
                                                     min="0"
                                                     class="form-control"
-                                                    wire:model.defer="inlineSalePrice.{{ $product->id }}"
+                                                    wire:model="inlineSalePrice.{{ $product->id }}"
                                                     wire:keydown.enter="saveInlineSalePrice({{ $product->id }})"
                                                     wire:keydown.escape="cancelEditSalePrice"
                                                 >
@@ -702,7 +702,7 @@
                                                 type="number"
                                                 min="0"
                                                 class="form-control form-control-sm"
-                                                wire:model.defer="inlineQty.{{ $product->id }}"
+                                                wire:model="inlineQty.{{ $product->id }}"
                                                 wire:keydown.enter="saveInlineQty({{ $product->id }})"
                                                 wire:keydown.escape="cancelEditQty"
                                             >
