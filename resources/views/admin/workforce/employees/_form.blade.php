@@ -4,8 +4,8 @@
 
 @if(!$editing)
 <div class="mb-4">
-    <label class="form-label fw-semibold">{{ __('Staff account') }}</label>
-    <select name="user_id" class="form-select @error('user_id') is-invalid @enderror" required>
+    <label class="form-label fw-semibold" for="employeeUserId">{{ __('Staff account') }}</label>
+    <select id="employeeUserId" name="user_id" aria-required="true" class="form-select @error('user_id') is-invalid @enderror" required>
         <option value="">{{ __('Select a staff account') }}</option>
         @foreach($candidateUsers as $candidate)
             <option value="{{ $candidate->id }}" @selected((string)old('user_id') === (string)$candidate->id)>{{ $candidate->name }} · {{ $candidate->email }}</option>
@@ -33,24 +33,24 @@
 
 <div class="row g-3">
     <div class="col-md-4">
-        <label class="form-label fw-semibold">{{ __('Employee code') }}</label>
-        <input type="text" name="employee_code" class="form-control @error('employee_code') is-invalid @enderror" value="{{ old('employee_code', $employee->employee_code) }}" maxlength="40" required placeholder="EMP-001">
+        <label class="form-label fw-semibold" for="employeeCode">{{ __('Employee code') }}</label>
+        <input id="employeeCode" type="text" name="employee_code" aria-required="true" class="form-control @error('employee_code') is-invalid @enderror" value="{{ old('employee_code', $employee->employee_code) }}" maxlength="40" required placeholder="EMP-001">
         @error('employee_code')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-4">
-        <label class="form-label fw-semibold">{{ __('Job title') }}</label>
-        <input type="text" name="job_title" class="form-control @error('job_title') is-invalid @enderror" value="{{ old('job_title', $employee->job_title) }}" maxlength="120">
+        <label class="form-label fw-semibold" for="employeeJobTitle">{{ __('Job title') }}</label>
+        <input id="employeeJobTitle" type="text" name="job_title" class="form-control @error('job_title') is-invalid @enderror" value="{{ old('job_title', $employee->job_title) }}" maxlength="120">
         @error('job_title')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-4">
-        <label class="form-label fw-semibold">{{ __('Department') }}</label>
-        <input type="text" name="department" class="form-control @error('department') is-invalid @enderror" value="{{ old('department', $employee->department) }}" maxlength="120">
+        <label class="form-label fw-semibold" for="employeeDepartment">{{ __('Department') }}</label>
+        <input id="employeeDepartment" type="text" name="department" class="form-control @error('department') is-invalid @enderror" value="{{ old('department', $employee->department) }}" maxlength="120">
         @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-4">
-        <label class="form-label fw-semibold">{{ __('Employment type') }}</label>
-        <select name="employment_type" class="form-select @error('employment_type') is-invalid @enderror" required>
+        <label class="form-label fw-semibold" for="employeeEmploymentType">{{ __('Employment type') }}</label>
+        <select id="employeeEmploymentType" name="employment_type" aria-required="true" class="form-select @error('employment_type') is-invalid @enderror" required>
             @foreach(\App\Models\EmployeeProfile::employmentTypeOptions() as $value => $label)
                 <option value="{{ $value }}" @selected(old('employment_type', $employee->employment_type ?: \App\Models\EmployeeProfile::TYPE_FULL_TIME) === $value)>{{ $label }}</option>
             @endforeach
@@ -58,8 +58,8 @@
         @error('employment_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-4">
-        <label class="form-label fw-semibold">{{ __('Employment status') }}</label>
-        <select name="status" class="form-select @error('status') is-invalid @enderror" required>
+        <label class="form-label fw-semibold" for="employeeStatus">{{ __('Employment status') }}</label>
+        <select id="employeeStatus" name="status" aria-required="true" class="form-select @error('status') is-invalid @enderror" required>
             @foreach(\App\Models\EmployeeProfile::statusOptions() as $value => $label)
                 <option value="{{ $value }}" @selected(old('status', $employee->status ?: \App\Models\EmployeeProfile::STATUS_ACTIVE) === $value)>{{ $label }}</option>
             @endforeach
@@ -67,26 +67,26 @@
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-4">
-        <label class="form-label fw-semibold">{{ __('Phone') }}</label>
-        <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $employee->phone) }}" maxlength="50">
+        <label class="form-label fw-semibold" for="employeePhone">{{ __('Phone') }}</label>
+        <input id="employeePhone" type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $employee->phone) }}" maxlength="50">
         @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ __('Hire date') }}</label>
-        <input type="date" name="hire_date" class="form-control @error('hire_date') is-invalid @enderror" value="{{ old('hire_date', optional($employee->hire_date)->format('Y-m-d')) }}">
+        <label class="form-label fw-semibold" for="employeeHireDate">{{ __('Hire date') }}</label>
+        <input id="employeeHireDate" type="date" name="hire_date" class="form-control @error('hire_date') is-invalid @enderror" value="{{ old('hire_date', optional($employee->hire_date)->format('Y-m-d')) }}">
         @error('hire_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-6">
-        <label class="form-label fw-semibold">{{ __('Termination date') }}</label>
-        <input type="date" name="termination_date" class="form-control @error('termination_date') is-invalid @enderror" value="{{ old('termination_date', optional($employee->termination_date)->format('Y-m-d')) }}">
+        <label class="form-label fw-semibold" for="employeeTerminationDate">{{ __('Termination date') }}</label>
+        <input id="employeeTerminationDate" type="date" name="termination_date" class="form-control @error('termination_date') is-invalid @enderror" value="{{ old('termination_date', optional($employee->termination_date)->format('Y-m-d')) }}">
         @error('termination_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
         <div class="section-note">{{ __('Used only when the employee status is Terminated; otherwise it is cleared.') }}</div>
     </div>
 
     <div class="col-12">
-        <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-        <textarea name="notes" rows="4" class="form-control @error('notes') is-invalid @enderror" maxlength="2000">{{ old('notes', $employee->notes) }}</textarea>
+        <label class="form-label fw-semibold" for="employeeNotes">{{ __('Notes') }}</label>
+        <textarea id="employeeNotes" name="notes" rows="4" class="form-control @error('notes') is-invalid @enderror" maxlength="2000">{{ old('notes', $employee->notes) }}</textarea>
         @error('notes')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 </div>
