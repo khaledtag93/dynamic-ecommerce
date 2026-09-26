@@ -24,7 +24,11 @@ class OperationsHealthCommand extends Command
         $queueDriver = (string) config("queue.connections.{$queueConnection}.driver", $queueConnection);
 
         $scheduler = $this->heartbeatState($heartbeats->get('scheduler'), $maxAge);
-        $queue = $this->heartbeatState($heartbeats->get('queue'), $maxAge);
+        $queue = $this->heartbeatState(
+            $heartbeats->get('queue'),
+            $maxAge,
+            $queueConnection,
+        );
 
         $pendingJobs = null;
         if ($queueDriver === 'database' && Schema::hasTable('jobs')) {
@@ -82,8 +86,11 @@ class OperationsHealthCommand extends Command
         return $healthy ? self::SUCCESS : self::FAILURE;
     }
 
-    private function heartbeatState(?object $heartbeat, int $maxAge): array
-    {
+    private function heartbeatState(
+        ?object $heartbeat,
+        int $maxAge,
+        ?string $expectedQueueConnection = null,
+    ): array {
         if (! $heartbeat || ! $heartbeat->last_seen_at) {
             return [
                 'healthy' => false,
@@ -95,15 +102,26 @@ class OperationsHealthCommand extends Command
 
         $lastSeen = Carbon::parse($heartbeat->last_seen_at);
         $age = max(0, (int) now()->diffInSeconds($lastSeen, true));
-        $healthy = $age <= $maxAge;
+        $context = json_decode((string) ($heartbeat->context ?? ''), true) ?: [];
+        $connectionMatches = $expectedQueueConnection === null
+            || ($context['connection'] ?? null) === $expectedQueueConnection;
+        $healthy = $age <= $maxAge && $connectionMatches;
+
+        $detail = $age <= $maxAge
+            ? "last seen {$age}s ago"
+            : "stale: last seen {$age}s ago";
+
+        if (! $connectionMatches) {
+            $actual = (string) ($context['connection'] ?? 'unknown');
+            $detail .= "; connection mismatch: {$actual}";
+        }
 
         return [
             'healthy' => $healthy,
             'age_seconds' => $age,
             'last_seen_at' => $lastSeen->toIso8601String(),
-            'detail' => $healthy
-                ? "last seen {$age}s ago"
-                : "stale: last seen {$age}s ago",
+            'connection_matches' => $connectionMatches,
+            'detail' => $detail,
         ];
     }
 }
