@@ -58,8 +58,14 @@ class CustomerAccountStatementService
     {
         return Order::query()
             ->where('user_id', $customer->id)
-            ->whereBetween('created_at', [$from, $to])
-            ->orderBy('created_at')
+            ->where(function ($query) use ($from, $to) {
+                $query->whereBetween('placed_at', [$from, $to])
+                    ->orWhere(function ($fallback) use ($from, $to) {
+                        $fallback->whereNull('placed_at')
+                            ->whereBetween('created_at', [$from, $to]);
+                    });
+            })
+            ->orderByRaw('COALESCE(placed_at, created_at)')
             ->get([
                 'id',
                 'order_number',
