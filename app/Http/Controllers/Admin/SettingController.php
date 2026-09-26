@@ -290,7 +290,31 @@ class SettingController extends Controller
                 'customer_card_radius' => '16',
                 'customer_badge_style' => 'soft',
             ],
-        ];
+,
+            'luxury_noir' => [
+                'theme_preset'=>'luxury_noir','theme_label'=>'Luxury Noir','brand_primary_color'=>'#b88a44','brand_secondary_color'=>'#11100e','brand_accent_color'=>'#d7b56d','brand_background_color'=>'#f7f5f0','brand_surface_color'=>'#fffdf8','brand_soft_color'=>'#eee8dc','brand_border_color'=>'#d8cfbf','brand_muted_bg_color'=>'#f1eee7','brand_table_head_color'=>'#eee8dc','brand_row_hover_color'=>'#faf7f0','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#11100e','admin_header_color'=>'#fffdf8','admin_surface_color'=>'#fffdf8','admin_card_border_color'=>'#ded6c8','admin_accent_soft_color'=>'#f5ead1','admin_primary_soft_color'=>'#eee8dc','customer_card_radius'=>'12','customer_badge_style'=>'outline',
+            ],
+            'beauty_blush' => [
+                'theme_preset'=>'beauty_blush','theme_label'=>'Beauty Blush','brand_primary_color'=>'#be4768','brand_secondary_color'=>'#4a2532','brand_accent_color'=>'#e8a0b5','brand_background_color'=>'#fff8fa','brand_surface_color'=>'#ffffff','brand_soft_color'=>'#fdebf1','brand_border_color'=>'#f3cbd7','brand_muted_bg_color'=>'#fff1f5','brand_table_head_color'=>'#fff1f5','brand_row_hover_color'=>'#fff8fa','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#3b1d28','admin_header_color'=>'#fff8fa','admin_surface_color'=>'#ffffff','admin_card_border_color'=>'#f1d6de','admin_accent_soft_color'=>'#fce7ef','admin_primary_soft_color'=>'#f9dce5','customer_card_radius'=>'28','customer_badge_style'=>'pill',
+            ],
+            'tech_neon' => [
+                'theme_preset'=>'tech_neon','theme_label'=>'Tech Neon','brand_primary_color'=>'#2563eb','brand_secondary_color'=>'#111827','brand_accent_color'=>'#06b6d4','brand_background_color'=>'#f3f7fb','brand_surface_color'=>'#ffffff','brand_soft_color'=>'#e6f6ff','brand_border_color'=>'#c9d8e8','brand_muted_bg_color'=>'#edf3f8','brand_table_head_color'=>'#eaf2fb','brand_row_hover_color'=>'#f2f9ff','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#07111f','admin_header_color'=>'#ffffff','admin_surface_color'=>'#ffffff','admin_card_border_color'=>'#cddbea','admin_accent_soft_color'=>'#cffafe','admin_primary_soft_color'=>'#dbeafe','customer_card_radius'=>'14','customer_badge_style'=>'outline',
+            ],
+            'nordic_home' => [
+                'theme_preset'=>'nordic_home','theme_label'=>'Nordic Home','brand_primary_color'=>'#52645a','brand_secondary_color'=>'#343b36','brand_accent_color'=>'#b77b57','brand_background_color'=>'#f6f5f0','brand_surface_color'=>'#fffefb','brand_soft_color'=>'#ecefe9','brand_border_color'=>'#d8ddd5','brand_muted_bg_color'=>'#f0f1ed','brand_table_head_color'=>'#eef0ec','brand_row_hover_color'=>'#f8f8f4','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#29322d','admin_header_color'=>'#fffefb','admin_surface_color'=>'#fffefb','admin_card_border_color'=>'#dce1da','admin_accent_soft_color'=>'#f3e8df','admin_primary_soft_color'=>'#e5ebe6','customer_card_radius'=>'10','customer_badge_style'=>'soft',
+            ],
+            'kids_pop' => [
+                'theme_preset'=>'kids_pop','theme_label'=>'Kids Pop','brand_primary_color'=>'#7c3aed','brand_secondary_color'=>'#2563eb','brand_accent_color'=>'#f59e0b','brand_background_color'=>'#fbf9ff','brand_surface_color'=>'#ffffff','brand_soft_color'=>'#f3e8ff','brand_border_color'=>'#ddd6fe','brand_muted_bg_color'=>'#eff6ff','brand_table_head_color'=>'#f5f3ff','brand_row_hover_color'=>'#fff7ed','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#312e81','admin_header_color'=>'#faf5ff','admin_surface_color'=>'#ffffff','admin_card_border_color'=>'#e9d5ff','admin_accent_soft_color'=>'#fef3c7','admin_primary_soft_color'=>'#ede9fe','customer_card_radius'=>'30','customer_badge_style'=>'pill',
+            ],
+            'coffee_craft' => [
+                'theme_preset'=>'coffee_craft','theme_label'=>'Coffee Craft','brand_primary_color'=>'#8b5e3c','brand_secondary_color'=>'#3f2d22','brand_accent_color'=>'#c48a5a','brand_background_color'=>'#faf7f2','brand_surface_color'=>'#fffdf9','brand_soft_color'=>'#f2e8dc','brand_border_color'=>'#dfcfbf','brand_muted_bg_color'=>'#f6efe7','brand_table_head_color'=>'#f2e8dc','brand_row_hover_color'=>'#fcf8f3','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#302219','admin_header_color'=>'#fffaf5','admin_surface_color'=>'#fffdf9','admin_card_border_color'=>'#e6d8ca','admin_accent_soft_color'=>'#f5e6d6','admin_primary_soft_color'=>'#ead8c6','customer_card_radius'=>'18','customer_badge_style'=>'soft',
+            ],
+            'healthcare_calm' => [
+                'theme_preset'=>'healthcare_calm','theme_label'=>'Healthcare Calm','brand_primary_color'=>'#0f766e','brand_secondary_color'=>'#164e63','brand_accent_color'=>'#22c55e','brand_background_color'=>'#f5fbfa','brand_surface_color'=>'#ffffff','brand_soft_color'=>'#e6f7f4','brand_border_color'=>'#b9e1da','brand_muted_bg_color'=>'#eef8f7','brand_table_head_color'=>'#e8f7f4','brand_row_hover_color'=>'#f3fbfa','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#123b3a','admin_header_color'=>'#ffffff','admin_surface_color'=>'#ffffff','admin_card_border_color'=>'#cce8e3','admin_accent_soft_color'=>'#dcfce7','admin_primary_soft_color'=>'#ccfbf1','customer_card_radius'=>'16','customer_badge_style'=>'soft',
+            ],
+            'streetwear_volt' => [
+                'theme_preset'=>'streetwear_volt','theme_label'=>'Streetwear Volt','brand_primary_color'=>'#18181b','brand_secondary_color'=>'#27272a','brand_accent_color'=>'#a3e635','brand_background_color'=>'#f7f7f5','brand_surface_color'=>'#ffffff','brand_soft_color'=>'#ecfccb','brand_border_color'=>'#d4d4d8','brand_muted_bg_color'=>'#f4f4f5','brand_table_head_color'=>'#f4f4f5','brand_row_hover_color'=>'#f7fee7','brand_button_text_color'=>'#ffffff','admin_sidebar_color'=>'#09090b','admin_header_color'=>'#ffffff','admin_surface_color'=>'#ffffff','admin_card_border_color'=>'#d4d4d8','admin_accent_soft_color'=>'#ecfccb','admin_primary_soft_color'=>'#e4e4e7','customer_card_radius'=>'8','customer_badge_style'=>'outline',
+            ]        ];
     }
 
     private function customThemes(): array
