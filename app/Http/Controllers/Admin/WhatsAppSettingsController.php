@@ -124,7 +124,7 @@ class WhatsAppSettingsController extends Controller
             $data[$booleanField] = $request->boolean($booleanField) ? '1' : '0';
         }
 
-        $data['whatsapp_meta_base_url'] = $data['whatsapp_meta_base_url'] ?: 'https://graph.facebook.com';
+        $data['whatsapp_meta_base_url'] = ($data['whatsapp_meta_base_url'] ?? null) ?: 'https://graph.facebook.com';
         $data['whatsapp_meta_timeout'] = (string) ($data['whatsapp_meta_timeout'] ?? 20);
         $data['whatsapp_queue_tries'] = (string) ($data['whatsapp_queue_tries'] ?? 3);
         $data['whatsapp_queue_backoff_seconds'] = (string) ($data['whatsapp_queue_backoff_seconds'] ?? 30);
