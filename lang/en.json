@@ -5051,5 +5051,10 @@
     "Discard changes and leave": "Discard changes and leave",
     "Keep editing": "Keep editing",
     "This order is not eligible for another online payment attempt. Review the order details or contact support if you need help.": "This order is not eligible for another online payment attempt. Review the order details or contact support if you need help.",
-    "Online payment cannot be retried right now. Review the order details or contact support for the next step.": "Online payment cannot be retried right now. Review the order details or contact support for the next step."
+    "Online payment cannot be retried right now. Review the order details or contact support for the next step.": "Online payment cannot be retried right now. Review the order details or contact support for the next step.",
+    "Change staff role?": "Change staff role?",
+    "The account permissions will change immediately after you save this assignment.": "The account permissions will change immediately after you save this assignment.",
+    "Review the selected role before continuing.": "Review the selected role before continuing.",
+    "Change role": "Change role",
+    "Keep current role": "Keep current role"
 }
