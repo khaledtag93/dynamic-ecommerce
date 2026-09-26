@@ -4,17 +4,20 @@
 
 - Current audit and execution priorities: [Production foundation audit (Arabic)](docs/PRODUCTION_FOUNDATION_AUDIT_2026-09-26_AR.md).
 - **Framework/security rehearsal branch:** `sec03-framework-upgrade`.
-- **Current verified upgrade HEAD:** `81ccfdc675a587431547ed0e4dde3a8c49968ac9`.
-- **Hardening CI 36214088800:** passed on that exact SHA with Composer validation + security audit, dependency install, PHP/Bash syntax, clean MySQL migration, Laravel boot/routes, config/Blade compilation, full PHPUnit suite, and frontend production build.
-- **QAS deployed checkpoint:** operator-confirmed `81ccfdc6` on 2026-09-26 03:18 UTC; deploy finished with HTTP 200.
+- **Current verified rehearsal HEAD:** `f1f20297a27e2236603788ac7cc343dbbf86d0b6`.
+- **Hardening CI 36215421736:** passed on that exact SHA with Composer validation + security audit, dependency install, PHP/Bash syntax, clean MySQL migration, Laravel boot/routes, config/Blade compilation, full PHPUnit suite, and frontend production build.
+- **QAS deployed checkpoint:** operator-confirmed `f1f20297` on 2026-09-26 03:44 UTC; deploy finished with HTTP 200 and applied the queue runtime + operations heartbeat migrations.
 - **QAS runtime stack verified:** PHP 8.3.33, Laravel 13.33.0, Livewire 4.4.6, Sanctum 4.3.3, Tinker 3.0.2, Carbon 3.14.0.
+- **QAS queue mode:** switched intentionally from `sync` to `database`; manual queue-worker proof succeeded with `Pending jobs=1 -> 0`, `Failed jobs=0`, and strict operations health green immediately after the worker consumed `RecordQueueHeartbeat`.
+- **QAS scheduled operations:** two hPanel cron entries were configured as `* * * * *`: Laravel `schedule:run` and a bounded database `queue:work --stop-when-empty --max-time=50` worker.
+- **Current cron runtime evidence:** first post-configuration strict server check at 2026-09-26 04:09 UTC still showed scheduler and queue heartbeats stale, so the hPanel cron configuration is **saved but not yet operationally accepted**. Do not close OPS-03 until automatic heartbeats become fresh without manual commands.
 - **QAS security headers verified on /login:** `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`; session cookie is Secure + HttpOnly + SameSite=Lax.
 - **SEC-01:** closed in the rehearsal line by moving beyond the affected Livewire 2 release to Livewire 4.4.6, with Composer audit green.
 - **SEC-03:** source/CI/QAS framework migration evidence is complete on the rehearsal branch; merge into `v42-clean-baseline` and consolidated authenticated QAS acceptance are still required before Production consideration.
 - **SEC-04:** safe local locale redirect restriction is implemented on the hardening line; retain regression coverage during merge.
 - **SEC-02:** upload extension/content hardening and upload-root execution guard are implemented in source; authenticated upload/QAS evidence remains part of consolidated acceptance.
 - **Production:** unchanged. Do not promote until the rehearsal branch is merged through green CI, authenticated Admin/POS/Workforce/Customer/Checkout QAS checks are accepted, and remaining P0 operational/payment gates are closed.
-- **Remaining P0 release gates:** historical credential rotation evidence (OPS-01), Paymob E2E (PAY-01), database restore rehearsal (OPS-02), scheduler/queue/failed-job/expiry evidence (OPS-03).
+- **Remaining P0 release gates:** historical credential rotation evidence (OPS-01), Paymob E2E (PAY-01), database restore rehearsal (OPS-02), and final automatic scheduler/queue/failed-job/expiry evidence (OPS-03). OPS-03 source controls and manual database-queue proof are complete; hPanel cron execution is the remaining runtime proof.
 - Continue completion before expansion, preserving the Android/iPhone readiness constraint and the rule that money/stock/permissions remain server-authoritative.
 
 ### Historical checkpoints below
