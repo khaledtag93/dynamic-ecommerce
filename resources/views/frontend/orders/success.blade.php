@@ -8,6 +8,13 @@
         @php($latestPayment = $order->payments->sortByDesc('id')->first())
         @php($currency = $order->currency ?: 'EGP')
         @php($canRetryOnlinePayment = $order->can_retry_online_payment && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
+        @php($hasIncompleteOnlinePayment = $order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE
+            && $order->status !== \App\Models\Order::STATUS_CANCELLED
+            && !in_array($order->payment_status, [
+                \App\Models\Order::PAYMENT_STATUS_PAID,
+                \App\Models\Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                \App\Models\Order::PAYMENT_STATUS_REFUNDED,
+            ], true))
         <div class="lc-card p-4 p-lg-5 mb-4 overflow-hidden" style="background:radial-gradient(circle at top right, color-mix(in srgb,var(--lc-primary) 16%,transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb,var(--lc-soft) 46%,var(--lc-surface)) 0%, var(--lc-surface) 62%);">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-7">
@@ -45,9 +52,13 @@
                         @if(!empty($storeSettings['store_support_email']) || !empty($storeSettings['store_support_phone']))
                             <div class="small text-muted mt-3">{{ __('Need help?') }} {{ $storeSettings['store_support_email'] ?? $storeSettings['store_support_phone'] }}</div>
                         @endif
-                        @if($canRetryOnlinePayment)
+                        @if($hasIncompleteOnlinePayment)
                             <div class="alert alert-warning mt-3 mb-0 rounded-4 small">
-                                {{ __('Online payment is not completed yet. You can reopen the secure payment page to try again.') }}
+                                @if($canRetryOnlinePayment)
+                                    {{ __('Online payment is not completed yet. You can reopen the secure payment page to try again.') }}
+                                @else
+                                    {{ __('Online payment is not completed yet.') }}
+                                @endif
                                 @if(!empty(data_get($latestPayment, 'meta.checkout_error')))
                                     <div class="mt-2">{{ __('If the payment page does not open, contact support with your order number.') }}</div>
                                 @endif

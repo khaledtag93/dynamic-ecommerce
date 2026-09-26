@@ -55,11 +55,13 @@ class OrderPaymentRetryEligibilityTest extends TestCase
         $view = file_get_contents(resource_path('views/frontend/orders/success.blade.php'));
 
         $this->assertStringContainsString('$order->can_retry_online_payment', $view);
+        $this->assertStringContainsString('$hasIncompleteOnlinePayment', $view);
         $this->assertStringContainsString('@if($canRetryOnlinePayment)', $view);
-        $this->assertStringNotContainsString(
-            '$order->payment_status !== \\App\\Models\\Order::PAYMENT_STATUS_PAID',
-            $view
-        );
+        $this->assertStringContainsString('@if($hasIncompleteOnlinePayment)', $view);
+        $this->assertStringContainsString("__('Online payment is not completed yet.')", $view);
+        $this->assertStringContainsString('STATUS_CANCELLED', $view);
+        $this->assertStringContainsString('PAYMENT_STATUS_PARTIALLY_REFUNDED', $view);
+        $this->assertStringContainsString('PAYMENT_STATUS_REFUNDED', $view);
     }
 
     public function test_customer_order_view_uses_shared_retry_eligibility_contract(): void
