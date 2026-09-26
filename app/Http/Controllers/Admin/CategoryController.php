@@ -39,14 +39,18 @@ class CategoryController extends Controller
             ->with(['translations'])
             ->withCount('products')
             ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%")
-                        ->orWhereHas('translations', function ($translationQuery) use ($search) {
-                            $translationQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('slug', 'like', "%{$search}%")
-                                ->orWhere('description', 'like', "%{$search}%");
+                $search = mb_substr(trim((string) $search), 0, 100);
+                $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+                $like = "%{$escaped}%";
+
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('name', 'like', $like)
+                        ->orWhere('slug', 'like', $like)
+                        ->orWhere('description', 'like', $like)
+                        ->orWhereHas('translations', function ($translationQuery) use ($like) {
+                            $translationQuery->where('name', 'like', $like)
+                                ->orWhere('slug', 'like', $like)
+                                ->orWhere('description', 'like', $like);
                         });
                 });
             })
