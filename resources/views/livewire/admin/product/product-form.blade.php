@@ -395,39 +395,39 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('Product Name') }}</label>
-                                <input type="text" class="form-control @error('name') is-invalid product-error-field @enderror" wire:model.defer="name">
+                                <input type="text" class="form-control @error('name') is-invalid product-error-field @enderror" wire:model="name">
                                 @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('Slug') }}</label>
-                                <input type="text" class="form-control @error('slug') is-invalid product-error-field @enderror" wire:model.defer="slug">
+                                <input type="text" class="form-control @error('slug') is-invalid product-error-field @enderror" wire:model="slug">
                                 @error('slug') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">{{ __('SKU') }}</label>
-                                <input type="text" class="form-control @error('sku') is-invalid product-error-field @enderror" wire:model.defer="sku" autocomplete="off">
+                                <input type="text" class="form-control @error('sku') is-invalid product-error-field @enderror" wire:model="sku" autocomplete="off">
                                 <div class="form-text">{{ __('SKU must be unique across products and variants so inventory and POS lookup stays deterministic.') }}</div>
                                 @error('sku') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">{{ __('Barcode') }}</label>
-                                <input type="text" class="form-control @error('barcode') is-invalid product-error-field @enderror" wire:model.defer="barcode" inputmode="numeric" autocomplete="off">
+                                <input type="text" class="form-control @error('barcode') is-invalid product-error-field @enderror" wire:model="barcode" inputmode="numeric" autocomplete="off">
                                 <div class="form-text">{{ __('Optional scannable identifier for retail and stock operations. It must be unique across products and variants.') }}</div>
                                 @error('barcode') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">{{ __('Video URL') }}</label>
-                                <input type="url" class="form-control @error('video_url') is-invalid product-error-field @enderror" wire:model.defer="video_url" placeholder="https://">
+                                <input type="url" class="form-control @error('video_url') is-invalid product-error-field @enderror" wire:model="video_url" placeholder="https://">
                                 @error('video_url') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('Category') }}</label>
-                                <select class="form-select @error('category_id') is-invalid product-error-field @enderror" wire:model.defer="category_id">
+                                <select class="form-select @error('category_id') is-invalid product-error-field @enderror" wire:model="category_id">
                                     <option value="">Select {{ __('Category') }}</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
@@ -438,7 +438,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('Brand') }}</label>
-                                <select class="form-select @error('brand_id') is-invalid product-error-field @enderror" wire:model.defer="brand_id">
+                                <select class="form-select @error('brand_id') is-invalid product-error-field @enderror" wire:model="brand_id">
                                     <option value="">{{ __('Select Brand') }}</option>
                                     @foreach ($brands as $brand)
                                         <option value="{{ $brand['id'] }}">{{ $brand['name'] }}</option>
@@ -449,7 +449,7 @@
 
                             <div class="col-12">
                                 <label class="form-label">{{ __('Description') }}</label>
-                                <textarea class="form-control @error('description') is-invalid product-error-field @enderror" rows="5" wire:model.defer="description"></textarea>
+                                <textarea class="form-control @error('description') is-invalid product-error-field @enderror" rows="5" wire:model="description"></textarea>
                                 @error('description') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                         </div>
@@ -476,7 +476,7 @@
                                     type="number"
                                     step="0.01"
                                     class="form-control @error('base_price') is-invalid product-error-field @enderror"
-                                    wire:model.defer="base_price"
+                                    wire:model="base_price"
                                     @if($hasVariants) disabled @endif
                                 >
                                 @error('base_price') <small class="text-danger">{{ $message }}</small> @enderror
@@ -488,7 +488,7 @@
                                     type="number"
                                     step="0.01"
                                     class="form-control @error('sale_price') is-invalid product-error-field @enderror"
-                                    wire:model.defer="sale_price"
+                                    wire:model="sale_price"
                                     @if($hasVariants) disabled @endif
                                 >
                                 @error('sale_price') <small class="text-danger">{{ $message }}</small> @enderror
@@ -499,7 +499,7 @@
                                 <input
                                     type="number"
                                     class="form-control @error('quantity') is-invalid product-error-field @enderror"
-                                    wire:model.defer="quantity"
+                                    wire:model="quantity"
                                     @if($hasVariants) disabled @endif
                                 >
                                 @error('quantity') <small class="text-danger">{{ $message }}</small> @enderror
@@ -513,14 +513,14 @@
                                 <input
                                     type="number"
                                     class="form-control @error('low_stock_threshold') is-invalid product-error-field @enderror"
-                                    wire:model.defer="low_stock_threshold"
+                                    wire:model="low_stock_threshold"
                                 >
                                 @error('low_stock_threshold') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('Stock Status') }}</label>
-                                <select class="form-select @error('stock_status') is-invalid product-error-field @enderror" wire:model.defer="stock_status" @if($hasVariants) disabled @endif>
+                                <select class="form-select @error('stock_status') is-invalid product-error-field @enderror" wire:model="stock_status" @if($hasVariants) disabled @endif>
                                     <option value="in_stock" >{{ __('In Stock') }}</option>
                                     <option value="out_of_stock" >{{ __('Out of Stock') }}</option>
                                     <option value="preorder" >{{ __('Preorder') }}</option>
@@ -531,7 +531,7 @@
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Storefront status') }}</label>
-                                <select class="form-select @error('status') is-invalid product-error-field @enderror" wire:model.defer="status">
+                                <select class="form-select @error('status') is-invalid product-error-field @enderror" wire:model="status">
                                     <option value="1">{{ __('Active — visible on storefront') }}</option>
                                     <option value="0">{{ __('Inactive — hidden from storefront') }}</option>
                                 </select>
@@ -541,7 +541,7 @@
 
                             <div class="col-md-3">
                                 <label class="form-label">{{ __('Featured') }}</label>
-                                <select class="form-select @error('is_featured') is-invalid product-error-field @enderror" wire:model.defer="is_featured">
+                                <select class="form-select @error('is_featured') is-invalid product-error-field @enderror" wire:model="is_featured">
                                     <option value="0">{{ __('No') }}</option>
                                     <option value="1">{{ __('Yes') }}</option>
                                 </select>
@@ -614,7 +614,7 @@
                                     @foreach($variantGenerator as $gIndex => $group)
                                         <div class="row g-2 align-items-start mb-2" wire:key="generator-row-{{ $gIndex }}">
                                             <div class="col-md-5">
-                                                <select class="form-select @error('variantGenerator') is-invalid product-error-field @enderror" wire:model.defer="variantGenerator.{{ $gIndex }}.attribute_id">
+                                                <select class="form-select @error('variantGenerator') is-invalid product-error-field @enderror" wire:model="variantGenerator.{{ $gIndex }}.attribute_id">
                                                     <option value="">{{ __('Select Attribute') }}</option>
                                                     @foreach($attributes as $attribute)
                                                         <option value="{{ $attribute['id'] }}">{{ $attribute['name'] }}</option>
@@ -627,7 +627,7 @@
                                                     rows="2"
                                                     class="form-control @error('variantGenerator') is-invalid product-error-field @enderror"
                                                     placeholder="{{ __('Red, Blue, Green') }}"
-                                                    wire:model.defer="variantGenerator.{{ $gIndex }}.values"
+                                                    wire:model="variantGenerator.{{ $gIndex }}.values"
                                                 ></textarea>
                                             </div>
 
@@ -696,19 +696,19 @@
 
                                     <div class="row g-2 align-items-end">
                                         <div class="col-md-2">
-                                            <input type="number" step="0.01" class="form-control" placeholder="{{ __('Price') }}" wire:model.defer="variantBulk.price">
+                                            <input type="number" step="0.01" class="form-control" placeholder="{{ __('Price') }}" wire:model="variantBulk.price">
                                         </div>
 
                                         <div class="col-md-2">
-                                            <input type="number" step="0.01" class="form-control" placeholder="{{ __('Sale') }}" wire:model.defer="variantBulk.sale_price">
+                                            <input type="number" step="0.01" class="form-control" placeholder="{{ __('Sale') }}" wire:model="variantBulk.sale_price">
                                         </div>
 
                                         <div class="col-md-2">
-                                            <input type="number" class="form-control" placeholder="{{ __('Stock') }}" wire:model.defer="variantBulk.stock">
+                                            <input type="number" class="form-control" placeholder="{{ __('Stock') }}" wire:model="variantBulk.stock">
                                         </div>
 
                                         <div class="col-md-2">
-                                            <select class="form-select" wire:model.defer="variantBulk.status">
+                                            <select class="form-select" wire:model="variantBulk.status">
                                                 <option value="1">{{ __('Active') }}</option>
                                                 <option value="0">{{ __('Inactive') }}</option>
                                             </select>
@@ -769,31 +769,31 @@
                                             <div class="row g-3">
                                                 <div class="col-md-2">
                                                     <label class="form-label">{{ __('SKU') }}</label>
-                                                    <input type="text" class="form-control @error('variants.' . $i . '.sku') is-invalid product-error-field @enderror" placeholder="{{ __('Variant SKU') }}" wire:model.defer="variants.{{ $i }}.sku">
+                                                    <input type="text" class="form-control @error('variants.' . $i . '.sku') is-invalid product-error-field @enderror" placeholder="{{ __('Variant SKU') }}" wire:model="variants.{{ $i }}.sku">
                                                     @error('variants.' . $i . '.sku') <small class="text-danger">{{ $message }}</small> @enderror
                                                 </div>
 
                                                 <div class="col-md-2">
                                                     <label class="form-label">{{ __('Barcode') }}</label>
-                                                    <input type="text" class="form-control @error('variants.' . $i . '.barcode') is-invalid product-error-field @enderror" placeholder="{{ __('Variant barcode') }}" wire:model.defer="variants.{{ $i }}.barcode" autocomplete="off">
+                                                    <input type="text" class="form-control @error('variants.' . $i . '.barcode') is-invalid product-error-field @enderror" placeholder="{{ __('Variant barcode') }}" wire:model="variants.{{ $i }}.barcode" autocomplete="off">
                                                     @error('variants.' . $i . '.barcode') <small class="text-danger">{{ $message }}</small> @enderror
                                                 </div>
 
                                                 <div class="col-md-2">
                                                     <label class="form-label">{{ __('Price') }}</label>
-                                                    <input type="number" step="0.01" class="form-control @error('variants.' . $i . '.price') is-invalid product-error-field @enderror" placeholder="0.00" wire:model.defer="variants.{{ $i }}.price">
+                                                    <input type="number" step="0.01" class="form-control @error('variants.' . $i . '.price') is-invalid product-error-field @enderror" placeholder="0.00" wire:model="variants.{{ $i }}.price">
                                                     @error('variants.' . $i . '.price') <small class="text-danger">{{ $message }}</small> @enderror
                                                 </div>
 
                                                 <div class="col-md-2">
                                                     <label class="form-label">{{ __('Sale Price') }}</label>
-                                                    <input type="number" step="0.01" class="form-control @error('variants.' . $i . '.sale_price') is-invalid product-error-field @enderror" placeholder="0.00" wire:model.defer="variants.{{ $i }}.sale_price">
+                                                    <input type="number" step="0.01" class="form-control @error('variants.' . $i . '.sale_price') is-invalid product-error-field @enderror" placeholder="0.00" wire:model="variants.{{ $i }}.sale_price">
                                                     @error('variants.' . $i . '.sale_price') <small class="text-danger">{{ $message }}</small> @enderror
                                                 </div>
 
                                                 <div class="col-md-2">
                                                     <label class="form-label">{{ __('Stock') }}</label>
-                                                    <input type="number" class="form-control @error('variants.' . $i . '.stock') is-invalid product-error-field @enderror" placeholder="0" wire:model.defer="variants.{{ $i }}.stock">
+                                                    <input type="number" class="form-control @error('variants.' . $i . '.stock') is-invalid product-error-field @enderror" placeholder="0" wire:model="variants.{{ $i }}.stock">
                                                     @error('variants.' . $i . '.stock') <small class="text-danger">{{ $message }}</small> @enderror
                                                     @if($i === 0)
                                                         <small class="text-muted d-block mt-1">{{ __('Set variant stock to zero before deleting that variant.') }}</small>
@@ -802,7 +802,7 @@
 
                                                 <div class="col-md-2">
                                                     <label class="form-label">{{ __('Status') }}</label>
-                                                    <select class="form-select" wire:model.defer="variants.{{ $i }}.status">
+                                                    <select class="form-select" wire:model="variants.{{ $i }}.status">
                                                         <option value="1">{{ __('Active') }}</option>
                                                         <option value="0">{{ __('Inactive') }}</option>
                                                     </select>
@@ -853,7 +853,7 @@
                                                 <div class="row g-2 align-items-end mb-2" wire:key="variant-attr-{{ $i }}-{{ $j }}">
                                                     <div class="col-md-5">
                                                         <label class="form-label">{{ __('Attribute') }}</label>
-                                                        <select class="form-select @error('variants.' . $i . '.attributes.' . $j . '.attribute_id') is-invalid product-error-field @enderror" wire:model.defer="variants.{{ $i }}.attributes.{{ $j }}.attribute_id">
+                                                        <select class="form-select @error('variants.' . $i . '.attributes.' . $j . '.attribute_id') is-invalid product-error-field @enderror" wire:model="variants.{{ $i }}.attributes.{{ $j }}.attribute_id">
                                                             <option value="">{{ __('Select Attribute') }}</option>
                                                             @foreach($attributes as $attribute)
                                                                 <option value="{{ $attribute['id'] }}">{{ $attribute['name'] }}</option>
@@ -864,7 +864,7 @@
 
                                                     <div class="col-md-5">
                                                         <label class="form-label">{{ __('Value') }}</label>
-                                                        <input type="text" class="form-control @error('variants.' . $i . '.attributes.' . $j . '.value') is-invalid product-error-field @enderror" placeholder="{{ __('e.g. Red / Large / 500g') }}" wire:model.defer="variants.{{ $i }}.attributes.{{ $j }}.value">
+                                                        <input type="text" class="form-control @error('variants.' . $i . '.attributes.' . $j . '.value') is-invalid product-error-field @enderror" placeholder="{{ __('e.g. Red / Large / 500g') }}" wire:model="variants.{{ $i }}.attributes.{{ $j }}.value">
                                                         @error('variants.' . $i . '.attributes.' . $j . '.value') <small class="text-danger">{{ $message }}</small> @enderror
                                                     </div>
 
@@ -1082,13 +1082,13 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('Meta Title') }}</label>
-                                <input type="text" class="form-control @error('meta_title') is-invalid product-error-field @enderror" wire:model.defer="meta_title">
+                                <input type="text" class="form-control @error('meta_title') is-invalid product-error-field @enderror" wire:model="meta_title">
                                 @error('meta_title') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">{{ __('Meta Description') }}</label>
-                                <textarea class="form-control @error('meta_description') is-invalid product-error-field @enderror" rows="3" wire:model.defer="meta_description"></textarea>
+                                <textarea class="form-control @error('meta_description') is-invalid product-error-field @enderror" rows="3" wire:model="meta_description"></textarea>
                                 @error('meta_description') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                         </div>
