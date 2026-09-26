@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\WebsiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -34,11 +33,22 @@ class WhatsAppWorkspaceClosureTest extends TestCase
 
         $this->actingAs($admin)
             ->put(route('admin.settings.whatsapp.update'), $payload)
-            ->assertSessionHasNoErrors();
+            ->assertRedirect()
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success');
 
-        $this->assertSame('45', WebsiteSetting::getValue('whatsapp_queue_backoff_seconds'));
-        $this->assertSame('20', WebsiteSetting::getValue('whatsapp_rate_limit_window_minutes'));
-        $this->assertSame('7', WebsiteSetting::getValue('whatsapp_rate_limit_max_attempts'));
+        $this->assertDatabaseHas('website_settings', [
+            'key' => 'whatsapp_queue_backoff_seconds',
+            'value' => '45',
+        ]);
+        $this->assertDatabaseHas('website_settings', [
+            'key' => 'whatsapp_rate_limit_window_minutes',
+            'value' => '20',
+        ]);
+        $this->assertDatabaseHas('website_settings', [
+            'key' => 'whatsapp_rate_limit_max_attempts',
+            'value' => '7',
+        ]);
 
         $this->put(route('admin.settings.whatsapp.update'), $this->validPayload([
             'whatsapp_queue_backoff_seconds' => '60,180,300',
