@@ -198,17 +198,17 @@
                                                 <form method="POST" action="{{ route('admin.workforce.payroll.adjustments.store', $entry) }}" class="row g-2 mt-3" data-submit-loading>
                                                     @csrf
                                                     <div class="col-lg-2">
-                                                        <select name="type" class="form-select form-select-sm" required>
+                                                        <label class="visually-hidden" for="payrollAdjustmentType-{{ $entry->id }}">{{ __('Type') }}</label><select id="payrollAdjustmentType-{{ $entry->id }}" name="type" class="form-select form-select-sm" required aria-required="true">
                                                             @foreach(\App\Models\PayrollAdjustment::typeOptions() as $value => $label)
                                                                 <option value="{{ $value }}">{{ $label }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>
-                                                    <div class="col-lg-2"><input type="text" name="label" class="form-control form-control-sm" maxlength="160" required placeholder="{{ __('Label') }}"></div>
-                                                    <div class="col-lg-2"><input type="number" name="amount" class="form-control form-control-sm" step="0.01" min="0.01" required placeholder="{{ __('Amount') }}"></div>
-                                                    <div class="col-lg-2"><input type="number" name="quantity" class="form-control form-control-sm" step="0.001" min="0.001" placeholder="{{ __('Quantity optional') }}"></div>
-                                                    <div class="col-lg-2"><input type="number" name="rate" class="form-control form-control-sm" step="0.0001" min="0.0001" placeholder="{{ __('Rate optional') }}"></div>
-                                                    <div class="col-lg-2"><input type="text" name="reason" class="form-control form-control-sm" maxlength="2000" required placeholder="{{ __('Reason') }}"></div>
+                                                    <div class="col-lg-2"><label class="visually-hidden" for="payrollAdjustmentLabel-{{ $entry->id }}">{{ __('Label') }}</label><input id="payrollAdjustmentLabel-{{ $entry->id }}" type="text" name="label" aria-required="true" class="form-control form-control-sm" maxlength="160" required placeholder="{{ __('Label') }}"></div>
+                                                    <div class="col-lg-2"><label class="visually-hidden" for="payrollAdjustmentAmount-{{ $entry->id }}">{{ __('Amount') }}</label><input id="payrollAdjustmentAmount-{{ $entry->id }}" type="number" name="amount" aria-required="true" class="form-control form-control-sm" step="0.01" min="0.01" required placeholder="{{ __('Amount') }}"></div>
+                                                    <div class="col-lg-2"><label class="visually-hidden" for="payrollAdjustmentQuantity-{{ $entry->id }}">{{ __('Quantity optional') }}</label><input id="payrollAdjustmentQuantity-{{ $entry->id }}" type="number" name="quantity" class="form-control form-control-sm" step="0.001" min="0.001" placeholder="{{ __('Quantity optional') }}"></div>
+                                                    <div class="col-lg-2"><label class="visually-hidden" for="payrollAdjustmentRate-{{ $entry->id }}">{{ __('Rate optional') }}</label><input id="payrollAdjustmentRate-{{ $entry->id }}" type="number" name="rate" class="form-control form-control-sm" step="0.0001" min="0.0001" placeholder="{{ __('Rate optional') }}"></div>
+                                                    <div class="col-lg-2"><label class="visually-hidden" for="payrollAdjustmentReason-{{ $entry->id }}">{{ __('Reason') }}</label><input id="payrollAdjustmentReason-{{ $entry->id }}" type="text" name="reason" aria-required="true" class="form-control form-control-sm" maxlength="2000" required placeholder="{{ __('Reason') }}"></div>
                                                     <div class="col-12 text-end"><button class="btn btn-sm btn-primary" data-loading-text="{{ __('Adding...') }}">{{ __('Add component') }}</button></div>
                                                 </form>
                                             @endif
