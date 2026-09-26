@@ -622,7 +622,8 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString('scroll-snap-type:inline proximity', $layout);
         $this->assertStringContainsString(".lc-account-nav [aria-current=\"page\"]", $layout);
         $this->assertStringContainsString("window.matchMedia('(max-width: 767.98px)').matches", $layout);
-        $this->assertStringContainsString("current.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })", $layout);
+        $this->assertStringContainsString("const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;", $layout);
+        $this->assertStringContainsString("behavior: reduceMotion ? 'auto' : 'smooth'", $layout);
     }
 
     public function test_storefront_search_has_accessible_keyboard_shortcut(): void
