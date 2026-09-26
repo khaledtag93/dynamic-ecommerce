@@ -63,11 +63,11 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString('.navbar .navbar-menu-wrapper .admin-mobile-sidebar-toggle-inline', $admin);
         $this->assertStringContainsString('display: inline-flex !important;', $admin);
         $this->assertStringContainsString('.sidebar-offcanvas.custom-sidebar {', $admin);
-        $this->assertStringContainsString('z-index: 1050;', $admin);
+        $this->assertStringContainsString('z-index: 1050 !important;', $admin);
         $this->assertStringContainsString("html[dir='ltr'] .sidebar-offcanvas.custom-sidebar.active", $admin);
         $this->assertStringContainsString("html[dir='rtl'] .sidebar-offcanvas.custom-sidebar.active", $admin);
         $this->assertStringContainsString('data-toggle="offcanvas"', $navbar);
-        $this->assertStringContainsString('data-toggle="offcanvas" aria-label=', $navbar);
+        $this->assertStringContainsString('aria-controls="sidebar"', $navbar);
     }
 
     public function test_mobile_admin_shell_uses_independent_vanilla_drawer_and_html_direction(): void

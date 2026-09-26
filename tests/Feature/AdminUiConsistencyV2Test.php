@@ -57,7 +57,7 @@ class AdminUiConsistencyV2Test extends TestCase
 
         $this->assertStringContainsString('/* Unified admin switches */', $source);
         $this->assertStringContainsString('.form-check.form-switch', $source);
-        $this->assertStringContainsString("body[dir='rtl'] .form-check.form-switch", $source);
+        $this->assertStringContainsString("html[dir='rtl'] .form-check.form-switch", $source);
         $this->assertStringContainsString('grid-template-columns: 2.5rem minmax(0, 1fr)', $source);
         $this->assertStringContainsString('padding: .55rem .7rem !important', $source);
     }
@@ -111,9 +111,11 @@ class AdminUiConsistencyV2Test extends TestCase
 
         $this->assertStringContainsString('admin-sidebar-backdrop', $script);
         $this->assertStringContainsString("aria-expanded", $script);
-        $this->assertStringContainsString("event.key === 'Escape'", $script);
-        $this->assertStringContainsString("body').toggleClass('admin-sidebar-open'", $script);
-        $this->assertStringContainsString("window.matchMedia('(max-width: 991.98px)')", $script);
+        $this->assertStringContainsString("event.key !== 'Escape'", $script);
+        $this->assertStringContainsString("document.body.classList.toggle('admin-sidebar-open'", $script);
+        $this->assertStringContainsString("const MOBILE_QUERY = '(max-width: 1199.98px), (pointer: coarse) and (max-width: 1366px)'", $script);
+        $this->assertStringContainsString("toggle.addEventListener('click'", $script);
+        $this->assertStringNotContainsString('jQuery', $script);
         $this->assertStringContainsString('.admin-sidebar-backdrop.is-active', $layout);
         $this->assertStringContainsString('body.admin-sidebar-open', $layout);
     }
