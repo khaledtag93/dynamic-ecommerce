@@ -7,6 +7,7 @@
     <div class="container">
         @php($latestPayment = $order->payments->sortByDesc('id')->first())
         @php($currency = $order->currency ?: 'EGP')
+        @php($canRetryOnlinePayment = $order->can_retry_online_payment && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
         <div class="lc-card p-4 p-lg-5 mb-4 overflow-hidden" style="background:radial-gradient(circle at top right, color-mix(in srgb,var(--lc-primary) 16%,transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb,var(--lc-soft) 46%,var(--lc-surface)) 0%, var(--lc-surface) 62%);">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-7">
@@ -24,7 +25,7 @@
                     <div class="d-flex gap-3 flex-wrap">
                         <a href="{{ route('orders.show', $order) }}" class="btn lc-btn-primary">{{ __('Order details') }}</a>
                         <a href="{{ route('orders.receipt', $order) }}" class="btn lc-btn-soft" target="_blank" rel="noopener"><i class="bi bi-printer me-2"></i>{{ __('Print receipt') }}</a>
-                        @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
+                        @if($canRetryOnlinePayment)
                             <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-soft">{{ __('Pay now securely') }}</a>
                         @endif
                         <a href="{{ route('notifications.index') }}" class="btn lc-btn-soft">{{ __('Notifications') }}</a>
@@ -44,7 +45,7 @@
                         @if(!empty($storeSettings['store_support_email']) || !empty($storeSettings['store_support_phone']))
                             <div class="small text-muted mt-3">{{ __('Need help?') }} {{ $storeSettings['store_support_email'] ?? $storeSettings['store_support_phone'] }}</div>
                         @endif
-                        @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID)
+                        @if($canRetryOnlinePayment)
                             <div class="alert alert-warning mt-3 mb-0 rounded-4 small">
                                 {{ __('Online payment is not completed yet. You can reopen the secure payment page to try again.') }}
                                 @if(!empty(data_get($latestPayment, 'meta.checkout_error')))

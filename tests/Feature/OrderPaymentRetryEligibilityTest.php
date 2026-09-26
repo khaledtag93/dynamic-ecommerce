@@ -49,11 +49,30 @@ class OrderPaymentRetryEligibilityTest extends TestCase
         );
     }
 
+
+    public function test_order_success_view_uses_shared_retry_eligibility_contract(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/orders/success.blade.php'));
+
+        $this->assertStringContainsString('$order->can_retry_online_payment', $view);
+        $this->assertStringContainsString('@if($canRetryOnlinePayment)', $view);
+        $this->assertStringNotContainsString(
+            '$order->payment_status !== \\App\\Models\\Order::PAYMENT_STATUS_PAID',
+            $view
+        );
+    }
+
     public function test_customer_order_view_uses_shared_retry_eligibility_contract(): void
     {
         $view = file_get_contents(resource_path('views/frontend/orders/show.blade.php'));
 
         $this->assertStringContainsString('$order->can_retry_online_payment', $view);
+        $this->assertStringContainsString('data-order-payment-retry', $view);
+        $this->assertStringContainsString('data-order-payment-retry-notice', $view);
+        $this->assertStringContainsString(
+            "document.querySelectorAll('[data-order-payment-retry], [data-order-payment-retry-notice]')",
+            $view
+        );
         $this->assertStringNotContainsString(
             '$order->payment_status !== \\App\\Models\\Order::PAYMENT_STATUS_PAID',
             $view

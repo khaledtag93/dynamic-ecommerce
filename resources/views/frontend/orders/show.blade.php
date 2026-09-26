@@ -16,7 +16,7 @@
                 <a href="{{ route('orders.index') }}" class="btn lc-btn-soft"><i class="bi bi-arrow-left me-2"></i>{{ __('My Orders') }}</a>
                 <a href="{{ route('orders.receipt', $order) }}" class="btn lc-btn-soft" target="_blank" rel="noopener"><i class="bi bi-printer me-2"></i>{{ __('Print receipt') }}</a>
                 @if($order->can_retry_online_payment && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
-                    <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-primary">{{ __('Pay now securely') }}</a>
+                    <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-primary" data-order-payment-retry>{{ __('Pay now securely') }}</a>
                 @endif
                 @if(($canRequestReturn ?? false) && ($remainingReturnableTotal ?? 0) > 0)
                     <a href="{{ route('returns.create', $order) }}" class="btn lc-btn-soft"><i class="bi bi-arrow-counterclockwise me-2"></i>{{ __('Request return') }}</a>
@@ -58,8 +58,8 @@
                         </div>
                     </div>
 
-                    @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $latestPayment && !empty(data_get($latestPayment->meta, 'checkout_error')))
-                        <div class="alert alert-warning rounded-4 mb-4">
+                    @if($order->can_retry_online_payment && $latestPayment && !empty(data_get($latestPayment->meta, 'checkout_error')))
+                        <div class="alert alert-warning rounded-4 mb-4" data-order-payment-retry-notice>
                             <div class="fw-semibold mb-1">{{ __('Secure payment session could not be opened.') }}</div>
                             <div class="small mb-0">{{ __('You can try opening the secure payment page again. If the problem continues, contact support with your order number.') }}</div>
                         </div>
@@ -232,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 liveStatus.classList.remove('d-none');
             }
 
+            document.querySelectorAll('[data-order-payment-retry], [data-order-payment-retry-notice]').forEach((element) => element.remove());
             form.remove();
         } catch (error) {
             const liveStatus = document.querySelector('[data-order-live-status]');
