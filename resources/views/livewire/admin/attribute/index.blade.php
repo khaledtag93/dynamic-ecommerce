@@ -151,7 +151,7 @@
             const element = document.getElementById('attributeDeleteConfirmationModal');
             if (element && window.bootstrap) bootstrap.Modal.getOrCreateInstance(element).show();
         });
-        document.addEventListener('livewire:load', () => {
+        document.addEventListener('livewire:init', () => {
             Livewire.hook('message.processed', () => {
                 if (@this.get('pendingDeleteId')) return;
                 const element = document.getElementById('attributeDeleteConfirmationModal');

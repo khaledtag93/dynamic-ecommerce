@@ -12,6 +12,6 @@ public function testClick()
 {
     $this->clicked = true;
     \Log::info('testClick method triggered');
-    $this->dispatchBrowserEvent('openDeleteModal');
+    $this->dispatch('openDeleteModal');
 }
 }

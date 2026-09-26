@@ -1044,7 +1044,7 @@
             }
         });
 
-        document.addEventListener('livewire:load', () => {
+        document.addEventListener('livewire:init', () => {
             Livewire.hook('message.processed', () => {
                 if (!@this.pendingDeleteId) {
                     const modalElement = document.getElementById('productDeleteConfirmationModal');
