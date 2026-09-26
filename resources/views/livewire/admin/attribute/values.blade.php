@@ -36,7 +36,7 @@
                     <h5 class="mb-1">{{ __('Add or Edit Value') }}</h5>
                     <small class="text-muted">{{ __('Values used by variants are protected from rename and deletion to keep catalog data consistent.') }}</small>
                 </div>
-                <input type="text" wire:model.debounce.300ms="search" class="form-control" style="max-width:280px" placeholder="{{ __('Search values') }}">
+                <input type="text" wire:model.live.debounce.300ms="search" class="form-control" style="max-width:280px" placeholder="{{ __('Search values') }}">
             </div>
         </div>
         <div class="card-body">
