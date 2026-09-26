@@ -13,6 +13,22 @@
     $localizedFooterAbout = ($isRtl ?? false)
         ? ($storeSettings['footer_about_ar'] ?? $storeSettings['footer_about'] ?? __('تصفّح منتجات المتجر بأسعار واضحة ودفع آمن ودعم يساعدك قبل وبعد الشراء.'))
         : ($storeSettings['footer_about_en'] ?? $storeSettings['footer_about'] ?? __('Browse products across the store with clear prices, secure checkout, and helpful support.'));
+    $storeThemePreset = (string) ($storeSettings['theme_preset'] ?? 'professional_commerce');
+    $storeThemeProfile = match ($storeThemePreset) {
+        'midnight_luxury', 'luxury_noir', 'desert_gold' => 'refined',
+        'tech_neon', 'graphite_modern', 'streetwear_volt' => 'sharp',
+        'beauty_blush', 'rose_boutique', 'kids_pop' => 'playful',
+        'nordic_home', 'emerald_studio', 'coffee_craft' => 'organic',
+        default => 'balanced',
+    };
+    $themeProfiles = [
+        'refined' => ['control_radius' => '8px', 'media_radius' => '6px', 'lift' => '-2px', 'shadow_scale' => '8%'],
+        'sharp' => ['control_radius' => '10px', 'media_radius' => '8px', 'lift' => '-3px', 'shadow_scale' => '12%'],
+        'playful' => ['control_radius' => '18px', 'media_radius' => '20px', 'lift' => '-5px', 'shadow_scale' => '16%'],
+        'organic' => ['control_radius' => '14px', 'media_radius' => '16px', 'lift' => '-3px', 'shadow_scale' => '10%'],
+        'balanced' => ['control_radius' => '14px', 'media_radius' => '14px', 'lift' => '-4px', 'shadow_scale' => '12%'],
+    ];
+    $themeProfile = $themeProfiles[$storeThemeProfile] ?? $themeProfiles['balanced'];
     $localizedFooterCopyright = ($isRtl ?? false)
         ? ($storeSettings['footer_copyright_ar'] ?? $storeSettings['footer_copyright'] ?? __('جميع الحقوق محفوظة.'))
         : ($storeSettings['footer_copyright_en'] ?? $storeSettings['footer_copyright'] ?? __('All rights reserved.'));
@@ -33,24 +49,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     @livewireStyles
-    @php
-        $storeThemePreset = (string) ($storeSettings['theme_preset'] ?? 'professional_commerce');
-        $storeThemeProfile = match ($storeThemePreset) {
-            'midnight_luxury', 'luxury_noir', 'desert_gold' => 'refined',
-            'tech_neon', 'graphite_modern', 'streetwear_volt' => 'sharp',
-            'beauty_blush', 'rose_boutique', 'kids_pop' => 'playful',
-            'nordic_home', 'emerald_studio', 'coffee_craft' => 'organic',
-            default => 'balanced',
-        };
-        $themeProfiles = [
-            'refined' => ['control_radius' => '8px', 'media_radius' => '6px', 'lift' => '-2px', 'shadow_scale' => '8%'],
-            'sharp' => ['control_radius' => '10px', 'media_radius' => '8px', 'lift' => '-3px', 'shadow_scale' => '12%'],
-            'playful' => ['control_radius' => '18px', 'media_radius' => '20px', 'lift' => '-5px', 'shadow_scale' => '16%'],
-            'organic' => ['control_radius' => '14px', 'media_radius' => '16px', 'lift' => '-3px', 'shadow_scale' => '10%'],
-            'balanced' => ['control_radius' => '14px', 'media_radius' => '14px', 'lift' => '-4px', 'shadow_scale' => '12%'],
-        ];
-        $themeProfile = $themeProfiles[$storeThemeProfile];
-    @endphp
     <style>
         :root {
             --lc-primary: {{ $storeSettings['brand_primary_color'] ?? '#2563eb' }};
