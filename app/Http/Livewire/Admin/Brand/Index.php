@@ -109,10 +109,11 @@ class Index extends Component
         }
 
         $this->pendingDeleteId = $brand->id;
-        $this->dispatchBrowserEvent('open-brand-delete-confirmation', [
-            'id' => $brand->id,
-            'name' => $brand->name,
-        ]);
+        $this->dispatch(
+            'open-brand-delete-confirmation',
+            id: $brand->id,
+            name: $brand->name,
+        );
     }
 
     public function cancelDelete(): void
