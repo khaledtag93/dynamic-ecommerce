@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ProductReview;
 use App\Services\Commerce\ProductReviewService;
+use App\Services\Commerce\AdminActivityLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ProductReviewController extends Controller
 {
-    public function __construct(protected ProductReviewService $productReviewService)
+    public function __construct(
+        protected ProductReviewService $productReviewService,
+        protected AdminActivityLogService $adminActivityLogService,
+    )
     {
     }
 
@@ -65,11 +69,29 @@ class ProductReviewController extends Controller
             'moderation_note' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $this->productReviewService->moderate(
+        $oldStatus = $review->status;
+
+        $moderatedReview = $this->productReviewService->moderate(
             $review,
             $request->user(),
             $validated['status'],
             $validated['moderation_note'] ?? null
+        );
+
+        $this->adminActivityLogService->log(
+            'reviews',
+            'product_review_moderated',
+            __('Product review moderation changed from :old to :new.', [
+                'old' => $oldStatus,
+                'new' => $moderatedReview->status,
+            ]),
+            $request->user()->id,
+            $moderatedReview,
+            [
+                'old_status' => $oldStatus,
+                'new_status' => $moderatedReview->status,
+                'moderation_note' => $moderatedReview->moderation_note,
+            ]
         );
 
         return back()->with(
