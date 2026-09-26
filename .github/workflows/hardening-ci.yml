@@ -71,6 +71,9 @@ jobs:
       - name: Validate Composer
         run: composer validate --no-check-publish
 
+      - name: Audit PHP dependencies
+        run: composer audit --locked --no-interaction
+
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
