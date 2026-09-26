@@ -517,7 +517,7 @@ class SettingController extends Controller
             'logo_file' => ['nullable', 'image', 'max:4096'],
             'admin_logo_file' => ['nullable', 'image', 'max:4096'],
             'hero_banner_file' => ['nullable', 'image', 'max:8192'],
-            'favicon_file' => ['nullable', 'file', 'mimes:ico,png,svg,webp,jpg,jpeg', 'max:2048'],
+            'favicon_file' => ['nullable', 'file', 'mimes:ico,png,webp,jpg,jpeg', 'max:2048'],
             'save_as_custom_theme' => ['nullable', 'boolean'],
             'custom_theme_name' => ['nullable', 'string', 'max:80'],
         ];
