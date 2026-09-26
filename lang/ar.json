@@ -5609,5 +5609,8 @@
     "Remove all Growth validation test data?": "هل تريد إزالة جميع بيانات الاختبار الخاصة بالتحقق من محرك النمو؟",
     "This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.": "سيؤدي هذا إلى إزالة عملاء وطلبات وأحداث السلوك التجريبية المعلّمة التي تم إنشاؤها للتحقق من محرك النمو. بيانات العملاء الفعلية في بيئة الإنتاج ليست ضمن عملية تنظيف بيانات الاختبار هذه.",
     "Keep test data": "الاحتفاظ ببيانات الاختبار",
-    "Some information could not be saved. Fix the items below and try again.": "تعذر حفظ بعض المعلومات. صحّح العناصر الموضحة أدناه ثم حاول مرة أخرى."
+    "Some information could not be saved. Fix the items below and try again.": "تعذر حفظ بعض المعلومات. صحّح العناصر الموضحة أدناه ثم حاول مرة أخرى.",
+    "Top campaigns by attributed revenue and conversions. Up to 12 rows are shown in this snapshot.": "أعلى الحملات حسب الإيراد المنسوب والتحويلات. يعرض هذا الملخص ما يصل إلى 12 صفًا.",
+    "Compare active variants using messages, conversions, and revenue from the current insights snapshot.": "قارن المتغيرات النشطة باستخدام الرسائل والتحويلات والإيراد ضمن ملخص الرؤى الحالي.",
+    "Recent customer groups and their repeat activity. Up to 12 cohorts are shown in this snapshot.": "مجموعات العملاء الحديثة ونشاطهم المتكرر. يعرض هذا الملخص ما يصل إلى 12 مجموعة."
 }
