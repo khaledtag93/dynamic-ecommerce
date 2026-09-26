@@ -41,11 +41,11 @@
             <div class="row g-3 align-items-end">
                 <div class="col-lg-7">
                     <label class="form-label fw-semibold">{{ __('Search brands') }}</label>
-                    <input type="text" wire:model.debounce.400ms="search" class="form-control" placeholder="{{ __('Search by brand name or slug') }}">
+                    <input type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search by brand name or slug') }}">
                 </div>
                 <div class="col-lg-2">
                     <label class="form-label fw-semibold">{{ __('Visibility') }}</label>
-                    <select wire:model="visibility" class="form-select">
+                    <select wire:model.live="visibility" class="form-select">
                         <option value="">{{ __('All brands') }}</option>
                         <option value="visible">{{ __('Visible') }}</option>
                         <option value="hidden">{{ __('Hidden') }}</option>
@@ -53,7 +53,7 @@
                 </div>
                 <div class="col-lg-2">
                     <label class="form-label fw-semibold">{{ __('Product usage') }}</label>
-                    <select wire:model="usage" class="form-select">
+                    <select wire:model.live="usage" class="form-select">
                         <option value="">{{ __('All brands') }}</option>
                         <option value="linked">{{ __('With products') }}</option>
                         <option value="empty">{{ __('Empty brands') }}</option>
@@ -61,7 +61,7 @@
                 </div>
                 <div class="col-lg-1">
                     <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select wire:model="perPage" class="form-select">
+                    <select wire:model.live="perPage" class="form-select">
                         <option value="10">10</option><option value="25">25</option><option value="50">50</option>
                     </select>
                 </div>
@@ -85,12 +85,12 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-md-5">
                         <label class="form-label">{{ __('Name') }}</label>
-                        <input type="text" wire:model.defer="name" class="form-control @error('name') is-invalid @enderror">
+                        <input type="text" wire:model="name" class="form-control @error('name') is-invalid @enderror">
                         @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">{{ __('Slug') }}</label>
-                        <input type="text" wire:model.defer="slug" class="form-control @error('slug') is-invalid @enderror">
+                        <input type="text" wire:model="slug" class="form-control @error('slug') is-invalid @enderror">
                         @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-3">
