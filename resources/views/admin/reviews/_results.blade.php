@@ -61,7 +61,12 @@
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end gap-2 flex-wrap">
                                             @if($review->status !== \App\Models\ProductReview::STATUS_APPROVED)
-                                                <form method="POST" action="{{ route('admin.reviews.moderate', $review) }}" data-submit-loading>
+                                                <form method="POST" action="{{ route('admin.reviews.moderate', $review) }}" data-submit-loading
+                                            data-confirm-title="{{ __('Publish review') }}"
+                                            data-confirm-message="{{ __('Approve and publish this review?') }}"
+                                            data-confirm-subtitle="{{ __('The review will become visible on the storefront immediately.') }}"
+                                            data-confirm-ok="{{ __('Publish review') }}"
+                                            data-confirm-cancel="{{ __('Keep reviewing') }}">
                                                     @csrf
                                                     @method('PATCH')
                                                     <input type="hidden" name="status" value="{{ \App\Models\ProductReview::STATUS_APPROVED }}">
@@ -69,7 +74,12 @@
                                                 </form>
                                             @endif
                                             @if($review->status !== \App\Models\ProductReview::STATUS_REJECTED)
-                                                <form method="POST" action="{{ route('admin.reviews.moderate', $review) }}" class="d-flex gap-2 align-items-center flex-wrap justify-content-end" data-submit-loading>
+                                                <form method="POST" action="{{ route('admin.reviews.moderate', $review) }}" class="d-flex gap-2 align-items-center flex-wrap justify-content-end" data-submit-loading
+                                            data-confirm-title="{{ __('Reject review') }}"
+                                            data-confirm-message="{{ __('Reject and hide this review?') }}"
+                                            data-confirm-subtitle="{{ __('The review will remain hidden from the storefront and the moderation note will be recorded.') }}"
+                                            data-confirm-ok="{{ __('Reject review') }}"
+                                            data-confirm-cancel="{{ __('Keep reviewing') }}">
                                                     @csrf
                                                     @method('PATCH')
                                                     <input type="hidden" name="status" value="{{ \App\Models\ProductReview::STATUS_REJECTED }}">
