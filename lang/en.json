@@ -5049,5 +5049,7 @@
     "You have unsaved category changes. Leaving this page will discard them.": "You have unsaved category changes. Leaving this page will discard them.",
     "Save the category first if you want to keep these changes.": "Save the category first if you want to keep these changes.",
     "Discard changes and leave": "Discard changes and leave",
-    "Keep editing": "Keep editing"
+    "Keep editing": "Keep editing",
+    "This order is not eligible for another online payment attempt. Review the order details or contact support if you need help.": "This order is not eligible for another online payment attempt. Review the order details or contact support if you need help.",
+    "Online payment cannot be retried right now. Review the order details or contact support for the next step.": "Online payment cannot be retried right now. Review the order details or contact support for the next step."
 }
