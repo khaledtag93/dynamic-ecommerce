@@ -78,7 +78,7 @@
             <form method="POST" action="{{ route('returns.cancel', $returnRequest) }}" data-confirm-message="{{ __('Cancel this return request?') }}" data-submit-loading data-return-cancel-live>
                 @csrf
                 @method('PATCH')
-                <button class="btn btn-outline-danger">{{ __('Cancel return request') }}</button>
+                <button class="btn btn-outline-danger" data-loading-text="{{ __('Cancelling...') }}">{{ __('Cancel return request') }}</button>
             </form>
         @endif
     </div>
@@ -96,9 +96,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         event.preventDefault();
         event.stopImmediatePropagation();
+        if (form.dataset.pending === '1') return;
+
+        form.dataset.pending = '1';
+        form.setAttribute('aria-busy', 'true');
 
         const button = event.submitter || form.querySelector('button[type="submit"]');
-        if (button) button.disabled = true;
+        if (button) {
+            button.dataset.originalText = button.textContent;
+            button.textContent = button.dataset.loadingText || @json(__('Cancelling...'));
+            button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
+        }
 
         try {
             const response = await fetch(form.action, {

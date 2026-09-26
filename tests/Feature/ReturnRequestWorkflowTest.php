@@ -232,6 +232,38 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame(ReturnRequest::STATUS_CANCELLED, $return->fresh()->status);
     }
 
+
+    public function test_return_create_live_submission_has_duplicate_guard_and_integer_quantity_semantics(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/returns/create.blade.php'));
+
+        $this->assertStringContainsString('step="1" inputmode="numeric" data-return-quantity', $view);
+        $this->assertStringContainsString('data-return-reason', $view);
+        $this->assertStringContainsString('const syncReasonRequirement = (quantityInput) => {', $view);
+        $this->assertStringContainsString('reason.required = required;', $view);
+        $this->assertStringContainsString("reason.setAttribute('aria-required', required ? 'true' : 'false');", $view);
+        $this->assertStringContainsString("if (form.dataset.pending === '1') return;", $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString("delete form.dataset.pending;", $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("button.dataset.loadingText || @json(__('Submitting...'))", $view);
+    }
+
+
+    public function test_return_cancel_live_submission_has_duplicate_guard_and_accessible_busy_state(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/returns/show.blade.php'));
+
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Cancelling...\') }}"', $view);
+        $this->assertStringContainsString("if (form.dataset.pending === '1') return;", $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString("button.dataset.loadingText || @json(__('Cancelling...'))", $view);
+    }
+
     private function makeDeliveredPaidOrder(User $user, float $total): Order
     {
         return Order::query()->create([

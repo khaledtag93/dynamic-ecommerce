@@ -47,11 +47,11 @@
                                 </div>
                                 <div class="col-sm-4 col-lg-2">
                                     <label class="form-label fw-semibold" for="returnQuantity-{{ $item->id }}">{{ __('Quantity') }}</label>
-                                    <input id="returnQuantity-{{ $item->id }}" type="number" min="0" max="{{ $remaining }}" name="items[{{ $index }}][quantity]" value="{{ old("items.$index.quantity", 0) }}" class="form-control" {{ $remaining < 1 ? 'disabled' : '' }}>
+                                    <input id="returnQuantity-{{ $item->id }}" type="number" min="0" max="{{ $remaining }}" step="1" inputmode="numeric" data-return-quantity name="items[{{ $index }}][quantity]" value="{{ old("items.$index.quantity", 0) }}" class="form-control" {{ $remaining < 1 ? 'disabled' : '' }}>
                                 </div>
                                 <div class="col-sm-8 col-lg-3">
                                     <label class="form-label fw-semibold" for="returnReason-{{ $item->id }}">{{ __('Reason') }}</label>
-                                    <select id="returnReason-{{ $item->id }}" name="items[{{ $index }}][reason_code]" class="form-select" {{ $remaining < 1 ? 'disabled' : '' }}>
+                                    <select id="returnReason-{{ $item->id }}" name="items[{{ $index }}][reason_code]" class="form-select" data-return-reason {{ $remaining < 1 ? 'disabled' : '' }}>
                                         <option value="">{{ __('Select reason') }}</option>
                                         @foreach($reasonOptions as $value => $label)
                                             <option value="{{ $value }}" @selected(old("items.$index.reason_code") === $value)>{{ $label }}</option>
@@ -97,6 +97,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form[data-return-create-live]');
     if (!form || typeof window.fetch !== 'function') return;
     const status = document.querySelector('[data-request-live-status]');
+    const quantityInputs = Array.from(form.querySelectorAll('[data-return-quantity]'));
+
+    const syncReasonRequirement = (quantityInput) => {
+        const article = quantityInput.closest('article');
+        const reason = article?.querySelector('[data-return-reason]');
+        if (!reason) return;
+
+        const required = Number(quantityInput.value || 0) > 0;
+        reason.required = required;
+        reason.setAttribute('aria-required', required ? 'true' : 'false');
+    };
+
+    quantityInputs.forEach((quantityInput) => {
+        syncReasonRequirement(quantityInput);
+        quantityInput.addEventListener('input', () => syncReasonRequirement(quantityInput));
+    });
+
     const show = (message, error = false) => {
         if (!status) return;
         status.textContent = message || '';
@@ -108,9 +125,31 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
         event.stopImmediatePropagation();
+        if (form.dataset.pending === '1') return;
+
+        form.dataset.pending = '1';
+        form.setAttribute('aria-busy', 'true');
+
         const button = event.submitter || form.querySelector('button[type="submit"]');
-        if (button) button.disabled = true;
+        if (button) {
+            button.dataset.originalText = button.textContent;
+            button.textContent = button.dataset.loadingText || @json(__('Submitting...'));
+            button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
+        }
         show('');
+
+        const release = () => {
+            delete form.dataset.pending;
+            form.removeAttribute('aria-busy');
+
+            if (button) {
+                button.disabled = false;
+                button.removeAttribute('aria-disabled');
+                button.textContent = button.dataset.originalText || @json(__('Submit return request'));
+                delete button.dataset.originalText;
+            }
+        };
 
         try {
             const response = await fetch(form.action, {
@@ -129,10 +168,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error(firstError || payload.message || @json(__('Could not submit the return request. Please review the form and try again.')));
             }
             show(payload.message || @json(__('Request submitted successfully.')));
-            if (payload.redirect_url) window.location.assign(payload.redirect_url);
+            if (payload.redirect_url) {
+                window.location.assign(payload.redirect_url);
+                return;
+            }
+
+            release();
         } catch (error) {
             show(error.message, true);
-            if (button) button.disabled = false;
+            release();
         }
     }, true);
 });
