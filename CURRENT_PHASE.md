@@ -12,6 +12,7 @@
 - Authenticated consolidated QAS acceptance remains required before Production.
 - Production remains unchanged.
 - Continue completion before expansion.
+- **Exact next action:** start with OPS-01 credential rotation/revocation evidence; then PAY-01 Paymob E2E; then OPS-02 database restore rehearsal.
 
 ### Historical checkpoints below
 
