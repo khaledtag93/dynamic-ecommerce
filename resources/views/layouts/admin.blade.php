@@ -528,6 +528,38 @@
                 overflow: hidden;
                 overscroll-behavior: none;
             }
+
+            /* Keep the shared mobile navigation trigger visible above vendor theme rules. */
+            .navbar .navbar-menu-wrapper .admin-mobile-sidebar-toggle-inline {
+                display: inline-flex !important;
+            }
+
+            /* The drawer must sit above its backdrop and enter from the logical start edge. */
+            .sidebar-offcanvas.custom-sidebar {
+                z-index: 1050;
+                width: min(257px, calc(100vw - 3rem));
+                max-width: calc(100vw - 3rem);
+            }
+
+            html[dir='ltr'] .sidebar-offcanvas.custom-sidebar {
+                left: calc(-1 * min(257px, calc(100vw - 3rem)));
+                right: auto;
+            }
+
+            html[dir='ltr'] .sidebar-offcanvas.custom-sidebar.active {
+                left: 0;
+                right: auto;
+            }
+
+            html[dir='rtl'] .sidebar-offcanvas.custom-sidebar {
+                right: calc(-1 * min(257px, calc(100vw - 3rem)));
+                left: auto;
+            }
+
+            html[dir='rtl'] .sidebar-offcanvas.custom-sidebar.active {
+                right: 0;
+                left: auto;
+            }
         }
 
         .admin-toast-stack {
