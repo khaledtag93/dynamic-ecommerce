@@ -24,14 +24,10 @@ class AdminAttributeValueIntegrityTest extends TestCase
         $size = $this->attribute('Size');
         $medium = ProductAttributeValue::create(['attribute_id' => $size->id, 'value' => 'Medium']);
 
-        try {
-            Livewire::test(Values::class, ['id' => $color->id])
-                ->call('edit', $medium->id);
-
-            $this->fail('A value from another attribute must not be editable.');
-        } catch (ModelNotFoundException $exception) {
-            $this->assertSame(ProductAttributeValue::class, $exception->getModel());
-        }
+        Livewire::test(Values::class, ['id' => $color->id])
+            ->call('edit', $medium->id)
+            ->assertSet('valueId', null)
+            ->assertSet('value', '');
     }
 
     public function test_in_use_value_cannot_be_renamed(): void
