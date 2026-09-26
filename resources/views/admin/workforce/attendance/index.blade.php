@@ -34,24 +34,24 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.workforce.attendance.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Search employee') }}</label>
-                    <input type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, department') }}">
+                    <label class="form-label fw-semibold" for="workforceAttendanceSearch">{{ __('Search employee') }}</label>
+                    <input id="workforceAttendanceSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, department') }}">
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Session status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceAttendanceStatus">{{ __('Session status') }}</label>
+                    <select id="workforceAttendanceStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All sessions') }}</option>
                         <option value="open" @selected($filters['status'] === 'open')>{{ __('Open') }}</option>
                         <option value="closed" @selected($filters['status'] === 'closed')>{{ __('Closed') }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Work date') }}</label>
-                    <input type="date" name="date" value="{{ $filters['date'] }}" class="form-control" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceAttendanceDate">{{ __('Work date') }}</label>
+                    <input id="workforceAttendanceDate" type="date" name="date" value="{{ $filters['date'] }}" class="form-control" data-live-filter-control>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceAttendancePerPage">{{ __('Per page') }}</label>
+                    <select id="workforceAttendancePerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([20,40,80] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
