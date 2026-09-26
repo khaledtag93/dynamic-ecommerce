@@ -42,12 +42,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.workforce.employees.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                    <input type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, title, department') }}">
+                    <label class="form-label fw-semibold" for="workforceEmployeeSearch">{{ __('Search') }}</label>
+                    <input id="workforceEmployeeSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, title, department') }}">
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceEmployeeStatus">{{ __('Status') }}</label>
+                    <select id="workforceEmployeeStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
                         @foreach(\App\Models\EmployeeProfile::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -55,8 +55,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Employment type') }}</label>
-                    <select name="employment_type" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceEmployeeType">{{ __('Employment type') }}</label>
+                    <select id="workforceEmployeeType" name="employment_type" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All employment types') }}</option>
                         @foreach(\App\Models\EmployeeProfile::employmentTypeOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['employment_type'] === $value)>{{ $label }}</option>
@@ -64,8 +64,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Department') }}</label>
-                    <select name="department" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceEmployeeDepartment">{{ __('Department') }}</label>
+                    <select id="workforceEmployeeDepartment" name="department" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All departments') }}</option>
                         @foreach($departments as $department)
                             <option value="{{ $department }}" @selected($filters['department'] === $department)>{{ $department }}</option>
@@ -73,8 +73,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceEmployeePerPage">{{ __('Per page') }}</label>
+                    <select id="workforceEmployeePerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([15,30,60] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
