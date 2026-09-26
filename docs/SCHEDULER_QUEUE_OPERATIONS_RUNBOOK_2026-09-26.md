@@ -57,6 +57,18 @@ Every deployment now signals `php artisan queue:restart`. Long-lived Laravel wor
 - Never use `queue:flush` as a routine fix.
 - Payment, stock, permissions, and external-message jobs must retain server-side validation/idempotency when moved from sync to async execution.
 
+## QAS evidence checkpoint — 2026-09-26
+
+- Deployed application commit: `f1f20297`.
+- Queue runtime and operations heartbeat migrations applied successfully.
+- QAS changed from `QUEUE_CONNECTION=sync` to `QUEUE_CONNECTION=database`.
+- Manual proof behaved as designed:
+  - before worker: strict health showed the database driver, one pending heartbeat job, stale/mismatched old sync heartbeat, and zero failed jobs;
+  - after `queue:work database --stop-when-empty`: the heartbeat job completed, pending jobs returned to zero, the queue heartbeat became healthy, failed jobs remained zero, and strict health passed.
+- hPanel Cron Jobs now contains two `* * * * *` entries: Laravel `schedule:run` and the bounded database queue worker.
+- First server verification after saving those entries still reported both scheduler and queue heartbeats stale. Therefore the Cron Jobs are configured but not yet runtime-accepted.
+- Next action: inspect hPanel Cron output and/or runtime command environment, then require fresh automatic heartbeats across multiple cycles before closing OPS-03.
+
 ## Production promotion gate
 
 Production remains blocked until:
