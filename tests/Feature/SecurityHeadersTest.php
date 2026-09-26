@@ -18,7 +18,7 @@ class SecurityHeadersTest extends TestCase
 
     public function test_https_responses_include_hsts(): void
     {
-        $response = $this->withServerVariables(['HTTPS' => 'on'])->get('/');
+        $response = $this->get('https://localhost/');
 
         $response->assertOk();
         $response->assertHeader(
