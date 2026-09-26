@@ -114,16 +114,40 @@
                             'streetwear_volt' => __('Streetwear & sports'),
                         ];
                     @endphp
-                    <div class="theme-preset-grid mb-4" role="list" aria-label="{{ __('Theme presets') }}">
+                    <div class="theme-gallery-tools mb-3">
+                        <div class="theme-gallery-search">
+                            <i class="mdi mdi-magnify" aria-hidden="true"></i>
+                            <input type="search" class="form-control" id="themeGallerySearch" placeholder="{{ __('Search themes or markets') }}" aria-label="{{ __('Search themes or markets') }}">
+                        </div>
+                        <div class="theme-gallery-filters" role="group" aria-label="{{ __('Filter themes') }}">
+                            <button type="button" class="theme-filter-chip is-active" data-theme-filter="all">{{ __('All themes') }}</button>
+                            <button type="button" class="theme-filter-chip" data-theme-filter="commerce">{{ __('Commerce') }}</button>
+                            <button type="button" class="theme-filter-chip" data-theme-filter="fashion">{{ __('Fashion & beauty') }}</button>
+                            <button type="button" class="theme-filter-chip" data-theme-filter="food">{{ __('Food & grocery') }}</button>
+                            <button type="button" class="theme-filter-chip" data-theme-filter="premium">{{ __('Premium') }}</button>
+                            <button type="button" class="theme-filter-chip" data-theme-filter="lifestyle">{{ __('Lifestyle') }}</button>
+                        </div>
+                        <div class="theme-gallery-meta text-muted small"><span id="themeGalleryCount">{{ count($presets) }}</span> {{ __('themes available') }}</div>
+                    </div>
+                    <div class="theme-preset-grid mb-3" role="list" aria-label="{{ __('Theme presets') }}">
                         @foreach($presets as $presetKey => $preset)
                             @php
                                 $presetLabel = __($preset['theme_label'] ?? Str::headline(str_replace('_', ' ', $presetKey)));
                                 $presetMarket = $themeMarkets[$presetKey] ?? __('Custom theme');
+                                $presetCategory = match ($presetKey) {
+                                    'professional_commerce', 'royal_navy', 'graphite_modern' => 'commerce',
+                                    'rose_boutique', 'plum_editorial', 'beauty_blush', 'streetwear_volt' => 'fashion',
+                                    'sunset_bakery', 'fresh_market', 'coffee_craft' => 'food',
+                                    'midnight_luxury', 'desert_gold', 'luxury_noir' => 'premium',
+                                    default => 'lifestyle',
+                                };
                             @endphp
                             <button
                                 type="button"
                                 class="theme-preset-card {{ $selectedPreset === $presetKey ? 'is-active' : '' }}"
                                 data-theme-preset-choice="{{ $presetKey }}"
+                                data-theme-category="{{ Str::startsWith($presetKey, 'custom_') ? 'commerce' : $presetCategory }}"
+                                data-theme-search="{{ Str::lower($presetLabel . ' ' . $presetMarket) }}"
                                 aria-pressed="{{ $selectedPreset === $presetKey ? 'true' : 'false' }}"
                                 role="listitem"
                             >
@@ -149,6 +173,11 @@
                                 </span>
                             </button>
                         @endforeach
+                    </div>
+                    <div class="theme-gallery-empty d-none mb-4" id="themeGalleryEmpty">
+                        <i class="mdi mdi-palette-swatch-outline"></i>
+                        <strong>{{ __('No themes match your search') }}</strong>
+                        <span>{{ __('Try another name or market filter.') }}</span>
                     </div>
 
                     <div class="row g-3">
@@ -773,6 +802,16 @@
 [data-media-editor].is-compact .admin-media-block:first-child .admin-current-path,
 [data-media-editor].is-compact .admin-media-block:first-child .admin-manual-path{display:none}
 @media(min-width:1200px){.branding-side-column{align-self:stretch}.branding-side-stack{display:block}.branding-side-stack>#branding-panel-media{margin-bottom:1rem!important}.branding-side-stack>#branding-panel-preview{position:sticky;top:1rem}}
+.theme-gallery-tools{display:grid;gap:.8rem}
+.theme-gallery-search{position:relative;max-width:420px}
+.theme-gallery-search>i{position:absolute;inset-inline-start:.9rem;top:50%;transform:translateY(-50%);color:var(--admin-muted);z-index:2}
+.theme-gallery-search .form-control{padding-inline-start:2.6rem}
+.theme-gallery-filters{display:flex;gap:.5rem;flex-wrap:wrap}
+.theme-filter-chip{border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-muted);border-radius:999px;padding:.45rem .78rem;font-size:.76rem;font-weight:800;transition:.18s ease}
+.theme-filter-chip:hover,.theme-filter-chip.is-active{border-color:var(--admin-primary);background:var(--admin-primary-soft);color:var(--admin-primary-dark)}
+.theme-gallery-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.25rem;padding:2rem;border:1px dashed var(--admin-border);border-radius:1rem;color:var(--admin-muted)}
+.theme-gallery-empty>i{font-size:1.8rem;color:var(--admin-primary)}
+.theme-gallery-empty strong{color:var(--admin-text)}
 .theme-preset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
 .theme-preset-card{appearance:none;width:100%;padding:0;overflow:hidden;text-align:start;border:1px solid var(--admin-border);border-radius:1.15rem;background:var(--admin-surface);color:var(--admin-text);box-shadow:0 12px 28px color-mix(in srgb,var(--admin-text) 5%,transparent);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
 .theme-preset-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--admin-primary) 42%,var(--admin-border));box-shadow:0 16px 34px color-mix(in srgb,var(--admin-primary) 11%,transparent)}
@@ -968,6 +1007,34 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-theme-preset-choice]').forEach((card) => {
         card.addEventListener('click', function () {
             applyPreset(this.dataset.themePresetChoice);
+        });
+    });
+
+    const themeSearch = document.getElementById('themeGallerySearch');
+    const themeCount = document.getElementById('themeGalleryCount');
+    const themeEmpty = document.getElementById('themeGalleryEmpty');
+    let activeThemeFilter = 'all';
+
+    function filterThemeGallery() {
+        const query = (themeSearch?.value || '').trim().toLocaleLowerCase();
+        let visible = 0;
+        document.querySelectorAll('[data-theme-preset-choice]').forEach((card) => {
+            const matchesCategory = activeThemeFilter === 'all' || card.dataset.themeCategory === activeThemeFilter;
+            const matchesQuery = !query || (card.dataset.themeSearch || '').toLocaleLowerCase().includes(query);
+            const show = matchesCategory && matchesQuery;
+            card.classList.toggle('d-none', !show);
+            if (show) visible++;
+        });
+        if (themeCount) themeCount.textContent = visible;
+        themeEmpty?.classList.toggle('d-none', visible !== 0);
+    }
+
+    themeSearch?.addEventListener('input', filterThemeGallery);
+    document.querySelectorAll('[data-theme-filter]').forEach((chip) => {
+        chip.addEventListener('click', function () {
+            activeThemeFilter = this.dataset.themeFilter || 'all';
+            document.querySelectorAll('[data-theme-filter]').forEach((item) => item.classList.toggle('is-active', item === this));
+            filterThemeGallery();
         });
     });
 
