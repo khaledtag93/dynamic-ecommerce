@@ -107,6 +107,89 @@ class WorkforceWorkspaceClosureTest extends TestCase
         }
     }
 
+    public function test_workforce_financial_controls_and_compensation_search_are_hardened(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/CompensationController.php'));
+
+        $this->assertStringContainsString(
+            'mb_substr(trim((string) $request->string(\'search\')), 0, 100)',
+            $controller
+        );
+        $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $controller);
+        $this->assertStringNotContainsString('"%{$value}%"', $controller);
+
+        $views = [
+            resource_path('views/admin/workforce/payroll/compensation/index.blade.php') => [
+                'compensationSearch',
+                'compensationBasisFilter',
+            ],
+            resource_path('views/admin/workforce/payroll/compensation/edit.blade.php') => [
+                'compensationPayBasis',
+                'compensationBaseRate',
+                'compensationCurrency',
+                'compensationEffectiveFrom',
+                'compensationEffectiveTo',
+                'overtimeEligible',
+                'compensationOvertimeMultiplier',
+                'compensationNotes',
+            ],
+            resource_path('views/admin/workforce/payroll/index.blade.php') => [
+                'payrollPeriodName',
+                'payrollPeriodStartsOn',
+                'payrollPeriodEndsOn',
+                'payrollPeriodPayDate',
+                'payrollPeriodNotes',
+            ],
+            resource_path('views/admin/workforce/payroll/run.blade.php') => [
+                'payrollAdjustmentType-{{ $entry->id }}',
+                'payrollAdjustmentLabel-{{ $entry->id }}',
+                'payrollAdjustmentAmount-{{ $entry->id }}',
+                'payrollAdjustmentQuantity-{{ $entry->id }}',
+                'payrollAdjustmentRate-{{ $entry->id }}',
+                'payrollAdjustmentReason-{{ $entry->id }}',
+            ],
+            resource_path('views/admin/workforce/leave/adjustment.blade.php') => [
+                'leaveAdjustmentEmployee',
+                'leaveAdjustmentType',
+                'leaveAdjustmentYear',
+                'leaveAdjustmentKind',
+                'leaveAdjustmentDays',
+                'leaveAdjustmentReason',
+            ],
+        ];
+
+        foreach ($views as $path => $controlIds) {
+            $source = file_get_contents($path);
+
+            foreach ($controlIds as $controlId) {
+                $this->assertStringContainsString('for="' . $controlId . '"', $source);
+                $this->assertStringContainsString('id="' . $controlId . '"', $source);
+            }
+        }
+
+        foreach ([
+            [resource_path('views/admin/workforce/payroll/compensation/edit.blade.php'), 'compensationPayBasis'],
+            [resource_path('views/admin/workforce/payroll/compensation/edit.blade.php'), 'compensationBaseRate'],
+            [resource_path('views/admin/workforce/payroll/compensation/edit.blade.php'), 'compensationCurrency'],
+            [resource_path('views/admin/workforce/payroll/compensation/edit.blade.php'), 'compensationEffectiveFrom'],
+            [resource_path('views/admin/workforce/payroll/index.blade.php'), 'payrollPeriodName'],
+            [resource_path('views/admin/workforce/payroll/index.blade.php'), 'payrollPeriodStartsOn'],
+            [resource_path('views/admin/workforce/payroll/index.blade.php'), 'payrollPeriodEndsOn'],
+            [resource_path('views/admin/workforce/leave/adjustment.blade.php'), 'leaveAdjustmentEmployee'],
+            [resource_path('views/admin/workforce/leave/adjustment.blade.php'), 'leaveAdjustmentType'],
+            [resource_path('views/admin/workforce/leave/adjustment.blade.php'), 'leaveAdjustmentYear'],
+            [resource_path('views/admin/workforce/leave/adjustment.blade.php'), 'leaveAdjustmentKind'],
+            [resource_path('views/admin/workforce/leave/adjustment.blade.php'), 'leaveAdjustmentDays'],
+            [resource_path('views/admin/workforce/leave/adjustment.blade.php'), 'leaveAdjustmentReason'],
+        ] as [$path, $controlId]) {
+            $source = file_get_contents($path);
+            $this->assertMatchesRegularExpression(
+                '/id="' . preg_quote($controlId, '/') . '"[^>]*aria-required="true"/',
+                $source
+            );
+        }
+    }
+
     public function test_workforce_list_filters_have_explicit_labels(): void
     {
         $views = [
