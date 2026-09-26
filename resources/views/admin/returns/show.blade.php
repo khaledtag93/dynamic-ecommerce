@@ -93,12 +93,13 @@
                         @method('PATCH')
                         @foreach($returnRequest->items as $item)
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">{{ $item->orderItem?->product_name }} · {{ __('Approved quantity') }}</label>
-                                <input type="number" name="approved_quantities[{{ $item->id }}]" min="0" max="{{ $item->requested_quantity }}" value="{{ old('approved_quantities.'.$item->id, $item->requested_quantity) }}" class="form-control" required>
+                                <label class="form-label fw-semibold" for="approvedQuantity-{{ $item->id }}">{{ $item->orderItem?->product_name }} · {{ __('Approved quantity') }}</label>
+                                <input id="approvedQuantity-{{ $item->id }}" type="number" name="approved_quantities[{{ $item->id }}]" aria-required="true" min="0" max="{{ $item->requested_quantity }}" value="{{ old('approved_quantities.'.$item->id, $item->requested_quantity) }}" class="form-control" required>
                                 <div class="small text-muted">{{ __('Requested') }}: {{ $item->requested_quantity }}</div>
                             </div>
                         @endforeach
-                        <textarea name="review_notes" rows="3" maxlength="2000" class="form-control mb-3" placeholder="{{ __('Review notes (optional)') }}">{{ old('review_notes') }}</textarea>
+                        <label class="visually-hidden" for="approveReviewNotes">{{ __('Review notes (optional)') }}</label>
+                        <textarea id="approveReviewNotes" name="review_notes" rows="3" maxlength="2000" class="form-control mb-3" placeholder="{{ __('Review notes (optional)') }}">{{ old('review_notes') }}</textarea>
                         <button class="btn btn-primary w-100">{{ __('Approve return') }}</button>
                     </form>
                 </div>
@@ -110,7 +111,8 @@
                     <form method="POST" action="{{ route('admin.returns.reject', $returnRequest) }}" data-confirm-message="{{ __('Reject this return request?') }}" data-submit-loading>
                         @csrf
                         @method('PATCH')
-                        <textarea name="review_notes" rows="3" minlength="3" maxlength="2000" class="form-control mb-3" placeholder="{{ __('Reason for rejection') }}" required>{{ old('review_notes') }}</textarea>
+                        <label class="visually-hidden" for="rejectReviewNotes">{{ __('Reason for rejection') }}</label>
+                        <textarea id="rejectReviewNotes" name="review_notes" rows="3" minlength="3" maxlength="2000" class="form-control mb-3" placeholder="{{ __('Reason for rejection') }}" required aria-required="true">{{ old('review_notes') }}</textarea>
                         <button class="btn btn-outline-danger w-100">{{ __('Reject return') }}</button>
                     </form>
                 </div>
@@ -129,12 +131,12 @@
                                 <div class="fw-bold mb-2">{{ $item->orderItem?->product_name }}</div>
                                 <div class="row g-2">
                                     <div class="col-6">
-                                        <label class="form-label small fw-semibold">{{ __('Received quantity') }}</label>
-                                        <input type="number" name="received_quantities[{{ $item->id }}]" min="0" max="{{ $approved }}" value="{{ $approved }}" class="form-control" readonly>
+                                        <label class="form-label small fw-semibold" for="receivedQuantity-{{ $item->id }}">{{ __('Received quantity') }}</label>
+                                        <input id="receivedQuantity-{{ $item->id }}" type="number" name="received_quantities[{{ $item->id }}]" min="0" max="{{ $approved }}" value="{{ $approved }}" class="form-control" readonly>
                                     </div>
                                     <div class="col-6">
-                                        <label class="form-label small fw-semibold">{{ __('Restock quantity') }}</label>
-                                        <input type="number" name="restock_quantities[{{ $item->id }}]" min="0" max="{{ $approved }}" value="0" class="form-control" {{ $approved < 1 ? 'readonly' : '' }}>
+                                        <label class="form-label small fw-semibold" for="restockQuantity-{{ $item->id }}">{{ __('Restock quantity') }}</label>
+                                        <input id="restockQuantity-{{ $item->id }}" type="number" name="restock_quantities[{{ $item->id }}]" min="0" max="{{ $approved }}" value="0" class="form-control" {{ $approved < 1 ? 'readonly' : '' }}>
                                     </div>
                                 </div>
                             </div>
@@ -152,16 +154,16 @@
                         @csrf
                         @method('PATCH')
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">{{ __('Refund amount') }}</label>
-                            <div class="input-group"><span class="input-group-text">{{ $returnRequest->order?->currency ?? 'EGP' }}</span><input type="number" name="refund_amount" min="0" step="0.01" value="{{ old('refund_amount', 0) }}" class="form-control"></div>
+                            <label class="form-label fw-semibold" for="returnRefundAmount">{{ __('Refund amount') }}</label>
+                            <div class="input-group"><span class="input-group-text">{{ $returnRequest->order?->currency ?? 'EGP' }}</span><input id="returnRefundAmount" type="number" name="refund_amount" min="0" step="0.01" value="{{ old('refund_amount', 0) }}" class="form-control"></div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">{{ __('Exchange order ID (optional)') }}</label>
-                            <input type="number" name="exchange_order_id" min="1" value="{{ old('exchange_order_id') }}" class="form-control">
+                            <label class="form-label fw-semibold" for="returnExchangeOrderId">{{ __('Exchange order ID (optional)') }}</label>
+                            <input id="returnExchangeOrderId" type="number" name="exchange_order_id" min="1" value="{{ old('exchange_order_id') }}" class="form-control">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">{{ __('Completion notes') }}</label>
-                            <textarea name="completion_notes" rows="4" maxlength="2000" class="form-control">{{ old('completion_notes') }}</textarea>
+                            <label class="form-label fw-semibold" for="returnCompletionNotes">{{ __('Completion notes') }}</label>
+                            <textarea id="returnCompletionNotes" name="completion_notes" rows="4" maxlength="2000" class="form-control">{{ old('completion_notes') }}</textarea>
                         </div>
                         <button class="btn btn-primary w-100">{{ __('Complete return') }}</button>
                     </form>
