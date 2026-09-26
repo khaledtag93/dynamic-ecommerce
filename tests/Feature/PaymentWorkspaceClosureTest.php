@@ -51,6 +51,25 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString('aria-required="true"', $settings);
     }
 
+    public function test_payment_detail_controls_have_explicit_labels(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/payments/show.blade.php'));
+
+        foreach ([
+            'paymentDetailStatus',
+            'paymentDetailProviderStatus',
+            'paymentDetailNotes',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $view);
+            $this->assertStringContainsString('id="' . $controlId . '"', $view);
+        }
+
+        $this->assertMatchesRegularExpression(
+            '/id="paymentDetailStatus"[^>]*aria-required="true"/',
+            $view
+        );
+    }
+
     public function test_payment_gateway_mode_rejects_forged_values(): void
     {
         $admin = $this->createSuperAdmin();
