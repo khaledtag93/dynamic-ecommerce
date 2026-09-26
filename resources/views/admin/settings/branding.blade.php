@@ -91,10 +91,34 @@
                         <span class="admin-chip">{{ __('Admin + Customer') }}</span>
                     </div>
 
+                    @php
+                        $themeMarkets = [
+                            'professional_commerce' => __('General commerce'),
+                            'sunset_bakery' => __('Food & bakery'),
+                            'midnight_luxury' => __('Luxury'),
+                            'fresh_market' => __('Grocery & organic'),
+                            'ocean_breeze' => __('Travel & lifestyle'),
+                            'rose_boutique' => __('Fashion & beauty'),
+                            'desert_gold' => __('Regional retail'),
+                            'royal_navy' => __('Business & premium'),
+                            'emerald_studio' => __('Natural & artisan'),
+                            'plum_editorial' => __('Editorial & fashion'),
+                            'graphite_modern' => __('Modern retail'),
+                            'luxury_noir' => __('Luxury & jewelry'),
+                            'beauty_blush' => __('Beauty & cosmetics'),
+                            'tech_neon' => __('Electronics & tech'),
+                            'nordic_home' => __('Home & furniture'),
+                            'kids_pop' => __('Kids & family'),
+                            'coffee_craft' => __('Coffee & artisan'),
+                            'healthcare_calm' => __('Health & wellness'),
+                            'streetwear_volt' => __('Streetwear & sports'),
+                        ];
+                    @endphp
                     <div class="theme-preset-grid mb-4" role="list" aria-label="{{ __('Theme presets') }}">
                         @foreach($presets as $presetKey => $preset)
                             @php
                                 $presetLabel = __($preset['theme_label'] ?? Str::headline(str_replace('_', ' ', $presetKey)));
+                                $presetMarket = $themeMarkets[$presetKey] ?? __('Custom theme');
                             @endphp
                             <button
                                 type="button"
@@ -111,7 +135,7 @@
                                     </span>
                                 </span>
                                 <span class="theme-preset-card__body">
-                                    <span class="theme-preset-card__name">{{ $presetLabel }}</span>
+                                    <span class="theme-preset-card__name">{{ $presetLabel }}<small>{{ $presetMarket }}</small></span>
                                     <span class="theme-preset-card__swatches" aria-hidden="true">
                                         <i style="background:{{ $preset['brand_primary_color'] ?? '#2563eb' }}"></i>
                                         <i style="background:{{ $preset['brand_secondary_color'] ?? '#0f172a' }}"></i>
@@ -760,7 +784,8 @@
 .theme-preset-card__bar{display:block;height:13px;background:color-mix(in srgb,var(--preset-primary) 16%,var(--preset-surface));border-radius:.55rem .55rem 0 0;border-bottom:1px solid color-mix(in srgb,var(--preset-primary) 12%,#e2e8f0)}
 .theme-preset-card__tile{display:block;width:52%;height:25px;margin:10px;border-radius:.5rem;background:linear-gradient(135deg,var(--preset-primary),color-mix(in srgb,var(--preset-primary) 36%,var(--preset-secondary)));opacity:.82}
 .theme-preset-card__body{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.8rem .9rem}
-.theme-preset-card__name{font-weight:850;margin-inline-end:auto}
+.theme-preset-card__name{display:grid;gap:.12rem;font-weight:850;margin-inline-end:auto}
+.theme-preset-card__name small{font-size:.68rem;font-weight:650;color:var(--admin-muted);line-height:1.2}
 .theme-preset-card__swatches{display:inline-flex;gap:.25rem}
 .theme-preset-card__swatches i{display:block;width:.82rem;height:.82rem;border-radius:999px;border:1px solid rgba(15,23,42,.1)}
 .theme-preset-card__recommended,.theme-preset-card__custom{font-size:.68rem;font-weight:850;padding:.24rem .5rem;border-radius:999px}
