@@ -12,7 +12,7 @@ class BrandWorkspaceClosureTest extends TestCase
 
         $this->assertStringContainsString('mb_substr(trim((string) $this->search), 0, 100)', $component);
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $component);
-        $this->assertStringNotContainsString("'%' . trim($this->search) . '%'", $component);
+        $this->assertStringNotContainsString('\'%\' . trim($this->search) . \'%\'', $component);
     }
 
     public function test_brand_workspace_has_accessible_filters_form_controls_and_actions(): void
