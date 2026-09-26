@@ -97,20 +97,20 @@
                 @csrf
                 @method('PATCH')
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select class="form-select" name="status" @disabled($paymentLocked)>
+                    <label class="form-label fw-semibold" for="paymentDetailStatus">{{ __('Status') }}</label>
+                    <select id="paymentDetailStatus" class="form-select" name="status" aria-required="true" @disabled($paymentLocked)>
                         @foreach($statusOptions as $value => $label)
                             <option value="{{ $value }}" @selected($payment->status === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">{{ __('Provider status') }}</label>
-                    <input type="text" name="provider_status" class="form-control" @disabled($paymentLocked) value="{{ old('provider_status', $payment->provider_status) }}" placeholder="{{ __('Optional gateway status') }}">
+                    <label class="form-label fw-semibold" for="paymentDetailProviderStatus">{{ __('Provider status') }}</label>
+                    <input id="paymentDetailProviderStatus" type="text" name="provider_status" class="form-control" @disabled($paymentLocked) value="{{ old('provider_status', $payment->provider_status) }}" placeholder="{{ __('Optional gateway status') }}">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-                    <textarea name="notes" rows="4" class="form-control" @disabled($paymentLocked) placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
+                    <label class="form-label fw-semibold" for="paymentDetailNotes">{{ __('Notes') }}</label>
+                    <textarea id="paymentDetailNotes" name="notes" rows="4" class="form-control" @disabled($paymentLocked) placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
                 </div>
                 @unless($paymentLocked)<div class="alert alert-warning border-0 small">{{ __('Check the provider or transaction evidence before marking a payment as paid or failed.') }}</div>@endunless<button type="submit" class="btn btn-primary w-100 btn-text-icon" data-loading-text="{{ __('Saving...') }}" @disabled($paymentLocked)><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save payment update') }}</span></button>
             </form>
