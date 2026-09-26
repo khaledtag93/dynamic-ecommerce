@@ -101,6 +101,20 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString('.content-wrapper > * {', $admin);
     }
 
+    public function test_mobile_admin_drawer_uses_visible_viewport_instead_of_desktop_min_height(): void
+    {
+        $admin = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+
+        $this->assertStringContainsString('inset-block-start: 64px !important;', $admin);
+        $this->assertStringContainsString('inset-block-end: 0 !important;', $admin);
+        $this->assertStringContainsString('height: auto !important;', $admin);
+        $this->assertStringContainsString('min-height: 0 !important;', $admin);
+        $this->assertStringContainsString('max-height: none !important;', $admin);
+        $this->assertStringContainsString('overflow-y: auto !important;', $admin);
+        $this->assertStringContainsString('env(safe-area-inset-bottom)', $admin);
+        $this->assertStringContainsString('.sidebar-offcanvas.custom-sidebar .sidebar-utility-links', $admin);
+    }
+
     public function test_skip_link_copy_is_bilingual(): void
     {
         $english = json_decode(file_get_contents(lang_path('en.json')), true, 512, JSON_THROW_ON_ERROR);

@@ -566,15 +566,26 @@
                 z-index: 1050 !important;
                 width: min(320px, calc(100vw - 2rem)) !important;
                 max-width: calc(100vw - 2rem) !important;
-                height: calc(100dvh - 64px);
-                max-height: calc(100dvh - 64px) !important;
+
+                /* Let top + bottom define the real mobile scroll viewport. */
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+
                 overflow-x: hidden !important;
                 overflow-y: auto !important;
                 overscroll-behavior: contain;
                 -webkit-overflow-scrolling: touch;
                 touch-action: pan-y;
+                scrollbar-width: thin;
+                padding-block-end: max(1rem, env(safe-area-inset-bottom));
+                scroll-padding-block-end: max(1.5rem, calc(env(safe-area-inset-bottom) + .75rem));
                 transition: transform .24s ease !important;
                 will-change: transform;
+            }
+
+            .sidebar-offcanvas.custom-sidebar .sidebar-utility-links {
+                padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem)) !important;
             }
 
             html[dir='ltr'] .sidebar-offcanvas.custom-sidebar {
