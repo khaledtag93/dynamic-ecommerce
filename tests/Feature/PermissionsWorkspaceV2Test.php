@@ -62,6 +62,22 @@ class PermissionsWorkspaceV2Test extends TestCase
         $response->assertSee('إلغاء تحديد الكل');
     }
 
+    public function test_permissions_workspace_uses_shared_confirmation_and_explicit_role_labels(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/permissions/index.blade.php'));
+
+        $this->assertStringContainsString('window.adminConfirmAction(confirmChange', $view);
+        $this->assertStringContainsString('form.requestSubmit();', $view);
+        $this->assertStringNotContainsString('window.confirm(', $view);
+
+        $this->assertStringContainsString('for="staffRole-{{ $admin->id }}"', $view);
+        $this->assertStringContainsString('id="staffRole-{{ $admin->id }}"', $view);
+        $this->assertStringContainsString('for="newRoleName"', $view);
+        $this->assertStringContainsString('id="newRoleName"', $view);
+        $this->assertStringContainsString('for="newRoleDescription"', $view);
+        $this->assertStringContainsString('id="newRoleDescription"', $view);
+    }
+
     public function test_roleless_admin_is_not_presented_as_super_admin_in_workspace_data(): void
     {
         app(AuthorizationService::class)->syncDefaults();
