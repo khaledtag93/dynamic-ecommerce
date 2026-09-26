@@ -55,6 +55,21 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString('html[dir="rtl"] .lc-order-step', $storefront);
     }
 
+    public function test_mobile_admin_sidebar_stays_reachable_above_the_backdrop_in_both_directions(): void
+    {
+        $admin = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+        $navbar = file_get_contents(resource_path('views/layouts/inc/admin/navbar.blade.php'));
+
+        $this->assertStringContainsString('.navbar .navbar-menu-wrapper .admin-mobile-sidebar-toggle-inline', $admin);
+        $this->assertStringContainsString('display: inline-flex !important;', $admin);
+        $this->assertStringContainsString('.sidebar-offcanvas.custom-sidebar {', $admin);
+        $this->assertStringContainsString('z-index: 1050;', $admin);
+        $this->assertStringContainsString("html[dir='ltr'] .sidebar-offcanvas.custom-sidebar.active", $admin);
+        $this->assertStringContainsString("html[dir='rtl'] .sidebar-offcanvas.custom-sidebar.active", $admin);
+        $this->assertStringContainsString('data-toggle="offcanvas"', $navbar);
+        $this->assertStringContainsString("aria-label="{{ __('Toggle sidebar') }}"", $navbar);
+    }
+
     public function test_skip_link_copy_is_bilingual(): void
     {
         $english = json_decode(file_get_contents(lang_path('en.json')), true, 512, JSON_THROW_ON_ERROR);
