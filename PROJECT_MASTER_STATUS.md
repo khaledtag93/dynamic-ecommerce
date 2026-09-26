@@ -1,5 +1,17 @@
 # MASTER PROJECT STATUS
 
+## Buyer-grade modernization checkpoint — 2026-09-26
+
+- Source plan-review baseline: `sec03-framework-upgrade` at `3ba6d5ab0a6196d32805ce9e7f64585c2d6682a3`. Its Page Closure/mini-sidebar CI and authenticated QAS checks must be confirmed before GF-01 is CLOSED. Latest QAS application evidence in this ledger is `f1f20297`; Production unchanged.
+- The [buyer-grade execution plan](docs/BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md) extends Global Foundation and [Page Closure](docs/PAGE_CLOSURE_SYSTEM_2026-09-26.md) with a route/navigation/role inventory, per-page exact-revision evidence, cross-page business journeys and independent buyer-style checks.
+- No page is CLOSED solely from a source test. The release gate additionally includes OPS-01, PAY-01, OPS-02 and Production scheduler/queue setup; OPS-03 QAS proof is already recorded below.
+- Separate implemented/source verified/QAS accepted/Production verified/planned product claims. Real social sign-in, CSV import execution, tenant isolation, commerce API, native apps, tax/fiscal invoices and multi-currency are not implied complete by existing foundations.
+- Checkpoint meaningful batches in the repo with source/CI/QAS/Production separated; use [new-chat handoff](docs/NEW_CHAT_HANDOFF_2026-09-26.md) to continue without relying on chat history.
+
+### Earlier dated status below
+
+The prior "authoritative" heading is retained as a historical snapshot. Use the latest decision above and `CURRENT_PHASE.md` for execution order.
+
 ## Authoritative audit checkpoint — 2026-09-26
 
 - **Product modernization execution mode:** Global Foundation first, then strict page-by-page closure across Admin and Customer/Storefront. See [Page Closure System](docs/PAGE_CLOSURE_SYSTEM_2026-09-26.md).

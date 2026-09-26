@@ -5,6 +5,8 @@
 تحديث التنفيذ الأمني في 26 سبتمبر 2026: فرع rehearsal `sec03-framework-upgrade` وصل إلى `81ccfdc675a587431547ed0e4dde3a8c49968ac9`، CI أخضر، ونُشر على QAS بنجاح عند `81ccfdc6`.
 هذا هو مرجع الأولويات الحالي. المستندات الأقدم أدلة تاريخية؛ لا تُقرأ عباراتها مثل «التالي» أو «لم يُنفذ» بمعزل عن هذا المرجع.
 
+تحديث الخطة في 26 سبتمبر 2026: [خطة الإغلاق والتحقق قبل تسليم المشروع](BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md) تضيف جرد الصفحات والأدوار والرحلات ودليل قبول على SHA محدد وفحص مشتري مستقل. بعض النتائج أدناه بدأت كصورة مصدرية سابقة؛ اقرأ حالة `PROJECT_MASTER_STATUS.md` و`CURRENT_PHASE.md` الأحدث قبل استخدام جدول النتائج كحالة تنفيذ حالية.
+
 ## 1. الرأي التنفيذي
 
 Dynamic تجاوز مرحلة متجر تجريبي بسيط من ناحية اتساع الوظائف. توجد خدمات فعلية للمبيعات والمدفوعات والمخزون والمشتريات والكاشير والموظفين والدعم والنمو. لكن لا توجد أدلة كافية لوصف النسخة الحالية بأنها منتج تجاري مكتمل أو جاهز للإنتاج.
@@ -104,13 +106,13 @@ P0: يمنع الإطلاق أو يحتاج أولوية أمنية عاجلة. 
 | ID | أولوية وحالة | الدليل/المشكلة | المطلوب وشرط الإغلاق |
 | --- | --- | --- | --- |
 | SEC-01 | مغلق في rehearsal؛ يحتاج merge/قبول نهائي | تمت الترقية إلى Livewire 4.4.6، و`composer audit --locked` أخضر على `81ccfdc6` | الحفاظ على نفس lock أثناء الدمج وتشغيل CI/QAS النهائي؛ لا إعادة فتحه إلا إذا ظهر advisory جديد |
-| SEC-02 | P0؛ مصدر مؤكد، قابلية الاستغلال غير مختبرة | `ProductService::storeUploadedImage` وCategory upload يبنيان امتداد الملف من `getClientOriginalExtension`؛ validation الحالية تعتمد image/mimes | اشتقاق امتداد موثوق/إعادة ترميز، allowlist، منع تنفيذ الملفات في uploads؛ اختبار image MIME مع امتداد غير مسموح دون رفع payload على QAS |
+| SEC-02 | منفذ في مصدر rehearsal؛ قبول QAS معلق | النتيجة الأصلية: مسارات الرفع كانت تبني الامتداد من `getClientOriginalExtension`. سجل المشروع الأحدث يثبت تنفيذ content/extension hardening وحظر تنفيذ uploads في المصدر | تحقق upload فعلي ورفض الامتدادات غير المسموحة على QAS دون payload هجومي، مع الحفاظ على regression coverage أثناء الدمج |
 | SEC-03 | مغلق مصدر/CI/QAS rehearsal؛ الدمج النهائي معلق | QAS يشغل Laravel 13.33.0 + PHP 8.3.33 + Livewire 4.4.6 + Sanctum 4.3.3 على `81ccfdc6`؛ Hardening CI 36214088800 أخضر | دمج نفس التغييرات إلى `v42-clean-baseline`، إعادة CI، ثم authenticated QAS acceptance قبل Production |
 | SEC-04 | منفذ ومغطى؛ قبول الدمج معلق | locale redirect hardening يقصر العودة على مسار محلي آمن مع fallback | الحفاظ على regression coverage أثناء الدمج وإعادة QAS smoke |
 | OPS-01 | P0؛ دليل الإغلاق غائب | `KNOWN_ISSUES.md`: أسرار كانت في Git history؛ إزالة .env لا تثبت rotation | يسجل المالك أسماء الخدمات وتواريخ التدوير فقط؛ تحقق إبطال القديم دون كتابة قيم أسرار |
 | PAY-01 | P0؛ تكامل غير مقبول | HMAC موجود؛ Paymob E2E بقي مفتوحاً في runbook | evidence لـpaid/failed/duplicate/late/retry ومطابقة order/payment/reservation، دون خصم/استرجاع مرتين |
 | OPS-02 | P0؛ استعادة غير مثبتة | deploy يأخذ snapshot؛ rollback يعلن أنه يعيد الكود دون DB | restore rehearsal على DB معزولة، توافق schema/code، وقت الاستعادة وفقد البيانات المقبول وخطة reconciliation |
-| OPS-03 | P0 قبول؛ تشغيل غير مثبت | Kernel يجدول expiry/growth/analytics/escalation | دليل scheduler heartbeat وqueue worker/retry/failed-job alert وexpiry فعلي؛ التوقف لا يترك مخزوناً محجوزاً بلا نهاية |
+| OPS-03 | مقبول على QAS؛ Production معلق | الـscheduler والـdatabase queue والـheartbeat والأوامر المجدولة ثبتت تلقائياً على QAS عبر دورات متعددة؛ `Failed jobs=0` في سجل القبول | إعادة إعداد وتشغيل ومراقبة نفس runtime على Production عند الترقية؛ لا تعميم دليل QAS على Production |
 | UI-01 | P1؛ مرئي مؤكد QAS | `/products/product-1`: الصورتان complete=true وnaturalWidth=0؛ الشكل ينهار إلى مساحة قصيرة | تشخيص record/file/path ثم fallback يحفظ مساحة المعرض؛ اختبار main/thumb/card. السبب الجذري غير مثبت |
 | UX-01 | P1؛ مرئي ومصدر | trust-blocks تعرض شرحاً عن بناء متجر قوي وزيادة الثقة | استبدالها بسياسة/خدمة فعلية للعميل أو إخفاؤها؛ لا وعود توصيل/ضمان غير مؤكدة |
 | I18N-01 | P1؛ مرئي/مصدر | Customer promise وproducts في العربي؛ RegisterController success وCheckoutService stock/empty errors صلبة بالإنجليزية | glossary واحد وpluralization ورسائل backend مترجمة؛ تشغيل invalid cases بالعربي والإنجليزي |

@@ -1,5 +1,19 @@
 # New Chat Handoff — Dynamic — 2026-09-26
 
+## Latest continuation — buyer-grade completion pass
+
+Start with [the buyer-grade execution plan](BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md), [Page Closure System](PAGE_CLOSURE_SYSTEM_2026-09-26.md), `CURRENT_PHASE.md` and `PROJECT_MASTER_STATUS.md`. The plan-review source starting SHA is `3ba6d5ab0a6196d32805ce9e7f64585c2d6682a3` on `sec03-framework-upgrade`; verify the live branch HEAD when resuming. The last application code documented as deployed to QAS is `f1f20297a27e2236603788ac7cc343dbbf86d0b6`. Production remains unchanged. CI/QAS acceptance for the later mini-sidebar and Page Closure source changes is still unconfirmed in this note.
+
+The owner expects every Admin and Customer page, including POS/Workforce variants, to receive a complete product/UI/UX/logic/EN-AR/mobile/security/performance/help review, with the customer storefront treated as a major visual product improvement. The buyer will inspect the delivered project with AI tools, testers and developers. Build an actual page/role/journey inventory and attach repeatable exact-revision evidence to each CLOSED item. Global Foundation shared patterns come first; continue OPS-01, PAY-01 and OPS-02 as separate Production blockers. OPS-03 is verified on QAS, not yet on Production. Do not claim social sign-in, CSV execution, tenant isolation, commerce API or native apps are finished.
+
+The [initial source page inventory](PAGE_INVENTORY_2026-09-26.md) contains a CSV seed of 142 literal GET declarations. It is explicitly incomplete until reconciled with `route:list`, generated Auth routes, mutations/Livewire and conditional UI.
+
+The owner also wants fast, substantive progress without chats hanging: coherent bounded batches, small tool outputs, one meaningful latest-head CI gate per batch, frequent repo checkpoints and concise progress updates. Before moving chats, save current work and provide this paste-ready message (replace SHAs/results with the actual latest checkpoint):
+
+> نكمل Dynamic من `docs/NEW_CHAT_HANDOFF_2026-09-26.md` و`docs/BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md`. ابدأ بالتحقق من HEAD الحالي وفرق source/CI/QAS/Production. آخر حالة موثقة في `CURRENT_PHASE.md`. أكمل أول بند مفتوح في Global Foundation أو Page Closure، وسجل الدليل والنوتس مع كل دفعة. Production لا يتغير قبل بوابات OPS-01 وPAY-01 وOPS-02 والقبول النهائي.
+
+**Immediate next source/acceptance action:** verify CI for `3ba6d5a`, then check the mini-sidebar on the matching QAS application revision before marking GF-01 CLOSED; generate the page/navigation/role/journey inventory and continue Admin shell foundation. OPS-01 rotation, PAY-01 E2E and OPS-02 restore remain separate release work. The older `Exact next action` section below records the pre-modernization release-readiness priority and does not supersede this latest decision.
+
 ## Start here
 
 Continue the Dynamic / Tag Marketplace Laravel project from this checkpoint.

@@ -1,5 +1,20 @@
 # CURRENT PHASE
 
+## Latest execution decision — 2026-09-26 (buyer-grade closure)
+
+- The current source branch for the modernization pass is `sec03-framework-upgrade`; plan-review starting HEAD `3ba6d5ab0a6196d32805ce9e7f64585c2d6682a3`. CI/QAS acceptance for its Page Closure + mini-sidebar changes has not been established in this plan update.
+- The latest QAS application revision already verified in the project ledger remains `f1f20297a27e2236603788ac7cc343dbbf86d0b6`. Production is unchanged. Do not infer QAS acceptance of newer source commits.
+- The authoritative execution method is [buyer-grade plan](docs/BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md) + [Page Closure System](docs/PAGE_CLOSURE_SYSTEM_2026-09-26.md). Inventory actual page/role variants, close shared foundation on representative surfaces, then close every page and linked journey with exact-revision evidence.
+- Initial static source discovery is saved in [Page Inventory](docs/PAGE_INVENTORY_2026-09-26.md) and its 142-GET-declaration CSV seed. This is not the complete live route/page inventory; reconcile generated Auth routes, mutations, Livewire and conditional UI on a PHP/QAS environment.
+- Buyer/developer/AI inspection is an explicit quality gate: repeatable installation, permissions/security, critical money/stock flows, EN/AR browser evidence, performance, operations and honest feature boundaries. There is no evidence for a guaranteed zero-defect score.
+- Work in coherent bounded batches with frequent repository checkpoints and short updates. For a new chat, use [handoff](docs/NEW_CHAT_HANDOFF_2026-09-26.md), updated with source/QAS/Production separation and the first next action.
+- OPS-01 credential rotation evidence, PAY-01 Paymob E2E and OPS-02 database restore rehearsal remain Production blockers. OPS-03 is accepted on QAS only; Production setup/verification remains.
+- **Next source/acceptance slice:** check CI for the mini-sidebar/page-closure HEAD, accept GF-01 on the matching QAS application revision, and create the actual route/navigation/role/page inventory; then continue the Admin shell foundation. Release blockers can be progressed independently in parallel.
+
+### Earlier checkpoints below
+
+Their "next action" lines are historical unless repeated in the latest section above.
+
 ## Product modernization execution mode — 2026-09-26
 
 - Permanent workflow: **Global Foundation -> Page-by-Page Closure -> consolidated QAS -> defect closure -> release review**.

@@ -104,3 +104,12 @@
 - During this pass, new ideas are recorded but do not interrupt closure unless they are blockers, regressions, security issues, direct dependencies or prevent imminent rework.
 - Help and onboarding should explain unfamiliar flows proactively with contextual guidance, examples, useful validation messages and meaningful empty states.
 
+### 22) Buyer-grade Evidence and Honest Scope
+- Maintain an inventory of actual pages, roles, variants and business journeys. Each CLOSED page needs exact source/CI/QAS evidence, EN/AR + responsive/keyboard checks, relevant permission and failure-path checks, and no known blocking defect in its active scope.
+- Test cross-page money/stock/identity workflows, clean install and upgrade/restore separately from page appearance. Keep implemented, source-verified, QAS-accepted, Production-verified and planned claims distinct.
+- Prepare reproducible documentation and repeatable checks for independent developer, tester and AI-assisted review. Do not promise a zero-defect score or describe future SaaS/mobile/social/payment capabilities as complete without proof.
+
+### 23) Fast, Reliable Collaboration
+- Work in coherent, reviewable batches; use focused reads and bounded tool output, then verify the latest batch HEAD in CI. Save meaningful decisions, defects and next actions to the repository as work progresses.
+- Record source, CI, QAS and Production state separately at each checkpoint. During a long session, give concise progress updates. Before changing chat, provide a self-contained handoff pointing to the current commit and `docs/NEW_CHAT_HANDOFF_2026-09-26.md`.
+- A chat handoff or an asynchronous CI run never counts as acceptance; record the actual result before changing a closure status.

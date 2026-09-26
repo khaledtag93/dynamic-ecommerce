@@ -46,6 +46,12 @@ Create one restrained motion/feedback language across Admin and Storefront: butt
 ### GF-08 — Authentication / social sign-in
 Connected identity foundations exist in project status, but real customer social sign-in is not considered closed until provider integration, secure configuration, UI, failure/collision flows, redirects, mobile behavior and QAS are all production-ready.
 
+### GF-09 — Audit coverage and release evidence
+The initial shared-foundation list did not itself enumerate every route/page variant or prove that shared changes worked across roles and journeys. Build the route/navigation/role inventory and accept each common pattern on representative Admin and Customer pages. Record CI, QAS and Production revision separately. Keep OPS-01, PAY-01 and OPS-02 release blockers visible while independent UI work continues.
+
+### GF-10 — Reproducibility and buyer review
+The buyer may independently inspect source, dependencies, clean installation, upgrade migrations, authorization, browser behavior, performance and operational recovery. Add repeatable evidence and product-scope claims to the [buyer-grade execution plan](BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md), then use it as a gate. Passing tests alone does not prove visual or operational acceptance.
+
 ## Global Foundation execution order
 1. Admin shell/navigation closure.
 2. Storefront shell/navigation/footer visual foundation.
@@ -56,8 +62,10 @@ Connected identity foundations exist in project status, but real customer social
 7. Responsive/mobile + accessibility baseline.
 8. Motion/animation baseline.
 9. Shared CSS/JS/component cleanup where it prevents repeated work.
-10. Auth/account shell and social-login readiness.
-11. Begin strict page-by-page closure using `docs/PAGE_CLOSURE_SYSTEM_2026-09-26.md`.
+10. Auth/account shared shell and security/interaction contract. Implement real social login when the Auth page/workflow enters closure; connected identity alone is insufficient.
+11. Build the page/role/journey inventory and begin strict page-by-page closure using `docs/PAGE_CLOSURE_SYSTEM_2026-09-26.md`.
+
+The order expresses dependencies, not a requirement for a giant all-at-once refactor. A shared component is ready when its contract and representative real-page checks pass; expand it during the page pass when a specific finding requires it. Keep security/payment/restore P0 gates active in parallel and never confuse their QAS state with Production acceptance.
 
 ## Closure discipline
 A global item or page is not CLOSED because source code was changed. It must pass the relevant automated tests and the required QAS/visual/functional acceptance.
