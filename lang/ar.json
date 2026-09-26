@@ -5695,5 +5695,8 @@
     "Product :name deleted successfully.": "تم حذف المنتج :name بنجاح.",
     "description": "الوصف",
     "SKU or barcode": "رمز SKU أو الباركود",
-    "product image": "صورة المنتج"
+    "product image": "صورة المنتج",
+    "For safety, bulk delete is limited to explicitly selected products. Clear the all-results selection and choose the rows you want to delete.": "للسلامة، الحذف الجماعي متاح فقط للمنتجات التي تحددها صراحةً. ألغِ تحديد كل النتائج واختر الصفوف التي تريد حذفها.",
+    "Bulk delete requires explicit row selection for safety.": "للسلامة، يتطلب الحذف الجماعي تحديد الصفوف بشكل صريح.",
+    "All filtered results": "كل النتائج المفلترة"
 }

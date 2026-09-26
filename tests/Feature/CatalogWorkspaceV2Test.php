@@ -107,4 +107,42 @@ class CatalogWorkspaceV2Test extends TestCase
         $this->assertSame('تم حذف المنتج :name بنجاح.', $translations['Product :name deleted successfully.'] ?? null);
     }
 
+
+    public function test_catalog_select_all_keeps_livewire_state_bounded(): void
+    {
+        $component = file_get_contents(app_path('Http/Livewire/Admin/Product/Index.php'));
+        $view = file_get_contents(resource_path('views/livewire/admin/product/index.blade.php'));
+
+        $selectAllStart = strpos($component, 'public function selectAllMatching()');
+        $resetStart = strpos($component, 'public function resetSelection()', $selectAllStart);
+        $selectAllMethod = substr($component, $selectAllStart, $resetStart - $selectAllStart);
+
+        $this->assertStringNotContainsString("->pluck('id')", $selectAllMethod);
+        $this->assertStringContainsString('$this->selectedProducts = [];', $selectAllMethod);
+        $this->assertStringContainsString('? $this->totalFilteredCount', $component);
+        $this->assertStringContainsString('@disabled($selectAll)', $view);
+        $this->assertStringContainsString('@checked($selectAll)', $view);
+    }
+
+    public function test_catalog_bulk_delete_refuses_unbounded_all_results_selection(): void
+    {
+        $component = file_get_contents(app_path('Http/Livewire/Admin/Product/Index.php'));
+        $view = file_get_contents(resource_path('views/livewire/admin/product/index.blade.php'));
+
+        $this->assertStringContainsString("if ($this->selectAll) {", $component);
+        $this->assertStringContainsString('For safety, bulk delete is limited to explicitly selected products.', $component);
+        $this->assertStringContainsString('@disabled($this->selectedCount === 0 || $selectAll)', $view);
+    }
+
+    public function test_catalog_export_and_search_are_bounded_for_large_catalogs(): void
+    {
+        $component = file_get_contents(app_path('Http/Livewire/Admin/Product/Index.php'));
+
+        $this->assertStringContainsString('$products->lazy(500)', $component);
+        $this->assertStringContainsString('mb_substr(trim($search), 0, 100)', $component);
+        $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $component);
+        $this->assertStringContainsString('protected function selectedProductsQuery()', $component);
+        $this->assertStringContainsString('return $this->productsQuery(false);', $component);
+    }
+
 }

@@ -5029,5 +5029,8 @@
     "Product :name deleted successfully.": "Product :name deleted successfully.",
     "description": "description",
     "SKU or barcode": "SKU or barcode",
-    "product image": "product image"
+    "product image": "product image",
+    "For safety, bulk delete is limited to explicitly selected products. Clear the all-results selection and choose the rows you want to delete.": "For safety, bulk delete is limited to explicitly selected products. Clear the all-results selection and choose the rows you want to delete.",
+    "Bulk delete requires explicit row selection for safety.": "Bulk delete requires explicit row selection for safety.",
+    "All filtered results": "All filtered results"
 }

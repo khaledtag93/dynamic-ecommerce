@@ -233,11 +233,8 @@ class Index extends Component
     public function selectAllMatching()
     {
         $this->selectAll = true;
-
-        $this->selectedProducts = $this->productsQuery()
-            ->pluck('id')
-            ->map(fn ($id) => (string) $id)
-            ->toArray();
+        $this->selectPage = true;
+        $this->selectedProducts = [];
     }
 
     public function resetSelection()
@@ -249,7 +246,9 @@ class Index extends Component
 
     public function getSelectedCountProperty()
     {
-        return count($this->selectedProducts);
+        return $this->selectAll
+            ? $this->totalFilteredCount
+            : count($this->selectedProducts);
     }
 
     public function getTotalFilteredCountProperty()
@@ -382,6 +381,11 @@ class Index extends Component
 
     public function requestBulkDelete(): void
     {
+        if ($this->selectAll) {
+            session()->flash('error', __('For safety, bulk delete is limited to explicitly selected products. Clear the all-results selection and choose the rows you want to delete.'));
+            return;
+        }
+
         if (empty($this->selectedProducts)) {
             session()->flash('error', __('Please select at least one product.'));
             return;
@@ -762,18 +766,21 @@ class Index extends Component
 
     public function bulkSetFeatured(bool $featured): void
     {
-        if (empty($this->selectedProducts)) {
-            session()->flash('error', 'Please select at least one product.');
+        if ($this->selectedCount < 1) {
+            session()->flash('error', __('Please select at least one product.'));
             return;
         }
 
-        $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
+        $query = $this->selectedProductsQuery();
+        $count = (clone $query)->count();
 
-        Product::query()
-            ->whereIn('id', $ids)
-            ->update(['is_featured' => $featured]);
+        if ($count < 1) {
+            $this->resetSelection();
+            session()->flash('error', __('No matching products were found.'));
+            return;
+        }
 
-        $count = count($ids);
+        $query->update(['is_featured' => $featured]);
         $this->resetSelection();
 
         session()->flash(
@@ -786,35 +793,29 @@ class Index extends Component
 
     public function bulkSetStatus(bool $active): void
     {
-        if (empty($this->selectedProducts)) {
+        if ($this->selectedCount < 1) {
             session()->flash('error', __('Please select at least one product.'));
             return;
         }
 
-        $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
+        $query = $this->selectedProductsQuery();
+        $count = (clone $query)->count();
 
-        $products = Product::query()
-            ->whereIn('id', $ids)
-            ->with('productImages')
-            ->get();
-
-        if ($products->isEmpty()) {
+        if ($count < 1) {
             $this->resetSelection();
             session()->flash('error', __('No matching products were found.'));
             return;
         }
 
-        $needsContent = $active
-            ? $products->filter(fn (Product $product) => ! empty($this->contentReadinessIssues($product)))->count()
-            : 0;
+        $needsContent = 0;
 
-        $actualIds = $products->pluck('id')->all();
+        if ($active) {
+            $needsContentQuery = clone $query;
+            $this->applyNeedsContentConstraint($needsContentQuery);
+            $needsContent = $needsContentQuery->count();
+        }
 
-        Product::query()
-            ->whereIn('id', $actualIds)
-            ->update(['status' => $active]);
-
-        $count = $products->count();
+        $query->update(['status' => $active]);
         $this->resetSelection();
 
         if ($active && $needsContent > 0) {
@@ -846,8 +847,7 @@ class Index extends Component
         $sortDirection = $this->sortDirection === 'asc' ? 'asc' : 'desc';
 
         $products = $this->productsQuery()
-            ->orderBy($sortField, $sortDirection)
-            ->get();
+            ->orderBy($sortField, $sortDirection);
 
         return response()->streamDownload(function () use ($products) {
             $handle = fopen('php://output', 'w');
@@ -871,7 +871,7 @@ class Index extends Component
                 'Updated At',
             ]);
 
-            foreach ($products as $product) {
+            foreach ($products->lazy(500) as $product) {
                 fputcsv($handle, [
                     $product->id,
                     $product->name,
@@ -922,21 +922,25 @@ class Index extends Component
 
     protected function applySearch($query, string $search): void
     {
-        $query->where(function ($innerQuery) use ($search) {
-            $innerQuery->where('name', 'like', "%{$search}%")
-                ->orWhere('slug', 'like', "%{$search}%");
+        $search = mb_substr(trim($search), 0, 100);
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = "%{$escaped}%";
+
+        $query->where(function ($innerQuery) use ($like) {
+            $innerQuery->where('name', 'like', $like)
+                ->orWhere('slug', 'like', $like);
 
             if ($this->hasProductColumn('sku')) {
-                $innerQuery->orWhere('sku', 'like', "%{$search}%");
+                $innerQuery->orWhere('sku', 'like', $like);
             }
 
             if ($this->hasProductColumn('barcode')) {
-                $innerQuery->orWhere('barcode', 'like', "%{$search}%");
+                $innerQuery->orWhere('barcode', 'like', $like);
             }
 
-            $innerQuery->orWhereHas('variants', function ($variantQuery) use ($search) {
-                $variantQuery->where('sku', 'like', "%{$search}%")
-                    ->orWhere('barcode', 'like', "%{$search}%");
+            $innerQuery->orWhereHas('variants', function ($variantQuery) use ($like) {
+                $variantQuery->where('sku', 'like', $like)
+                    ->orWhere('barcode', 'like', $like);
             });
         });
     }
@@ -944,18 +948,7 @@ class Index extends Component
     protected function applyReadinessFilter($query): void
     {
         if ($this->readinessFilter === 'needs_attention') {
-            $query->where(function ($innerQuery) {
-                $innerQuery->whereNull('description')
-                    ->orWhere('description', '')
-                    ->orWhere(function ($identifierQuery) {
-                        $identifierQuery->where(function ($skuQuery) {
-                            $skuQuery->whereNull('sku')->orWhere('sku', '');
-                        })->where(function ($barcodeQuery) {
-                            $barcodeQuery->whereNull('barcode')->orWhere('barcode', '');
-                        });
-                    })
-                    ->orWhereDoesntHave('productImages');
-            });
+            $this->applyNeedsContentConstraint($query);
 
             return;
         }
@@ -1011,16 +1004,48 @@ class Index extends Component
         }
     }
 
-    protected function productsQuery()
+    protected function applyNeedsContentConstraint($query): void
     {
-        return Product::query()
-            ->with([
+        $query->where(function ($innerQuery) {
+            $innerQuery->whereNull('description')
+                ->orWhere('description', '')
+                ->orWhere(function ($identifierQuery) {
+                    $identifierQuery->where(function ($skuQuery) {
+                        $skuQuery->whereNull('sku')->orWhere('sku', '');
+                    })->where(function ($barcodeQuery) {
+                        $barcodeQuery->whereNull('barcode')->orWhere('barcode', '');
+                    });
+                })
+                ->orWhereDoesntHave('productImages');
+        });
+    }
+
+    protected function selectedProductsQuery()
+    {
+        if ($this->selectAll) {
+            return $this->productsQuery(false);
+        }
+
+        $ids = array_values(array_unique(array_map('intval', $this->selectedProducts)));
+
+        return Product::query()->whereIn('id', $ids);
+    }
+
+    protected function productsQuery(bool $withRelations = true)
+    {
+        $query = Product::query();
+
+        if ($withRelations) {
+            $query->with([
                 'category',
                 'brand',
                 'mainImage',
                 'productImages',
                 'defaultVariant',
-            ])
+            ]);
+        }
+
+        return $query
             ->when($this->search, function ($q) {
                 $search = trim($this->search);
 

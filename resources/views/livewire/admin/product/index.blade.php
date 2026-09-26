@@ -308,6 +308,7 @@
                             type="checkbox"
                             id="selectPage"
                             wire:model.live="selectPage"
+                            @disabled($selectAll)
                         >
                         <label class="form-check-label fw-semibold" for="selectPage">
                             {{ __('Select this page') }}
@@ -327,6 +328,9 @@
                     @if ($this->selectedCount > 0)
                         <span class="selection-badge">
                             {{ $this->selectedCount }} {{ __('Selected') }}
+                            @if($selectAll)
+                                <span class="ms-1">· {{ __('All filtered results') }}</span>
+                            @endif
                         </span>
                     @endif
                 </div>
@@ -391,7 +395,8 @@
                         class="btn btn-outline-danger btn-modern"
                         wire:click="requestBulkDelete"
                         wire:loading.attr="disabled"
-                        @disabled($this->selectedCount === 0)
+                        @disabled($this->selectedCount === 0 || $selectAll)
+                        title="{{ $selectAll ? __('Bulk delete requires explicit row selection for safety.') : __('Bulk delete') }}"
                     >
                         <i class="mdi mdi-trash-can-outline me-1"></i>
                         <span>{{ __('Bulk delete') }}</span>
@@ -491,7 +496,9 @@
                                             type="checkbox"
                                             class="form-check-input row-checkbox"
                                             value="{{ $product->id }}"
-                                            wire:model.live="selectedProducts"
+                                            @checked($selectAll)
+                                            @disabled($selectAll)
+                                            @if(!$selectAll) wire:model.live="selectedProducts" @endif
                                         >
                                         <span class="text-muted small">#{{ $product->id }}</span>
                                     </div>
