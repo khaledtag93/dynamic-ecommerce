@@ -10,7 +10,7 @@ class BrandWorkspaceClosureTest extends TestCase
     {
         $component = file_get_contents(app_path('Http/Livewire/Admin/Brand/Index.php'));
 
-        $this->assertStringContainsString("mb_substr(trim((string) $this->search), 0, 100)", $component);
+        $this->assertStringContainsString('mb_substr(trim((string) $this->search), 0, 100)', $component);
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $component);
         $this->assertStringNotContainsString("'%' . trim($this->search) . '%'", $component);
     }
