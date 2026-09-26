@@ -3,6 +3,7 @@
     $banners = collect($data['banners'] ?? []);
     $title = $data['title'] ?? __('Featured offers');
     $subtitle = $data['subtitle'] ?? __('Deals and departments worth checking today');
+    $visibleHomeSections = collect($homeSections ?? []);
 @endphp
 
 @if($banners->isNotEmpty())
@@ -17,7 +18,7 @@
         <div class="retail-campaigns-v2__grid">
             @foreach($banners as $banner)
                 <article class="retail-campaigns-v2__card {{ $loop->first ? 'retail-campaigns-v2__card--wide' : '' }}">
-                    <a href="{{ $banner['button_link'] ?? '#featured-products' }}" class="retail-campaigns-v2__link" aria-label="{{ $banner['title'] ?? __('Offer') }}">
+                    <a href="{{ \App\Support\StorefrontNavigation::homeDestination($banner['button_link'] ?? '#featured-products', $visibleHomeSections) }}" class="retail-campaigns-v2__link" aria-label="{{ $banner['title'] ?? __('Offer') }}">
                         @if(!empty($banner['image_url']))
                             <img src="{{ $banner['image_url'] }}" alt="{{ $banner['title'] ?? __('Offer') }}">
                         @else

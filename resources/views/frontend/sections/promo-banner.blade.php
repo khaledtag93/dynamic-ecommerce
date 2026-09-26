@@ -1,5 +1,11 @@
 @php
     $data = $section['data'] ?? [];
+    $visibleHomeSections = collect($homeSections ?? []);
+    $secondaryButtonLink = $data['secondary_button_link'] ?? '#categories';
+    $secondaryButtonText = $data['secondary_button_text'] ?? __('Browse categories');
+    if ($secondaryButtonLink === '#categories' && ! $visibleHomeSections->contains('type', 'categories')) {
+        $secondaryButtonText = __('Browse products');
+    }
 @endphp
 
 <section id="promo-banner" class="py-5 lc-home-section">
@@ -13,8 +19,8 @@
                 </div>
                 <div class="col-lg-4">
                     <div class="d-grid gap-2">
-                        <a href="{{ $data['button_link'] ?? '#featured-products' }}" class="btn lc-btn-primary">{{ $data['button_text'] ?? __('Start shopping') }}</a>
-                        <a href="{{ $data['secondary_button_link'] ?? '#categories' }}" class="btn lc-btn-soft">{{ $data['secondary_button_text'] ?? __('Browse categories') }}</a>
+                        <a href="{{ \App\Support\StorefrontNavigation::homeDestination($data['button_link'] ?? '#featured-products', $visibleHomeSections) }}" class="btn lc-btn-primary">{{ $data['button_text'] ?? __('Start shopping') }}</a>
+                        <a href="{{ \App\Support\StorefrontNavigation::homeDestination($secondaryButtonLink, $visibleHomeSections) }}" class="btn lc-btn-soft">{{ $secondaryButtonText }}</a>
                     </div>
                 </div>
             </div>

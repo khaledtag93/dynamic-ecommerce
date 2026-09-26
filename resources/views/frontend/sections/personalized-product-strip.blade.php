@@ -3,6 +3,9 @@
     $title = $title ?? __('Recommended for you');
     $subtitle = $subtitle ?? __('Selected products');
     $description = $description ?? __('A focused selection to help you continue shopping without searching from the beginning.');
+    $categoryLink = \App\Support\StorefrontNavigation::links($storeSettings ?? [], false)['categories'];
+    $actionLink = $actionLink ?? $categoryLink ?? route('frontend.search');
+    $actionText = $actionText ?? ($categoryLink ? __('Browse categories') : __('Browse products'));
 @endphp
 
 @if($products->isNotEmpty())
@@ -14,7 +17,7 @@
                 <h2 class="lc-section-title mb-1">{{ $title }}</h2>
                 <p class="lc-section-description mb-0">{{ $description }}</p>
             </div>
-            <a href="#categories" class="btn lc-btn-soft">{{ __('Browse categories') }}</a>
+            <a href="{{ $actionLink }}" class="btn lc-btn-soft">{{ $actionText }}</a>
         </div>
         <div class="row g-4">
             @foreach($products as $product)

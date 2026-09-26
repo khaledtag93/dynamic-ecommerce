@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\WebsiteSetting;
 use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -30,6 +31,27 @@ class StorefrontExperienceTest extends TestCase
             ->assertSee('[dir="rtl"] .retail-hero-slider__nav i{transform:scaleX(-1)}', false)
             ->assertDontSee('retail-promo-pods', false)
             ->assertDontSee('Exclusive electronics deals', false);
+    }
+
+    public function test_home_actions_do_not_link_to_hidden_sections_in_either_locale(): void
+    {
+        foreach (['categories', 'featured_products', 'latest_products', 'best_sellers', 'on_sale_products'] as $section) {
+            WebsiteSetting::setValue('show_home_'.$section, '0', 'branding');
+        }
+        WebsiteSetting::setValue('show_home_manual_featured_products', '1', 'branding');
+        WebsiteSetting::setValue('hero_primary_button_link', 'https://example.com/collection', 'branding');
+
+        foreach (['en', 'ar'] as $locale) {
+            $response = $this->withSession(['locale' => $locale])->get(route('frontend.home'));
+
+            $response->assertOk()
+                ->assertSee('href="https://example.com/collection"', false)
+                ->assertSee('href="'.route('frontend.search', ['offer' => 'on_sale']).'"', false);
+
+            foreach (['categories', 'featured-products', 'latest-products', 'best-sellers', 'on-sale-products'] as $target) {
+                $response->assertDontSee('href="#'.$target.'"', false);
+            }
+        }
     }
 
     public function test_storefront_search_returns_matching_visible_products(): void

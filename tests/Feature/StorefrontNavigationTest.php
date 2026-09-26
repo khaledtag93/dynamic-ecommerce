@@ -42,4 +42,21 @@ class StorefrontNavigationTest extends TestCase
         $this->assertSame(route('frontend.search', ['offer' => 'on_sale']), $links['offers']);
         $this->assertSame(route('frontend.search', ['sort' => 'latest']), $links['new_arrivals']);
     }
+
+    public function test_home_actions_only_jump_to_sections_present_on_the_rendered_page(): void
+    {
+        $sections = collect([
+            ['type' => 'hero'],
+            ['type' => 'latest_products'],
+        ]);
+
+        $this->assertSame('#hero', StorefrontNavigation::homeDestination('#hero', $sections));
+        $this->assertSame('#latest-products', StorefrontNavigation::homeDestination('#latest-products', $sections));
+        $this->assertSame(route('frontend.search'), StorefrontNavigation::homeDestination('#categories', $sections));
+        $this->assertSame(route('frontend.search'), StorefrontNavigation::homeDestination('#featured-products', $sections));
+        $this->assertSame(route('frontend.search'), StorefrontNavigation::homeDestination('#best-sellers', $sections));
+        $this->assertSame(route('frontend.search', ['offer' => 'on_sale']), StorefrontNavigation::homeDestination('#on-sale-products', $sections));
+        $this->assertSame('https://example.com/collection', StorefrontNavigation::homeDestination('https://example.com/collection', $sections));
+        $this->assertSame('#merchant-custom-section', StorefrontNavigation::homeDestination('#merchant-custom-section', $sections));
+    }
 }

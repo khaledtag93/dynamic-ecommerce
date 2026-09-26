@@ -6,7 +6,8 @@
     $empty = $data['empty'] ?? __('No products available yet.');
     $sectionKey = $data['key'] ?? ($section['type'] ?? 'products');
     $actionText = $data['action_text'] ?? __('See more');
-    $actionLink = $data['action_link'] ?? '#categories';
+    $actionLink = array_key_exists('action_link', $data) ? $data['action_link'] : '#categories';
+    $actionLink = $actionLink ? \App\Support\StorefrontNavigation::homeDestination($actionLink, collect($homeSections ?? [])) : null;
     $sectionType = $section['type'] ?? '';
 
     $sectionMeta = match($sectionType) {

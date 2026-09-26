@@ -7,6 +7,10 @@
     $primaryButtonLink = $data['primaryButtonLink'] ?? '#featured-products';
     $secondaryButtonText = $data['secondaryButtonText'] ?? __('Browse categories');
     $secondaryButtonLink = $data['secondaryButtonLink'] ?? '#categories';
+    $visibleHomeSections = collect($homeSections ?? []);
+    if ($secondaryButtonLink === '#categories' && ! $visibleHomeSections->contains('type', 'categories')) {
+        $secondaryButtonText = __('Browse products');
+    }
     $heroImage = $data['heroBannerUrl'] ?? $data['heroImage'] ?? ($storeSettings['customer_hero_image_url'] ?? null);
     $slides = collect($data['heroSlides'] ?? [])->values();
 
@@ -27,6 +31,9 @@
         ['icon' => 'bi bi-grid-3x3-gap', 'title' => __('Shop by category'), 'text' => __('Browse every department'), 'link' => '#categories'],
         ['icon' => 'bi bi-stars', 'title' => __('Top picks'), 'text' => __('Popular products'), 'link' => '#featured-products'],
     ];
+    if (! $visibleHomeSections->contains('type', 'categories')) {
+        $quickCampaigns = array_values(array_filter($quickCampaigns, fn (array $campaign) => $campaign['link'] !== '#categories'));
+    }
 @endphp
 
 <section id="hero" class="retail-hero-slider" data-retail-hero-slider>
@@ -54,11 +61,11 @@
                                 <p>{{ $slideSubtitle }}</p>
                             @endif
                             <div class="retail-hero-slide__actions">
-                                <a href="{{ $slideButtonLink }}" class="retail-hero-slide__primary">
+                                <a href="{{ \App\Support\StorefrontNavigation::homeDestination($slideButtonLink, $visibleHomeSections) }}" class="retail-hero-slide__primary">
                                     <span>{{ $slideButtonText }}</span>
                                     <i class="bi bi-arrow-up-right"></i>
                                 </a>
-                                <a href="{{ $secondaryButtonLink }}" class="retail-hero-slide__secondary">
+                                <a href="{{ \App\Support\StorefrontNavigation::homeDestination($secondaryButtonLink, $visibleHomeSections) }}" class="retail-hero-slide__secondary">
                                     <span>{{ $secondaryButtonText }}</span>
                                     <i class="bi bi-grid-3x3-gap"></i>
                                 </a>
@@ -100,7 +107,7 @@
 
         <div class="retail-hero-shortcuts" aria-label="{{ __('Shopping shortcuts') }}">
             @foreach($quickCampaigns as $campaign)
-                <a href="{{ $campaign['link'] }}" class="retail-hero-shortcut">
+                <a href="{{ \App\Support\StorefrontNavigation::homeDestination($campaign['link'], $visibleHomeSections) }}" class="retail-hero-shortcut">
                     <span class="retail-hero-shortcut__icon"><i class="{{ $campaign['icon'] }}"></i></span>
                     <span class="retail-hero-shortcut__copy">
                         <strong>{{ $campaign['title'] }}</strong>

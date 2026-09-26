@@ -11,6 +11,7 @@
         'in_stock' => $products->count(),
         'on_sale' => 0,
     ];
+    $categoryLink = \App\Support\StorefrontNavigation::links($storeSettings ?? [], false)['categories'];
 @endphp
 
 <section class="py-5" data-live-list>
@@ -39,8 +40,8 @@
                         </div>
 
                         <div class="d-flex flex-wrap gap-3">
-                            <a href="{{ route('frontend.home') }}#categories" class="btn lc-btn-soft">
-                                <i class="bi bi-arrow-left me-2"></i>{{ __('Back to categories') }}
+                            <a href="{{ $categoryLink ?? route('frontend.search') }}" class="btn lc-btn-soft">
+                                <i class="bi bi-arrow-left me-2"></i>{{ $categoryLink ? __('Back to categories') : __('Browse products') }}
                             </a>
                             <a href="#category-grid" class="btn lc-btn-primary">
                                 <i class="bi bi-grid me-2"></i>{{ __('Browse products') }}

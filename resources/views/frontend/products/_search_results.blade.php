@@ -30,7 +30,9 @@
                 <p class="text-muted mb-4">{{ __('Try a broader keyword, clear the filters, or browse categories from the home page.') }}</p>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                     <a href="{{ route('frontend.search') }}" class="btn lc-btn-soft" data-live-reset>{{ __('Clear filters') }}</a>
-                    <a href="{{ route('frontend.home') }}#categories" class="btn lc-btn-primary">{{ __('Browse categories') }}</a>
+                    @if($categoryLink = \App\Support\StorefrontNavigation::links($storeSettings ?? [], false)['categories'])
+                        <a href="{{ $categoryLink }}" class="btn lc-btn-primary">{{ __('Browse categories') }}</a>
+                    @endif
                 </div>
             </div>
         </div>
