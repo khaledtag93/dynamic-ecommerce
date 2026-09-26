@@ -4,7 +4,6 @@ namespace App\Http\Livewire\Admin\Attribute;
 
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
-use App\Models\ProductVariantAttribute;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
