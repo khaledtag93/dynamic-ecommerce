@@ -204,7 +204,7 @@
                             <i class="mdi mdi-magnify"></i>
                         </span>
                         <input
-                            id="catalogSearch"
+                            id="catalogSearch" maxlength="100"
                             type="text"
                             class="form-control"
                             placeholder="{{ __('Search by name, slug, SKU, or barcode...') }}"

@@ -45,7 +45,7 @@
                 <div class="d-flex flex-wrap gap-2">
                     <div class="admin-search-inline">
                         <label class="visually-hidden" for="attributeSearch">{{ __('Search attributes') }}</label>
-                        <input id="attributeSearch" type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
+                        <input id="attributeSearch" maxlength="100" type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search attributes') }}">
                     </div>
                     <label class="visually-hidden" for="attributeCoverage">{{ __('Attribute coverage') }}</label>
                     <select id="attributeCoverage" wire:model.live="coverage" class="form-select" style="width:auto">

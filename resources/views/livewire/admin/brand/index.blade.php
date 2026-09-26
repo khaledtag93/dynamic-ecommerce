@@ -41,7 +41,7 @@
             <div class="row g-3 align-items-end">
                 <div class="col-lg-7">
                     <label class="form-label fw-semibold" for="brandSearch">{{ __('Search brands') }}</label>
-                    <input id="brandSearch" type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search by brand name or slug') }}">
+                    <input id="brandSearch" maxlength="100" type="text" wire:model.live.debounce.400ms="search" class="form-control" placeholder="{{ __('Search by brand name or slug') }}">
                 </div>
                 <div class="col-lg-2">
                     <label class="form-label fw-semibold" for="brandVisibility">{{ __('Visibility') }}</label>

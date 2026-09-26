@@ -38,7 +38,7 @@
                 </div>
                 <div class="d-flex gap-2 align-items-center flex-wrap">
                     <label class="visually-hidden" for="attributeValueSearch">{{ __('Search values') }}</label>
-                    <input id="attributeValueSearch" type="text" wire:model.live.debounce.300ms="search" class="form-control" style="max-width:280px" placeholder="{{ __('Search values') }}">
+                    <input id="attributeValueSearch" maxlength="100" type="text" wire:model.live.debounce.300ms="search" class="form-control" style="max-width:280px" placeholder="{{ __('Search values') }}">
                     <label class="visually-hidden" for="attributeValuePerPage">{{ __('Per page') }}</label>
                     <select id="attributeValuePerPage" wire:model.live="perPage" class="form-select" style="width:auto">
                         <option value="10">10</option><option value="25">25</option><option value="50">50</option>
