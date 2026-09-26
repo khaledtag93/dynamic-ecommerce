@@ -150,8 +150,8 @@
                                     @csrf
                                     @method('PATCH')
                                     <div class="flex-grow-1">
-                                        <label class="form-label fw-semibold">{{ __('Staff role') }}</label>
-                                        <select name="role_id" class="form-select" required>
+                                        <label class="form-label fw-semibold" for="staffRole-{{ $admin->id }}">{{ __('Staff role') }}</label>
+                                        <select id="staffRole-{{ $admin->id }}" name="role_id" class="form-select" required aria-required="true">
                                             <option value="" disabled @selected(!$currentRole)>{{ __('Choose a role') }}</option>
                                             @foreach($roles as $role)
                                                 <option value="{{ $role->id }}" @selected(optional($currentRole)->id === $role->id)>{{ __($role->name) }}</option>
@@ -196,12 +196,12 @@
                         <form method="POST" action="{{ route('admin.permissions.roles.store') }}" data-submit-loading>
                             @csrf
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">{{ __('Role name') }}</label>
-                                <input type="text" name="name" class="form-control" maxlength="120" required>
+                                <label class="form-label fw-semibold" for="newRoleName">{{ __('Role name') }}</label>
+                                <input id="newRoleName" type="text" name="name" class="form-control" maxlength="120" required aria-required="true">
                             </div>
                             <div class="mb-4">
-                                <label class="form-label fw-semibold">{{ __('Description') }}</label>
-                                <textarea name="description" rows="3" maxlength="1000" class="form-control"></textarea>
+                                <label class="form-label fw-semibold" for="newRoleDescription">{{ __('Description') }}</label>
+                                <textarea id="newRoleDescription" name="description" rows="3" maxlength="1000" class="form-control"></textarea>
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
@@ -457,19 +457,29 @@
 document.addEventListener('DOMContentLoaded', () => {
     const workspace = document.querySelector('[data-permissions-workspace]');
 
-            workspace?.querySelectorAll('[data-staff-role-form]').forEach((form) => {
-                form.addEventListener('submit', (event) => {
-                    const select = form.querySelector('[name="role_id"]');
-                    if (!select || select.value === form.dataset.currentRole || form.dataset.roleConfirmed === '1') return;
+    workspace?.querySelectorAll('[data-staff-role-form]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            const select = form.querySelector('[name="role_id"]');
+            if (!select || select.value === form.dataset.currentRole || form.dataset.roleConfirmed === '1') return;
 
-                    if (!window.confirm(@json(__('Change this staff role? The account permissions will change immediately.')))) {
-                        event.preventDefault();
-                        return;
-                    }
+            event.preventDefault();
 
-                    form.dataset.roleConfirmed = '1';
+            const confirmChange = () => {
+                form.dataset.roleConfirmed = '1';
+                form.requestSubmit();
+            };
+
+            if (typeof window.adminConfirmAction === 'function') {
+                window.adminConfirmAction(confirmChange, {
+                    title: @json(__('Change staff role?')),
+                    message: @json(__('The account permissions will change immediately after you save this assignment.')),
+                    subtitle: @json(__('Review the selected role before continuing.')),
+                    confirmLabel: @json(__('Change role')),
+                    cancelLabel: @json(__('Keep current role')),
                 });
-            });
+            }
+        });
+    });
     if (!workspace) return;
 
     const staffInput = workspace.querySelector('[data-staff-search]');
