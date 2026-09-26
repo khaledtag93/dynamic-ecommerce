@@ -531,6 +531,7 @@
             font-weight: 800;
         }
         .retail-account-menu .dropdown-item:hover { background: color-mix(in srgb, var(--lc-soft) 82%, white); color: var(--lc-primary-dark); }
+        .retail-account-menu .dropdown-item[aria-current="page"] { background:var(--lc-primary); color:var(--lc-btn-text); }
         .retail-account-menu__logout { color: #dc2626; width: 100%; text-align: inherit; }
 
         /* V37.1: hero/quick-entry RTL polish. Keep icons away from text and avoid first-screen clutter. */
@@ -682,10 +683,10 @@
                                     <strong>{{ auth()->user()->name ?? __('My account') }}</strong>
                                     <small>{{ auth()->user()->email ?? '' }}</small>
                                 </div>
-                                <a class="dropdown-item" role="menuitem" href="{{ route('account.index') }}"><i class="bi bi-person"></i>{{ __('My account') }}</a>
-                                <a class="dropdown-item" role="menuitem" href="{{ route('orders.index') }}"><i class="bi bi-receipt"></i>{{ __('My Orders') }}</a>
-                                <a class="dropdown-item" role="menuitem" href="{{ route('account.addresses.index') }}"><i class="bi bi-geo-alt"></i>{{ __('Address book') }}</a>
-                                <a class="dropdown-item" role="menuitem" href="{{ route('notifications.index') }}"><i class="bi bi-bell"></i>{{ __('Notifications') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('account.index') }}" @if(request()->routeIs('account.index')) aria-current="page" @endif><i class="bi bi-person"></i>{{ __('My account') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('orders.index') }}" @if(request()->routeIs('orders.*')) aria-current="page" @endif><i class="bi bi-receipt"></i>{{ __('My Orders') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('account.addresses.index') }}" @if(request()->routeIs('account.addresses.*')) aria-current="page" @endif><i class="bi bi-geo-alt"></i>{{ __('Address book') }}</a>
+                                <a class="dropdown-item" role="menuitem" href="{{ route('notifications.index') }}" @if(request()->routeIs('notifications.*')) aria-current="page" @endif><i class="bi bi-bell"></i>{{ __('Notifications') }}</a>
                                 @if((int) auth()->user()->role_as === 1)
                                     <a class="dropdown-item" role="menuitem" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i>{{ __('Admin Dashboard') }}</a>
                                 @endif
@@ -762,7 +763,7 @@
                         <a href="{{ $storefrontNavigation['new_arrivals'] }}">{{ __('New arrivals') }}</a>
                         <a href="{{ route('frontend.contact') }}" @if(request()->routeIs('frontend.contact')) aria-current="page" @endif>{{ __('Contact') }}</a>
                         @auth
-                            <a class="d-md-none" href="{{ route('account.index') }}" @if(request()->routeIs('account.*')) aria-current="page" @endif><i class="bi bi-person me-1"></i>{{ __('My account') }}</a>
+                            <a class="d-md-none" href="{{ route('account.index') }}" @if(request()->routeIs('account.index')) aria-current="page" @endif><i class="bi bi-person me-1"></i>{{ __('My account') }}</a>
                             <a class="d-md-none" href="{{ route('orders.index') }}" @if(request()->routeIs('orders.*')) aria-current="page" @endif><i class="bi bi-receipt me-1"></i>{{ __('My Orders') }}</a>
                             <a class="d-md-none" href="{{ route('account.addresses.index') }}" @if(request()->routeIs('account.addresses.*')) aria-current="page" @endif><i class="bi bi-geo-alt me-1"></i>{{ __('Address book') }}</a>
                             <a class="d-md-none" href="{{ route('notifications.index') }}" @if(request()->routeIs('notifications.*')) aria-current="page" @endif><i class="bi bi-bell me-1"></i>{{ __('Notifications') }}</a>
@@ -957,7 +958,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <a href="{{ route('frontend.home') }}" @if(request()->routeIs('frontend.home')) aria-current="page" @endif>{{ __('Home') }}</a>
                 <a href="{{ route('frontend.contact') }}" @if(request()->routeIs('frontend.contact')) aria-current="page" @endif>{{ __('Contact') }}</a>
                 @auth
-                    <a href="{{ route('account.index') }}" @if(request()->routeIs('account.*')) aria-current="page" @endif>{{ __('My account') }}</a>
+                    <a href="{{ route('account.index') }}" @if(request()->routeIs('account.index')) aria-current="page" @endif>{{ __('My account') }}</a>
                     <a href="{{ route('orders.index') }}" @if(request()->routeIs('orders.*')) aria-current="page" @endif>{{ __('My Orders') }}</a>
                     <a href="{{ route('checkout.index') }}" @if(request()->routeIs('checkout.*')) aria-current="page" @endif>{{ __('Checkout') }}</a>
                 @else
