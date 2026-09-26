@@ -1,5 +1,15 @@
 # CURRENT PHASE
 
+## Storefront account/auth semantics checkpoint — 2026-09-26
+
+- Active source branch: `sec03-framework-upgrade`. GF-17 application source is `e82b3f9d82afdc3be71506827b29f71fb377f967`.
+- Shared account navigation now uses an exact Account Overview match instead of broad `account.*`, preventing Address Book from exposing two different destinations as `aria-current="page"`. The desktop account dropdown now exposes and styles the actual current account/order/address/notification destination.
+- Login and Register now use the same `lc-page-shell` geometry as the rest of customer account access and explicitly associate labels with every credential field. Regression coverage renders the Address Book route and protects the auth label/shell contract.
+- **Gate:** GF-17 is source-implemented but remains **IN REVIEW**. The branch workflow is configured to run Hardening CI on every push, but the available GitHub connector does not expose push-triggered workflow runs for this commit, so no green CI claim is recorded here yet. Matching-revision EN/AR desktop/mobile keyboard QAS acceptance is also outstanding. Production unchanged.
+- **Next:** verify the final Hardening CI evidence when available, then continue the remaining shared Storefront/customer shell review before strict page-by-page closure.
+
+### Earlier checkpoints below
+
 ## Shared Storefront performance/accessibility checkpoint — 2026-09-26
 
 - Active source branch: `sec03-framework-upgrade`. Final application HEAD for this checkpoint is `ba00f303b2e32fb8cb76ce84f25af89d449fadf7`.
