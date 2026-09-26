@@ -5598,5 +5598,12 @@
     "Send test notification": "إرسال إشعار تجريبي",
     "Send this test notification now?": "هل تريد إرسال هذا الإشعار التجريبي الآن؟",
     "The selected channel will be contacted immediately using the chosen order context and destination rules.": "سيتم استخدام القناة المختارة فورًا وفقًا لبيانات الطلب المحدد وقواعد وجهة الإرسال.",
-    "Send test now": "إرسال الاختبار الآن"
+    "Send test now": "إرسال الاختبار الآن",
+    "Product review moderation changed from :old to :new.": "تم تغيير حالة مراجعة المنتج من :old إلى :new.",
+    "Publish review": "نشر المراجعة",
+    "Approve and publish this review?": "هل تريد الموافقة على هذه المراجعة ونشرها؟",
+    "The review will become visible on the storefront immediately.": "ستصبح المراجعة ظاهرة في واجهة المتجر فورًا.",
+    "Reject review": "رفض المراجعة",
+    "Reject and hide this review?": "هل تريد رفض هذه المراجعة وإخفاءها؟",
+    "The review will remain hidden from the storefront and the moderation note will be recorded.": "ستظل المراجعة مخفية من واجهة المتجر وسيتم تسجيل ملاحظة الإشراف."
 }
