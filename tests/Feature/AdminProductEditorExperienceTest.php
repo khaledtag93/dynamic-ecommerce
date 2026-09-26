@@ -44,6 +44,50 @@ class AdminProductEditorExperienceTest extends TestCase
         $this->assertStringNotContainsString('confirm(', $view);
     }
 
+    public function test_product_editor_core_fields_have_explicit_accessible_labels(): void
+    {
+        $view = file_get_contents(resource_path('views/livewire/admin/product/product-form.blade.php'));
+
+        foreach ([
+            'productName',
+            'productSlug',
+            'productSku',
+            'productBarcode',
+            'productVideoUrl',
+            'productCategory',
+            'productBrand',
+            'productDescription',
+            'productBasePrice',
+            'productSalePrice',
+            'productQuantity',
+            'productLowStockThreshold',
+            'productStockStatus',
+            'productStorefrontStatus',
+            'productFeatured',
+            'productMetaTitle',
+            'productMetaDescription',
+            'productImagesInput',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $view);
+            $this->assertStringContainsString('id="' . $controlId . '"', $view);
+        }
+
+        foreach ([
+            'productName',
+            'productCategory',
+            'productBasePrice',
+            'productQuantity',
+            'productStockStatus',
+            'productStorefrontStatus',
+            'productFeatured',
+        ] as $requiredControlId) {
+            $this->assertMatchesRegularExpression(
+                '/id="' . preg_quote($requiredControlId, '/') . '"[^>]*aria-required="true"/',
+                $view
+            );
+        }
+    }
+
     public function test_simple_product_sku_is_saved_from_livewire_editor(): void
     {
         $category = $this->createCategory('Retail Test', 'retail-test');
