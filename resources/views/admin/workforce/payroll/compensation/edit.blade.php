@@ -32,8 +32,8 @@
 
                 <div class="row g-3">
                     <div class="col-md-6 col-xl-3">
-                        <label class="form-label fw-semibold">{{ __('Pay basis') }}</label>
-                        <select name="pay_basis" class="form-select @error('pay_basis') is-invalid @enderror" required>
+                        <label class="form-label fw-semibold" for="compensationPayBasis">{{ __('Pay basis') }}</label>
+                        <select id="compensationPayBasis" name="pay_basis" aria-required="true" class="form-select @error('pay_basis') is-invalid @enderror" required>
                             @foreach(\App\Models\EmployeeCompensation::payBasisOptions() as $value => $label)
                                 <option value="{{ $value }}" @selected(old('pay_basis', $compensation->pay_basis) === $value)>{{ $label }}</option>
                             @endforeach
@@ -41,23 +41,23 @@
                         @error('pay_basis')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6 col-xl-3">
-                        <label class="form-label fw-semibold">{{ __('Base rate') }}</label>
-                        <input type="number" name="base_rate" step="0.01" min="0.01" class="form-control @error('base_rate') is-invalid @enderror" value="{{ old('base_rate', $compensation->base_rate) }}" required>
+                        <label class="form-label fw-semibold" for="compensationBaseRate">{{ __('Base rate') }}</label>
+                        <input id="compensationBaseRate" type="number" name="base_rate" aria-required="true" step="0.01" min="0.01" class="form-control @error('base_rate') is-invalid @enderror" value="{{ old('base_rate', $compensation->base_rate) }}" required>
                         @error('base_rate')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6 col-xl-2">
-                        <label class="form-label fw-semibold">{{ __('Currency') }}</label>
-                        <input type="text" name="currency" maxlength="3" class="form-control text-uppercase @error('currency') is-invalid @enderror" value="{{ old('currency', $compensation->currency) }}" required placeholder="ISO">
+                        <label class="form-label fw-semibold" for="compensationCurrency">{{ __('Currency') }}</label>
+                        <input id="compensationCurrency" type="text" name="currency" aria-required="true" maxlength="3" class="form-control text-uppercase @error('currency') is-invalid @enderror" value="{{ old('currency', $compensation->currency) }}" required placeholder="ISO">
                         @error('currency')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6 col-xl-2">
-                        <label class="form-label fw-semibold">{{ __('Effective from') }}</label>
-                        <input type="date" name="effective_from" class="form-control @error('effective_from') is-invalid @enderror" value="{{ old('effective_from', $compensation->effective_from?->format('Y-m-d')) }}" required>
+                        <label class="form-label fw-semibold" for="compensationEffectiveFrom">{{ __('Effective from') }}</label>
+                        <input id="compensationEffectiveFrom" type="date" name="effective_from" aria-required="true" class="form-control @error('effective_from') is-invalid @enderror" value="{{ old('effective_from', $compensation->effective_from?->format('Y-m-d')) }}" required>
                         @error('effective_from')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6 col-xl-2">
-                        <label class="form-label fw-semibold">{{ __('Effective to') }}</label>
-                        <input type="date" name="effective_to" class="form-control @error('effective_to') is-invalid @enderror" value="{{ old('effective_to', $compensation->effective_to?->format('Y-m-d')) }}">
+                        <label class="form-label fw-semibold" for="compensationEffectiveTo">{{ __('Effective to') }}</label>
+                        <input id="compensationEffectiveTo" type="date" name="effective_to" class="form-control @error('effective_to') is-invalid @enderror" value="{{ old('effective_to', $compensation->effective_to?->format('Y-m-d')) }}">
                         @error('effective_to')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
@@ -70,15 +70,15 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Reference overtime multiplier') }}</label>
-                        <input type="number" name="overtime_rate_multiplier" step="0.001" min="0.001" max="10" class="form-control @error('overtime_rate_multiplier') is-invalid @enderror" value="{{ old('overtime_rate_multiplier', $compensation->overtime_rate_multiplier) }}">
+                        <label class="form-label fw-semibold" for="compensationOvertimeMultiplier">{{ __('Reference overtime multiplier') }}</label>
+                        <input id="compensationOvertimeMultiplier" type="number" name="overtime_rate_multiplier" step="0.001" min="0.001" max="10" class="form-control @error('overtime_rate_multiplier') is-invalid @enderror" value="{{ old('overtime_rate_multiplier', $compensation->overtime_rate_multiplier) }}">
                         <div class="section-note">{{ __('Stored as policy context only. V1 does not auto-create overtime pay.') }}</div>
                         @error('overtime_rate_multiplier')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label fw-semibold">{{ __('Notes') }}</label>
-                        <textarea name="notes" rows="4" maxlength="2000" class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $compensation->notes) }}</textarea>
+                        <label class="form-label fw-semibold" for="compensationNotes">{{ __('Notes') }}</label>
+                        <textarea id="compensationNotes" name="notes" rows="4" maxlength="2000" class="form-control @error('notes') is-invalid @enderror">{{ old('notes', $compensation->notes) }}</textarea>
                         @error('notes')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
