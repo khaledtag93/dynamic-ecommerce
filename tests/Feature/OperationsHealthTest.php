@@ -76,7 +76,7 @@ class OperationsHealthTest extends TestCase
 
         $heartbeats = app(HeartbeatService::class);
         $heartbeats->beat('scheduler');
-        $heartbeats->beat('queue');
+        $heartbeats->beat('queue', ['connection' => 'database']);
 
         $this->assertSame(0, Artisan::call('ops:health', ['--strict' => true]));
         $this->assertStringContainsString('database', Artisan::output());
