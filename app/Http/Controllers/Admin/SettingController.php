@@ -396,7 +396,7 @@ class SettingController extends Controller
                 collect($data)->only($this->themeFields())->toArray(),
                 ['theme_preset' => $themeKey, 'theme_label' => trim((string) $data['custom_theme_name'])]
             );
-            WebsiteSetting::setValue('custom_themes', json_encode($customThemes, JSON_UNESCAPED_UNICODE), 'branding', 'json');
+            $data['custom_themes'] = json_encode($customThemes, JSON_UNESCAPED_UNICODE);
             $data['theme_preset'] = $themeKey;
         }
 
