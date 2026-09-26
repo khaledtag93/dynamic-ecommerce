@@ -5044,5 +5044,10 @@
     "Activate product :name": "Activate product :name",
     "Edit product :name": "Edit product :name",
     "Duplicate product :name": "Duplicate product :name",
-    "Delete product :name": "Delete product :name"
+    "Delete product :name": "Delete product :name",
+    "Discard unsaved category changes?": "Discard unsaved category changes?",
+    "You have unsaved category changes. Leaving this page will discard them.": "You have unsaved category changes. Leaving this page will discard them.",
+    "Save the category first if you want to keep these changes.": "Save the category first if you want to keep these changes.",
+    "Discard changes and leave": "Discard changes and leave",
+    "Keep editing": "Keep editing"
 }
