@@ -24,7 +24,7 @@ class AttendanceController extends Controller
         }
 
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => mb_substr(trim((string) $request->string('search')), 0, 100),
             'status' => in_array($status, ['open', 'closed'], true) ? $status : '',
             'date' => $date,
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
@@ -33,12 +33,15 @@ class AttendanceController extends Controller
         $sessions = EmployeeAttendanceSession::query()
             ->with(['employee.user', 'breaks', 'approvedCorrection', 'pendingCorrection'])
             ->when($filters['search'], function ($query, $search) {
-                $query->whereHas('employee', function ($employeeQuery) use ($search) {
-                    $employeeQuery->where('employee_code', 'like', "%{$search}%")
-                        ->orWhere('department', 'like', "%{$search}%")
-                        ->orWhereHas('user', function ($userQuery) use ($search) {
-                            $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+                $like = '%' . $escapedSearch . '%';
+
+                $query->whereHas('employee', function ($employeeQuery) use ($like) {
+                    $employeeQuery->where('employee_code', 'like', $like)
+                        ->orWhere('department', 'like', $like)
+                        ->orWhereHas('user', function ($userQuery) use ($like) {
+                            $userQuery->where('name', 'like', $like)
+                                ->orWhere('email', 'like', $like);
                         });
                 });
             })
