@@ -36,6 +36,19 @@ class OrderPaymentRetryEligibilityTest extends TestCase
         ])))->canRetryOnlinePayment());
     }
 
+    public function test_paymob_result_view_uses_shared_retry_eligibility_contract(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/payments/paymob-result.blade.php'));
+
+        $this->assertStringContainsString('$order->can_retry_online_payment', $view);
+        $this->assertStringContainsString('@if($canRetry)', $view);
+        $this->assertStringNotContainsString('@if(! $isPaid)', $view);
+        $this->assertStringContainsString(
+            'This order is not eligible for another online payment attempt.',
+            $view
+        );
+    }
+
     public function test_customer_order_view_uses_shared_retry_eligibility_contract(): void
     {
         $view = file_get_contents(resource_path('views/frontend/orders/show.blade.php'));
