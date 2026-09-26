@@ -105,6 +105,19 @@ class StorefrontCartCouponLiveTest extends TestCase
         $this->assertStringContainsString("__('Order subtotal must be at least :amount to use this coupon.'", $service);
     }
 
+    public function test_coupon_input_matches_server_limit_and_accessibility_contract(): void
+    {
+        $source = file_get_contents(resource_path('views/frontend/cart/index.blade.php'));
+        $controller = file_get_contents(app_path('Http/Controllers/Frontend/CartController.php'));
+
+        $this->assertStringContainsString('for="cartCouponCode"', $source);
+        $this->assertMatchesRegularExpression(
+            '/id="cartCouponCode"[^>]*name="coupon_code"[^>]*maxlength="50"[^>]*required[^>]*aria-required="true"/',
+            $source
+        );
+        $this->assertStringContainsString("'coupon_code' => ['required', 'string', 'max:50']", $controller);
+    }
+
     private function makeProduct(int $quantity): Product
     {
         $categoryId = DB::table('categories')->insertGetId([

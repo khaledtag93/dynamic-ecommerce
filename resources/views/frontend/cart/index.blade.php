@@ -116,8 +116,8 @@
                                                     @csrf
                                                     @method('PATCH')
                                                     <div class="lc-qty-shell">
-                                                        <span class="small text-muted fw-bold">{{ __('Qty') }}</span>
-                                                        <input type="number" name="quantity" min="1" value="{{ $item->quantity }}" class="form-control lc-form-control text-center">
+                                                        <label for="cartQuantity{{ $item->id }}" class="small text-muted fw-bold">{{ __('Qty') }}</label>
+                                                        <input id="cartQuantity{{ $item->id }}" type="number" name="quantity" min="1" step="1" inputmode="numeric" value="{{ $item->quantity }}" class="form-control lc-form-control text-center" required aria-required="true">
                                                     </div>
                                                     <button type="submit" class="btn lc-btn-soft cart-qty-update-fallback" data-loading-text="{{ __('Updating...') }}">{{ __('Updating...') }}</button>
                                                 </form>
@@ -171,8 +171,9 @@
 
                                 <form method="POST" action="{{ route('cart.coupon.apply') }}" data-cart-coupon-apply @if($cart['coupon']) hidden @endif>
                                     @csrf
+                                    <label class="visually-hidden" for="cartCouponCode">{{ __('Coupon code') }}</label>
                                     <div class="input-group">
-                                        <input type="text" name="coupon_code" value="{{ old('coupon_code') }}" class="form-control lc-form-control" placeholder="{{ __('Enter coupon code') }}" autocomplete="off">
+                                        <input id="cartCouponCode" type="text" name="coupon_code" maxlength="50" value="{{ old('coupon_code') }}" class="form-control lc-form-control" placeholder="{{ __('Enter coupon code') }}" autocomplete="off" required aria-required="true">
                                         <button class="btn lc-btn-primary" type="submit" data-loading-text="{{ __('Applying...') }}">{{ __('Apply') }}</button>
                                     </div>
                                 </form>

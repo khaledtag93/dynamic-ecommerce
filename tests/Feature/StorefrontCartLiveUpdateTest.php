@@ -92,6 +92,20 @@ class StorefrontCartLiveUpdateTest extends TestCase
         );
     }
 
+    public function test_cart_quantity_control_matches_server_validation_and_accessibility_contract(): void
+    {
+        $source = file_get_contents(resource_path('views/frontend/cart/index.blade.php'));
+        $controller = file_get_contents(app_path('Http/Controllers/Frontend/CartController.php'));
+
+        $this->assertStringContainsString('for="cartQuantity{{ $item->id }}"', $source);
+        $this->assertStringContainsString('id="cartQuantity{{ $item->id }}"', $source);
+        $this->assertMatchesRegularExpression(
+            '/id="cartQuantity\{\{ \$item->id \}\}"[^>]*min="1"[^>]*step="1"[^>]*required[^>]*aria-required="true"/',
+            $source
+        );
+        $this->assertStringContainsString("'quantity' => ['required', 'integer', 'min:1']", $controller);
+    }
+
     protected function makeProduct(int $quantity): Product
     {
         $categoryId = DB::table('categories')->insertGetId([
