@@ -12,7 +12,8 @@
 - Authenticated consolidated QAS acceptance remains required before Production.
 - Production remains unchanged.
 - Continue completion before expansion.
-- **Exact next action:** start with OPS-01 credential rotation/revocation evidence; then PAY-01 Paymob E2E; then OPS-02 database restore rehearsal.
+- OPS-01 historical exposure scope is now documented in `docs/OPS01_CREDENTIAL_ROTATION_EVIDENCE_2026-09-26.md`: confirmed historical secrets are the Laravel APP_KEY and Paymob API/HMAC credentials; DB/Mail/AWS/Redis/Pusher secrets were not populated in the tracked historical `.env` snapshot.
+- **Exact next action:** complete OPS-01 runtime verification/rotation (verify QAS/Production are not using the historical APP_KEY; rotate/revoke historical Paymob API/HMAC credentials; record dates only), then PAY-01 Paymob E2E, then OPS-02 database restore rehearsal.
 
 ### Historical checkpoints below
 
