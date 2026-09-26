@@ -17,19 +17,21 @@ class CompensationController extends Controller
 
     public function index(Request $request)
     {
-        $search = trim((string) $request->string('search'));
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
         $basis = (string) $request->string('pay_basis');
 
         $employees = EmployeeProfile::query()
             ->with(['user', 'compensation'])
-            ->when($search, function ($query, $value) {
-                $query->where(function ($inner) use ($value) {
-                    $inner->where('employee_code', 'like', "%{$value}%")
-                        ->orWhere('department', 'like', "%{$value}%")
-                        ->orWhere('job_title', 'like', "%{$value}%")
-                        ->orWhereHas('user', function ($userQuery) use ($value) {
-                            $userQuery->where('name', 'like', "%{$value}%")
-                                ->orWhere('email', 'like', "%{$value}%");
+            ->when($search, function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('employee_code', 'like', $like)
+                        ->orWhere('department', 'like', $like)
+                        ->orWhere('job_title', 'like', $like)
+                        ->orWhereHas('user', function ($userQuery) use ($like) {
+                            $userQuery->where('name', 'like', $like)
+                                ->orWhere('email', 'like', $like);
                         });
                 });
             })
