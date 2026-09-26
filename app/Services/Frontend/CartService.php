@@ -88,14 +88,27 @@ class CartService
 
    public function add(Product $product, int $quantity = 1, ?int $variantId = null): CartItem
 {
+    if (! (bool) $product->status) {
+        throw ValidationException::withMessages([
+            'cart' => __('This product is not currently available for purchase.'),
+        ]);
+    }
+
     $variant = null;
 
     if ($variantId) {
         $variant = ProductVariant::query()
             ->with('attributes.attribute')
             ->where('product_id', $product->id)
+            ->where('status', true)
             ->whereKey($variantId)
-            ->firstOrFail();
+            ->first();
+
+        if (! $variant) {
+            throw ValidationException::withMessages([
+                'cart' => __('The selected product option is no longer available.'),
+            ]);
+        }
     } elseif ($product->has_variants) {
         $variant = ProductVariant::query()
             ->with('attributes.attribute')
