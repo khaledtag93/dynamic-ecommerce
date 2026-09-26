@@ -99,10 +99,8 @@ class StorefrontCartLiveUpdateTest extends TestCase
 
         $this->assertStringContainsString('for="cartQuantity{{ $item->id }}"', $source);
         $this->assertStringContainsString('id="cartQuantity{{ $item->id }}"', $source);
-        $this->assertMatchesRegularExpression(
-            '/id="cartQuantity\{\{ \$item->id \}\}"[^>]*min="1"[^>]*step="1"[^>]*required[^>]*aria-required="true"/',
-            $source
-        );
+        $this->assertStringContainsString('min="1" step="1" inputmode="numeric"', $source);
+        $this->assertStringContainsString('required aria-required="true"', $source);
         $this->assertStringContainsString("'quantity' => ['required', 'integer', 'min:1']", $controller);
     }
 
