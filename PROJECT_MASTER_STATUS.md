@@ -1,5 +1,14 @@
 # MASTER PROJECT STATUS
 
+## Buyer-grade route evidence and foundation ledger — 2026-09-26
+
+- On `sec03-framework-upgrade`, GF-01 source passed Hardening CI `36249023102`, GF-11 passed `36250710952`, and GF-12 passed `36250969555`. All three still need authenticated matching-revision QAS acceptance; none is CLOSED or Production-verified.
+- Source `11cd7770` passed [Hardening CI 36251293003](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36251293003), including the new Laravel `route:list --json` artifact. The [reconciled inventory](docs/PAGE_INVENTORY_2026-09-26.md) records 337 registered routes, 160 GET-capable entries and complete URI matching of the 142-entry literal GET seed. This is route coverage, not page/role/conditional UI acceptance.
+- The next source follow-up, GF-13, removes environment/database metadata from public health probes and prevents trace-file writes when the local diagnostics flag is off. Branch-head CI/QAS status is tracked in `CURRENT_PHASE.md`.
+- Last documented QAS application SHA: `f1f20297a27e2236603788ac7cc343dbbf86d0b6`. Production unchanged. OPS-01, PAY-01 and OPS-02 remain P0 release gates. Continue the Global Foundation and real navigation/role/page reconciliation under `CURRENT_PHASE.md` before claiming page closure.
+
+### Earlier checkpoints below
+
 ## Admin navigation foundation continuation — 2026-09-26
 
 - GF-12 fixes names/tooltips for seven collapsed navigation groups and limits current-item scrolling to the sidebar. Source work and the acceptance gate are in [Global Foundation Audit](docs/GLOBAL_FOUNDATION_AUDIT_2026-09-26.md); latest-head CI and QAS acceptance remain to be recorded.

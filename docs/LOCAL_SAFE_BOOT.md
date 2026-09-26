@@ -18,3 +18,5 @@ LOCAL_SAFE_BOOT=true
 
 - `/ping`
 - `/api/ping`
+
+Outside the local pre-boot shortcut, both return a minimal JSON health signal without environment or database configuration. `local_boot_trace.log` is written only while `LOCAL_SAFE_BOOT` is enabled.

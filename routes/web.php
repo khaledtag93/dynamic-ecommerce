@@ -58,7 +58,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Livewire\Admin\Attribute\Index as AttributeIndex;
 use App\Http\Livewire\Admin\Attribute\Values as AttributeValues;
 use App\Http\Livewire\Admin\Brand\Index as BrandIndex;
-use App\Support\LocalSafeBoot;
 
 Auth::routes();
 
@@ -66,7 +65,6 @@ Route::get('/ping', function () {
     return response()->json([
         'ok' => true,
         'message' => 'web pong',
-        'local_safe_boot' => LocalSafeBoot::status(),
     ]);
 })->withoutMiddleware([
     \App\Http\Middleware\EncryptCookies::class,

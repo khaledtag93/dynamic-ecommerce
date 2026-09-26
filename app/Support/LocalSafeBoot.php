@@ -19,14 +19,4 @@ class LocalSafeBoot
     {
         return self::enabled() && app()->environment('local');
     }
-
-    public static function status(): array
-    {
-        return [
-            'enabled' => self::enabled(),
-            'environment' => app()->environment(),
-            'db_connection' => (string) config('database.default'),
-            'app_url' => (string) config('app.url'),
-        ];
-    }
 }

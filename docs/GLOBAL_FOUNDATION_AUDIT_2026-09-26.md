@@ -49,6 +49,8 @@ Connected identity foundations exist in project status, but real customer social
 ### GF-09 — Audit coverage and release evidence
 The initial shared-foundation list did not itself enumerate every route/page variant or prove that shared changes worked across roles and journeys. Build the route/navigation/role inventory and accept each common pattern on representative Admin and Customer pages. Record CI, QAS and Production revision separately. Keep OPS-01, PAY-01 and OPS-02 release blockers visible while independent UI work continues.
 
+**Progress:** CI run `36251293003` exported the 337-entry Laravel route manifest and reconciled all 142 literal GET seed declarations with 160 registered GET-capable routes. The [registered route inventory](PAGE_INVENTORY_2026-09-26.md) remains a discovery aid. Actual navigation, conditional UI, permission/role variants and QAS evidence remain open.
+
 ### GF-10 — Reproducibility and buyer review
 The buyer may independently inspect source, dependencies, clean installation, upgrade migrations, authorization, browser behavior, performance and operational recovery. Add repeatable evidence and product-scope claims to the [buyer-grade execution plan](BUYER_GRADE_EXECUTION_PLAN_2026-09-26_AR.md), then use it as a gate. Passing tests alone does not prove visual or operational acceptance.
 
@@ -64,7 +66,14 @@ The buyer may independently inspect source, dependencies, clean installation, up
 
 **Source action:** localized `aria-label`/`title` on every group summary, with `aria-expanded` still synchronized on toggle. The current item is now revealed by scrolling the sidebar itself only when it has internal overflow; page scroll is not touched. Existing source regression coverage was aligned with the new scroll contract.
 
-**Gate:** Hardening CI plus authenticated QAS checks on expanded/collapsed desktop and mobile in EN/AR, keyboard/screen-reader naming, sidebar scrolling and no main-page jump. Remains IN REVIEW until matching-revision QAS acceptance.
+**Gate:** [Hardening CI 36250969555](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36250969555) passed for source commit `23d87640ab3b9047c70668071e400da01dfb6876`. Authenticated QAS checks on expanded/collapsed desktop and mobile in EN/AR, keyboard/screen-reader naming, sidebar scrolling and no main-page jump remain outstanding. GF-12 remains IN REVIEW until matching-revision QAS acceptance.
+
+### GF-13 — Public health probes and local diagnostics
+**Finding:** `/ping` and `/api/ping` returned the local safe-boot state, application environment, database connection name and application URL to unauthenticated callers. The front controller wrote `local_boot_trace.log` for every request even with the local diagnostics flag disabled.
+
+**Source action:** both JSON health probes now expose only their minimal `ok`/`message` contract. The unused environment-report method was removed. Front-controller trace and shutdown logging run only when `LOCAL_SAFE_BOOT` is explicitly enabled; the local pre-boot ping shortcut remains available. A feature test asserts exact public probe bodies.
+
+**Gate:** branch-head Hardening CI and QAS checks of both probe variants with diagnostics disabled and local safe boot enabled where appropriate. Source change is IN REVIEW until the gate is recorded; QAS/Production have not been changed by this finding.
 
 ## Global Foundation execution order
 1. Admin shell/navigation closure.

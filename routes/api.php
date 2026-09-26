@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\DeployCenterExecutorController;
 use Illuminate\Support\Facades\Route;
-use App\Support\LocalSafeBoot;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +28,5 @@ Route::get('/ping', function () {
     return response()->json([
         'ok' => true,
         'message' => 'api pong',
-        'local_safe_boot' => LocalSafeBoot::status(),
     ]);
 });

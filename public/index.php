@@ -8,7 +8,11 @@ $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $requestPath = parse_url($requestUri, PHP_URL_PATH) ?: '/';
 $traceFile = __DIR__.'/../storage/logs/local_boot_trace.log';
 
-$trace = static function (string $message) use ($traceFile): void {
+$trace = static function (string $message) use ($traceFile, $localSafeBootEnabled): void {
+    if (! $localSafeBootEnabled) {
+        return;
+    }
+
     try {
         $dir = dirname($traceFile);
         if (! is_dir($dir)) {
@@ -20,14 +24,16 @@ $trace = static function (string $message) use ($traceFile): void {
     }
 };
 
-register_shutdown_function(static function () use ($trace): void {
-    $error = error_get_last();
-    if ($error) {
-        $trace('shutdown_error: '.json_encode($error));
-    } else {
-        $trace('shutdown_ok');
-    }
-});
+if ($localSafeBootEnabled) {
+    register_shutdown_function(static function () use ($trace): void {
+        $error = error_get_last();
+        if ($error) {
+            $trace('shutdown_error: '.json_encode($error));
+        } else {
+            $trace('shutdown_ok');
+        }
+    });
+}
 
 if ($localSafeBootEnabled && in_array($requestPath, ['/ping', '/_probe', '/api/ping'], true)) {
     header('Content-Type: text/plain; charset=UTF-8');

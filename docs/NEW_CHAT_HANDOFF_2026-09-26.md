@@ -1,5 +1,15 @@
 # New Chat Handoff — Dynamic — 2026-09-26
 
+## Current checkpoint — registered route inventory
+
+Continue on `sec03-framework-upgrade`, reading `CURRENT_PHASE.md` first. Source GF-01/11/12 passed CI runs `36249023102`, `36250710952` and `36250969555` respectively, but matching-revision authenticated QAS acceptance remains open. The route-export application commit `11cd7770` passed CI `36251293003`; its 337-entry Laravel route artifact was reconciled with all 142 literal GET seed URIs, yielding a [160-entry GET discovery register](PAGE_INVENTORY_2026-09-26.md) and reproducible CSV scripts. These are route candidates, not 160 accepted pages. GF-13 then removed public health-probe configuration metadata and gated local trace writes; check branch-head CI for this later source follow-up. Next inspect actual navigation, conditional screens, roles and journeys while continuing shared Admin/Storefront foundation. QAS is still documented at `f1f20297`; Production unchanged. OPS-01/PAY-01/OPS-02 remain blockers.
+
+Paste-ready continuation message:
+
+> نكمل Dynamic من `CURRENT_PHASE.md` و`docs/NEW_CHAT_HANDOFF_2026-09-26.md` على `sec03-framework-upgrade`. تحقق من آخر HEAD وCI، وفرق source/QAS/Production. جرد المسارات اتصالح من CI لكن الصفحات والأدوار والواجهات الشرطية والقبول على QAS لسه مفتوحين. أكمل Global Foundation ثم إغلاق صفحة صفحة بالدليل وسجل النوتس أولًا بأول؛ لا Production قبل OPS-01/PAY-01/OPS-02 والاعتماد النهائي.
+
+### Earlier checkpoints below
+
 ## Latest Admin shell continuation
 
 GF-12 now addresses names/tooltips for all seven collapsed Admin navigation groups and keeps auto-scroll inside the sidebar. The previous GF-11 source commit `6e6d75e` passed CI run `36250710952`; verify the newest HEAD/CI before proceeding. QAS still has documented application `f1f20297`, so GF-01/GF-11/GF-12 remain pending matching-revision authenticated acceptance. Production unchanged. Continue Admin shell work and reconcile the initial route/page inventory after the latest-head CI gate; retain OPS-01/PAY-01/OPS-02 release blockers.

@@ -1,5 +1,17 @@
 # CURRENT PHASE
 
+## Registered route inventory checkpoint — 2026-09-26
+
+- Active branch: `sec03-framework-upgrade`. GF-01 Page Closure/mini-sidebar passed [CI 36249023102](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36249023102); GF-11 shared confirmation passed [CI 36250710952](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36250710952); GF-12 collapsed-group labels/sidebar-only scroll passed [CI 36250969555](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36250969555). Their source CI is green, but authenticated QAS acceptance has not occurred.
+- The route-export source commit `11cd7770ef20a91a693936e1ae249c9354dfccda` passed [CI 36251293003](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36251293003). Its Laravel JSON artifact was normalized to [337 registered routes and 160 GET-capable discovery entries](docs/PAGE_INVENTORY_2026-09-26.md); all 142 literal GET seed URIs matched. The generated CSV and reproduction scripts are included with this checkpoint; routes are not equivalent to accepted pages.
+- GF-13 source work makes the public health probes minimal and gates local boot trace writes on `LOCAL_SAFE_BOOT`. A focused feature test protects the public response contract. Obtain branch-head CI for this follow-up before treating its source as verified; QAS acceptance remains separate.
+- Last documented QAS application remains `f1f20297a27e2236603788ac7cc343dbbf86d0b6`; GF-01/GF-11/GF-12 remain IN REVIEW. Production unchanged. OPS-01 historical secret rotation, PAY-01 Paymob E2E and OPS-02 restore rehearsal are open release gates.
+- **Next:** confirm branch-head CI for GF-13 and the inventory scripts, then inspect actual Admin/Storefront navigation, conditional UI and role variants against the registered routes; continue shared-shell foundation. When the matching source is on QAS, carry out authenticated EN/AR/mobile/keyboard acceptance before any CLOSED claim. Do not infer this from the route manifest.
+
+### Earlier checkpoints below
+
+Read the newest section first; older CI-pending statements describe their earlier checkpoints.
+
 ## Admin navigation continuation — 2026-09-26
 
 - GF-12 source work names all seven collapsed sidebar groups for assistive technology/tooltips and confines current-item auto-scroll to the sidebar instead of the document. See [Global Foundation Audit](docs/GLOBAL_FOUNDATION_AUDIT_2026-09-26.md). CI and QAS acceptance for this newest slice are pending.
