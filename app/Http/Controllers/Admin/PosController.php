@@ -74,21 +74,24 @@ class PosController extends Controller
 
     public function productLookup(Request $request)
     {
-        $term = trim((string) $request->string('q'));
+        $term = mb_substr(trim((string) $request->string('q')), 0, 100);
         if (mb_strlen($term) < 2) {
             return response()->json(['results' => []]);
         }
 
+        $escapedTerm = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+        $like = '%' . $escapedTerm . '%';
+
         $products = Product::query()->where('status', true)
-            ->where(function ($query) use ($term) {
-                $query->where('name', 'like', "%{$term}%")
-                    ->orWhere('sku', 'like', "%{$term}%")
-                    ->orWhere('barcode', 'like', "%{$term}%");
+            ->where(function ($query) use ($like) {
+                $query->where('name', 'like', $like)
+                    ->orWhere('sku', 'like', $like)
+                    ->orWhere('barcode', 'like', $like);
             })->orderBy('name')->limit(8)->get();
         $variants = ProductVariant::query()->where('status', true)
             ->whereHas('product', fn ($query) => $query->where('status', true))
-            ->where(function ($query) use ($term) {
-                $query->where('sku', 'like', "%{$term}%")->orWhere('barcode', 'like', "%{$term}%");
+            ->where(function ($query) use ($like) {
+                $query->where('sku', 'like', $like)->orWhere('barcode', 'like', $like);
             })->with('product')->limit(8)->get();
 
         $results = $products->map(fn ($product) => [
@@ -107,17 +110,20 @@ class PosController extends Controller
 
     public function customerLookup(Request $request)
     {
-        $term = trim((string) $request->string('q'));
+        $term = mb_substr(trim((string) $request->string('q')), 0, 100);
         if (mb_strlen($term) < 2) {
             return response()->json(['results' => []]);
         }
 
+        $escapedTerm = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+        $like = '%' . $escapedTerm . '%';
+
         $customers = User::query()->select(['users.id', 'users.name', 'users.email'])
             ->where('role_as', 0)
-            ->where(function ($query) use ($term) {
-                $query->where('users.name', 'like', "%{$term}%")
-                    ->orWhere('users.email', 'like', "%{$term}%")
-                    ->orWhereHas('addresses', fn ($addressQuery) => $addressQuery->where('phone', 'like', "%{$term}%"));
+            ->where(function ($query) use ($like) {
+                $query->where('users.name', 'like', $like)
+                    ->orWhere('users.email', 'like', $like)
+                    ->orWhereHas('addresses', fn ($addressQuery) => $addressQuery->where('phone', 'like', $like));
             })->with(['addresses:id,user_id,phone,is_default_shipping'])
             ->orderBy('users.name')->limit(8)->get();
 
@@ -130,7 +136,9 @@ class PosController extends Controller
     public function shifts(Request $request)
     {
         $status = (string) $request->string('status');
-        $cashierSearch = trim((string) $request->string('cashier'));
+        $cashierSearch = mb_substr(trim((string) $request->string('cashier')), 0, 100);
+        $escapedCashierSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $cashierSearch);
+        $cashierLike = '%' . $escapedCashierSearch . '%';
 
         $query = PosCashShift::query()->with('cashier.employeeProfile')->latest('opened_at');
 
@@ -143,12 +151,12 @@ class PosController extends Controller
         }
 
         if ($cashierSearch !== '') {
-            $query->whereHas('cashier', function ($cashierQuery) use ($cashierSearch) {
-                $cashierQuery->where('name', 'like', "%{$cashierSearch}%")
-                    ->orWhere('email', 'like', "%{$cashierSearch}%")
-                    ->orWhereHas('employeeProfile', function ($employeeQuery) use ($cashierSearch) {
-                        $employeeQuery->where('employee_code', 'like', "%{$cashierSearch}%")
-                            ->orWhere('department', 'like', "%{$cashierSearch}%");
+            $query->whereHas('cashier', function ($cashierQuery) use ($cashierLike) {
+                $cashierQuery->where('name', 'like', $cashierLike)
+                    ->orWhere('email', 'like', $cashierLike)
+                    ->orWhereHas('employeeProfile', function ($employeeQuery) use ($cashierLike) {
+                        $employeeQuery->where('employee_code', 'like', $cashierLike)
+                            ->orWhere('department', 'like', $cashierLike);
                     });
             });
         }
