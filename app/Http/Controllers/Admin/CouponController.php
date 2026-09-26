@@ -12,8 +12,12 @@ class CouponController extends Controller
 {
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'type' => (string) $request->string('type'),
             'status' => (string) $request->string('status'),
             'usage' => (string) $request->string('usage'),
@@ -34,12 +38,12 @@ class CouponController extends Controller
         $sortColumn = $sortMap[$filters['sort']] ?? 'id';
 
         $coupons = Coupon::query()
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($innerQuery) use ($search) {
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($innerQuery) use ($like) {
                     $innerQuery
-                        ->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%")
-                        ->orWhere('notes', 'like', "%{$search}%");
+                        ->where('name', 'like', $like)
+                        ->orWhere('code', 'like', $like)
+                        ->orWhere('notes', 'like', $like);
                 });
             })
             ->when($filters['type'], fn ($query, $type) => $query->where('type', $type))
