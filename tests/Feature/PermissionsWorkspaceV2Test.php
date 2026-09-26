@@ -78,6 +78,37 @@ class PermissionsWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('id="newRoleDescription"', $view);
     }
 
+    public function test_permissions_forms_have_explicit_labels_and_required_semantics(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/permissions/index.blade.php'));
+
+        foreach ([
+            'newRoleName',
+            'newRoleDescription',
+            'customPermissionName',
+            'customPermissionGroup',
+            'customPermissionDescription',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $view);
+            $this->assertStringContainsString('id="' . $controlId . '"', $view);
+        }
+
+        $this->assertStringContainsString('for="roleName-{{ $role->id }}"', $view);
+        $this->assertStringContainsString('id="roleName-{{ $role->id }}"', $view);
+        $this->assertStringContainsString('for="roleDescription-{{ $role->id }}"', $view);
+        $this->assertStringContainsString('id="roleDescription-{{ $role->id }}"', $view);
+
+        foreach (['newRoleName', 'customPermissionName'] as $requiredControlId) {
+            $this->assertMatchesRegularExpression(
+                '/id="' . preg_quote($requiredControlId, '/') . '"[^>]*aria-required="true"/',
+                $view
+            );
+        }
+
+        $this->assertStringContainsString('id="roleName-{{ $role->id }}" type="text" name="name"', $view);
+        $this->assertStringContainsString('required aria-required="true"', $view);
+    }
+
     public function test_roleless_admin_is_not_presented_as_super_admin_in_workspace_data(): void
     {
         app(AuthorizationService::class)->syncDefaults();
