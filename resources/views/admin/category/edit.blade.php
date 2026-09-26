@@ -11,7 +11,7 @@
         <a href="{{ route('admin.categories.index') }}" class="btn btn-light admin-btn-soft admin-back-btn"><i class="mdi mdi-arrow-left"></i> {{ __('Back to Categories') }}</a>
     </x-admin.page-header>
 
-    <form action="{{ route('admin.categories.update', $category) }}" method="POST" enctype="multipart/form-data" data-submit-loading>
+    <form id="categoryEditorForm" action="{{ route('admin.categories.update', $category) }}" method="POST" enctype="multipart/form-data" data-submit-loading data-initial-dirty="{{ $errors->any() ? '1' : '0' }}">
         @csrf
         @method('PUT')
         @php($submitLabel = __('Update Category'))
