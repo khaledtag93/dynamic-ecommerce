@@ -1,0 +1,48 @@
+name: Refresh Livewire Lock
+
+on:
+  push:
+    branches:
+      - v42-clean-baseline
+    paths:
+      - composer.json
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: v42-clean-baseline
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, dom, xml, xmlwriter, pdo_mysql, bcmath, intl, curl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Refresh Livewire lock entry
+        run: composer update livewire/livewire --with-dependencies --no-interaction --no-scripts --no-progress
+
+      - name: Verify patched Livewire version
+        run: |
+          php -r '$lock=json_decode(file_get_contents("composer.lock"), true); foreach ($lock["packages"] as $package) { if ($package["name"] === "livewire/livewire") { echo $package["version"], PHP_EOL; exit(version_compare(ltrim($package["version"], "v"), "2.12.7", ">=") ? 0 : 1); } } exit(1);'
+
+      - name: Commit generated lock
+        run: |
+          if git diff --quiet -- composer.lock; then
+            echo "composer.lock already matches composer.json"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add composer.lock
+          git commit -m "build: refresh Livewire dependency lock"
+          git push origin HEAD:v42-clean-baseline
