@@ -5714,5 +5714,7 @@
     "Discard unsaved category changes?": "تجاهل تغييرات التصنيف غير المحفوظة؟",
     "You have unsaved category changes. Leaving this page will discard them.": "لديك تغييرات غير محفوظة على التصنيف. مغادرة الصفحة ستؤدي إلى تجاهلها.",
     "Save the category first if you want to keep these changes.": "احفظ التصنيف أولًا إذا كنت تريد الاحتفاظ بهذه التغييرات.",
-    "Discard changes and leave": "تجاهل التغييرات والمغادرة"
+    "Discard changes and leave": "تجاهل التغييرات والمغادرة",
+    "This order is not eligible for another online payment attempt. Review the order details or contact support if you need help.": "هذا الطلب غير مؤهل لمحاولة دفع إلكتروني أخرى. راجع تفاصيل الطلب أو تواصل مع الدعم إذا احتجت إلى مساعدة.",
+    "Online payment cannot be retried right now. Review the order details or contact support for the next step.": "لا يمكن إعادة محاولة الدفع الإلكتروني الآن. راجع تفاصيل الطلب أو تواصل مع الدعم لمعرفة الخطوة التالية."
 }
