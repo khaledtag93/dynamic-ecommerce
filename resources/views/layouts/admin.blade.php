@@ -128,12 +128,12 @@
             min-width: 0;
         }
 
-        body[dir='rtl'] { text-align: right; }
-        body[dir='rtl'] .sidebar-icon-only .custom-sidebar .nav .nav-item .nav-link,
-        body[dir='rtl'] .custom-sidebar .nav .nav-item .nav-link,
-        body[dir='rtl'] .admin-page-header,
-        body[dir='rtl'] .card-header,
-        body[dir='rtl'] .dropdown-menu { text-align: right; }
+        html[dir='rtl'] { text-align: right; }
+        html[dir='rtl'] .sidebar-icon-only .custom-sidebar .nav .nav-item .nav-link,
+        html[dir='rtl'] .custom-sidebar .nav .nav-item .nav-link,
+        html[dir='rtl'] .admin-page-header,
+        html[dir='rtl'] .card-header,
+        html[dir='rtl'] .dropdown-menu { text-align: right; }
 
         .container-scroller {
             background: transparent;
@@ -523,10 +523,20 @@
             pointer-events: auto;
         }
 
-        @media (max-width: 991.98px) {
+        @media (max-width: 1199.98px), (pointer: coarse) and (max-width: 1366px) {
             body.admin-sidebar-open {
                 overflow: hidden;
                 overscroll-behavior: none;
+                touch-action: none;
+            }
+
+            .page-body-wrapper {
+                padding-top: 64px !important;
+            }
+
+            .main-panel {
+                width: 100% !important;
+                margin-inline: 0 !important;
             }
 
             /* Keep the shared mobile navigation trigger visible above vendor theme rules. */
@@ -534,31 +544,43 @@
                 display: inline-flex !important;
             }
 
-            /* The drawer must sit above its backdrop and enter from the logical start edge. */
+            /* A true mobile drawer: independent scroll, logical direction, and above its backdrop. */
             .sidebar-offcanvas.custom-sidebar {
-                z-index: 1050;
-                width: min(257px, calc(100vw - 3rem));
-                max-width: calc(100vw - 3rem);
+                position: fixed !important;
+                inset-block-start: 64px !important;
+                inset-block-end: 0 !important;
+                z-index: 1050 !important;
+                width: min(320px, calc(100vw - 2rem)) !important;
+                max-width: calc(100vw - 2rem) !important;
+                height: calc(100dvh - 64px);
+                max-height: calc(100dvh - 64px) !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-y;
+                transition: transform .24s ease !important;
+                will-change: transform;
             }
 
             html[dir='ltr'] .sidebar-offcanvas.custom-sidebar {
-                left: calc(-1 * min(257px, calc(100vw - 3rem)));
-                right: auto;
+                left: 0 !important;
+                right: auto !important;
+                transform: translateX(-105%);
             }
 
             html[dir='ltr'] .sidebar-offcanvas.custom-sidebar.active {
-                left: 0;
-                right: auto;
+                transform: translateX(0);
             }
 
             html[dir='rtl'] .sidebar-offcanvas.custom-sidebar {
-                right: calc(-1 * min(257px, calc(100vw - 3rem)));
-                left: auto;
+                right: 0 !important;
+                left: auto !important;
+                transform: translateX(105%);
             }
 
             html[dir='rtl'] .sidebar-offcanvas.custom-sidebar.active {
-                right: 0;
-                left: auto;
+                transform: translateX(0);
             }
         }
 
@@ -1617,8 +1639,8 @@ select option {
             padding-inline-start: 2.65rem;
         }
 
-        body[dir='rtl'] .form-switch > .admin-helper-text,
-        body[dir='rtl'] .form-switch > .form-text {
+        html[dir='rtl'] .form-switch > .admin-helper-text,
+        html[dir='rtl'] .form-switch > .form-text {
             padding-inline-start: 2.65rem;
             padding-inline-end: 0;
         }
@@ -1630,12 +1652,12 @@ select option {
 
         /* Logical RTL helpers */
         html[dir='rtl'] .rtl-text-start,
-        body[dir='rtl'] .rtl-text-start {
+        html[dir='rtl'] .rtl-text-start {
             text-align: start !important;
         }
 
         html[dir='rtl'] .rtl-justify-start,
-        body[dir='rtl'] .rtl-justify-start {
+        html[dir='rtl'] .rtl-justify-start {
             justify-content: flex-start !important;
         }
 
@@ -1684,13 +1706,13 @@ select option {
             margin: 0 !important;
         }
 
-        body[dir='rtl'] .form-check.form-switch,
+        html[dir='rtl'] .form-check.form-switch,
         html[dir='rtl'] .form-check.form-switch {
             direction: rtl;
             text-align: right;
         }
 
-        body[dir='rtl'] .form-check.form-switch .form-check-input,
+        html[dir='rtl'] .form-check.form-switch .form-check-input,
         html[dir='rtl'] .form-check.form-switch .form-check-input {
             justify-self: start;
         }
@@ -2086,8 +2108,8 @@ select option {
         .admin-page-shell .admin-page-actions { gap:.65rem; }
         .admin-page-shell .form-check.form-switch { display:flex; align-items:center; gap:.65rem; min-height:2rem; padding-inline-start:0; }
         .admin-page-shell .form-check.form-switch .form-check-input { float:none; flex:0 0 auto; margin:0; }
-        body[dir='rtl'] .admin-page-shell .form-check.form-switch { padding-right:0; }
-        body[dir='rtl'] .admin-page-shell .form-check.form-switch .form-check-input { margin:0; }
+        html[dir='rtl'] .admin-page-shell .form-check.form-switch { padding-right:0; }
+        html[dir='rtl'] .admin-page-shell .form-check.form-switch .form-check-input { margin:0; }
         .admin-page-shell .table-responsive { border-radius:1rem; }
         .admin-page-shell .pagination { margin-bottom:0; }
         @media (max-width:767.98px) {
@@ -3213,7 +3235,7 @@ select option {
 
     <script src="{{ asset('admin/vendors/js/vendor.bundle.base.js') }}"></script>
     <script src="{{ asset('admin/vendors/datatables.net-bs4/dataTables.bootstrap4.js') }}"></script>
-    <script src="{{ asset('admin/js/off-canvas.js') }}"></script>
+    <script src="{{ asset('admin/js/off-canvas.js') }}?v={{ @filemtime(public_path('admin/js/off-canvas.js')) ?: '1' }}"></script>
     <script src="{{ asset('admin/js/hoverable-collapse.js') }}"></script>
     <script src="{{ asset('admin/js/template.js') }}"></script>
     <script src="{{ asset('admin/js/settings.js') }}"></script>

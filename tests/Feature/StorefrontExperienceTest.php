@@ -607,6 +607,21 @@ class StorefrontExperienceTest extends TestCase
         $this->assertStringContainsString("Please review the highlighted fields.", $layout);
     }
 
+    public function test_mobile_storefront_navigation_has_its_own_touch_scroll_viewport(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('.retail-nav-collapse.show {', $layout);
+        $this->assertStringContainsString('max-height: var(--retail-nav-available-height, calc(100dvh - 9rem));', $layout);
+        $this->assertStringContainsString('overflow-y: auto !important;', $layout);
+        $this->assertStringContainsString('-webkit-overflow-scrolling: touch;', $layout);
+        $this->assertStringContainsString('touch-action: pan-y;', $layout);
+        $this->assertStringContainsString('const syncRetailNavViewport = () => {', $layout);
+        $this->assertStringContainsString('window.visualViewport?.height || window.innerHeight', $layout);
+        $this->assertStringContainsString("retailNav.style.setProperty('--retail-nav-available-height'", $layout);
+        $this->assertStringContainsString('retailNav.scrollTop = 0;', $layout);
+    }
+
     public function test_storefront_navigation_exposes_active_and_mobile_focus_states(): void
     {
         $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));

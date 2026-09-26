@@ -1,41 +1,100 @@
-(function($) {
+(function () {
   'use strict';
 
-  $(function() {
-    var $sidebar = $('.sidebar-offcanvas');
-    var $toggles = $('[data-toggle="offcanvas"]');
-    var $backdrop = $('<button type="button" class="admin-sidebar-backdrop" aria-label="Close navigation"></button>').appendTo('body');
+  const MOBILE_QUERY = '(max-width: 1199.98px), (pointer: coarse) and (max-width: 1366px)';
 
-    function setOpen(open) {
-      $sidebar.toggleClass('active', open);
-      $('body').toggleClass('admin-sidebar-open', open);
-      $backdrop.toggleClass('is-active', open).attr('aria-hidden', open ? 'false' : 'true');
-      $toggles.attr('aria-expanded', open ? 'true' : 'false');
+  function initAdminSidebar() {
+    const sidebar = document.querySelector('.sidebar-offcanvas');
+    const toggles = Array.from(document.querySelectorAll('[data-toggle="offcanvas"]'));
+
+    if (!sidebar || toggles.length === 0 || sidebar.dataset.offcanvasBound === '1') {
+      return;
     }
 
-    $toggles.attr('aria-expanded', $sidebar.hasClass('active') ? 'true' : 'false');
+    sidebar.dataset.offcanvasBound = '1';
 
-    $toggles.on('click', function() {
-      setOpen(!$sidebar.hasClass('active'));
+    let backdrop = document.querySelector('.admin-sidebar-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('button');
+      backdrop.type = 'button';
+      backdrop.className = 'admin-sidebar-backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      backdrop.setAttribute('aria-label', toggles[0].dataset.closeLabel || 'Close navigation');
+      document.body.appendChild(backdrop);
+    }
+
+    const mobileQuery = window.matchMedia(MOBILE_QUERY);
+    let lastToggle = null;
+
+    function setOpen(open, restoreFocus = false) {
+      const shouldOpen = Boolean(open && mobileQuery.matches);
+
+      sidebar.classList.toggle('active', shouldOpen);
+      document.body.classList.toggle('admin-sidebar-open', shouldOpen);
+      backdrop.classList.toggle('is-active', shouldOpen);
+      backdrop.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+
+      toggles.forEach((toggle) => {
+        toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      });
+
+      if (mobileQuery.matches) {
+        sidebar.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+      } else {
+        sidebar.removeAttribute('aria-hidden');
+      }
+
+      if (!shouldOpen && restoreFocus && lastToggle) {
+        lastToggle.focus();
+      }
+    }
+
+    toggles.forEach((toggle) => {
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        lastToggle = toggle;
+        setOpen(!sidebar.classList.contains('active'));
+      });
     });
 
-    $backdrop.on('click', function() {
+    backdrop.addEventListener('click', () => setOpen(false, true));
+
+    sidebar.addEventListener('click', (event) => {
+      if (!event.target.closest('a[href]') || !mobileQuery.matches) return;
       setOpen(false);
     });
 
-    $sidebar.on('click', 'a[href]', function() {
-      if (window.matchMedia('(max-width: 991.98px)').matches) setOpen(false);
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !sidebar.classList.contains('active')) return;
+      event.preventDefault();
+      setOpen(false, true);
     });
 
-    $(document).on('keydown', function(event) {
-      if (event.key === 'Escape' && $sidebar.hasClass('active')) {
+    const handleViewportChange = () => {
+      if (!mobileQuery.matches) {
         setOpen(false);
-        $toggles.first().trigger('focus');
+        sidebar.removeAttribute('aria-hidden');
+        return;
       }
-    });
 
-    $(window).on('resize', function() {
-      if (window.matchMedia('(min-width: 992px)').matches) setOpen(false);
-    });
-  });
-})(jQuery);
+      sidebar.setAttribute('aria-hidden', sidebar.classList.contains('active') ? 'false' : 'true');
+    };
+
+    if (typeof mobileQuery.addEventListener === 'function') {
+      mobileQuery.addEventListener('change', handleViewportChange);
+    } else if (typeof mobileQuery.addListener === 'function') {
+      mobileQuery.addListener(handleViewportChange);
+    }
+
+    window.addEventListener('orientationchange', handleViewportChange);
+    handleViewportChange();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminSidebar, { once: true });
+  } else {
+    initAdminSidebar();
+  }
+})();

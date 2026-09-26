@@ -42,9 +42,19 @@
 
     <div class="navbar-menu-wrapper admin-topbar-shell d-flex align-items-center justify-content-between px-3 px-lg-4">
         <div class="admin-topbar-start d-flex align-items-center gap-2 gap-lg-3 flex-grow-1">
-            <button class="navbar-toggler d-lg-none align-self-center me-1 admin-mobile-sidebar-toggle-inline" type="button" data-toggle="offcanvas" aria-label="{{ __('Toggle sidebar') }}">
+            <button class="navbar-toggler d-lg-none align-self-center admin-mobile-sidebar-toggle-inline" type="button" data-toggle="offcanvas" aria-controls="sidebar" aria-expanded="false" data-close-label="{{ __('Close navigation') }}" aria-label="{{ __('Toggle sidebar') }}">
                 <span class="mdi mdi-menu"></span>
             </button>
+
+            <a class="admin-mobile-brand" href="{{ $adminHomeRoute }}" aria-label="{{ $storeSettings['project_name'] ?? $storeSettings['store_name'] ?? __('Admin Dashboard') }}">
+                @if($adminBrandPath)
+                    <span class="admin-mobile-brand__mark admin-brand-mark-image">
+                        <img src="{{ \App\Support\AdminBranding::mediaUrl($adminBrandPath, 'admin_logo') }}" alt="">
+                    </span>
+                @else
+                    <span class="admin-mobile-brand__mark"><i class="mdi mdi-cupcake"></i></span>
+                @endif
+            </a>
 
             @if($canAdmin('dashboard.view'))
             <form action="{{ route('admin.dashboard') }}" method="GET" class="admin-topbar-search d-none d-lg-flex align-items-center">
@@ -59,12 +69,12 @@
         </div>
 
         <ul class="navbar-nav navbar-nav-right align-items-center gap-2 gap-lg-3">
-            <li class="nav-item d-none d-lg-flex align-items-center">
+            <li class="nav-item d-flex align-items-center admin-language-slot">
                 @include('layouts.inc.language-switcher', ['class' => 'language-switcher-admin', 'variant' => 'admin-compact'])
             </li>
 
             @if($canAdmin('notifications.view'))
-            <li class="nav-item d-none d-xl-flex align-items-center">
+            <li class="nav-item d-flex align-items-center admin-notification-slot">
                 <a class="admin-topbar-action admin-topbar-action--icon admin-topbar-action--notifications" href="{{ route('admin.notifications.index') }}" aria-label="{{ __('Notifications') }}" title="{{ __('Notifications') }}">
                     <i class="mdi mdi-bell-outline"></i>
                     @if($authNotificationCount > 0)
@@ -99,7 +109,7 @@
                     <span class="admin-profile-avatar">
                         {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
                     </span>
-                    <span class="nav-profile-name d-none d-sm-inline">{{ Auth::user()->name }}</span>
+                    <span class="nav-profile-name d-none d-xl-inline">{{ Auth::user()->name }}</span>
                     <i class="mdi mdi-chevron-down admin-menu-chevron"></i>
                 </button>
 
@@ -154,10 +164,6 @@
                             <span>{{ __('Orders') }}</span>
                         </a>
                     @endif
-
-                    <div class="d-lg-none px-3 py-2">
-                        @include('layouts.inc.language-switcher', ['class' => 'language-switcher-admin', 'variant' => 'admin-compact'])
-                    </div>
 
                     <div class="admin-custom-menu__divider"></div>
 
@@ -305,18 +311,142 @@
 }
 .admin-custom-menu__item--danger,
 .admin-custom-menu__item--danger i { color: #8f1d1d; }
-body[dir='rtl'] .admin-custom-menu { inset-inline-end: 0; inset-inline-start: auto; text-align: right; }
-body[dir='ltr'] .admin-custom-menu { inset-inline-start: auto; inset-inline-end: 0; text-align: left; }
-@media (max-width: 991.98px) {
+html[dir='rtl'] .admin-custom-menu { inset-inline-end: 0; inset-inline-start: auto; text-align: right; }
+html[dir='ltr'] .admin-custom-menu { inset-inline-start: auto; inset-inline-end: 0; text-align: left; }
+.admin-mobile-brand {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    text-decoration: none;
+}
+.admin-mobile-brand__mark {
+    width: 2.55rem;
+    height: 2.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .85rem;
+    background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
+    color: #fff;
+    overflow: hidden;
+}
+.admin-mobile-brand__mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 1199.98px), (pointer: coarse) and (max-width: 1366px) {
+    .admin-topbar {
+        min-height: 64px !important;
+        height: 64px !important;
+        flex-wrap: nowrap !important;
+        overflow: visible !important;
+    }
+
+    .admin-topbar .navbar-brand-wrapper {
+        display: none !important;
+    }
+
+    .admin-topbar .navbar-menu-wrapper {
+        width: 100% !important;
+        height: 64px !important;
+        min-width: 0 !important;
+        padding-inline: .7rem !important;
+    }
+
+    .admin-topbar-shell {
+        min-height: 64px !important;
+        gap: .5rem !important;
+    }
+
+    .admin-topbar-start {
+        flex: 0 0 auto !important;
+        min-width: 0;
+        gap: .45rem !important;
+    }
+
+    .admin-mobile-sidebar-toggle-inline,
+    .admin-mobile-brand {
+        display: inline-flex !important;
+    }
+
+    .admin-topbar .navbar-nav-right {
+        margin: 0 !important;
+        margin-inline-start: auto !important;
+        flex: 0 0 auto !important;
+        min-width: 0;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: .35rem !important;
+    }
+
+    .admin-topbar .navbar-menu-wrapper .navbar-nav .nav-item {
+        margin: 0 !important;
+    }
+
+    .admin-language-slot .language-switcher__label,
+    .admin-language-slot .language-switcher__name {
+        display: none !important;
+    }
+
+    .admin-language-slot .language-switcher__group {
+        gap: .12rem !important;
+        padding: .18rem !important;
+        box-shadow: none !important;
+    }
+
+    .admin-language-slot .language-switcher__link {
+        gap: 0 !important;
+        padding: .22rem !important;
+    }
+
+    .admin-language-slot .language-switcher__code {
+        width: 2rem !important;
+        height: 2rem !important;
+    }
+
+    .admin-topbar-action--icon,
+    .admin-profile-trigger {
+        width: 2.85rem !important;
+        height: 2.85rem !important;
+        min-height: 2.85rem !important;
+        padding: 0 !important;
+        justify-content: center !important;
+    }
+
+    .admin-profile-trigger .nav-profile-name,
+    .admin-profile-trigger .admin-menu-chevron {
+        display: none !important;
+    }
+
+    .admin-profile-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
     .admin-custom-menu {
         position: fixed;
-        top: 76px;
+        top: 72px;
         inset-inline-end: 12px;
         min-width: min(320px, calc(100vw - 24px));
         max-width: calc(100vw - 24px);
+        max-height: calc(100dvh - 84px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
     }
-    .admin-mobile-sidebar-toggle-inline {
-        display: inline-flex;
+}
+
+@media (max-width: 390px) {
+    .admin-mobile-brand {
+        display: none !important;
+    }
+
+    .admin-topbar .navbar-menu-wrapper {
+        padding-inline: .5rem !important;
     }
 }
 </style>

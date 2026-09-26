@@ -70,6 +70,27 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString('data-toggle="offcanvas" aria-label=', $navbar);
     }
 
+    public function test_mobile_admin_shell_uses_independent_vanilla_drawer_and_html_direction(): void
+    {
+        $admin = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+        $navbar = file_get_contents(resource_path('views/layouts/inc/admin/navbar.blade.php'));
+        $offcanvas = file_get_contents(public_path('admin/js/off-canvas.js'));
+
+        $this->assertStringNotContainsString("body[dir='rtl']", $admin);
+        $this->assertStringNotContainsString("body[dir='rtl']", $navbar);
+        $this->assertStringContainsString("html[dir='rtl'] .sidebar-offcanvas.custom-sidebar", $admin);
+        $this->assertStringContainsString('height: calc(100dvh - 64px);', $admin);
+        $this->assertStringContainsString('overflow-y: auto !important;', $admin);
+        $this->assertStringContainsString('touch-action: pan-y;', $admin);
+        $this->assertStringContainsString('aria-controls="sidebar"', $navbar);
+        $this->assertStringContainsString('admin-language-slot', $navbar);
+        $this->assertStringContainsString("filemtime(public_path('admin/js/off-canvas.js'))", $admin);
+        $this->assertStringContainsString("const MOBILE_QUERY = '(max-width: 1199.98px), (pointer: coarse) and (max-width: 1366px)'", $offcanvas);
+        $this->assertStringContainsString("toggle.addEventListener('click'", $offcanvas);
+        $this->assertStringContainsString("document.body.classList.toggle('admin-sidebar-open'", $offcanvas);
+        $this->assertStringNotContainsString('jQuery', $offcanvas);
+    }
+
     public function test_skip_link_copy_is_bilingual(): void
     {
         $english = json_decode(file_get_contents(lang_path('en.json')), true, 512, JSON_THROW_ON_ERROR);
