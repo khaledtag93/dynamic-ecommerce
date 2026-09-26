@@ -49,6 +49,15 @@ class DeployScriptSafetyTest extends TestCase
         }
     }
 
+    public function test_qas_public_sync_normalizes_web_asset_permissions(): void
+    {
+        $script = file_get_contents(base_path('deploy-qas.sh'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('rsync -a --delete --chmod=D755,F644', $script);
+        $this->assertStringContainsString("--exclude='uploads'", $script);
+    }
+
     public function test_deploys_install_upload_execution_guard_without_syncing_user_uploads(): void
     {
         $production = file_get_contents(base_path('deploy.sh'));

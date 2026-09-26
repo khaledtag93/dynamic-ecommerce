@@ -144,7 +144,7 @@ log "♻️ Signaling QAS queue workers to reload application code..."
 $PHP_BIN artisan queue:restart || true
 
 log "📁 Syncing QAS public files..."
-rsync -a --delete     --exclude='index.php'     --exclude='uploads'     --exclude='storage'     "$APP_DIR/public/" "$PUBLIC_DIR/"
+rsync -a --delete --chmod=D755,F644     --exclude='index.php'     --exclude='uploads'     --exclude='storage'     "$APP_DIR/public/" "$PUBLIC_DIR/"
 
 UPLOAD_GUARD_SOURCE="$APP_DIR/ops/uploads.htaccess"
 [ -f "$UPLOAD_GUARD_SOURCE" ] || fail "Upload execution guard missing: $UPLOAD_GUARD_SOURCE"

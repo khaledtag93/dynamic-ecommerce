@@ -91,6 +91,16 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringNotContainsString('jQuery', $offcanvas);
     }
 
+    public function test_mobile_admin_shell_prevents_page_level_horizontal_overflow(): void
+    {
+        $admin = file_get_contents(resource_path('views/layouts/admin.blade.php'));
+
+        $this->assertStringContainsString('max-width: 100vw !important;', $admin);
+        $this->assertStringContainsString('.content-wrapper {', $admin);
+        $this->assertStringContainsString('overflow-x: clip;', $admin);
+        $this->assertStringContainsString('.content-wrapper > * {', $admin);
+    }
+
     public function test_skip_link_copy_is_bilingual(): void
     {
         $english = json_decode(file_get_contents(lang_path('en.json')), true, 512, JSON_THROW_ON_ERROR);

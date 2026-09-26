@@ -199,6 +199,43 @@
 .admin-home-stock-list a:hover, .admin-home-search-group a:hover { color: var(--admin-primary-dark); }
 .admin-home-stock-list a strong { font-variant-numeric: tabular-nums; }.admin-home-search-group { padding: 1rem; border: 1px solid var(--admin-border); border-radius: 1rem; }
 .admin-home-search-group h3 { margin-bottom: .5rem; }
-@media (max-width: 575.98px) { .admin-home-task { padding: .85rem; }.admin-home-card-head { padding: 1rem; }.admin-home-stock-list { padding-inline: 1rem; } }
+@media (max-width: 767.98px) {
+    .admin-home {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: clip;
+    }
+
+    .admin-home-links {
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+    }
+
+    .admin-home-links a {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .admin-home-links a span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .admin-home-task {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .admin-home-task-count {
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .admin-home-task { padding: .85rem; }
+    .admin-home-card-head { padding: 1rem; }
+    .admin-home-stock-list { padding-inline: 1rem; }
+}
 </style>
 @endpush

@@ -535,7 +535,22 @@
 
             .main-panel {
                 width: 100% !important;
+                max-width: 100vw !important;
+                min-width: 0 !important;
                 margin-inline: 0 !important;
+                overflow-x: clip;
+            }
+
+            .content-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: clip;
+            }
+
+            .content-wrapper > * {
+                max-width: 100%;
+                min-width: 0;
             }
 
             /* Keep the shared mobile navigation trigger visible above vendor theme rules. */

@@ -77,4 +77,17 @@ class AdminDashboardExperienceTest extends TestCase
             ->assertDontSee(route('admin.orders.refund', $order))
             ->assertDontSee(route('admin.deliveries.update', $order));
     }
+
+    public function test_dashboard_quick_access_stacks_without_page_level_horizontal_overflow_on_mobile(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/dashboard.blade.php'));
+
+        $this->assertStringContainsString('@media (max-width: 767.98px)', $source);
+        $this->assertStringContainsString('.admin-home-links {', $source);
+        $this->assertStringContainsString('grid-template-columns: minmax(0, 1fr);', $source);
+        $this->assertStringContainsString('overflow-x: clip;', $source);
+        $this->assertStringContainsString('.admin-home-links a span {', $source);
+        $this->assertStringContainsString('overflow-wrap: anywhere;', $source);
+    }
+
 }
