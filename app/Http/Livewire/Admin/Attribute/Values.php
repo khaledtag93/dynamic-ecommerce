@@ -4,16 +4,23 @@ namespace App\Http\Livewire\Admin\Attribute;
 
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
+use App\Models\ProductVariantAttribute;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Values extends Component
 {
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap';
+
     public $attributeId;
     public $value = '';
     public $valueId = null;
     public $search = '';
     public $pendingDeleteId = null;
+    public $perPage = 25;
 
     public function rules()
     {
@@ -35,9 +42,14 @@ class Values extends Component
         $this->attributeId = $id;
     }
 
-    public function updatedSearch(): void
+    public function updatingSearch(): void
     {
-        $this->search = trim($this->search);
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
     }
 
     public function resetForm(): void
@@ -153,28 +165,41 @@ class Values extends Component
     {
         $attribute = ProductAttribute::findOrFail($this->attributeId);
 
-        $values = ProductAttributeValue::query()
-            ->where('attribute_id', $this->attributeId)
-            ->when($this->search !== '', fn ($query) => $query->where('value', 'like', '%' . trim($this->search) . '%'))
-            ->orderBy('value')
-            ->get()
-            ->map(function (ProductAttributeValue $value) {
-                $value->variant_usage_count = $this->variantUsageCount($value);
-                return $value;
-            });
+        $search = mb_substr(trim((string) $this->search), 0, 100);
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = "%{$escaped}%";
 
-        $allValues = ProductAttributeValue::query()
+        $values = ProductAttributeValue::query()
+            ->select('product_attribute_values.*')
+            ->selectSub(function ($query) {
+                $query->from('product_variant_attributes')
+                    ->whereColumn('product_variant_attributes.attribute_id', 'product_attribute_values.attribute_id')
+                    ->whereColumn('product_variant_attributes.attribute_value', 'product_attribute_values.value')
+                    ->selectRaw('COUNT(*)');
+            }, 'variant_usage_count')
             ->where('attribute_id', $this->attributeId)
-            ->get()
-            ->map(function (ProductAttributeValue $value) {
-                $value->variant_usage_count = $this->variantUsageCount($value);
-                return $value;
-            });
+            ->when($search !== '', fn ($query) => $query->where('value', 'like', $like))
+            ->orderBy('value')
+            ->paginate($this->perPage);
+
+        $baseValues = ProductAttributeValue::query()
+            ->where('attribute_id', $this->attributeId);
+
+        $inUse = (clone $baseValues)
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('product_variant_attributes')
+                    ->whereColumn('product_variant_attributes.attribute_id', 'product_attribute_values.attribute_id')
+                    ->whereColumn('product_variant_attributes.attribute_value', 'product_attribute_values.value');
+            })
+            ->count();
+
+        $total = (clone $baseValues)->count();
 
         $stats = [
-            'total' => $allValues->count(),
-            'in_use' => $allValues->where('variant_usage_count', '>', 0)->count(),
-            'unused' => $allValues->where('variant_usage_count', 0)->count(),
+            'total' => $total,
+            'in_use' => $inUse,
+            'unused' => max(0, $total - $inUse),
         ];
 
         return view('livewire.admin.attribute.values', compact('attribute', 'values', 'stats'))
