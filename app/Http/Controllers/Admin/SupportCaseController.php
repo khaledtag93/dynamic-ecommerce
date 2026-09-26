@@ -27,8 +27,12 @@ class SupportCaseController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'status' => (string) $request->string('status'),
             'priority' => (string) $request->string('priority'),
             'assigned_to_user_id' => $request->integer('assigned_to_user_id') ?: null,
@@ -37,17 +41,17 @@ class SupportCaseController extends Controller
 
         $cases = SupportCase::query()
             ->with(['customer:id,name,email', 'order:id,order_number', 'assignee:id,name'])
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
                     $inner
-                        ->where('case_number', 'like', "%{$search}%")
-                        ->orWhere('subject', 'like', "%{$search}%")
-                        ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                        ->where('case_number', 'like', $like)
+                        ->orWhere('subject', 'like', $like)
+                        ->orWhereHas('customer', function ($customerQuery) use ($like) {
                             $customerQuery
-                                ->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                                ->where('name', 'like', $like)
+                                ->orWhere('email', 'like', $like);
                         })
-                        ->orWhereHas('order', fn ($orderQuery) => $orderQuery->where('order_number', 'like', "%{$search}%"));
+                        ->orWhereHas('order', fn ($orderQuery) => $orderQuery->where('order_number', 'like', $like));
                 });
             })
             ->when(array_key_exists($filters['status'], SupportCase::statusOptions()), fn ($query) => $query->where('status', $filters['status']))
