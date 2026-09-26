@@ -3,13 +3,19 @@
 ## Authoritative audit checkpoint — 2026-09-26
 
 - Current audit and execution priorities: [Production foundation audit (Arabic)](docs/PRODUCTION_FOUNDATION_AUDIT_2026-09-26_AR.md).
-- Reviewed source: `e0420a31986ef11cb23c22b1b75dc56078a2389a` on `v42-clean-baseline`.
-- Exact-head [Hardening CI 36208521493](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36208521493) passed: **438 tests / 13,843 assertions**, clean MySQL migration, route/Blade/config checks and frontend build.
-- Latest operator-recorded QAS checkpoint targets `5e2a393a`; server HEAD was not independently read during this audit. Growth changes through `9526d275` are not recorded as deployed. The later `e0420a3` changes are documentation-only.
-- Production was not changed or reverified. Authenticated Admin/POS/Workforce and mobile/physical-device acceptance remain open; public QAS desktop sampling is documented in the audit.
-- New release priorities: vulnerable/outdated dependencies and upload handling; locale redirect restriction; historical secret-rotation evidence; payment E2E; database restore and scheduler/queue verification. Then storefront media/content/localization/accessibility, POS live actions, bounded statements and consolidated QAS acceptance.
-- A product detail image failed to load in the current QAS sample; this is a separate observation from the previously resolved category-media-root issue. Do not assume the old root cause has recurred.
-- No application code or deployment changed in this audit. Findings are **open**, not fixed. Continue completion before expansion, preserving the future Android/iPhone architecture constraint.
+- **Framework/security rehearsal branch:** `sec03-framework-upgrade`.
+- **Current verified upgrade HEAD:** `81ccfdc675a587431547ed0e4dde3a8c49968ac9`.
+- **Hardening CI 36214088800:** passed on that exact SHA with Composer validation + security audit, dependency install, PHP/Bash syntax, clean MySQL migration, Laravel boot/routes, config/Blade compilation, full PHPUnit suite, and frontend production build.
+- **QAS deployed checkpoint:** operator-confirmed `81ccfdc6` on 2026-09-26 03:18 UTC; deploy finished with HTTP 200.
+- **QAS runtime stack verified:** PHP 8.3.33, Laravel 13.33.0, Livewire 4.4.6, Sanctum 4.3.3, Tinker 3.0.2, Carbon 3.14.0.
+- **QAS security headers verified on /login:** `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `Strict-Transport-Security: max-age=31536000; includeSubDomains`; session cookie is Secure + HttpOnly + SameSite=Lax.
+- **SEC-01:** closed in the rehearsal line by moving beyond the affected Livewire 2 release to Livewire 4.4.6, with Composer audit green.
+- **SEC-03:** source/CI/QAS framework migration evidence is complete on the rehearsal branch; merge into `v42-clean-baseline` and consolidated authenticated QAS acceptance are still required before Production consideration.
+- **SEC-04:** safe local locale redirect restriction is implemented on the hardening line; retain regression coverage during merge.
+- **SEC-02:** upload extension/content hardening and upload-root execution guard are implemented in source; authenticated upload/QAS evidence remains part of consolidated acceptance.
+- **Production:** unchanged. Do not promote until the rehearsal branch is merged through green CI, authenticated Admin/POS/Workforce/Customer/Checkout QAS checks are accepted, and remaining P0 operational/payment gates are closed.
+- **Remaining P0 release gates:** historical credential rotation evidence (OPS-01), Paymob E2E (PAY-01), database restore rehearsal (OPS-02), scheduler/queue/failed-job/expiry evidence (OPS-03).
+- Continue completion before expansion, preserving the Android/iPhone readiness constraint and the rule that money/stock/permissions remain server-authoritative.
 
 ### Historical checkpoints below
 
