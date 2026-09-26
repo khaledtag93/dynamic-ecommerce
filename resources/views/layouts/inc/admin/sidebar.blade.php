@@ -40,7 +40,7 @@
 
     @if($can('dashboard.view') || $can('growth.view'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $overviewOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary" aria-expanded="{{ $overviewOpen ? 'true' : 'false' }}">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $overviewOpen ? 'true' : 'false' }}" aria-label="{{ __('Overview') }}" title="{{ __('Overview') }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-monitor-dashboard"></i></span>
                 <span>
@@ -71,7 +71,7 @@
 
     @if($can('catalog.manage') || $can('reviews.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $catalogOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary" aria-expanded="{{ $catalogOpen ? 'true' : 'false' }}">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $catalogOpen ? 'true' : 'false' }}" aria-label="{{ __('Catalog') }}" title="{{ __('Catalog') }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-package-variant"></i></span>
                 <span>
@@ -108,7 +108,7 @@
 
     @if($can('pos.manage') || $can('pos.shifts.review') || $can('orders.view') || $can('customers.manage') || $can('support.view') || $can('payments.view') || $can('delivery.view'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $operationsOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary" aria-expanded="{{ $operationsOpen ? 'true' : 'false' }}">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $operationsOpen ? 'true' : 'false' }}" aria-label="{{ __('Operations') }}" title="{{ __('Operations') }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-clipboard-text-clock-outline"></i></span>
                 <span>
@@ -164,7 +164,7 @@
 
     @if($can('inventory.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $inventoryOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary" aria-expanded="{{ $inventoryOpen ? 'true' : 'false' }}">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $inventoryOpen ? 'true' : 'false' }}" aria-label="{{ __('Inventory & sourcing') }}" title="{{ __('Inventory & sourcing') }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-warehouse"></i></span>
                 <span>
@@ -194,7 +194,7 @@
 
     @if($can('promotions.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $marketingOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary" aria-expanded="{{ $marketingOpen ? 'true' : 'false' }}">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $marketingOpen ? 'true' : 'false' }}" aria-label="{{ __('Marketing') }}" title="{{ __('Marketing') }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-bullhorn-outline"></i></span>
                 <span>
@@ -218,7 +218,7 @@
 
     @if($can('settings.manage') || $can('deploy.manage') || $can('payments.settings') || $can('imports.manage'))
     <details class="sidebar-group" data-admin-sidebar-group {{ $channelsOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary" aria-expanded="{{ $channelsOpen ? 'true' : 'false' }}">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $channelsOpen ? 'true' : 'false' }}" aria-label="{{ __('Channels & setup') }}" title="{{ __('Channels & setup') }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-cog-outline"></i></span>
                 <span>
@@ -268,7 +268,7 @@
 
     @if($can('workforce.view') || $can('workforce.clock') || $can('workforce.payroll.self') || $can('workforce.payroll.view') || $can('notifications.view') || $can('permissions.manage'))
     <details class="sidebar-group sidebar-group-last" data-admin-sidebar-group {{ $teamOpen ? 'open' : '' }}>
-        <summary class="sidebar-group-summary" aria-expanded="{{ $teamOpen ? 'true' : 'false' }}">
+        <summary class="sidebar-group-summary" aria-expanded="{{ $teamOpen ? 'true' : 'false' }}" aria-label="{{ __('Team & workforce') }}" title="{{ __('Team & workforce') }}">
             <span class="sidebar-group-title-wrap">
                 <span class="sidebar-group-icon"><i class="mdi mdi-account-supervisor-circle-outline"></i></span>
                 <span>
@@ -370,7 +370,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const current = sidebar.querySelector('.sidebar-current .nav-link, .sidebar-quick-chip.active');
     if (current) {
         window.requestAnimationFrame(() => {
-            current.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            if (sidebar.scrollHeight <= sidebar.clientHeight) return;
+            const sidebarBounds = sidebar.getBoundingClientRect();
+            const currentBounds = current.getBoundingClientRect();
+            if (currentBounds.top < sidebarBounds.top) {
+                sidebar.scrollTop += currentBounds.top - sidebarBounds.top;
+            } else if (currentBounds.bottom > sidebarBounds.bottom) {
+                sidebar.scrollTop += currentBounds.bottom - sidebarBounds.bottom;
+            }
         });
     }
 });

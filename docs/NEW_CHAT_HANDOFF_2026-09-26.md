@@ -1,5 +1,9 @@
 # New Chat Handoff — Dynamic — 2026-09-26
 
+## Latest Admin shell continuation
+
+GF-12 now addresses names/tooltips for all seven collapsed Admin navigation groups and keeps auto-scroll inside the sidebar. The previous GF-11 source commit `6e6d75e` passed CI run `36250710952`; verify the newest HEAD/CI before proceeding. QAS still has documented application `f1f20297`, so GF-01/GF-11/GF-12 remain pending matching-revision authenticated acceptance. Production unchanged. Continue Admin shell work and reconcile the initial route/page inventory after the latest-head CI gate; retain OPS-01/PAY-01/OPS-02 release blockers.
+
 ## Latest shared-foundation continuation
 
 The Page Closure/mini-sidebar commit `3ba6d5a` passed Hardening CI `36249023102`. The next source slice fixes GF-11 shared Admin confirmation, focus and submit-loading behavior with four Node interaction tests; check `CURRENT_PHASE.md` and the branch HEAD for its exact commit and CI result before relying on it. The last documented QAS application code is still `f1f20297`, so GF-01/GF-11 need matching-revision authenticated QAS checks; Production is unchanged. The next work is latest-head CI, targeted QAS acceptance when deployed, and continued Admin shell/page inventory work. OPS-01/PAY-01/OPS-02 remain release blockers.

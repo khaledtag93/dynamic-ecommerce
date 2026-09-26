@@ -101,7 +101,7 @@ class AdminUiConsistencyV2Test extends TestCase
         $this->assertStringContainsString("window.matchMedia('(max-width: 991.98px)')", $sidebar);
         $this->assertStringContainsString("if (other !== this) other.open = false", $sidebar);
         $this->assertStringContainsString("sidebar.querySelector('.sidebar-current .nav-link, .sidebar-quick-chip.active')", $sidebar);
-        $this->assertStringContainsString("current.scrollIntoView({ block: 'nearest', inline: 'nearest' })", $sidebar);
+        $this->assertStringNotContainsString('current.scrollIntoView', $sidebar);
     }
 
     public function test_mobile_sidebar_has_complete_open_close_lifecycle(): void

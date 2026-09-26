@@ -1,5 +1,15 @@
 # CURRENT PHASE
 
+## Admin navigation continuation — 2026-09-26
+
+- GF-12 source work names all seven collapsed sidebar groups for assistive technology/tooltips and confines current-item auto-scroll to the sidebar instead of the document. See [Global Foundation Audit](docs/GLOBAL_FOUNDATION_AUDIT_2026-09-26.md). CI and QAS acceptance for this newest slice are pending.
+- The previous GF-11 source commit `6e6d75eb54dda8efa86420d3a26f34aa13847f41` passed [Hardening CI 36250710952](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36250710952). Use the latest branch-head CI as the GF-12 source gate.
+- QAS application evidence remains `f1f20297`; GF-01/GF-11/GF-12 are not yet CLOSED there. Production unchanged. Next: finish the shared Admin shell source slice, confirm latest-head CI, then matching-revision authenticated QAS acceptance and route/page inventory reconciliation.
+
+### Earlier checkpoints below
+
+Read the latest section first; prior "next" statements are dated.
+
 ## Latest shared-foundation source slice — 2026-09-26
 
 - The pre-slice application/Page Closure commit `3ba6d5a` passed [Hardening CI 36249023102](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36249023102). This proves source CI, not authenticated QAS acceptance of GF-01.

@@ -59,6 +59,13 @@ The buyer may independently inspect source, dependencies, clean installation, up
 
 **Gate:** latest-head CI plus authenticated QAS checks for cancel/confirm/invalid-input/keyboard flow on representative destructive, deploy-phrase and publish forms in EN/AR and mobile. This finding remains IN REVIEW until those checks pass on the deployed application SHA.
 
+### GF-12 — Collapsed navigation labels and viewport stability
+**Finding:** the seven Admin sidebar group summaries lose their visible text in icon-only mode, leaving icons without a reliable accessible name or tooltip. The on-load `scrollIntoView()` for the current menu item could also move the document viewport while trying to reveal the sidebar item.
+
+**Source action:** localized `aria-label`/`title` on every group summary, with `aria-expanded` still synchronized on toggle. The current item is now revealed by scrolling the sidebar itself only when it has internal overflow; page scroll is not touched. Existing source regression coverage was aligned with the new scroll contract.
+
+**Gate:** Hardening CI plus authenticated QAS checks on expanded/collapsed desktop and mobile in EN/AR, keyboard/screen-reader naming, sidebar scrolling and no main-page jump. Remains IN REVIEW until matching-revision QAS acceptance.
+
 ## Global Foundation execution order
 1. Admin shell/navigation closure.
 2. Storefront shell/navigation/footer visual foundation.

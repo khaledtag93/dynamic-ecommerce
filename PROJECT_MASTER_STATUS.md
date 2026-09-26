@@ -1,5 +1,14 @@
 # MASTER PROJECT STATUS
 
+## Admin navigation foundation continuation — 2026-09-26
+
+- GF-12 fixes names/tooltips for seven collapsed navigation groups and limits current-item scrolling to the sidebar. Source work and the acceptance gate are in [Global Foundation Audit](docs/GLOBAL_FOUNDATION_AUDIT_2026-09-26.md); latest-head CI and QAS acceptance remain to be recorded.
+- GF-11 source commit `6e6d75e` passed Hardening CI run `36250710952`. No QAS/Production promotion is implied. The last documented QAS application is `f1f20297`.
+
+### Earlier checkpoints below
+
+Use `CURRENT_PHASE.md` for the current next action.
+
 ## Admin shared-action source checkpoint — 2026-09-26
 
 - The earlier Page Closure/mini-sidebar source commit `3ba6d5a` passed Hardening CI `36249023102`. GF-01 still requires authenticated QAS visual acceptance.
