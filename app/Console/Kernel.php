@@ -12,6 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        $schedule->command('ops:heartbeat')->everyMinute()->withoutOverlapping();
         $schedule->command('analytics:aggregate --date=' . now()->subDay()->toDateString())->dailyAt('01:10');
         $schedule->command('analytics:aggregate --date=' . now()->toDateString())->hourlyAt(10);
         $schedule->command('growth:run')->everyFifteenMinutes()->withoutOverlapping();
