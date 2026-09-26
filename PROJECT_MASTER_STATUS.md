@@ -1052,3 +1052,15 @@ These are cross-admin requirements, not isolated screen fixes, and should be app
 - Hardening CI #1365 passed on `45e85e4`: 362 tests / 2454 assertions, clean MySQL migration, Laravel boot/routes, Blade compilation, and Vite production build.
 - Production unchanged; QAS acceptance remains a separate gate.
 
+
+
+## Growth closure + authentication roadmap checkpoint — 2026-09-26
+- Pre-checkpoint Growth source HEAD `9526d275` passed Hardening CI run `36208265474`.
+- Growth scalability closure now has independent pagination for Content and Operations lists, paginated experiment performance, and DB-bounded attribution/cohort/predictive/adaptive insight reads.
+- Predictive and adaptive insight queries now fetch exactly the five rows rendered in their compact Insight panels.
+- Growth create/update actions preserve operator context by returning to Content & Journeys at the relevant Campaign / Rule / Template / Segment / Experiment anchor.
+- Regression coverage in `GrowthWorkspaceV2Test` guards both result bounds and CRUD return-flow behavior.
+- QAS was operator-refreshed earlier from green baseline `5e2a393a`; later Growth commits through `9526d275` are not yet recorded as deployed to QAS.
+- Production remains unchanged.
+- Social sign-in audit: not implemented. No Socialite dependency or Google/Facebook/Apple OAuth flow exists in the current source. Record a future configurable Customer Account / Authentication slice for Google, Apple and optionally Facebook; do not start it before current in-progress work is closed.
+- Product sequencing remains: finish and harden existing work first; record non-blocking new ideas for later rather than interrupting the active closure sequence.
