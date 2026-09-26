@@ -8,6 +8,14 @@
         @php
             $isPaid = $status === \App\Models\Payment::STATUS_PAID;
             $isPending = in_array($status, [\App\Models\Payment::STATUS_PENDING, \App\Models\Payment::STATUS_AUTHORIZED], true);
+            $canRetry = $order->can_retry_online_payment
+                && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured();
+            $isTerminal = $order->status === \App\Models\Order::STATUS_CANCELLED
+                || in_array($order->payment_status, [
+                    \App\Models\Order::PAYMENT_STATUS_PAID,
+                    \App\Models\Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                    \App\Models\Order::PAYMENT_STATUS_REFUNDED,
+                ], true);
             $hasCheckoutFailure = !empty(data_get($payment, 'meta.checkout_error'));
             $icon = $isPaid ? 'bi-check2-circle' : ($isPending ? 'bi-hourglass-split' : 'bi-x-circle');
             $title = $isPaid ? __('Payment completed') : ($isPending ? __('Payment pending') : __('Payment was not completed'));
@@ -15,7 +23,11 @@
                 ? __('Your payment was verified and your order has been updated successfully.')
                 : ($isPending
                     ? __('Your payment is still being verified by the gateway. Check the order page again in a moment.')
-                    : __('No successful payment was confirmed for this order yet. You can retry safely from the order page.'));
+                    : ($canRetry
+                        ? __('No successful payment was confirmed for this order yet. You can retry safely from the order page.')
+                        : ($isTerminal
+                            ? __('This order is not eligible for another online payment attempt. Review the order details or contact support if you need help.')
+                            : __('Online payment cannot be retried right now. Review the order details or contact support for the next step.'))));
         @endphp
 
         <div class="lc-card p-4 p-lg-5 text-center mx-auto" style="max-width: 820px;">
@@ -61,7 +73,7 @@
 
             <div class="d-flex justify-content-center gap-3 flex-wrap">
                 <a href="{{ route('orders.show', $order) }}" class="btn lc-btn-primary">{{ __('Order details') }}</a>
-                @if(! $isPaid)
+                @if($canRetry)
                     <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-soft">{{ __('Retry secure payment') }}</a>
                 @endif
                 <a href="{{ route('notifications.index') }}" class="btn lc-btn-soft">{{ __('Notifications') }}</a>
