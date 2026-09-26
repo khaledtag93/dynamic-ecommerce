@@ -37,7 +37,7 @@
                     <input
                         id="reviewSearch"
                         type="search"
-                        name="search"
+                        name="search" maxlength="100"
                         value="{{ $filters['search'] }}"
                         class="form-control"
                         placeholder="{{ __('Product, customer, email, or review text') }}"

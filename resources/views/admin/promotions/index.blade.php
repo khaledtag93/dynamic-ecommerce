@@ -32,7 +32,7 @@
         <form method="GET" action="{{ route('admin.promotions.index') }}" class="admin-filter-grid" data-live-filter>
             <div>
                 <label class="form-label fw-semibold" for="promotionSearch">{{ __('Search') }}</label>
-                <input id="promotionSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Promotion name') }}">
+                <input id="promotionSearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Promotion name') }}">
             </div>
             <div>
                 <label class="form-label fw-semibold" for="promotionTypeFilter">{{ __('Type') }}</label>

@@ -31,7 +31,7 @@
         <form method="GET" action="{{ route('admin.coupons.index') }}" class="admin-filter-grid admin-filter-grid-coupons" data-live-filter>
             <div>
                 <label class="form-label fw-semibold" for="couponSearch">{{ __('Search') }}</label>
-                <input id="couponSearch" type="search" name="search" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Name, code, notes') }}">
+                <input id="couponSearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Name, code, notes') }}">
             </div>
             <div>
                 <label class="form-label fw-semibold" for="couponTypeFilter">{{ __('Type') }}</label>

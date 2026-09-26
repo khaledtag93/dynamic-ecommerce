@@ -34,7 +34,7 @@
             <form method="GET" action="{{ route('admin.support.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
                     <label class="form-label fw-semibold" for="supportCaseSearch">{{ __('Search cases') }}</label>
-                    <input id="supportCaseSearch" type="search" name="search" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Case, subject, customer, email, or order') }}" autocomplete="off" data-live-search>
+                    <input id="supportCaseSearch" type="search" name="search" maxlength="100" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Case, subject, customer, email, or order') }}" autocomplete="off" data-live-search>
                 </div>
                 <div>
                     <label class="form-label fw-semibold" for="supportCaseStatus">{{ __('Status') }}</label>

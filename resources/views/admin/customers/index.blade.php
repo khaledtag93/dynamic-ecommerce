@@ -32,7 +32,7 @@
         <form method="GET" action="{{ route('admin.customers.index') }}" class="admin-filter-grid admin-filter-grid-customers" data-live-filter>
             <div>
                 <label class="form-label fw-semibold" for="customerSearch">{{ __('Search') }}</label>
-                <input id="customerSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $search }}" class="form-control" placeholder="{{ __('Customer name or email') }}">
+                <input id="customerSearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" value="{{ $search }}" class="form-control" placeholder="{{ __('Customer name or email') }}">
             </div>
             <div>
                 <label class="form-label fw-semibold" for="customerRoleFilter">{{ __('Role') }}</label>

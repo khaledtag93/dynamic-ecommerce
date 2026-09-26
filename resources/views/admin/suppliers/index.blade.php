@@ -29,7 +29,7 @@
     <form method="GET" action="{{ route('admin.suppliers.index') }}" class="admin-filter-grid" data-live-filter>
         <div>
             <label class="form-label fw-semibold" for="supplierSearch">{{ __('Search') }}</label>
-            <input id="supplierSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Search suppliers') }}">
+            <input id="supplierSearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Search suppliers') }}">
         </div>
         <div>
             <label class="form-label fw-semibold" for="supplierStatus">{{ __('Status') }}</label>
