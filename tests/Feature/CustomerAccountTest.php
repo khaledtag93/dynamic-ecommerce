@@ -199,7 +199,9 @@ class CustomerAccountTest extends TestCase
             ->assertSee('name="shipping_address_line_1" value="Original Shipping Street"', false)
             ->assertSee('name="billing_address_line_1" value="Original Billing Street"', false)
             ->assertSee('name="billing_same_as_shipping" value="0"', false)
-            ->assertSee(route('checkout.index', ['address' => 'new']));
+            ->assertSee('data-checkout-new-address', false)
+            ->assertSee('data-checkout-saved-address', false)
+            ->assertSee('data-address-line-1="Original Shipping Street"', false);
         $this->get(route('checkout.index', ['address' => $billing->id]))
             ->assertOk()->assertSee('name="shipping_address_line_1" value="Original Billing Street"', false);
         $this->get(route('checkout.index', ['address' => $foreign->id]))->assertNotFound();
