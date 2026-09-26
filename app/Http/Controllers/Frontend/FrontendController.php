@@ -128,7 +128,7 @@ class FrontendController extends Controller
             : 'latest';
 
         $filters = [
-            'q' => trim((string) $request->string('q')),
+            'q' => mb_substr(trim((string) $request->string('q')), 0, 100),
             'availability' => in_array($request->string('availability')->toString(), ['all', 'in_stock'], true)
                 ? $request->string('availability')->toString()
                 : 'all',
@@ -172,7 +172,7 @@ class FrontendController extends Controller
             : 'latest';
 
         $filters = [
-            'q' => trim((string) $request->string('q')),
+            'q' => mb_substr(trim((string) $request->string('q')), 0, 100),
             'availability' => in_array($request->string('availability')->toString(), ['all', 'in_stock'], true)
                 ? $request->string('availability')->toString()
                 : 'all',
@@ -232,16 +232,17 @@ class FrontendController extends Controller
     protected function applyCategoryFilters(Builder $query, array $filters): Builder
     {
         if ($filters['q'] !== '') {
-            $search = $filters['q'];
+            $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $filters['q']);
+            $like = '%' . $escapedSearch . '%';
 
-            $query->where(function (Builder $builder) use ($search) {
+            $query->where(function (Builder $builder) use ($like) {
                 $builder
-                    ->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('translations', function (Builder $translations) use ($search) {
+                    ->where('name', 'like', $like)
+                    ->orWhere('description', 'like', $like)
+                    ->orWhereHas('translations', function (Builder $translations) use ($like) {
                         $translations
-                            ->where('name', 'like', "%{$search}%")
-                            ->orWhere('description', 'like', "%{$search}%");
+                            ->where('name', 'like', $like)
+                            ->orWhere('description', 'like', $like);
                     });
             });
         }
