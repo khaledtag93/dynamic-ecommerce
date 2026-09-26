@@ -23,8 +23,8 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.customers.statement', $user) }}" class="admin-filter-grid">
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Movement type') }}</label>
-                    <select name="type" class="form-select">
+                    <label class="form-label fw-semibold" for="statementMovementType">{{ __('Movement type') }}</label>
+                    <select id="statementMovementType" name="type" class="form-select">
                         <option value="">{{ __('All movements') }}</option>
                         <option value="order" @selected($filters['type'] === 'order')>{{ __('Orders') }}</option>
                         <option value="payment" @selected($filters['type'] === 'payment')>{{ __('Payments') }}</option>
@@ -33,12 +33,12 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('From date') }}</label>
-                    <input type="date" name="date_from" value="{{ $filters['date_from'] }}" class="form-control">
+                    <label class="form-label fw-semibold" for="statementDateFrom">{{ __('From date') }}</label>
+                    <input id="statementDateFrom" type="date" name="date_from" value="{{ $filters['date_from'] }}" class="form-control">
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('To date') }}</label>
-                    <input type="date" name="date_to" value="{{ $filters['date_to'] }}" class="form-control">
+                    <label class="form-label fw-semibold" for="statementDateTo">{{ __('To date') }}</label>
+                    <input id="statementDateTo" type="date" name="date_to" value="{{ $filters['date_to'] }}" class="form-control">
                 </div>
                 <div class="admin-filter-actions">
                     <button class="btn btn-primary btn-text-icon"><i class="mdi mdi-filter-outline"></i><span>{{ __('Apply') }}</span></button>
