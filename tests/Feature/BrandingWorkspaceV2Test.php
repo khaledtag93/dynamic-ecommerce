@@ -56,6 +56,20 @@ class BrandingWorkspaceV2Test extends TestCase
         $this->assertStringContainsString("setAttribute('data-applied-preset', key)", $source);
     }
 
+    public function test_storefront_theme_presets_have_visual_personality_profiles(): void
+    {
+        $source = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString("\$storeThemeProfile = match (\$storeThemePreset)", $source);
+        $this->assertStringContainsString("'refined'", $source);
+        $this->assertStringContainsString("'sharp'", $source);
+        $this->assertStringContainsString("'playful'", $source);
+        $this->assertStringContainsString("'organic'", $source);
+        $this->assertStringContainsString('--lc-control-radius:', $source);
+        $this->assertStringContainsString('--lc-media-radius:', $source);
+        $this->assertStringContainsString('translateY(var(--lc-hover-lift))', $source);
+    }
+
     public function test_theme_gallery_supports_market_discovery(): void
     {
         $source = file_get_contents(resource_path('views/admin/settings/branding.blade.php'));
