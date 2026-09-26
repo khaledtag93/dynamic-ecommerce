@@ -146,6 +146,26 @@ class CatalogWorkspaceV2Test extends TestCase
     }
 
 
+
+    public function test_catalog_filters_have_explicit_accessible_labels(): void
+    {
+        $view = file_get_contents(resource_path('views/livewire/admin/product/index.blade.php'));
+
+        foreach ([
+            'catalogSearch',
+            'catalogStatusFilter',
+            'catalogCategoryFilter',
+            'catalogBrandFilter',
+            'catalogReadinessFilter',
+            'catalogStockFilter',
+            'catalogFeaturedFilter',
+            'catalogPerPage',
+        ] as $controlId) {
+            $this->assertStringContainsString('for="' . $controlId . '"', $view);
+            $this->assertStringContainsString('id="' . $controlId . '"', $view);
+        }
+    }
+
     public function test_product_row_controls_have_mobile_touch_targets_and_accessible_names(): void
     {
         $source = file_get_contents(resource_path('views/livewire/admin/product/index.blade.php'));
