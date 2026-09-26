@@ -9,6 +9,7 @@ use App\Support\MediaPath;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
 {
@@ -343,6 +344,15 @@ class SettingController extends Controller
     {
         $data = $request->validate($this->rules());
 
+        $allowedHomepageSections = $this->homepageSectionKeys();
+        $requestedHomepageSections = collect(explode(',', (string) ($data['homepage_sections_order'] ?? '')))
+            ->map(fn (string $key) => trim($key))
+            ->filter(fn (string $key) => in_array($key, $allowedHomepageSections, true))
+            ->unique()
+            ->values()
+            ->all();
+        $data['homepage_sections_order'] = implode(',', array_values(array_unique(array_merge($requestedHomepageSections, $allowedHomepageSections))));
+
         foreach (['logo', 'admin_logo', 'hero_banner', 'favicon'] as $baseField) {
             $this->handleBrandingUpload($request, $data, $baseField, $baseField . '_file', $baseField . '_path');
         }
@@ -398,7 +408,7 @@ class SettingController extends Controller
     private function rules(): array
     {
         $rules = [
-            'theme_preset' => ['nullable', 'string', 'max:100'],
+            'theme_preset' => ['nullable', 'string', 'max:100', Rule::in(array_keys($this->allThemes()))],
             'default_locale' => ['nullable', 'string', 'max:5'],
             'project_name' => ['required', 'string', 'max:255'],
             'store_name' => ['required', 'string', 'max:255'],
@@ -524,6 +534,23 @@ class SettingController extends Controller
         }
 
         return $rules;
+    }
+
+    private function homepageSectionKeys(): array
+    {
+        return [
+            'hero',
+            'promo_banners',
+            'featured_categories',
+            'manual_featured_products',
+            'featured_products',
+            'best_sellers',
+            'latest_products',
+            'on_sale_products',
+            'trust_blocks',
+            'categories',
+            'promo_banner',
+        ];
     }
 
     private function booleanFields(): array
