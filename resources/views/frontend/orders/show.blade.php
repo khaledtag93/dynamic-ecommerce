@@ -15,7 +15,7 @@
             <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('orders.index') }}" class="btn lc-btn-soft"><i class="bi bi-arrow-left me-2"></i>{{ __('My Orders') }}</a>
                 <a href="{{ route('orders.receipt', $order) }}" class="btn lc-btn-soft" target="_blank" rel="noopener"><i class="bi bi-printer me-2"></i>{{ __('Print receipt') }}</a>
-                @if($order->payment_method === \App\Models\Order::PAYMENT_METHOD_ONLINE && $order->payment_status !== \App\Models\Order::PAYMENT_STATUS_PAID && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
+                @if($order->can_retry_online_payment && app(\App\Services\Commerce\PaymentService::class)->onlineGatewayConfigured())
                     <a href="{{ route('payments.paymob.redirect', $order) }}" class="btn lc-btn-primary">{{ __('Pay now securely') }}</a>
                 @endif
                 @if(($canRequestReturn ?? false) && ($remainingReturnableTotal ?? 0) > 0)
