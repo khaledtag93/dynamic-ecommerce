@@ -40,11 +40,13 @@ Dynamic تجاوز مرحلة متجر تجريبي بسيط من ناحية ا�
 - Composer lock تم توليده على platform PHP 8.3؛ الفحص الأمني للـdependencies أخضر.
 - QAS ثبت فعلياً Laravel 13.33.0 وLivewire 4.4.6 وSanctum 4.3.3 وCarbon 3.14.0.
 - Hardening CI 36214088800 نجح على `81ccfdc6` في كل المراحل، بما فيها PHPUnit وfrontend build.
-- QAS deploy عند `81ccfdc6` انتهى HTTP 200.
+- QAS deploy الأحدث عند `f1f20297` انتهى HTTP 200، وطبّق migrations الخاصة بالـdatabase queue والـoperations heartbeats.
 - Security headers أضيفت وجرى التحقق منها على QAS: HSTS، nosniff، SAMEORIGIN، Referrer-Policy.
 - Laravel 13 request-forgery middleware الحديث مستخدم عبر wrapper التطبيق.
 - Session serialization أصبح explicit مع default `php` لحماية sessions الحالية أثناء الترقية؛ التحويل إلى JSON مؤجل إلى نافذة re-login مقصودة.
-- هذا لا يعني Production-ready: الدمج إلى working line، authenticated QAS acceptance، Paymob E2E، secret rotation evidence، DB restore rehearsal، scheduler/queue evidence ما زالت release gates.
+- QAS انتقل عمداً إلى `QUEUE_CONNECTION=database`. الاختبار اليدوي أثبت أن heartbeat job يدخل `jobs` ثم يستهلكه worker فعلياً حتى `Pending=0` و`Failed=0` ويمر `ops:health --strict`.
+- أضيف في hPanel Cron Job للـLaravel scheduler وآخر bounded queue worker كل دقيقة. أول تحقق بعد الحفظ بقي `STALE` للـscheduler والـqueue، لذلك الإعداد محفوظ لكن التنفيذ التلقائي لم يُقبل بعد؛ نراجع Cron output/بيئة PHP ثم نطلب heartbeats تلقائية جديدة قبل غلق OPS-03.
+- هذا لا يعني Production-ready: الدمج إلى working line، authenticated QAS acceptance، Paymob E2E، secret rotation evidence، DB restore rehearsal، وإثبات التشغيل التلقائي النهائي للـscheduler/queue ما زالت release gates.
 
 ## 3. تقييم النضج بدون نسب مضللة
 
