@@ -42,6 +42,19 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringContainsString("behavior: reduceMotion ? 'auto' : 'smooth'", $storefront);
     }
 
+    public function test_storefront_direction_styles_follow_the_html_direction_owner(): void
+    {
+        $storefront = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('dir="{{ ($isRtl ?? false) ? \'rtl\' : \'ltr\' }}"', $storefront);
+        $this->assertStringNotContainsString('body[dir="rtl"]', $storefront);
+        $this->assertStringNotContainsString('body[dir="ltr"]', $storefront);
+        $this->assertStringContainsString('html[dir="rtl"] .retail-search', $storefront);
+        $this->assertStringContainsString('html[dir="rtl"] .retail-quick-tile', $storefront);
+        $this->assertStringContainsString('html[dir="ltr"] .retail-quick-tile', $storefront);
+        $this->assertStringContainsString('html[dir="rtl"] .lc-order-step', $storefront);
+    }
+
     public function test_skip_link_copy_is_bilingual(): void
     {
         $english = json_decode(file_get_contents(lang_path('en.json')), true, 512, JSON_THROW_ON_ERROR);
