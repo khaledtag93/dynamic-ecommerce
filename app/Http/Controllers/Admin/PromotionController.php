@@ -12,8 +12,12 @@ class PromotionController extends Controller
 {
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => (string) $request->string('search'),
+            'search' => $search,
             'type' => (string) $request->string('type'),
             'status' => (string) $request->string('status'),
             'schedule' => (string) $request->string('schedule'),
@@ -24,7 +28,7 @@ class PromotionController extends Controller
 
         $promotions = PromotionRule::query()
             ->with('category')
-            ->when($filters['search'], fn ($query, $search) => $query->where('name', 'like', "%{$search}%"))
+            ->when($filters['search'], fn ($query) => $query->where('name', 'like', $like))
             ->when($filters['type'], fn ($query, $type) => $query->where('type', $type))
             ->when($filters['schedule'] === 'upcoming', fn ($query) => $query->whereNotNull('starts_at')->where('starts_at', '>', now()))
             ->when($filters['schedule'] === 'expired', fn ($query) => $query->whereNotNull('ends_at')->where('ends_at', '<', now()))
