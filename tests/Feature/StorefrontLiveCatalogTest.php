@@ -135,7 +135,7 @@ class StorefrontLiveCatalogTest extends TestCase
 
         $this->assertSame(
             2,
-            substr_count($controller, "mb_substr(trim((string) \\$request->string('q')), 0, 100)")
+            substr_count($controller, 'mb_substr(trim((string) $request->string(\'q\')), 0, 100)')
         );
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $controller);
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
