@@ -1,15 +1,19 @@
 # Dynamic documentation guide
 
-## Authoritative audit checkpoint — 2026-09-26
+## Authoritative continuation checkpoint — 2026-09-26
 
-- Current audit and execution priorities: [Production foundation audit (Arabic)](PRODUCTION_FOUNDATION_AUDIT_2026-09-26_AR.md).
-- Reviewed source: `e0420a31986ef11cb23c22b1b75dc56078a2389a` on `v42-clean-baseline`.
-- Exact-head [Hardening CI 36208521493](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36208521493) passed: **438 tests / 13,843 assertions**, clean MySQL migration, route/Blade/config checks and frontend build.
-- Latest operator-recorded QAS checkpoint targets `5e2a393a`; server HEAD was not independently read during this audit. Growth changes through `9526d275` are not recorded as deployed. The later `e0420a3` changes are documentation-only.
-- Production was not changed or reverified. Authenticated Admin/POS/Workforce and mobile/physical-device acceptance remain open; public QAS desktop sampling is documented in the audit.
-- New release priorities: vulnerable/outdated dependencies and upload handling; locale redirect restriction; historical secret-rotation evidence; payment E2E; database restore and scheduler/queue verification. Then storefront media/content/localization/accessibility, POS live actions, bounded statements and consolidated QAS acceptance.
-- A product detail image failed to load in the current QAS sample; this is a separate observation from the previously resolved category-media-root issue. Do not assume the old root cause has recurred.
-- No application code or deployment changed in this audit. Findings are **open**, not fixed. Continue completion before expansion, preserving the future Android/iPhone architecture constraint.
+- Start new chats from [NEW_CHAT_HANDOFF_2026-09-26.md](NEW_CHAT_HANDOFF_2026-09-26.md).
+- Active hardening branch: `sec03-framework-upgrade`.
+- Latest application/operations code deployed to QAS: `f1f20297`.
+- Latest hardening CI on that application code: `36215421736` — green.
+- QAS runtime: PHP 8.3.33, Laravel 13.33.0, Livewire 4.4.6, Sanctum 4.3.3.
+- QAS security headers and hardened session/cookie behavior are verified.
+- QAS uses `QUEUE_CONNECTION=database`; automatic hPanel Scheduler + bounded Queue worker execution is verified across multiple minute cycles.
+- OPS-03 is accepted on QAS; Production still needs the same runtime setup before promotion.
+- Remaining P0 release gates: OPS-01 credential rotation evidence, PAY-01 Paymob E2E, OPS-02 database restore rehearsal.
+- Authenticated consolidated QAS acceptance remains required before merge/Production.
+- Production remains unchanged.
+- Continue completion before expansion.
 
 ### Historical checkpoints below
 
