@@ -21,8 +21,12 @@ class DeliveryController extends Controller
 
     public function index(Request $request)
     {
+        $search = mb_substr(trim((string) $request->string('search')), 0, 100);
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => $search,
             'delivery_status' => (string) $request->string('delivery_status'),
             'delivery_method' => (string) $request->string('delivery_method'),
             'queue' => (string) $request->string('queue'),
@@ -31,12 +35,12 @@ class DeliveryController extends Controller
 
         $orders = Order::query()
             ->with('user')
-            ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('order_number', 'like', "%{$search}%")
-                        ->orWhere('customer_name', 'like', "%{$search}%")
-                        ->orWhere('tracking_number', 'like', "%{$search}%")
-                        ->orWhere('shipping_provider', 'like', "%{$search}%");
+            ->when($filters['search'], function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('order_number', 'like', $like)
+                        ->orWhere('customer_name', 'like', $like)
+                        ->orWhere('tracking_number', 'like', $like)
+                        ->orWhere('shipping_provider', 'like', $like);
                 });
             })
             ->when($filters['delivery_status'], fn ($query, $status) => $query->where('delivery_status', $status))
