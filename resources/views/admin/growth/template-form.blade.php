@@ -29,11 +29,13 @@ html[dir="rtl"] .template-form-page .template-switch{justify-content:flex-start}
         <a href="{{ route('admin.growth.index') }}" class="btn btn-light border">{{ __('Back to growth workspace') }}</a>
     </x-admin.page-header>
 
-    <form method="POST" action="{{ $template->exists ? route('admin.growth.templates.update', $template) : route('admin.growth.templates.store') }}" data-submit-loading>
+    <form method="POST" action="{{ $template->exists ? route('admin.growth.templates.update', $template) : route('admin.growth.templates.store') }}" data-submit-loading data-growth-form>
         @csrf
         @if($template->exists)
             @method('PUT')
         @endif
+
+        <x-admin.growth-validation-summary :errors="$errors" />
 
         <div class="admin-card mb-4">
             <div class="admin-card-body row g-3">
