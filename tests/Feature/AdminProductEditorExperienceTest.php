@@ -110,6 +110,25 @@ class AdminProductEditorExperienceTest extends TestCase
         $this->assertStringContainsString('markProductFormDirty();', $view);
     }
 
+    public function test_product_crud_uses_livewire_without_legacy_noop_mutation_routes(): void
+    {
+        $routes = file_get_contents(base_path('routes/web.php'));
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/ProductController.php'));
+
+        $this->assertStringContainsString("Route::get('/products', 'index')->name('products.index');", $routes);
+        $this->assertStringContainsString("Route::get('/products/create', 'create')->name('products.create');", $routes);
+        $this->assertStringContainsString("Route::get('/products/{product}/edit', 'edit')->name('products.edit');", $routes);
+
+        $this->assertStringNotContainsString("Route::post('/products', 'store')->name('products.store');", $routes);
+        $this->assertStringNotContainsString("Route::put('/products/{product}', 'update')->name('products.update');", $routes);
+        $this->assertStringNotContainsString("Route::delete('/products/{product}', 'destroy')->name('products.destroy');", $routes);
+
+        $this->assertStringNotContainsString('function store(', $controller);
+        $this->assertStringNotContainsString('function update(', $controller);
+        $this->assertStringNotContainsString('function destroy(', $controller);
+        $this->assertStringNotContainsString('handled elsewhere currently', $controller);
+    }
+
     public function test_simple_product_sku_is_saved_from_livewire_editor(): void
     {
         $category = $this->createCategory('Retail Test', 'retail-test');
