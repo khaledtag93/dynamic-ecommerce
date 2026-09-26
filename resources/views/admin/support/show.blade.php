@@ -68,8 +68,8 @@
                             <div class="row g-3">
                                 @if($replyTemplates->isNotEmpty())
                                 <div class="col-md-8">
-                                    <label class="form-label fw-semibold">{{ __('Reply template') }}</label>
-                                    <select class="form-select" data-support-template>
+                                    <label class="form-label fw-semibold" for="supportReplyTemplate">{{ __('Reply template') }}</label>
+                                    <select id="supportReplyTemplate" class="form-select" data-support-template>
                                         <option value="">{{ __('Write without a template') }}</option>
                                         @foreach($replyTemplates as $template)
                                             <option value="{{ $template->id }}">{{ $template->displayName() }}</option>
@@ -78,14 +78,15 @@
                                 </div>
                                 @endif
                                 <div class="col-md-4">
-                                    <label class="form-label fw-semibold">{{ __('Visibility') }}</label>
-                                    <select name="visibility" class="form-select" data-support-visibility>
+                                    <label class="form-label fw-semibold" for="supportReplyVisibility">{{ __('Visibility') }}</label>
+                                    <select id="supportReplyVisibility" name="visibility" class="form-select" data-support-visibility>
                                         <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
                                         <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}">{{ __('Internal note') }}</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
-                                    <textarea name="message" rows="6" class="form-control @error('message') is-invalid @enderror" maxlength="5000" required data-support-message>{{ old('message') }}</textarea>
+                                    <label class="visually-hidden" for="supportAdminReplyMessage">{{ __('Message') }}</label>
+                                    <textarea id="supportAdminReplyMessage" name="message" aria-required="true" rows="6" class="form-control @error('message') is-invalid @enderror" maxlength="5000" required data-support-message>{{ old('message') }}</textarea>
                                     @error('message')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-12 text-end">
@@ -212,8 +213,8 @@
                         <form method="POST" action="{{ route('admin.support.update', $supportCase) }}" data-submit-loading>
                             @csrf @method('PATCH')
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">{{ __('Owner') }}</label>
-                                <select name="assigned_to_user_id" class="form-select">
+                                <label class="form-label fw-semibold" for="supportCaseOwner">{{ __('Owner') }}</label>
+                                <select id="supportCaseOwner" name="assigned_to_user_id" class="form-select">
                                     <option value="">{{ __('Unassigned') }}</option>
                                     @foreach($staff as $member)
                                         <option value="{{ $member->id }}" @selected((int)$supportCase->assigned_to_user_id === (int)$member->id)>{{ $member->name }}</option>
@@ -221,16 +222,16 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">{{ __('Priority') }}</label>
-                                <select name="priority" class="form-select">
+                                <label class="form-label fw-semibold" for="supportCasePriority">{{ __('Priority') }}</label>
+                                <select id="supportCasePriority" name="priority" class="form-select">
                                     @foreach(\App\Models\SupportCase::priorityOptions() as $value => $label)
                                         <option value="{{ $value }}" @selected($supportCase->priority === $value)>{{ $label }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                                <select name="status" class="form-select">
+                                <label class="form-label fw-semibold" for="supportCaseStatus">{{ __('Status') }}</label>
+                                <select id="supportCaseStatus" name="status" class="form-select">
                                     @foreach(\App\Models\SupportCase::statusOptions() as $value => $label)
                                         <option value="{{ $value }}" @selected($supportCase->status === $value)>{{ $label }}</option>
                                     @endforeach

@@ -18,8 +18,8 @@
                 @csrf
                 <div class="row g-3">
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Customer') }}</label>
-                        <select name="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
+                        <label class="form-label fw-semibold" for="supportAdminCustomer">{{ __('Customer') }}</label>
+                        <select id="supportAdminCustomer" name="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
                             <option value="">{{ __('No customer selected') }}</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer->id }}" @selected((string)old('customer_id') === (string)$customer->id)>{{ $customer->name }} · {{ $customer->email }}</option>
@@ -28,8 +28,8 @@
                         @error('customer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Order') }}</label>
-                        <select name="order_id" class="form-select @error('order_id') is-invalid @enderror">
+                        <label class="form-label fw-semibold" for="supportAdminOrder">{{ __('Order') }}</label>
+                        <select id="supportAdminOrder" name="order_id" class="form-select @error('order_id') is-invalid @enderror">
                             <option value="">{{ __('No order selected') }}</option>
                             @foreach($orders as $order)
                                 <option value="{{ $order->id }}" @selected((string)old('order_id') === (string)$order->id)>{{ $order->order_number }} · {{ $order->customer_name ?: $order->customer_email }}</option>
@@ -38,33 +38,33 @@
                         @error('order_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-lg-8">
-                        <label class="form-label fw-semibold">{{ __('Subject') }}</label>
-                        <input name="subject" value="{{ old('subject') }}" class="form-control @error('subject') is-invalid @enderror" maxlength="180" required>
+                        <label class="form-label fw-semibold" for="supportAdminSubject">{{ __('Subject') }}</label>
+                        <input id="supportAdminSubject" name="subject" aria-required="true" value="{{ old('subject') }}" class="form-control @error('subject') is-invalid @enderror" maxlength="180" required>
                         @error('subject')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-lg-4">
-                        <label class="form-label fw-semibold">{{ __('Category') }}</label>
-                        <input name="category" value="{{ old('category') }}" class="form-control @error('category') is-invalid @enderror" maxlength="80" placeholder="{{ __('Orders, payment, delivery...') }}">
+                        <label class="form-label fw-semibold" for="supportAdminCategory">{{ __('Category') }}</label>
+                        <input id="supportAdminCategory" name="category" value="{{ old('category') }}" class="form-control @error('category') is-invalid @enderror" maxlength="80" placeholder="{{ __('Orders, payment, delivery...') }}">
                         @error('category')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('Priority') }}</label>
-                        <select name="priority" class="form-select" required>
+                        <label class="form-label fw-semibold" for="supportAdminPriority">{{ __('Priority') }}</label>
+                        <select id="supportAdminPriority" name="priority" class="form-select" required>
                             @foreach(\App\Models\SupportCase::priorityOptions() as $value => $label)
                                 <option value="{{ $value }}" @selected(old('priority', \App\Models\SupportCase::PRIORITY_NORMAL) === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">{{ __('First message visibility') }}</label>
-                        <select name="visibility" class="form-select" required>
+                        <label class="form-label fw-semibold" for="supportAdminVisibility">{{ __('First message visibility') }}</label>
+                        <select id="supportAdminVisibility" name="visibility" class="form-select" required>
                             <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_CUSTOMER }}">{{ __('Customer-visible reply') }}</option>
                             <option value="{{ \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL }}" @selected(old('visibility') === \App\Models\SupportCaseMessage::VISIBILITY_INTERNAL)>{{ __('Internal note') }}</option>
                         </select>
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold">{{ __('Message') }}</label>
-                        <textarea name="message" rows="7" class="form-control @error('message') is-invalid @enderror" maxlength="5000" required>{{ old('message') }}</textarea>
+                        <label class="form-label fw-semibold" for="supportAdminMessage">{{ __('Message') }}</label>
+                        <textarea id="supportAdminMessage" name="message" aria-required="true" rows="7" class="form-control @error('message') is-invalid @enderror" maxlength="5000" required>{{ old('message') }}</textarea>
                         @error('message')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-12">
