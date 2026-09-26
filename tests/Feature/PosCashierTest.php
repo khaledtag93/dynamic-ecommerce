@@ -188,6 +188,65 @@ class PosCashierTest extends TestCase
             ->assertJsonPath('results.0.email', $customer->email);
     }
 
+    public function test_pos_live_lookups_treat_like_wildcards_as_literals(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $percentProduct = $this->product('POS 100% Cotton', '', 4, false, 25);
+        $this->product('POS 100 Cotton', '', 4, false, 25);
+
+        $literalCustomer = User::factory()->create([
+            'role_as' => 0,
+            'name' => 'Literal Customer',
+            'email' => 'literal_user@example.test',
+        ]);
+        User::factory()->create([
+            'role_as' => 0,
+            'name' => 'Wildcard Customer',
+            'email' => 'literalXuser@example.test',
+        ]);
+
+        $productResponse = $this->actingAs($admin)
+            ->getJson(route('admin.pos.lookups.products', ['q' => '100%']))
+            ->assertOk();
+
+        $productIds = collect($productResponse->json('results'))->pluck('product_id');
+        $this->assertTrue($productIds->contains($percentProduct->id));
+        $this->assertCount(1, $productIds);
+
+        $customerResponse = $this->getJson(
+            route('admin.pos.lookups.customers', ['q' => 'literal_user'])
+        )->assertOk();
+
+        $customerIds = collect($customerResponse->json('results'))->pluck('id');
+        $this->assertTrue($customerIds->contains($literalCustomer->id));
+        $this->assertCount(1, $customerIds);
+    }
+
+    public function test_pos_free_text_searches_are_bounded_and_ui_matches_the_contract(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/PosController.php'));
+        $posView = file_get_contents(resource_path('views/admin/pos/index.blade.php'));
+        $shiftView = file_get_contents(resource_path('views/admin/pos/shifts/index.blade.php'));
+
+        $this->assertSame(
+            2,
+            substr_count($controller, 'mb_substr(trim((string) $request->string(\'q\')), 0, 100)')
+        );
+        $this->assertStringContainsString(
+            'mb_substr(trim((string) $request->string(\'cashier\')), 0, 100)',
+            $controller
+        );
+        $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $controller);
+        $this->assertStringNotContainsString('"%{$term}%"', $controller);
+        $this->assertStringNotContainsString('"%{$cashierSearch}%"', $controller);
+
+        $this->assertStringContainsString('for="posProductSearch"', $posView);
+        $this->assertStringContainsString('id="posProductSearch"', $posView);
+        $this->assertStringContainsString('id="posProductSearch" type="search" minlength="2" maxlength="100"', $posView);
+        $this->assertStringContainsString('id="posCustomerSearch" type="search" class="form-control" minlength="2" maxlength="100"', $posView);
+        $this->assertStringContainsString('id="shiftCashierSearch" type="search" name="cashier" maxlength="100"', $shiftView);
+    }
+
     public function test_manual_catalog_add_does_not_require_a_barcode(): void
     {
         $admin = $this->createSuperAdmin();
