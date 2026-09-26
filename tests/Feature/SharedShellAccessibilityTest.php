@@ -68,6 +68,17 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertSame(2, substr_count($storefront, 'type="search" name="q" maxlength="100"'));
     }
 
+    public function test_storefront_submit_loading_helper_preserves_button_copy_without_loading_text(): void
+    {
+        $storefront = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString("const loadingText = button.getAttribute('data-loading-text');", $storefront);
+        $this->assertStringContainsString('if (loadingText) {', $storefront);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $storefront);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $storefront);
+        $this->assertStringNotContainsString("button.innerHTML = '<span class=\"lc-loading-spinner\"></span>' + button.getAttribute('data-loading-text');", $storefront);
+    }
+
     public function test_mobile_admin_sidebar_stays_reachable_above_the_backdrop_in_both_directions(): void
     {
         $admin = file_get_contents(resource_path('views/layouts/admin.blade.php'));

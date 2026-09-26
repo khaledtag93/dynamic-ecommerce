@@ -1142,9 +1142,14 @@ document.addEventListener('DOMContentLoaded', function () {
       const button = event.submitter || form.querySelector('[data-loading-text]');
       if (!button) return;
       button.dataset.originalText = button.innerHTML;
-      button.innerHTML = '<span class="lc-loading-spinner"></span>' + button.getAttribute('data-loading-text');
+      const loadingText = button.getAttribute('data-loading-text');
+      if (loadingText) {
+        button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+      }
       button.disabled = true;
+      button.setAttribute('aria-disabled', 'true');
       form.classList.add('lc-loading');
+      form.setAttribute('aria-busy', 'true');
     });
   });
 
