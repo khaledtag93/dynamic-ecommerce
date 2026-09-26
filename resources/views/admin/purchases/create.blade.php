@@ -33,8 +33,8 @@
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <label class="form-label">{{ __('Supplier') }}</label>
-                        <select name="supplier_id" class="form-select" required>
+                        <label class="form-label" for="purchaseSupplierId">{{ __('Supplier') }}</label>
+                        <select id="purchaseSupplierId" name="supplier_id" class="form-select" required aria-required="true">
                             <option value="">{{ __('Select supplier') }}</option>
                             @foreach ($suppliers as $supplier)
                                 <option value="{{ $supplier->id }}" @selected(old('supplier_id') == $supplier->id)>
@@ -45,8 +45,9 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">{{ __('Purchase date') }}</label>
+                        <label class="form-label" for="purchaseDate">{{ __('Purchase date') }}</label>
                         <input
+                            id="purchaseDate"
                             type="date"
                             name="purchase_date"
                             class="form-control"
@@ -55,8 +56,9 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label">{{ __('Shipping') }}</label>
+                        <label class="form-label" for="purchaseShippingTotal">{{ __('Shipping') }}</label>
                         <input
+                            id="purchaseShippingTotal"
                             type="number"
                             step="0.01"
                             name="shipping_total"
@@ -66,8 +68,9 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label">{{ __('Tax') }}</label>
+                        <label class="form-label" for="purchaseTaxTotal">{{ __('Tax') }}</label>
                         <input
+                            id="purchaseTaxTotal"
                             type="number"
                             step="0.01"
                             name="tax_total"
@@ -109,8 +112,8 @@
                 <div class="admin-section-card">
                     <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3"><h4 class="admin-section-title mb-0">{{ __('Notes & totals') }}</h4><div class="text-end"><div class="text-muted small">{{ __('Estimated total') }}</div><div class="fw-bold fs-4" id="purchaseGrandTotal">EGP 0.00</div></div></div>
                     <div class="mt-0">
-                    <label class="form-label">{{ __('Notes') }}</label>
-                    <textarea name="notes" class="form-control" rows="3">{{ old('notes') }}</textarea>
+                    <label class="form-label" for="purchaseNotes">{{ __('Notes') }}</label>
+                    <textarea id="purchaseNotes" name="notes" class="form-control" rows="3">{{ old('notes') }}</textarea>
                 </div>
 
                     <div class="admin-actions-stack mt-3">
@@ -221,12 +224,12 @@
 
                 row.innerHTML = `
                     <td>
-                        <select name="items[${i}][product_id]" class="form-select js-product" required>
+                        <select name="items[${i}][product_id]" class="form-select js-product" required aria-required="true" aria-label="{{ __('Product') }}">
                             ${productOptions(item.product_id || '')}
                         </select>
                     </td>
                     <td>
-                        <select name="items[${i}][product_variant_id]" class="form-select js-variant">
+                        <select name="items[${i}][product_variant_id]" class="form-select js-variant" aria-label="{{ __('Variant') }}">
                             ${variantOptions(item.product_id || '', item.product_variant_id || '')}
                         </select>
                     </td>
@@ -236,6 +239,8 @@
                             min="1"
                             name="items[${i}][quantity]"
                             class="form-control"
+                            aria-label="{{ __('Quantity') }}"
+                            aria-required="true"
                             value="${escapeHtml(item.quantity ?? 1)}"
                             required
                         >
@@ -247,6 +252,8 @@
                             min="0"
                             name="items[${i}][unit_cost]"
                             class="form-control"
+                            aria-label="{{ __('Unit cost') }}"
+                            aria-required="true"
                             value="${escapeHtml(item.unit_cost ?? '')}"
                             required
                         >
@@ -256,6 +263,7 @@
                             type="date"
                             name="items[${i}][expiration_date]"
                             class="form-control"
+                            aria-label="{{ __('Expiration date') }}"
                             value="${escapeHtml(item.expiration_date ?? '')}"
                         >
                     </td>
