@@ -230,7 +230,11 @@ class Product extends Model
             : null;
 
         if ($mainImage && ! empty($mainImage->image_path)) {
-            return MediaPath::assetUrl($mainImage->image_path, 'products');
+            $url = $this->resolveAvailableProductImageUrl($mainImage->image_path);
+
+            if ($url) {
+                return $url;
+            }
         }
 
         $firstImage = $this->relationLoaded('productImages')
@@ -238,7 +242,11 @@ class Product extends Model
             : null;
 
         if ($firstImage && ! empty($firstImage->image_path)) {
-            return MediaPath::assetUrl($firstImage->image_path, 'products');
+            $url = $this->resolveAvailableProductImageUrl($firstImage->image_path);
+
+            if ($url) {
+                return $url;
+            }
         }
 
         $defaultVariant = $this->relationLoaded('defaultVariant')
@@ -246,10 +254,29 @@ class Product extends Model
             : null;
 
         if ($defaultVariant && ! empty($defaultVariant->image)) {
-            return MediaPath::assetUrl($defaultVariant->image, 'products');
+            return $this->resolveAvailableProductImageUrl($defaultVariant->image);
         }
 
         return null;
+    }
+
+    protected function resolveAvailableProductImageUrl(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        if (MediaPath::isExternal((string) $path)) {
+            return (string) $path;
+        }
+
+        $publicPath = MediaPath::publicUploadPath($path, 'products');
+
+        if (! $publicPath || ! is_file($publicPath)) {
+            return null;
+        }
+
+        return MediaPath::assetUrl($path, 'products');
     }
 
     public function getImageUrlAttribute(): ?string
