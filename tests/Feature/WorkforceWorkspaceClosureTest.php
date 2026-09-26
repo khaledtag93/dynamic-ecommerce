@@ -20,7 +20,7 @@ class WorkforceWorkspaceClosureTest extends TestCase
             $source = file_get_contents($path);
 
             $this->assertStringContainsString(
-                "mb_substr(trim((string) \\$request->string('search')), 0, 100)",
+                'mb_substr(trim((string) $request->string(\'search\')), 0, 100)',
                 $source
             );
             $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $source);
