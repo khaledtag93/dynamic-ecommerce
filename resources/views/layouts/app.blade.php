@@ -47,6 +47,9 @@
             --lc-surface: {{ $storeSettings['brand_surface_color'] ?? '#ffffff' }};
             --lc-btn-text: {{ $storeSettings['brand_button_text_color'] ?? '#ffffff' }};
             --lc-card-radius: {{ (int) ($storeSettings['customer_card_radius'] ?? 18) }}px;
+            --lc-badge-radius: {{ ($storeSettings['customer_badge_style'] ?? 'soft') === 'pill' ? '999px' : (($storeSettings['customer_badge_style'] ?? 'soft') === 'outline' ? '6px' : '12px') }};
+            --lc-badge-bg: {{ ($storeSettings['customer_badge_style'] ?? 'soft') === 'outline' ? 'transparent' : 'color-mix(in srgb, var(--lc-soft) 82%, white)' }};
+            --lc-badge-border: {{ ($storeSettings['customer_badge_style'] ?? 'soft') === 'outline' ? 'var(--lc-primary)' : 'color-mix(in srgb, var(--lc-border) 78%, white)' }};
             --lc-shadow-color: color-mix(in srgb, var(--lc-primary) 16%, transparent);
             --lc-shadow-soft: 0 10px 30px var(--lc-shadow-color);
             --lc-shadow-card: 0 18px 50px color-mix(in srgb, var(--lc-dark) 10%, transparent);
@@ -107,9 +110,9 @@
             align-items: center;
             gap: .45rem;
             padding: .5rem .9rem;
-            border-radius: 999px;
-            background: var(--lc-surface);
-            border: 1px solid var(--lc-border);
+            border-radius: var(--lc-badge-radius);
+            background: var(--lc-badge-bg);
+            border: 1px solid var(--lc-badge-border);
             color: var(--lc-primary-dark);
             font-weight: 700;
             box-shadow: var(--lc-shadow-soft);
@@ -208,11 +211,12 @@
             align-items: center;
             gap: .35rem;
             padding: .45rem .7rem;
-            border-radius: 999px;
+            border-radius: var(--lc-badge-radius);
             font-size: .78rem;
             font-weight: 800;
-            color: #fff;
-            background: linear-gradient(135deg, var(--lc-primary), var(--lc-secondary));
+            color: {{ ($storeSettings['customer_badge_style'] ?? 'soft') === 'outline' ? 'var(--lc-primary-dark)' : 'var(--lc-btn-text)' }};
+            background: {{ ($storeSettings['customer_badge_style'] ?? 'soft') === 'outline' ? 'var(--lc-surface)' : 'linear-gradient(135deg, var(--lc-primary), var(--lc-secondary))' }};
+            border: 1px solid {{ ($storeSettings['customer_badge_style'] ?? 'soft') === 'outline' ? 'var(--lc-primary)' : 'transparent' }};
             box-shadow: 0 12px 24px color-mix(in srgb, var(--lc-primary) 22%, transparent);
         }
         .lc-product-meta { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .85rem; }
@@ -222,11 +226,11 @@
             gap: .35rem;
             font-size: .78rem;
             font-weight: 800;
-            border-radius: 999px;
+            border-radius: var(--lc-badge-radius);
             padding: .4rem .65rem;
-            background: color-mix(in srgb, var(--lc-soft) 78%, white);
+            background: var(--lc-badge-bg);
             color: var(--lc-primary-dark);
-            border: 1px solid color-mix(in srgb, var(--lc-border) 78%, white);
+            border: 1px solid var(--lc-badge-border);
         }
         .lc-product-card__category { font-size: .82rem; font-weight: 700; color: var(--lc-primary-dark); }
         .lc-product-card__title {
