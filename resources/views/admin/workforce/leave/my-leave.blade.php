@@ -29,7 +29,7 @@
                 <div class="text-muted small">{{ __('Available balance excludes approved leave; projected balance also subtracts pending requests.') }}</div>
             </div>
             <form method="GET" action="{{ route('admin.workforce.my-leave') }}" class="d-flex gap-2">
-                <input type="number" name="year" class="form-control" min="2000" max="2100" value="{{ $year }}" style="max-width: 120px">
+                <label class="visually-hidden" for="leaveYear">{{ __('Year') }}</label><input id="leaveYear" type="number" name="year" class="form-control" min="2000" max="2100" value="{{ $year }}" style="max-width: 120px">
                 <button class="btn btn-light border">{{ __('View year') }}</button>
             </form>
         </div>
@@ -83,8 +83,8 @@
                             <form method="POST" action="{{ route('admin.workforce.leave.request') }}" data-submit-loading>
                                 @csrf
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">{{ __('Leave type') }}</label>
-                                    <select name="employee_leave_type_id" class="form-select @error('employee_leave_type_id') is-invalid @enderror" required>
+                                    <label class="form-label fw-semibold" for="leaveRequestType">{{ __('Leave type') }}</label>
+                                    <select id="leaveRequestType" name="employee_leave_type_id" aria-required="true" class="form-select @error('employee_leave_type_id') is-invalid @enderror" required>
                                         <option value="">{{ __('Select leave type') }}</option>
                                         @foreach($leaveTypes as $type)
                                             <option value="{{ $type->id }}" @selected((string)old('employee_leave_type_id') === (string)$type->id)>{{ $type->displayName() }} · {{ $type->code }}</option>
@@ -94,19 +94,19 @@
                                 </div>
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label class="form-label fw-semibold">{{ __('Starts on') }}</label>
-                                        <input type="date" name="starts_on" class="form-control @error('starts_on') is-invalid @enderror" value="{{ old('starts_on') }}" required>
+                                        <label class="form-label fw-semibold" for="leaveStartsOn">{{ __('Starts on') }}</label>
+                                        <input id="leaveStartsOn" type="date" name="starts_on" aria-required="true" class="form-control @error('starts_on') is-invalid @enderror" value="{{ old('starts_on') }}" required>
                                         @error('starts_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label fw-semibold">{{ __('Ends on') }}</label>
-                                        <input type="date" name="ends_on" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" required>
+                                        <label class="form-label fw-semibold" for="leaveEndsOn">{{ __('Ends on') }}</label>
+                                        <input id="leaveEndsOn" type="date" name="ends_on" aria-required="true" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" required>
                                         @error('ends_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                 </div>
                                 <div class="mt-3">
-                                    <label class="form-label fw-semibold">{{ __('Reason') }}</label>
-                                    <textarea name="reason" rows="4" class="form-control @error('reason') is-invalid @enderror" maxlength="2000" placeholder="{{ __('Optional leave request context') }}">{{ old('reason') }}</textarea>
+                                    <label class="form-label fw-semibold" for="leaveReason">{{ __('Reason') }}</label>
+                                    <textarea id="leaveReason" name="reason" rows="4" class="form-control @error('reason') is-invalid @enderror" maxlength="2000" placeholder="{{ __('Optional leave request context') }}">{{ old('reason') }}</textarea>
                                     @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <button class="btn btn-primary w-100 btn-text-icon mt-3" data-loading-text="{{ __('Submitting...') }}"><i class="mdi mdi-calendar-plus"></i><span>{{ __('Submit leave request') }}</span></button>
