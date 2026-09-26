@@ -32,12 +32,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.workforce.corrections.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                    <input type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, or reason') }}">
+                    <label class="form-label fw-semibold" for="workforceCorrectionSearch">{{ __('Search') }}</label>
+                    <input id="workforceCorrectionSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, or reason') }}">
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Review status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceCorrectionStatus">{{ __('Review status') }}</label>
+                    <select id="workforceCorrectionStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All requests') }}</option>
                         @foreach(\App\Models\EmployeeAttendanceCorrection::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -45,8 +45,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceCorrectionPerPage">{{ __('Per page') }}</label>
+                    <select id="workforceCorrectionPerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([20,40,80] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
