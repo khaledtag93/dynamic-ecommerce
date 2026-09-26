@@ -92,7 +92,7 @@ class LeaveController extends Controller
         $typeId = (int) $request->integer('type');
 
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => mb_substr(trim((string) $request->string('search')), 0, 100),
             'status' => array_key_exists($status, EmployeeLeaveRequest::statusOptions()) ? $status : '',
             'type' => $typeId > 0 ? $typeId : 0,
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
@@ -101,14 +101,17 @@ class LeaveController extends Controller
         $requests = EmployeeLeaveRequest::query()
             ->with(['employee.user', 'leaveType', 'reviewedBy'])
             ->when($filters['search'], function ($query, $search) {
-                $query->where(function ($inner) use ($search) {
-                    $inner->where('reason', 'like', "%{$search}%")
-                        ->orWhereHas('employee', function ($employeeQuery) use ($search) {
-                            $employeeQuery->where('employee_code', 'like', "%{$search}%")
-                                ->orWhere('department', 'like', "%{$search}%")
-                                ->orWhereHas('user', function ($userQuery) use ($search) {
-                                    $userQuery->where('name', 'like', "%{$search}%")
-                                        ->orWhere('email', 'like', "%{$search}%");
+                $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+                $like = '%' . $escapedSearch . '%';
+
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('reason', 'like', $like)
+                        ->orWhereHas('employee', function ($employeeQuery) use ($like) {
+                            $employeeQuery->where('employee_code', 'like', $like)
+                                ->orWhere('department', 'like', $like)
+                                ->orWhereHas('user', function ($userQuery) use ($like) {
+                                    $userQuery->where('name', 'like', $like)
+                                        ->orWhere('email', 'like', $like);
                                 });
                         });
                 });
