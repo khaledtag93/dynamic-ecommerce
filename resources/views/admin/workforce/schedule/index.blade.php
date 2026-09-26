@@ -39,12 +39,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.workforce.schedule.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                    <input type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, role, or location') }}">
+                    <label class="form-label fw-semibold" for="workforceScheduleSearch">{{ __('Search') }}</label>
+                    <input id="workforceScheduleSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, role, or location') }}">
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Shift status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceScheduleStatus">{{ __('Shift status') }}</label>
+                    <select id="workforceScheduleStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All shifts') }}</option>
                         @foreach(\App\Models\EmployeeWorkShift::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -52,8 +52,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Department') }}</label>
-                    <select name="department" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceScheduleDepartment">{{ __('Department') }}</label>
+                    <select id="workforceScheduleDepartment" name="department" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All departments') }}</option>
                         @foreach($departments as $department)
                             <option value="{{ $department }}" @selected($filters['department'] === $department)>{{ $department }}</option>
@@ -61,16 +61,16 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('From date') }}</label>
-                    <input type="date" name="date_from" value="{{ $filters['date_from'] }}" class="form-control" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceScheduleFrom">{{ __('From date') }}</label>
+                    <input id="workforceScheduleFrom" type="date" name="date_from" value="{{ $filters['date_from'] }}" class="form-control" data-live-filter-control>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('To date') }}</label>
-                    <input type="date" name="date_to" value="{{ $filters['date_to'] }}" class="form-control" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceScheduleTo">{{ __('To date') }}</label>
+                    <input id="workforceScheduleTo" type="date" name="date_to" value="{{ $filters['date_to'] }}" class="form-control" data-live-filter-control>
                 </div>
                 <div>
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="workforceSchedulePerPage">{{ __('Per page') }}</label>
+                    <select id="workforceSchedulePerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([20,40,80] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
