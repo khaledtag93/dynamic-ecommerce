@@ -40,7 +40,8 @@ class GrowthWorkspaceV2Test extends TestCase
         $source = file_get_contents(resource_path('views/admin/growth/rule-form.blade.php'));
 
         $this->assertStringContainsString("__('Linked campaign')", $source);
-        $this->assertStringContainsString('<select name="rule_key"', $source);
+        $this->assertStringContainsString('name="rule_key"', $source);
+        $this->assertStringContainsString('id="growthRuleCampaign"', $source);
         $this->assertStringContainsString('$campaign->campaign_key', $source);
         $this->assertStringNotContainsString('placeholder="returning_customer_followup"', $source);
     }
