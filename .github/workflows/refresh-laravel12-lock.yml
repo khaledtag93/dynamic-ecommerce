@@ -1,0 +1,47 @@
+name: Refresh Laravel 12 Upgrade Lock
+
+on:
+  push:
+    branches:
+      - security/laravel12-upgrade
+    paths:
+      - composer.json
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: security/laravel12-upgrade
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, dom, xml, xmlwriter, pdo_mysql, bcmath, intl, curl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Resolve supported framework dependency set
+        run: composer update --with-all-dependencies --no-interaction --no-scripts --no-progress
+
+      - name: Audit resolved dependencies
+        run: composer audit --locked --no-interaction
+
+      - name: Commit generated lock
+        run: |
+          if git diff --quiet -- composer.lock; then
+            echo "composer.lock already matches composer.json"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add composer.lock
+          git commit -m "build: resolve Laravel 12 security upgrade"
+          git push origin HEAD:security/laravel12-upgrade
