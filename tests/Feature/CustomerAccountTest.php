@@ -194,11 +194,15 @@ class CustomerAccountTest extends TestCase
             'unit_price' => 100, 'quantity' => 1, 'meta' => ['product_slug' => $product->slug],
         ]);
 
-        $this->actingAs($user)->get(route('checkout.index'))
-            ->assertOk()
-            ->assertSee('name="shipping_address_line_1" value="Original Shipping Street"', false)
-            ->assertSee('name="billing_address_line_1" value="Original Billing Street"', false)
-            ->assertSee('name="billing_same_as_shipping" value="0"', false)
+        $checkout = $this->actingAs($user)->get(route('checkout.index'));
+
+        $checkout->assertOk()
+            ->assertSee('name="shipping_address_line_1"', false)
+            ->assertSee('value="Original Shipping Street"', false)
+            ->assertSee('name="billing_address_line_1"', false)
+            ->assertSee('value="Original Billing Street"', false)
+            ->assertSee('name="billing_same_as_shipping"', false)
+            ->assertSee('value="0"', false)
             ->assertSee('data-checkout-new-address', false)
             ->assertSee('data-checkout-saved-address', false)
             ->assertSee('Original Shipping Street');
