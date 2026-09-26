@@ -157,9 +157,13 @@ class Index extends Component
         $query = Brand::query()
             ->withCount('products')
             ->when($this->search !== '', function ($query) {
-                $query->where(function ($inner) {
-                    $inner->where('name', 'like', '%' . trim($this->search) . '%')
-                        ->orWhere('slug', 'like', '%' . trim($this->search) . '%');
+                $search = mb_substr(trim((string) $this->search), 0, 100);
+                $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+                $like = "%{$escaped}%";
+
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('name', 'like', $like)
+                        ->orWhere('slug', 'like', $like);
                 });
             })
             ->when($this->visibility !== '', function ($query) {
