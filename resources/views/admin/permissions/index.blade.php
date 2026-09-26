@@ -266,12 +266,12 @@
                                             @method('PATCH')
                                             <div class="row g-3">
                                                 <div class="col-md-5">
-                                                    <label class="form-label fw-semibold">{{ __('Role name') }}</label>
-                                                    <input type="text" name="name" value="{{ $role->name }}" class="form-control" maxlength="120" required>
+                                                    <label class="form-label fw-semibold" for="roleName-{{ $role->id }}">{{ __('Role name') }}</label>
+                                                    <input id="roleName-{{ $role->id }}" type="text" name="name" value="{{ $role->name }}" class="form-control" maxlength="120" required aria-required="true">
                                                 </div>
                                                 <div class="col-md-7">
-                                                    <label class="form-label fw-semibold">{{ __('Description') }}</label>
-                                                    <input type="text" name="description" value="{{ $role->description }}" maxlength="1000" class="form-control">
+                                                    <label class="form-label fw-semibold" for="roleDescription-{{ $role->id }}">{{ __('Description') }}</label>
+                                                    <input id="roleDescription-{{ $role->id }}" type="text" name="description" value="{{ $role->description }}" maxlength="1000" class="form-control">
                                                 </div>
                                             </div>
 
@@ -335,16 +335,16 @@
                         <form method="POST" action="{{ route('admin.permissions.custom.store') }}" class="row g-3" data-submit-loading>
                             @csrf
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Permission name') }}</label>
-                                <input type="text" name="name" maxlength="120" class="form-control" required>
+                                <label class="form-label fw-semibold" for="customPermissionName">{{ __('Permission name') }}</label>
+                                <input id="customPermissionName" type="text" name="name" maxlength="120" class="form-control" required aria-required="true">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">{{ __('Group') }}</label>
-                                <input type="text" name="group" maxlength="50" class="form-control" placeholder="{{ __('Custom') }}">
+                                <label class="form-label fw-semibold" for="customPermissionGroup">{{ __('Group') }}</label>
+                                <input id="customPermissionGroup" type="text" name="group" maxlength="50" class="form-control" placeholder="{{ __('Custom') }}">
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-semibold">{{ __('Description') }}</label>
-                                <textarea name="description" rows="3" maxlength="1000" class="form-control"></textarea>
+                                <label class="form-label fw-semibold" for="customPermissionDescription">{{ __('Description') }}</label>
+                                <textarea id="customPermissionDescription" name="description" rows="3" maxlength="1000" class="form-control"></textarea>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-outline-primary" data-loading-text="{{ __('Creating...') }}">{{ __('Create permission') }}</button>
