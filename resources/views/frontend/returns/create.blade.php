@@ -46,12 +46,12 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4 col-lg-2">
-                                    <label class="form-label fw-semibold">{{ __('Quantity') }}</label>
-                                    <input type="number" min="0" max="{{ $remaining }}" name="items[{{ $index }}][quantity]" value="{{ old("items.$index.quantity", 0) }}" class="form-control" {{ $remaining < 1 ? 'disabled' : '' }}>
+                                    <label class="form-label fw-semibold" for="returnQuantity-{{ $item->id }}">{{ __('Quantity') }}</label>
+                                    <input id="returnQuantity-{{ $item->id }}" type="number" min="0" max="{{ $remaining }}" name="items[{{ $index }}][quantity]" value="{{ old("items.$index.quantity", 0) }}" class="form-control" {{ $remaining < 1 ? 'disabled' : '' }}>
                                 </div>
                                 <div class="col-sm-8 col-lg-3">
-                                    <label class="form-label fw-semibold">{{ __('Reason') }}</label>
-                                    <select name="items[{{ $index }}][reason_code]" class="form-select" {{ $remaining < 1 ? 'disabled' : '' }}>
+                                    <label class="form-label fw-semibold" for="returnReason-{{ $item->id }}">{{ __('Reason') }}</label>
+                                    <select id="returnReason-{{ $item->id }}" name="items[{{ $index }}][reason_code]" class="form-select" {{ $remaining < 1 ? 'disabled' : '' }}>
                                         <option value="">{{ __('Select reason') }}</option>
                                         @foreach($reasonOptions as $value => $label)
                                             <option value="{{ $value }}" @selected(old("items.$index.reason_code") === $value)>{{ $label }}</option>
@@ -59,16 +59,16 @@
                                     </select>
                                 </div>
                                 <div class="col-lg-3">
-                                    <label class="form-label fw-semibold">{{ __('Requested resolution') }}</label>
-                                    <select name="items[{{ $index }}][requested_resolution]" class="form-select" {{ $remaining < 1 ? 'disabled' : '' }}>
+                                    <label class="form-label fw-semibold" for="returnResolution-{{ $item->id }}">{{ __('Requested resolution') }}</label>
+                                    <select id="returnResolution-{{ $item->id }}" name="items[{{ $index }}][requested_resolution]" class="form-select" {{ $remaining < 1 ? 'disabled' : '' }}>
                                         @foreach($resolutionOptions as $value => $label)
                                             <option value="{{ $value }}" @selected(old("items.$index.requested_resolution", 'refund') === $value)>{{ $label }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold">{{ __('Reason details (optional)') }}</label>
-                                    <textarea name="items[{{ $index }}][reason_details]" rows="2" maxlength="1000" class="form-control" {{ $remaining < 1 ? 'disabled' : '' }}>{{ old("items.$index.reason_details") }}</textarea>
+                                    <label class="form-label fw-semibold" for="returnReasonDetails-{{ $item->id }}">{{ __('Reason details (optional)') }}</label>
+                                    <textarea id="returnReasonDetails-{{ $item->id }}" name="items[{{ $index }}][reason_details]" rows="2" maxlength="1000" class="form-control" {{ $remaining < 1 ? 'disabled' : '' }}>{{ old("items.$index.reason_details") }}</textarea>
                                 </div>
                             </div>
                         </article>
@@ -77,8 +77,8 @@
             </div>
 
             <div class="lc-card p-4 mb-4">
-                <label class="form-label fw-semibold">{{ __('Additional return notes (optional)') }}</label>
-                <textarea name="customer_notes" rows="4" maxlength="2000" class="form-control">{{ old('customer_notes') }}</textarea>
+                <label class="form-label fw-semibold" for="returnCustomerNotes">{{ __('Additional return notes (optional)') }}</label>
+                <textarea id="returnCustomerNotes" name="customer_notes" rows="4" maxlength="2000" class="form-control">{{ old('customer_notes') }}</textarea>
                 <div class="text-muted small mt-2">{{ __('Submitting a return request does not automatically refund money or restore inventory. The store reviews the request first.') }}</div>
             </div>
 
