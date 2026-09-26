@@ -27,12 +27,12 @@
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.returns.index') }}" class="row g-3 align-items-end" data-live-filter>
                 <div class="col-lg-5">
-                    <label class="form-label fw-semibold">{{ __('Search') }}</label>
-                    <input type="search" name="search" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Return reference, order, customer, or email') }}">
+                    <label class="form-label fw-semibold" for="returnSearch">{{ __('Search') }}</label>
+                    <input id="returnSearch" type="search" name="search" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Return reference, order, customer, or email') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">{{ __('Status') }}</label>
-                    <select name="status" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="returnStatus">{{ __('Status') }}</label>
+                    <select id="returnStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
                         @foreach($statusOptions as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
@@ -40,8 +40,8 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">{{ __('Per page') }}</label>
-                    <select name="per_page" class="form-select" data-live-filter-control>
+                    <label class="form-label fw-semibold" for="returnPerPage">{{ __('Per page') }}</label>
+                    <select id="returnPerPage" name="per_page" class="form-select" data-live-filter-control>
                         @foreach([20,40,80] as $size)
                             <option value="{{ $size }}" @selected((int)$filters['per_page'] === $size)>{{ $size }}</option>
                         @endforeach
