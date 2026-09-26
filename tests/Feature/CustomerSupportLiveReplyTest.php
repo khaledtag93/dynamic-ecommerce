@@ -88,6 +88,20 @@ class CustomerSupportLiveReplyTest extends TestCase
         );
     }
 
+
+    public function test_support_create_live_submission_has_duplicate_guard_and_accessible_busy_state(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/support/create.blade.php'));
+
+        $this->assertStringContainsString("if (form.dataset.pending === '1') return;", $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString("delete form.dataset.pending;", $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("button.dataset.loadingText || @json(__('Sending request...'))", $view);
+    }
+
     private function caseFor(User $customer, string $status): SupportCase
     {
         return SupportCase::query()->create([

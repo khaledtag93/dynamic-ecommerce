@@ -64,9 +64,31 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
         event.stopImmediatePropagation();
+        if (form.dataset.pending === '1') return;
+
+        form.dataset.pending = '1';
+        form.setAttribute('aria-busy', 'true');
+
         const button = event.submitter || form.querySelector('button[type="submit"]');
-        if (button) button.disabled = true;
+        if (button) {
+            button.dataset.originalText = button.textContent;
+            button.textContent = button.dataset.loadingText || @json(__('Sending request...'));
+            button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
+        }
         show('');
+
+        const release = () => {
+            delete form.dataset.pending;
+            form.removeAttribute('aria-busy');
+
+            if (button) {
+                button.disabled = false;
+                button.removeAttribute('aria-disabled');
+                button.textContent = button.dataset.originalText || @json(__('Create support request'));
+                delete button.dataset.originalText;
+            }
+        };
 
         try {
             const response = await fetch(form.action, {
@@ -85,10 +107,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error(firstError || payload.message || @json(__('Could not create the support request. Please review the form and try again.')));
             }
             show(payload.message || @json(__('Request submitted successfully.')));
-            if (payload.redirect_url) window.location.assign(payload.redirect_url);
+            if (payload.redirect_url) {
+                window.location.assign(payload.redirect_url);
+                return;
+            }
+
+            release();
         } catch (error) {
             show(error.message, true);
-            if (button) button.disabled = false;
+            release();
         }
     }, true);
 });
