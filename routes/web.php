@@ -84,7 +84,46 @@ Route::get('/locale/{locale}', function (Request $request, string $locale) {
 
     session(['locale' => $locale]);
 
-    return redirect()->to($request->query('redirect', url()->previous() ?: route('frontend.home')));
+    $fallback = url()->previous() ?: route('frontend.home');
+    $requestedRedirect = $request->query('redirect');
+    $redirectTarget = $fallback;
+
+    if (is_string($requestedRedirect) && $requestedRedirect !== '') {
+        $parts = parse_url($requestedRedirect);
+
+        if (is_array($parts)) {
+            $hasAuthority = isset($parts['scheme'])
+                || isset($parts['host'])
+                || isset($parts['user'])
+                || isset($parts['pass']);
+
+            $isSafeRelativePath = !$hasAuthority
+                && str_starts_with($requestedRedirect, '/')
+                && !str_starts_with($requestedRedirect, '//');
+
+            if ($isSafeRelativePath) {
+                $redirectTarget = $requestedRedirect;
+            } elseif (
+                isset($parts['scheme'], $parts['host'])
+                && !isset($parts['user'], $parts['pass'])
+                && in_array(strtolower($parts['scheme']), ['http', 'https'], true)
+            ) {
+                $requestOrigin = parse_url($request->getSchemeAndHttpHost());
+
+                $sameScheme = isset($requestOrigin['scheme'])
+                    && strcasecmp($parts['scheme'], $requestOrigin['scheme']) === 0;
+                $sameHost = isset($requestOrigin['host'])
+                    && strcasecmp($parts['host'], $requestOrigin['host']) === 0;
+                $samePort = ($parts['port'] ?? null) === ($requestOrigin['port'] ?? null);
+
+                if ($sameScheme && $sameHost && $samePort) {
+                    $redirectTarget = $requestedRedirect;
+                }
+            }
+        }
+    }
+
+    return redirect()->to($redirectTarget);
 })->name('locale.switch');
 
 /*
