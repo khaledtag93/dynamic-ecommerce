@@ -5605,5 +5605,8 @@
     "The review will become visible on the storefront immediately.": "ستصبح المراجعة ظاهرة في واجهة المتجر فورًا.",
     "Reject review": "رفض المراجعة",
     "Reject and hide this review?": "هل تريد رفض هذه المراجعة وإخفاءها؟",
-    "The review will remain hidden from the storefront and the moderation note will be recorded.": "ستظل المراجعة مخفية من واجهة المتجر وسيتم تسجيل ملاحظة الإشراف."
+    "The review will remain hidden from the storefront and the moderation note will be recorded.": "ستظل المراجعة مخفية من واجهة المتجر وسيتم تسجيل ملاحظة الإشراف.",
+    "Remove all Growth validation test data?": "هل تريد إزالة جميع بيانات الاختبار الخاصة بالتحقق من محرك النمو؟",
+    "This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.": "سيؤدي هذا إلى إزالة عملاء وطلبات وأحداث السلوك التجريبية المعلّمة التي تم إنشاؤها للتحقق من محرك النمو. بيانات العملاء الفعلية في بيئة الإنتاج ليست ضمن عملية تنظيف بيانات الاختبار هذه.",
+    "Keep test data": "الاحتفاظ ببيانات الاختبار"
 }
