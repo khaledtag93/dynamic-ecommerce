@@ -186,7 +186,7 @@ class WorkforceFoundationTest extends TestCase
 
         EmployeeAttendanceSession::query()->create([
             'employee_profile_id' => $employee->id,
-            'clock_in_at' => now()->subHour(),
+            'clock_in_at' => now(),
             'source' => 'admin',
             'clock_in_notes' => '<script>attendance note</script>',
         ]);
