@@ -28,12 +28,12 @@
             <div id="promotion-editor-panel-rule" role="tabpanel" aria-labelledby="promotion-editor-tab-rule" data-admin-section-panel="rule">
                 <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label">{{ __('Name') }}</label>
-                <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $promotion->name) }}" required>
+                <label class="form-label" for="promotionName">{{ __('Name') }}</label>
+                <input id="promotionName" type="text" name="name" aria-required="true" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $promotion->name) }}" required>
                 @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-6">
-                <label class="form-label">{{ __('Type') }}</label>
+                <label class="form-label" for="promotionType">{{ __('Type') }}</label>
                 <select name="type" id="promotionType" class="form-select @error('type') is-invalid @enderror">
                     @foreach([
                         'order_percentage' => __('Order percentage'),
@@ -47,8 +47,8 @@
                 @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-4">
-                <label class="form-label">{{ __('Discount value') }}</label>
-                <input type="number" step="0.01" name="discount_value" class="form-control @error('discount_value') is-invalid @enderror" value="{{ old('discount_value', $promotion->discount_value ?? 0) }}">
+                <label class="form-label" for="promotionDiscountValue">{{ __('Discount value') }}</label>
+                <input id="promotionDiscountValue" type="number" step="0.01" name="discount_value" class="form-control @error('discount_value') is-invalid @enderror" value="{{ old('discount_value', $promotion->discount_value ?? 0) }}">
                 @error('discount_value')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
                 </div>
@@ -57,29 +57,29 @@
             <div id="promotion-editor-panel-eligibility" role="tabpanel" aria-labelledby="promotion-editor-tab-eligibility" data-admin-section-panel="eligibility">
                 <div class="row g-3">
             <div class="col-md-4">
-                <label class="form-label">{{ __('Category') }}</label>
-                <select name="category_id" class="form-select @error('category_id') is-invalid @enderror"><option value="">{{ __('All categories') }}</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) old('category_id', $promotion->category_id) === (string) $category->id)>{{ $category->name }}</option>@endforeach</select>
+                <label class="form-label" for="promotionCategory">{{ __('Category') }}</label>
+                <select id="promotionCategory" name="category_id" class="form-select @error('category_id') is-invalid @enderror"><option value="">{{ __('All categories') }}</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) old('category_id', $promotion->category_id) === (string) $category->id)>{{ $category->name }}</option>@endforeach</select>
                 @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 @if($categories->isEmpty())
                     <div class="section-note">{{ __('No categories available yet. The promotion can still apply at order level.') }}</div>
                 @endif
             </div>
             <div class="col-md-4">
-                <label class="form-label">{{ __('Min subtotal') }}</label>
-                <input type="number" step="0.01" name="min_subtotal" class="form-control @error('min_subtotal') is-invalid @enderror" value="{{ old('min_subtotal', $promotion->min_subtotal) }}">
+                <label class="form-label" for="promotionMinSubtotal">{{ __('Min subtotal') }}</label>
+                <input id="promotionMinSubtotal" type="number" step="0.01" name="min_subtotal" class="form-control @error('min_subtotal') is-invalid @enderror" value="{{ old('min_subtotal', $promotion->min_subtotal) }}">
                 @error('min_subtotal')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-3 promotion-buy-x-field"><label class="form-label">{{ __('Buy qty') }}</label><input type="number" name="buy_quantity" class="form-control @error('buy_quantity') is-invalid @enderror" value="{{ old('buy_quantity', $promotion->buy_quantity) }}">@error('buy_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-            <div class="col-md-3 promotion-buy-x-field"><label class="form-label">{{ __('Get qty') }}</label><input type="number" name="get_quantity" class="form-control @error('get_quantity') is-invalid @enderror" value="{{ old('get_quantity', $promotion->get_quantity) }}">@error('get_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-3 promotion-buy-x-field"><label class="form-label" for="promotionBuyQuantity">{{ __('Buy qty') }}</label><input id="promotionBuyQuantity" type="number" name="buy_quantity" class="form-control @error('buy_quantity') is-invalid @enderror" value="{{ old('buy_quantity', $promotion->buy_quantity) }}">@error('buy_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-3 promotion-buy-x-field"><label class="form-label" for="promotionGetQuantity">{{ __('Get qty') }}</label><input id="promotionGetQuantity" type="number" name="get_quantity" class="form-control @error('get_quantity') is-invalid @enderror" value="{{ old('get_quantity', $promotion->get_quantity) }}">@error('get_quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
                 </div>
             </div>
 
             <div id="promotion-editor-panel-schedule" role="tabpanel" aria-labelledby="promotion-editor-tab-schedule" data-admin-section-panel="schedule">
                 <div class="row g-3">
-            <div class="col-md-3"><label class="form-label">{{ __('Priority') }}</label><input type="number" name="priority" class="form-control @error('priority') is-invalid @enderror" value="{{ old('priority', $promotion->priority ?? 0) }}">@error('priority')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-            <div class="col-md-3"><label class="form-label">{{ __('Active') }}</label><select name="is_active" class="form-select @error('is_active') is-invalid @enderror"><option value="1" @selected((string) old('is_active', (int) ($promotion->is_active ?? true)) === '1')>{{ __('Yes') }}</option><option value="0" @selected((string) old('is_active', (int) ($promotion->is_active ?? true)) === '0')>{{ __('No') }}</option></select>@error('is_active')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-            <div class="col-md-6"><label class="form-label">{{ __('Starts at') }}</label><input type="datetime-local" name="starts_at" class="form-control @error('starts_at') is-invalid @enderror" value="{{ old('starts_at', optional($promotion->starts_at)->format('Y-m-d\TH:i')) }}">@error('starts_at')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
-            <div class="col-md-6"><label class="form-label">{{ __('Ends at') }}</label><input type="datetime-local" name="ends_at" class="form-control @error('ends_at') is-invalid @enderror" value="{{ old('ends_at', optional($promotion->ends_at)->format('Y-m-d\TH:i')) }}">@error('ends_at')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-3"><label class="form-label" for="promotionPriority">{{ __('Priority') }}</label><input id="promotionPriority" type="number" name="priority" class="form-control @error('priority') is-invalid @enderror" value="{{ old('priority', $promotion->priority ?? 0) }}">@error('priority')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-3"><label class="form-label" for="promotionActive">{{ __('Active') }}</label><select id="promotionActive" name="is_active" class="form-select @error('is_active') is-invalid @enderror"><option value="1" @selected((string) old('is_active', (int) ($promotion->is_active ?? true)) === '1')>{{ __('Yes') }}</option><option value="0" @selected((string) old('is_active', (int) ($promotion->is_active ?? true)) === '0')>{{ __('No') }}</option></select>@error('is_active')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-6"><label class="form-label" for="promotionStartsAt">{{ __('Starts at') }}</label><input id="promotionStartsAt" type="datetime-local" name="starts_at" class="form-control @error('starts_at') is-invalid @enderror" value="{{ old('starts_at', optional($promotion->starts_at)->format('Y-m-d\TH:i')) }}">@error('starts_at')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+            <div class="col-md-6"><label class="form-label" for="promotionEndsAt">{{ __('Ends at') }}</label><input id="promotionEndsAt" type="datetime-local" name="ends_at" class="form-control @error('ends_at') is-invalid @enderror" value="{{ old('ends_at', optional($promotion->ends_at)->format('Y-m-d\TH:i')) }}">@error('ends_at')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
                 </div>
             </div>
 
