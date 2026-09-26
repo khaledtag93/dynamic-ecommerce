@@ -2089,7 +2089,7 @@
     "Limited offers on phones, laptops, accessories, and everyday tech.": "عروض محدودة على الموبايلات واللابتوبات والإكسسوارات والأجهزة اليومية.",
     "Limited-time offer": "عرض لفترة محدودة",
     "Limits": "الحدود",
-    "Limits & eligibility": "الحدود والأهلية",
+    "Limits & eligibility": "الحدود وشروط الاستحقاق",
     "Line discount": "خصم السطر",
     "Line discounts": "خصومات السطور",
     "Line total": "إجمالي البند",
@@ -5665,5 +5665,6 @@
     "Signature item": "منتج مميز",
     "New arrival": "وصل حديثًا",
     "Featured": "مميز",
-    "The link must use a safe web, email, phone, relative, or anchor destination.": "يجب أن يستخدم الرابط وجهة آمنة للويب أو البريد الإلكتروني أو الهاتف أو رابطًا نسبيًا أو رابطًا داخل الصفحة."
+    "The link must use a safe web, email, phone, relative, or anchor destination.": "يجب أن يستخدم الرابط وجهة آمنة للويب أو البريد الإلكتروني أو الهاتف أو رابطًا نسبيًا أو رابطًا داخل الصفحة.",
+    "Loading...": "جارٍ التحميل..."
 }
