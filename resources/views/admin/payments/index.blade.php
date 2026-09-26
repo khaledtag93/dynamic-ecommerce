@@ -23,7 +23,7 @@
         <form method="GET" action="{{ route('admin.payments.index') }}" class="admin-filter-grid" data-live-filter>
             <div>
                 <label class="form-label fw-semibold" for="paymentSearch">{{ __('Search') }}</label>
-                <input id="paymentSearch" type="search" class="form-control" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" placeholder="{{ __('Reference, order number, provider') }}">
+                <input id="paymentSearch" type="search" class="form-control" name="search" maxlength="100" data-live-search autocomplete="off" value="{{ $filters['search'] }}" placeholder="{{ __('Reference, order number, provider') }}">
             </div>
             <div>
                 <label class="form-label fw-semibold" for="paymentStatus">{{ __('Status') }}</label>

@@ -122,7 +122,7 @@
         <form method="GET" action="{{ route('admin.inventory.index') }}" class="row g-3 align-items-end" data-live-filter>
             <div class="col-lg-4">
                 <label class="form-label fw-semibold" for="inventorySearch">{{ __('Search movements') }}</label>
-                <input id="inventorySearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Product, SKU, order number, or reason') }}">
+                <input id="inventorySearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Product, SKU, order number, or reason') }}">
             </div>
             <div class="col-md-4 col-lg-2">
                 <label class="form-label fw-semibold" for="inventoryMovementType">{{ __('Movement type') }}</label>

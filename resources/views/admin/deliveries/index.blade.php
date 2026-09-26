@@ -29,7 +29,7 @@
     <form method="GET" action="{{ route('admin.deliveries.index') }}" class="row g-3 align-items-end" data-live-filter>
         <div class="col-lg-4">
             <label class="form-label fw-semibold" for="deliverySearch">{{ __('Search') }}</label>
-            <input id="deliverySearch" type="search" name="search" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Order, customer, tracking, courier') }}">
+            <input id="deliverySearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Order, customer, tracking, courier') }}">
         </div>
         <div class="col-md-3">
             <label class="form-label fw-semibold" for="deliveryStatus">{{ __('Delivery status') }}</label>

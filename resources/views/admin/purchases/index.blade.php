@@ -32,7 +32,7 @@
             <form method="GET" action="{{ route('admin.purchases.index') }}" class="row g-3 align-items-end" data-live-filter>
                 <div class="col-lg-4">
                     <label class="form-label fw-semibold" for="purchaseSearch">{{ __('Search purchases') }}</label>
-                    <input id="purchaseSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Reference, supplier, or company') }}">
+                    <input id="purchaseSearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Reference, supplier, or company') }}">
                 </div>
                 <div class="col-md-4 col-lg-2">
                     <label class="form-label fw-semibold" for="purchaseStatus">{{ __('Status') }}</label>

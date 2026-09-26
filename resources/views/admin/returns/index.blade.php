@@ -28,7 +28,7 @@
             <form method="GET" action="{{ route('admin.returns.index') }}" class="row g-3 align-items-end" data-live-filter>
                 <div class="col-lg-5">
                     <label class="form-label fw-semibold" for="returnSearch">{{ __('Search') }}</label>
-                    <input id="returnSearch" type="search" name="search" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Return reference, order, customer, or email') }}">
+                    <input id="returnSearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" class="form-control" value="{{ $filters['search'] }}" placeholder="{{ __('Return reference, order, customer, or email') }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold" for="returnStatus">{{ __('Status') }}</label>

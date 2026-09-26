@@ -62,7 +62,7 @@
         <form method="GET" action="{{ route('admin.orders.index') }}" data-live-filter class="admin-filter-grid">
             <div>
                 <label class="form-label fw-semibold" for="orderSearch">{{ __('Search') }}</label>
-                <input id="orderSearch" type="search" name="search" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Order #, customer name, email, phone, coupon') }}">
+                <input id="orderSearch" type="search" name="search" maxlength="100" data-live-search autocomplete="off" value="{{ $filters['search'] }}" class="form-control" placeholder="{{ __('Order #, customer name, email, phone, coupon') }}">
             </div>
             <div>
                 <label class="form-label fw-semibold" for="orderStatusFilter">{{ __('Status') }}</label>
