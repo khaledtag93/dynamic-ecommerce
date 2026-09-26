@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Operations\HeartbeatService;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -92,8 +93,8 @@ class OperationsHealthCommand extends Command
             ];
         }
 
-        $lastSeen = now()->parse($heartbeat->last_seen_at);
-        $age = max(0, now()->diffInSeconds($lastSeen, true));
+        $lastSeen = Carbon::parse($heartbeat->last_seen_at);
+        $age = max(0, (int) now()->diffInSeconds($lastSeen, true));
         $healthy = $age <= $maxAge;
 
         return [
