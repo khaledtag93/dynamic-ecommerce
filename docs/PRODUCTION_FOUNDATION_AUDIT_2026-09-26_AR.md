@@ -1,7 +1,8 @@
 # Dynamic — المراجعة الشاملة وخطة الوصول للإنتاج
 
 تاريخ المراجعة: 26 سبتمبر 2026، بتوقيت القاهرة.
-نسخة الكود المراجعة: `e0420a31986ef11cb23c22b1b75dc56078a2389a`، فرع `v42-clean-baseline`.
+نسخة المراجعة الأصلية: `e0420a31986ef11cb23c22b1b75dc56078a2389a` على `v42-clean-baseline`.
+تحديث التنفيذ الأمني في 26 سبتمبر 2026: فرع rehearsal `sec03-framework-upgrade` وصل إلى `81ccfdc675a587431547ed0e4dde3a8c49968ac9`، CI أخضر، ونُشر على QAS بنجاح عند `81ccfdc6`.
 هذا هو مرجع الأولويات الحالي. المستندات الأقدم أدلة تاريخية؛ لا تُقرأ عباراتها مثل «التالي» أو «لم يُنفذ» بمعزل عن هذا المرجع.
 
 ## 1. الرأي التنفيذي
@@ -32,6 +33,18 @@ Dynamic تجاوز مرحلة متجر تجريبي بسيط من ناحية ا�
 حجم المصدر المحسوب: 58 Controller، 80 Service، 84 Model، 227 Blade view، 102 Migration، 88 ملف اختبار. هذه أرقام نطاق، وليست نسبة جودة أو تغطية.
 
 هذه مراجعة واسعة مبنية على الجرد وفحص المسارات والخدمات الحرجة وعينات الواجهات؛ ليست اختبار اختراق أو مراجعة سطرية لكل ملف ولا قبولاً لكل شاشة. أي مجال لم يُنفذ عليه اختبار فعلي يبقى واضحاً كـ«غير متحقق».
+
+## 2.1 تحديث hardening بعد المراجعة الأصلية — 26 سبتمبر 2026
+
+- ترقية الإطار نُفذت في branch معزول `sec03-framework-upgrade` بدلاً من المخاطرة بـ`v42-clean-baseline` مباشرة.
+- Composer lock تم توليده على platform PHP 8.3؛ الفحص الأمني للـdependencies أخضر.
+- QAS ثبت فعلياً Laravel 13.33.0 وLivewire 4.4.6 وSanctum 4.3.3 وCarbon 3.14.0.
+- Hardening CI 36214088800 نجح على `81ccfdc6` في كل المراحل، بما فيها PHPUnit وfrontend build.
+- QAS deploy عند `81ccfdc6` انتهى HTTP 200.
+- Security headers أضيفت وجرى التحقق منها على QAS: HSTS، nosniff، SAMEORIGIN، Referrer-Policy.
+- Laravel 13 request-forgery middleware الحديث مستخدم عبر wrapper التطبيق.
+- Session serialization أصبح explicit مع default `php` لحماية sessions الحالية أثناء الترقية؛ التحويل إلى JSON مؤجل إلى نافذة re-login مقصودة.
+- هذا لا يعني Production-ready: الدمج إلى working line، authenticated QAS acceptance، Paymob E2E، secret rotation evidence، DB restore rehearsal، scheduler/queue evidence ما زالت release gates.
 
 ## 3. تقييم النضج بدون نسب مضللة
 
@@ -88,10 +101,10 @@ P0: يمنع الإطلاق أو يحتاج أولوية أمنية عاجلة. 
 
 | ID | أولوية وحالة | الدليل/المشكلة | المطلوب وشرط الإغلاق |
 | --- | --- | --- | --- |
-| SEC-01 | P0؛ اعتماد متأثر مؤكد | `composer.lock`: Livewire 2.12.0؛ advisory CVE-2024-47823 يشمل <2.12.7 | تحديث dependency/lock عبر Composer وفحص advisories جميعها؛ اختبار uploads/Livewire. رقم الإصلاح المذكور ليس توصية بالاكتفاء بإصدار قديم |
+| SEC-01 | مغلق في rehearsal؛ يحتاج merge/قبول نهائي | تمت الترقية إلى Livewire 4.4.6، و`composer audit --locked` أخضر على `81ccfdc6` | الحفاظ على نفس lock أثناء الدمج وتشغيل CI/QAS النهائي؛ لا إعادة فتحه إلا إذا ظهر advisory جديد |
 | SEC-02 | P0؛ مصدر مؤكد، قابلية الاستغلال غير مختبرة | `ProductService::storeUploadedImage` وCategory upload يبنيان امتداد الملف من `getClientOriginalExtension`؛ validation الحالية تعتمد image/mimes | اشتقاق امتداد موثوق/إعادة ترميز، allowlist، منع تنفيذ الملفات في uploads؛ اختبار image MIME مع امتداد غير مسموح دون رفع payload على QAS |
-| SEC-03 | P0 إطلاق؛ lifecycle مؤكد | Laravel 10.48.29 خارج security support منذ 4 فبراير 2025 | خطة ترقية تدريجية لإصدار مدعوم مع compatibility matrix لـPHP/Livewire/UI/Sanctum؛ CI+QAS قبل الدمج |
-| SEC-04 | P1؛ مصدر مؤكد | `routes/web.php` locale route يمرر query `redirect` مباشرة إلى redirect()->to | قصر العودة على same-origin ومسار آمن؛ حالات external/protocol-relative/invalid مع fallback |
+| SEC-03 | مغلق مصدر/CI/QAS rehearsal؛ الدمج النهائي معلق | QAS يشغل Laravel 13.33.0 + PHP 8.3.33 + Livewire 4.4.6 + Sanctum 4.3.3 على `81ccfdc6`؛ Hardening CI 36214088800 أخضر | دمج نفس التغييرات إلى `v42-clean-baseline`، إعادة CI، ثم authenticated QAS acceptance قبل Production |
+| SEC-04 | منفذ ومغطى؛ قبول الدمج معلق | locale redirect hardening يقصر العودة على مسار محلي آمن مع fallback | الحفاظ على regression coverage أثناء الدمج وإعادة QAS smoke |
 | OPS-01 | P0؛ دليل الإغلاق غائب | `KNOWN_ISSUES.md`: أسرار كانت في Git history؛ إزالة .env لا تثبت rotation | يسجل المالك أسماء الخدمات وتواريخ التدوير فقط؛ تحقق إبطال القديم دون كتابة قيم أسرار |
 | PAY-01 | P0؛ تكامل غير مقبول | HMAC موجود؛ Paymob E2E بقي مفتوحاً في runbook | evidence لـpaid/failed/duplicate/late/retry ومطابقة order/payment/reservation، دون خصم/استرجاع مرتين |
 | OPS-02 | P0؛ استعادة غير مثبتة | deploy يأخذ snapshot؛ rollback يعلن أنه يعيد الكود دون DB | restore rehearsal على DB معزولة، توافق schema/code، وقت الاستعادة وفقد البيانات المقبول وخطة reconciliation |
@@ -106,7 +119,7 @@ P0: يمنع الإطلاق أو يحتاج أولوية أمنية عاجلة. 
 | LIVE-02 | P2؛ risk مصدر | POS autocomplete لا يبطل الطلب الجاري فور تقصير النص أقل من حرفين، ولا revision guard | abort فور input، response sequence check، stale result test مع شبكة بطيئة |
 | PERF-01 | P1 للتوسع؛ مصدر | CustomerAccountStatementService يجمع 4 collections عبر get ثم sort؛ date range بلا سقف. CSV يبني statement قبل stream | pagination في DB، aggregate totals مستقلة، export chunk/job؛ قياس memory/query/time لعميل كثيف |
 | VAL-01 | P1؛ مصدر | ImportController يقبل mapping string وjson_decode دون JSON validation ويقرأ key اختيارياً مباشرة | validation لـJSON/schema/type، معالجة غياب المفتاح؛ لا نجاح وهمي لاستيراد غير منفذ |
-| QA-01 | P1؛ CI مؤكد النطاق | CI بلا dependency audit/browser suite/perf gate؛ اختبارات UI فيها string assertions | security audit gate وbrowser tests للرحلات الحرجة؛ upgrade migration من snapshot معقمة، وليس migrate:fresh فقط |
+| QA-01 | تحسن؛ ما زال مفتوحاً جزئياً | Composer security audit gate أصبح جزءاً من Hardening CI ونجح على Laravel 13؛ ما زالت browser/perf/sanitized-snapshot upgrade evidence غير مكتملة | إضافة browser acceptance للرحلات الحرجة وupgrade rehearsal من snapshot معقمة قبل Production |
 | ARCH-01 | P2؛ حجم مصدر | admin layout 3704 سطر وفيه CSS/JS/translation bridge؛ Growth 773 وNotificationCenter 988 سطر | استخراج seams مشتركة أثناء إصلاحات حقيقية، لا refactor شامل غير مرتبط بعيب |
 | DOC-01 | P1؛ مؤكد | master/README/CURRENT_PHASE/handoff تحمل قديم QAS وnext وسجل fallback متناقض | مرجع حديث واحد واضح وروابط من الباقي، ونقل القراءة التاريخية تحت عنوان صريح |
 | PROD-01 | P1 استراتيجية | Checkout currency=EGP؛ API routes ليست commerce API؛ لا tenant isolation مثبت | إعلان حدود النسخة: merchant/currency policy محددة. SaaS/mobile/multi-currency لا تُباع كميزات مكتملة |
