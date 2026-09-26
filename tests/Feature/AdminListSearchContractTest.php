@@ -21,6 +21,11 @@ class AdminListSearchContractTest extends TestCase
             'views/admin/promotions/index.blade.php' => 'promotionSearch',
             'views/admin/support/index.blade.php' => 'supportCaseSearch',
             'views/admin/reviews/index.blade.php' => 'reviewSearch',
+            'views/admin/workforce/employees/index.blade.php' => 'workforceEmployeeSearch',
+            'views/admin/workforce/attendance/index.blade.php' => 'workforceAttendanceSearch',
+            'views/admin/workforce/corrections/index.blade.php' => 'workforceCorrectionSearch',
+            'views/admin/workforce/leave/index.blade.php' => 'workforceLeaveSearch',
+            'views/admin/workforce/payroll/compensation/index.blade.php' => 'compensationSearch',
         ];
 
         foreach ($controls as $view => $id) {
@@ -46,6 +51,11 @@ class AdminListSearchContractTest extends TestCase
             'PromotionController.php',
             'SupportCaseController.php',
             'ProductReviewController.php',
+            'EmployeeController.php',
+            'AttendanceController.php',
+            'AttendanceCorrectionController.php',
+            'LeaveController.php',
+            'CompensationController.php',
         ] as $controller) {
             $source = file_get_contents(app_path('Http/Controllers/Admin/' . $controller));
 

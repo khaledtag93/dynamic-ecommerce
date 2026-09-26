@@ -17,7 +17,7 @@
             <form method="GET" action="{{ route('admin.workforce.payroll.compensation.index') }}" class="row g-3 align-items-end">
                 <div class="col-lg-6">
                     <label class="form-label fw-semibold" for="compensationSearch">{{ __('Search') }}</label>
-                    <input id="compensationSearch" type="search" name="search" class="form-control" value="{{ $search }}" placeholder="{{ __('Employee, code, department, or job title') }}">
+                    <input id="compensationSearch" type="search" name="search" maxlength="100" class="form-control" value="{{ $search }}" placeholder="{{ __('Employee, code, department, or job title') }}">
                 </div>
                 <div class="col-lg-3">
                     <label class="form-label fw-semibold" for="compensationBasisFilter">{{ __('Pay basis') }}</label>

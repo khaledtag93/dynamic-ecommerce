@@ -36,7 +36,7 @@
             <form method="GET" action="{{ route('admin.workforce.leave.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
                     <label class="form-label fw-semibold" for="workforceLeaveSearch">{{ __('Search') }}</label>
-                    <input id="workforceLeaveSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, or reason') }}">
+                    <input id="workforceLeaveSearch" type="search" name="search" maxlength="100" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Employee, code, department, or reason') }}">
                 </div>
                 <div>
                     <label class="form-label fw-semibold" for="workforceLeaveStatus">{{ __('Status') }}</label>

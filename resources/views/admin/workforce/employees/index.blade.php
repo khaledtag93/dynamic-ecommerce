@@ -43,7 +43,7 @@
             <form method="GET" action="{{ route('admin.workforce.employees.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
                     <label class="form-label fw-semibold" for="workforceEmployeeSearch">{{ __('Search') }}</label>
-                    <input id="workforceEmployeeSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, title, department') }}">
+                    <input id="workforceEmployeeSearch" type="search" name="search" maxlength="100" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, title, department') }}">
                 </div>
                 <div>
                     <label class="form-label fw-semibold" for="workforceEmployeeStatus">{{ __('Status') }}</label>

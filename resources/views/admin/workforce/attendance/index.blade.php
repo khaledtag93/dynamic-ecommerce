@@ -35,7 +35,7 @@
             <form method="GET" action="{{ route('admin.workforce.attendance.index') }}" class="admin-filter-grid" data-live-filter>
                 <div>
                     <label class="form-label fw-semibold" for="workforceAttendanceSearch">{{ __('Search employee') }}</label>
-                    <input id="workforceAttendanceSearch" type="search" name="search" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, department') }}">
+                    <input id="workforceAttendanceSearch" type="search" name="search" maxlength="100" value="{{ $filters['search'] }}" data-live-search autocomplete="off" class="form-control" placeholder="{{ __('Name, email, employee code, department') }}">
                 </div>
                 <div>
                     <label class="form-label fw-semibold" for="workforceAttendanceStatus">{{ __('Session status') }}</label>
