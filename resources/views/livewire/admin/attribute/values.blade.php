@@ -36,14 +36,21 @@
                     <h5 class="mb-1">{{ __('Add or Edit Value') }}</h5>
                     <small class="text-muted">{{ __('Values used by variants are protected from rename and deletion to keep catalog data consistent.') }}</small>
                 </div>
-                <input type="text" wire:model.live.debounce.300ms="search" class="form-control" style="max-width:280px" placeholder="{{ __('Search values') }}">
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <label class="visually-hidden" for="attributeValueSearch">{{ __('Search values') }}</label>
+                    <input id="attributeValueSearch" type="text" wire:model.live.debounce.300ms="search" class="form-control" style="max-width:280px" placeholder="{{ __('Search values') }}">
+                    <label class="visually-hidden" for="attributeValuePerPage">{{ __('Per page') }}</label>
+                    <select id="attributeValuePerPage" wire:model.live="perPage" class="form-select" style="width:auto">
+                        <option value="10">10</option><option value="25">25</option><option value="50">50</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="card-body">
             <form wire:submit.prevent="save" class="row g-3 align-items-end">
                 <div class="col-md-10">
-                    <label class="form-label">{{ __('Value') }}</label>
-                    <input type="text" wire:model="value" class="form-control" placeholder="{{ __('Enter value (e.g. Red)') }}" wire:loading.attr="disabled" wire:target="save">
+                    <label class="form-label" for="attributeValueInput">{{ __('Value') }}</label>
+                    <input id="attributeValueInput" type="text" wire:model="value" aria-required="true" class="form-control" placeholder="{{ __('Enter value (e.g. Red)') }}" wire:loading.attr="disabled" wire:target="save">
                     @error('value') <span class="text-danger small">{{ $message }}</span>@enderror
                 </div>
                 <div class="col-md-2 d-grid gap-2">
@@ -86,10 +93,10 @@
                                 </td>
                                 <td class="rtl-text-start">
                                     <div class="d-flex gap-2 rtl-justify-start">
-                                        <button wire:click="edit({{ $val->id }})" class="btn btn-sm btn-outline-primary btn-action" title="{{ $val->variant_usage_count > 0 ? __('Used values cannot be renamed') : __('Edit value') }}" @disabled($val->variant_usage_count > 0)>
+                                        <button type="button" wire:click="edit({{ $val->id }})" class="btn btn-sm btn-outline-primary btn-action" title="{{ $val->variant_usage_count > 0 ? __('Used values cannot be renamed') : __('Edit value') }}" aria-label="{{ __('Edit value :value', ['value' => $val->value]) }}" @disabled($val->variant_usage_count > 0)>
                                             <i class="mdi mdi-pencil-outline"></i>
                                         </button>
-                                        <button type="button" wire:click="requestDelete({{ $val->id }})" class="btn btn-sm btn-outline-danger btn-action" title="{{ __('Delete value') }}" @disabled($val->variant_usage_count > 0)>
+                                        <button type="button" wire:click="requestDelete({{ $val->id }})" class="btn btn-sm btn-outline-danger btn-action" title="{{ __('Delete value') }}" aria-label="{{ __('Delete value :value', ['value' => $val->value]) }}" @disabled($val->variant_usage_count > 0)>
                                             <i class="mdi mdi-trash-can-outline"></i>
                                         </button>
                                     </div>
@@ -104,6 +111,9 @@
                 </table>
             </div>
         </div>
+        @if($values->hasPages())
+            <div class="card-footer">{{ $values->links() }}</div>
+        @endif
     </div>
 
     <div class="modal fade" id="attributeValueDeleteConfirmationModal" tabindex="-1" aria-hidden="true" wire:ignore.self>
