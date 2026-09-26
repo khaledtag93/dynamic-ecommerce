@@ -144,7 +144,11 @@ log "♻️ Signaling QAS queue workers to reload application code..."
 $PHP_BIN artisan queue:restart || true
 
 log "📁 Syncing QAS public files..."
-rsync -a --delete --chmod=D755,F644     --exclude='index.php'     --exclude='uploads'     --exclude='storage'     "$APP_DIR/public/" "$PUBLIC_DIR/"
+rsync -a --delete     --exclude='index.php'     --exclude='uploads'     --exclude='storage'     "$APP_DIR/public/" "$PUBLIC_DIR/"
+
+log "🔐 Normalizing QAS public web permissions..."
+find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type d -exec chmod 755 {} +
+find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type f -exec chmod 644 {} +
 
 UPLOAD_GUARD_SOURCE="$APP_DIR/ops/uploads.htaccess"
 [ -f "$UPLOAD_GUARD_SOURCE" ] || fail "Upload execution guard missing: $UPLOAD_GUARD_SOURCE"
@@ -165,6 +169,11 @@ log "🌐 Disabling QAS maintenance mode..."
 $PHP_BIN artisan up
 
 health_check
+
+ASSET_HEALTHCHECK_URL="$HEALTHCHECK_URL/admin/js/off-canvas.js"
+ASSET_HEALTHCHECK_CODE="$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$ASSET_HEALTHCHECK_URL" || true)"
+[ "$ASSET_HEALTHCHECK_CODE" = "200" ] || fail "QAS static asset health check failed: $ASSET_HEALTHCHECK_URL returned HTTP ${ASSET_HEALTHCHECK_CODE:-unknown}"
+log "✅ QAS static asset health check passed: HTTP $ASSET_HEALTHCHECK_CODE"
 
 CURRENT_COMMIT="$(git rev-parse --short HEAD)"
 

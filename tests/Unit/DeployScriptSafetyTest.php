@@ -54,8 +54,19 @@ class DeployScriptSafetyTest extends TestCase
         $script = file_get_contents(base_path('deploy-qas.sh'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('rsync -a --delete --chmod=D755,F644', $script);
+        $this->assertStringContainsString('find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type d -exec chmod 755 {} +', $script);
+        $this->assertStringContainsString('find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type f -exec chmod 644 {} +', $script);
         $this->assertStringContainsString("--exclude='uploads'", $script);
+    }
+
+    public function test_qas_deploy_requires_mobile_admin_controller_to_be_publicly_readable(): void
+    {
+        $script = file_get_contents(base_path('deploy-qas.sh'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('ASSET_HEALTHCHECK_URL="$HEALTHCHECK_URL/admin/js/off-canvas.js"', $script);
+        $this->assertStringContainsString('QAS static asset health check failed', $script);
+        $this->assertStringContainsString('QAS static asset health check passed', $script);
     }
 
     public function test_deploys_install_upload_execution_guard_without_syncing_user_uploads(): void
