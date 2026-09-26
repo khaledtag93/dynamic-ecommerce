@@ -79,7 +79,9 @@ class SharedShellAccessibilityTest extends TestCase
         $this->assertStringNotContainsString("body[dir='rtl']", $admin);
         $this->assertStringNotContainsString("body[dir='rtl']", $navbar);
         $this->assertStringContainsString("html[dir='rtl'] .sidebar-offcanvas.custom-sidebar", $admin);
-        $this->assertStringContainsString('height: calc(100dvh - 64px);', $admin);
+        $this->assertStringContainsString('height: auto !important;', $admin);
+        $this->assertStringContainsString('min-height: 0 !important;', $admin);
+        $this->assertStringContainsString('max-height: none !important;', $admin);
         $this->assertStringContainsString('overflow-y: auto !important;', $admin);
         $this->assertStringContainsString('touch-action: pan-y;', $admin);
         $this->assertStringContainsString('aria-controls="sidebar"', $navbar);
