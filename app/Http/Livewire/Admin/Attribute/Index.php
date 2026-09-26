@@ -147,7 +147,9 @@ class Index extends Component
             ->withCount('values')
             ->withCount('variantAttributes')
             ->when($this->search !== '', function ($query) {
-                $query->where('name', 'like', '%' . trim($this->search) . '%');
+                $search = mb_substr(trim((string) $this->search), 0, 100);
+                $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+                $query->where('name', 'like', "%{$escaped}%");
             })
             ->when($this->coverage === 'with_values', fn ($query) => $query->has('values'))
             ->when($this->coverage === 'empty', fn ($query) => $query->doesntHave('values'))
