@@ -75,4 +75,36 @@ class CatalogWorkspaceV2Test extends TestCase
         $this->assertSame('هل تريد تفعيل المنتجات المحددة؟', $translations['Activate selected products?'] ?? null);
         $this->assertSame('إخفاء المحدد', $translations['Hide selected'] ?? null);
     }
+
+    public function test_product_list_uses_store_currency_label_instead_of_dollar_placeholders(): void
+    {
+        $source = file_get_contents(resource_path('views/livewire/admin/product/index.blade.php'));
+
+        $this->assertStringContainsString("{{ __('EGP') }} {{ number_format((float) (\$product->base_price ?? 0), 2) }}", $source);
+        $this->assertStringContainsString("<span class=\"input-group-text\">{{ __('EGP') }}</span>", $source);
+        $this->assertStringNotContainsString('<span class="input-group-text">$</span>', $source);
+    }
+
+    public function test_product_operational_feedback_is_localized(): void
+    {
+        $source = file_get_contents(app_path('Http/Livewire/Admin/Product/Index.php'));
+
+        $this->assertStringContainsString("__('Base price is required.')", $source);
+        $this->assertStringContainsString("__('This product uses variants. Please edit price from variant rows.')", $source);
+        $this->assertStringContainsString("__('Product activated, but content still needs: :issues.'", $source);
+        $this->assertStringContainsString("__('Product :name deleted successfully.'", $source);
+        $this->assertStringContainsString("__(':count selected product(s) marked as featured.'", $source);
+        $this->assertStringNotContainsString("session()->flash('error', 'Please select at least one product.')", $source);
+    }
+
+    public function test_arabic_catalog_copy_covers_inline_price_and_status_feedback(): void
+    {
+        $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('سعر الأساس مطلوب.', $translations['Base price is required.'] ?? null);
+        $this->assertSame('لا يمكن أن يكون سعر البيع أكبر من سعر الأساس.', $translations['Sale price cannot be greater than base price.'] ?? null);
+        $this->assertSame('المنتج رقم :id أصبح نشطًا.', $translations['Product #:id is now active.'] ?? null);
+        $this->assertSame('تم حذف المنتج :name بنجاح.', $translations['Product :name deleted successfully.'] ?? null);
+    }
+
 }

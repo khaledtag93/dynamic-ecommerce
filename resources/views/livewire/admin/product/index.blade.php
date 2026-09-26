@@ -563,7 +563,7 @@
                                     @if ($editingBasePriceId === $product->id)
                                         <div class="inline-edit-box">
                                             <div class="input-group input-group-sm">
-                                                <span class="input-group-text">$</span>
+                                                <span class="input-group-text">{{ __('EGP') }}</span>
                                                 <input
                                                     type="number"
                                                     step="0.01"
@@ -604,7 +604,7 @@
                                     @else
                                         <div class="inline-display">
                                             <div class="fw-bold price-text">
-                                                ${{ number_format((float) ($product->base_price ?? 0), 2) }}
+                                                {{ __('EGP') }} {{ number_format((float) ($product->base_price ?? 0), 2) }}
                                             </div>
 
                                             @if ($product->has_variants)
@@ -627,7 +627,7 @@
                                     @if ($editingSalePriceId === $product->id)
                                         <div class="inline-edit-box">
                                             <div class="input-group input-group-sm">
-                                                <span class="input-group-text">$</span>
+                                                <span class="input-group-text">{{ __('EGP') }}</span>
                                                 <input
                                                     type="number"
                                                     step="0.01"
@@ -673,7 +673,7 @@
                                         <div class="inline-display">
                                             <div class="fw-bold price-text">
                                                 @if (!is_null($product->sale_price))
-                                                    ${{ number_format((float) $product->sale_price, 2) }}
+                                                    {{ __('EGP') }} {{ number_format((float) $product->sale_price, 2) }}
                                                 @else
                                                     <span class="text-muted">—</span>
                                                 @endif

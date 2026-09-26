@@ -377,13 +377,13 @@ class Index extends Component
         $this->cancelAllInlineEdits();
         $this->dispatch('close-product-delete-confirmation');
 
-        session()->flash('message', "Product {$productName} deleted successfully.");
+        session()->flash('message', __('Product :name deleted successfully.', ['name' => $productName]));
     }
 
     public function requestBulkDelete(): void
     {
         if (empty($this->selectedProducts)) {
-            session()->flash('error', 'Please select at least one product.');
+            session()->flash('error', __('Please select at least one product.'));
             return;
         }
 
@@ -456,7 +456,7 @@ class Index extends Component
         $this->cancelAllInlineEdits();
         $this->dispatch('close-product-bulk-delete-confirmation');
 
-        session()->flash('message', "{$deletedCount} selected product(s) deleted successfully.");
+        session()->flash('message', __(':count selected product(s) deleted successfully.', ['count' => $deletedCount]));
     }
 
     protected function productUsesVariants(Product $product): bool
@@ -485,9 +485,9 @@ class Index extends Component
                 "inlineBasePrice.$id" => ['required', 'numeric', 'min:0'],
             ],
             [
-                "inlineBasePrice.$id.required" => 'Base price is required.',
-                "inlineBasePrice.$id.numeric" => 'Base price must be a valid number.',
-                "inlineBasePrice.$id.min" => 'Base price cannot be negative.',
+                "inlineBasePrice.$id.required" => __('Base price is required.'),
+                "inlineBasePrice.$id.numeric" => __('Base price must be a valid number.'),
+                "inlineBasePrice.$id.min" => __('Base price cannot be negative.'),
             ]
         );
     }
@@ -499,8 +499,8 @@ class Index extends Component
                 "inlineSalePrice.$id" => ['nullable', 'numeric', 'min:0'],
             ],
             [
-                "inlineSalePrice.$id.numeric" => 'Sale price must be a valid number.',
-                "inlineSalePrice.$id.min" => 'Sale price cannot be negative.',
+                "inlineSalePrice.$id.numeric" => __('Sale price must be a valid number.'),
+                "inlineSalePrice.$id.min" => __('Sale price cannot be negative.'),
             ]
         );
     }
@@ -554,7 +554,7 @@ class Index extends Component
 
         if ($this->productUsesVariants($product)) {
             $this->editingBasePriceId = null;
-            session()->flash('error', 'This product uses variants. Please edit price from variant rows.');
+            session()->flash('error', __('This product uses variants. Please edit price from variant rows.'));
             return;
         }
 
@@ -565,7 +565,7 @@ class Index extends Component
             $this->addInlineError(
                 'inlineBasePrice',
                 $id,
-                'Base price must be greater than or equal to the current sale price.'
+                __('Base price must be greater than or equal to the current sale price.')
             );
             return;
         }
@@ -576,7 +576,7 @@ class Index extends Component
 
         $this->editingBasePriceId = null;
 
-        session()->flash('message', "Base price updated successfully for product #{$id}.");
+        session()->flash('message', __('Base price updated successfully for product #:id.', ['id' => $id]));
     }
 
     public function startEditSalePrice($id, $price)
@@ -608,7 +608,7 @@ class Index extends Component
 
         if ($this->productUsesVariants($product)) {
             $this->editingSalePriceId = null;
-            session()->flash('error', 'This product uses variants. Please edit sale price from variant rows.');
+            session()->flash('error', __('This product uses variants. Please edit sale price from variant rows.'));
             return;
         }
 
@@ -620,7 +620,7 @@ class Index extends Component
             ]);
 
             $this->editingSalePriceId = null;
-            session()->flash('message', "Sale price removed successfully for product #{$id}.");
+            session()->flash('message', __('Sale price removed successfully for product #:id.', ['id' => $id]));
             return;
         }
 
@@ -631,7 +631,7 @@ class Index extends Component
             $this->addInlineError(
                 'inlineSalePrice',
                 $id,
-                'Sale price cannot be greater than base price.'
+                __('Sale price cannot be greater than base price.')
             );
             return;
         }
@@ -642,7 +642,7 @@ class Index extends Component
 
         $this->editingSalePriceId = null;
 
-        session()->flash('message', "Sale price updated successfully for product #{$id}.");
+        session()->flash('message', __('Sale price updated successfully for product #:id.', ['id' => $id]));
     }
 
     public function startEditQty($id, $qty)
@@ -714,11 +714,11 @@ class Index extends Component
         $issues = [];
 
         if (blank($product->description)) {
-            $issues[] = 'description';
+            $issues[] = __('description');
         }
 
         if (blank($product->sku) && blank($product->barcode)) {
-            $issues[] = 'SKU or barcode';
+            $issues[] = __('SKU or barcode');
         }
 
         $hasImage = $product->relationLoaded('productImages')
@@ -726,7 +726,7 @@ class Index extends Component
             : $product->productImages()->exists();
 
         if (! $hasImage) {
-            $issues[] = 'product image';
+            $issues[] = __('product image');
         }
 
         return $issues;
@@ -740,7 +740,7 @@ class Index extends Component
             $product->status = false;
             $product->save();
 
-            session()->flash('message', "Product #{$product->id} is now hidden from the storefront.");
+            session()->flash('message', __('Product #:id is now hidden from the storefront.', ['id' => $product->id]));
             return;
         }
 
@@ -752,12 +752,12 @@ class Index extends Component
         if (! empty($issues)) {
             session()->flash(
                 'warning',
-                'Product activated, but content still needs: ' . implode(', ', $issues) . '.'
+                __('Product activated, but content still needs: :issues.', ['issues' => implode(', ', $issues)])
             );
             return;
         }
 
-        session()->flash('message', "Product #{$product->id} is now active.");
+        session()->flash('message', __('Product #:id is now active.', ['id' => $product->id]));
     }
 
     public function bulkSetFeatured(bool $featured): void
@@ -779,8 +779,8 @@ class Index extends Component
         session()->flash(
             'message',
             $featured
-                ? "{$count} selected product(s) marked as featured."
-                : "{$count} selected product(s) removed from featured."
+                ? __(':count selected product(s) marked as featured.', ['count' => $count])
+                : __(':count selected product(s) removed from featured.', ['count' => $count])
         );
     }
 
