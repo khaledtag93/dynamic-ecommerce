@@ -64,24 +64,27 @@ class NotificationDispatchLog extends Model
 
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
-        $search = trim((string) $search);
+        $search = mb_substr(trim((string) $search), 0, 100);
 
         if ($search === '') {
             return $query;
         }
 
-        return $query->where(function (Builder $inner) use ($search) {
-            $inner->where('event', 'like', "%{$search}%")
-                ->orWhere('channel', 'like', "%{$search}%")
-                ->orWhere('recipient', 'like', "%{$search}%")
-                ->orWhere('title', 'like', "%{$search}%")
-                ->orWhere('message', 'like', "%{$search}%")
-                ->orWhere('error_message', 'like', "%{$search}%")
-                ->orWhereHas('order', function (Builder $orderQuery) use ($search) {
-                    $orderQuery->where('order_number', 'like', "%{$search}%")
-                        ->orWhere('customer_name', 'like', "%{$search}%")
-                        ->orWhere('customer_phone', 'like', "%{$search}%")
-                        ->orWhere('customer_email', 'like', "%{$search}%");
+        $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+        $like = '%' . $escapedSearch . '%';
+
+        return $query->where(function (Builder $inner) use ($like) {
+            $inner->where('event', 'like', $like)
+                ->orWhere('channel', 'like', $like)
+                ->orWhere('recipient', 'like', $like)
+                ->orWhere('title', 'like', $like)
+                ->orWhere('message', 'like', $like)
+                ->orWhere('error_message', 'like', $like)
+                ->orWhereHas('order', function (Builder $orderQuery) use ($like) {
+                    $orderQuery->where('order_number', 'like', $like)
+                        ->orWhere('customer_name', 'like', $like)
+                        ->orWhere('customer_phone', 'like', $like)
+                        ->orWhere('customer_email', 'like', $like);
                 });
         });
     }
