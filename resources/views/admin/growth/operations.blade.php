@@ -38,7 +38,17 @@
         <div class="gm-actions mt-3">
             <form method="POST" action="{{ route('admin.growth.validation-demo.seed') }}" data-submit-loading>@csrf <button class="btn btn-primary" data-loading-text="{{ __('Creating test data...') }}">{{ __('Create test data') }}</button></form>
             <form method="POST" action="{{ route('admin.growth.run-now') }}" data-submit-loading>@csrf <button class="btn btn-outline-primary" data-loading-text="{{ __('Running engine...') }}">{{ __('Run engine now') }}</button></form>
-            <form method="POST" action="{{ route('admin.growth.validation-demo.clear') }}" data-submit-loading>@csrf @method('DELETE') <button class="btn btn-outline-danger" data-loading-text="{{ __('Removing test data...') }}">{{ __('Remove test data') }}</button></form>
+            <form method="POST" action="{{ route('admin.growth.validation-demo.clear') }}"
+                  data-submit-loading
+                  data-confirm-title="{{ __('Remove test data') }}"
+                  data-confirm-message="{{ __('Remove all Growth validation test data?') }}"
+                  data-confirm-subtitle="{{ __('This removes the tagged test customers, orders, and behavior events created for Growth validation. Production customer data is not part of this test-data cleanup.') }}"
+                  data-confirm-ok="{{ __('Remove test data') }}"
+                  data-confirm-cancel="{{ __('Keep test data') }}">
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-outline-danger" data-loading-text="{{ __('Removing test data...') }}">{{ __('Remove test data') }}</button>
+            </form>
         </div>
     </div>
 </details>
