@@ -143,6 +143,12 @@ $PHP_BIN artisan view:cache
 log "📁 Syncing QAS public files..."
 rsync -a --delete     --exclude='index.php'     --exclude='uploads'     --exclude='storage'     "$APP_DIR/public/" "$PUBLIC_DIR/"
 
+UPLOAD_GUARD_SOURCE="$APP_DIR/ops/uploads.htaccess"
+[ -f "$UPLOAD_GUARD_SOURCE" ] || fail "Upload execution guard missing: $UPLOAD_GUARD_SOURCE"
+mkdir -p "$PUBLIC_DIR/uploads"
+cp "$UPLOAD_GUARD_SOURCE" "$PUBLIC_DIR/uploads/.htaccess"
+chmod 644 "$PUBLIC_DIR/uploads/.htaccess"
+
 log "🔗 Rebuilding QAS front controller..."
 INDEX_TMP="$PUBLIC_DIR/.index.php.$$.tmp"
 cp "$APP_DIR/public/index.php" "$INDEX_TMP"
