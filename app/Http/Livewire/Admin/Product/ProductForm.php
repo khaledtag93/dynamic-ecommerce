@@ -198,16 +198,17 @@ class ProductForm extends Component
 
     protected function dispatchToast(string $type, string $message, int $duration = 4500): void
     {
-        $this->dispatchBrowserEvent('product-form-toast', [
-            'type' => $type,
-            'message' => $message,
-            'duration' => $duration,
-        ]);
+        $this->dispatch(
+            'product-form-toast',
+            type: $type,
+            message: $message,
+            duration: $duration,
+        );
     }
 
     protected function dispatchScrollToFirstError(): void
     {
-        $this->dispatchBrowserEvent('product-form-scroll-to-first-error');
+        $this->dispatch('product-form-scroll-to-first-error');
     }
 
     public function updated($name, $value)
@@ -1390,11 +1391,12 @@ class ProductForm extends Component
         $action = $wasEditing ? 'updated' : 'created';
         $productName = $this->name ?: 'Product';
 
-        $this->dispatchBrowserEvent('product-form-save-succeeded', [
-            'product_id' => $product->id,
-            'action' => $action,
-            'saved_at' => now()->format('H:i'),
-        ]);
+        $this->dispatch(
+            'product-form-save-succeeded',
+            product_id: $product->id,
+            action: $action,
+            saved_at: now()->format('H:i'),
+        );
 
         $this->dispatchToast(
             'success',
@@ -1411,7 +1413,7 @@ class ProductForm extends Component
 
         $this->isSaving = true;
         $this->resetSaveFeedback();
-        $this->dispatchBrowserEvent('product-form-saving-state', ['saving' => true]);
+        $this->dispatch('product-form-saving-state', saving: true);
 
         $trace = $this->startPerformanceTrace();
         $isVariantMode = (bool) $this->hasVariants;
@@ -1524,10 +1526,11 @@ class ProductForm extends Component
 
     $this->dispatchToast('error', $firstMessage, 7000);
 
-    $this->dispatchBrowserEvent('product-form-save-failed', [
-        'message' => $firstMessage,
-        'messages' => $allMessages->toArray(),
-    ]);
+    $this->dispatch(
+        'product-form-save-failed',
+        message: $firstMessage,
+        messages: $allMessages->toArray(),
+    );
 
     $this->dispatchScrollToFirstError();
 
@@ -1553,7 +1556,7 @@ class ProductForm extends Component
             $this->addError('save', $this->saveErrorMessage);
             $this->dispatchToast('error', $this->saveErrorMessage, 6500);
             $this->dispatchScrollToFirstError();
-            $this->dispatchBrowserEvent('product-form-save-failed', ['message' => $this->saveErrorMessage]);
+            $this->dispatch('product-form-save-failed', message: $this->saveErrorMessage);
             $this->markPerformance($trace, 'throwable_exception');
             $this->logSavePerformance($trace, [
                 'result' => 'exception',
@@ -1562,7 +1565,7 @@ class ProductForm extends Component
             ]);
         } finally {
             $this->isSaving = false;
-            $this->dispatchBrowserEvent('product-form-saving-state', ['saving' => false]);
+            $this->dispatch('product-form-saving-state', saving: false);
         }
     }
 
