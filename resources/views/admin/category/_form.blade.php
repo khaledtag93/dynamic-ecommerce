@@ -26,24 +26,24 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ __('Name') }} <span class="required-star">*</span></label>
-                        <input type="text" name="name" value="{{ old('name', $category?->getRawOriginal('name') ?? '') }}" class="form-control @error('name') is-invalid @enderror" placeholder="{{ __('Category name') }}">
+                        <label class="form-label" for="categoryName">{{ __('Name') }} <span class="required-star">*</span></label>
+                        <input id="categoryName" type="text" name="name" aria-required="true" value="{{ old('name', $category?->getRawOriginal('name') ?? '') }}" class="form-control @error('name') is-invalid @enderror" placeholder="{{ __('Category name') }}">
                         @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ __('Slug') }} <span class="required-star">*</span></label>
-                        <input type="text" name="slug" value="{{ old('slug', $category?->getRawOriginal('slug') ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="category-slug">
+                        <label class="form-label" for="categorySlug">{{ __('Slug') }} <span class="required-star">*</span></label>
+                        <input id="categorySlug" type="text" name="slug" aria-required="true" value="{{ old('slug', $category?->getRawOriginal('slug') ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="category-slug">
                         @error('slug')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="col-12 mb-3">
-                        <label class="form-label">{{ __('Description') }}</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="5" placeholder="{{ __('Write a short description') }}">{{ old('description', $category?->getRawOriginal('description') ?? '') }}</textarea>
+                        <label class="form-label" for="categoryDescription">{{ __('Description') }}</label>
+                        <textarea id="categoryDescription" class="form-control @error('description') is-invalid @enderror" name="description" rows="5" placeholder="{{ __('Write a short description') }}">{{ old('description', $category?->getRawOriginal('description') ?? '') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -129,24 +129,24 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ __('Meta Title') }} <span class="required-star">*</span></label>
-                        <input type="text" name="meta_title" value="{{ old('meta_title', $category?->getRawOriginal('meta_title') ?? '') }}" class="form-control @error('meta_title') is-invalid @enderror">
+                        <label class="form-label" for="categoryMetaTitle">{{ __('Meta Title') }} <span class="required-star">*</span></label>
+                        <input id="categoryMetaTitle" type="text" name="meta_title" aria-required="true" value="{{ old('meta_title', $category?->getRawOriginal('meta_title') ?? '') }}" class="form-control @error('meta_title') is-invalid @enderror">
                         @error('meta_title')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="col-12 mb-3">
-                        <label class="form-label">{{ __('Keywords') }} <span class="required-star">*</span></label>
-                        <textarea class="form-control @error('meta_keyword') is-invalid @enderror" name="meta_keyword" rows="3">{{ old('meta_keyword', $category?->getRawOriginal('meta_keyword') ?? '') }}</textarea>
+                        <label class="form-label" for="categoryMetaKeyword">{{ __('Keywords') }} <span class="required-star">*</span></label>
+                        <textarea id="categoryMetaKeyword" aria-required="true" class="form-control @error('meta_keyword') is-invalid @enderror" name="meta_keyword" rows="3">{{ old('meta_keyword', $category?->getRawOriginal('meta_keyword') ?? '') }}</textarea>
                         @error('meta_keyword')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="col-12 mb-0">
-                        <label class="form-label">{{ __('Meta Description') }} <span class="required-star">*</span></label>
-                        <textarea class="form-control @error('meta_description') is-invalid @enderror" name="meta_description" rows="4">{{ old('meta_description', $category?->getRawOriginal('meta_description') ?? '') }}</textarea>
+                        <label class="form-label" for="categoryMetaDescription">{{ __('Meta Description') }} <span class="required-star">*</span></label>
+                        <textarea id="categoryMetaDescription" aria-required="true" class="form-control @error('meta_description') is-invalid @enderror" name="meta_description" rows="4">{{ old('meta_description', $category?->getRawOriginal('meta_description') ?? '') }}</textarea>
                         @error('meta_description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -163,7 +163,7 @@
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <label class="form-label">{{ __('Image') }}</label>
+                    <label class="form-label" for="categoryImageInput">{{ __('Image') }}</label>
                     <input type="file" name="image" id="categoryImageInput" class="form-control @error('image') is-invalid @enderror" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
                     @error('image')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -219,7 +219,7 @@
                 <div class="admin-form-actions-subtitle">{{ __('Review the category details, translation content, image, and visibility settings before saving your changes.') }}</div>
             </div>
             <div class="admin-form-actions-buttons">
-                <a href="{{ route('admin.categories.index') }}" class="btn btn-light admin-btn-soft admin-back-btn">
+                <a href="{{ route('admin.categories.index') }}" class="btn btn-light admin-btn-soft admin-back-btn" data-category-editor-exit>
                     <i class="mdi mdi-arrow-left"></i>
                     {{ __('Cancel') }}
                 </a>
@@ -294,6 +294,67 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('categoryEditorForm');
+        if (form) {
+            let dirty = form.dataset.initialDirty === '1';
+            let submitting = false;
+
+            const markDirty = () => {
+                if (!submitting) dirty = true;
+            };
+
+            form.addEventListener('input', markDirty);
+            form.addEventListener('change', markDirty);
+            form.addEventListener('submit', function () {
+                submitting = true;
+                dirty = false;
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!dirty || submitting) return;
+
+                const link = event.target.closest('a[href]');
+                if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+
+                const href = link.getAttribute('href') || '';
+                if (href === '' || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+                    return;
+                }
+
+                let destination;
+                try {
+                    destination = new URL(link.href, window.location.href);
+                } catch (error) {
+                    return;
+                }
+
+                if (destination.href === window.location.href) return;
+
+                event.preventDefault();
+
+                const leave = () => {
+                    dirty = false;
+                    window.location.assign(destination.href);
+                };
+
+                if (typeof window.adminConfirmAction === 'function') {
+                    window.adminConfirmAction(leave, {
+                        title: @json(__('Discard unsaved category changes?')),
+                        message: @json(__('You have unsaved category changes. Leaving this page will discard them.')),
+                        subtitle: @json(__('Save the category first if you want to keep these changes.')),
+                        confirmLabel: @json(__('Discard changes and leave')),
+                        cancelLabel: @json(__('Keep editing')),
+                    });
+                }
+            });
+
+            window.addEventListener('beforeunload', function (event) {
+                if (!dirty || submitting) return;
+                event.preventDefault();
+                event.returnValue = '';
+            });
+        }
+
         const input = document.getElementById('categoryImageInput');
         const preview = document.getElementById('categoryImagePreview');
         const empty = document.getElementById('categoryImageEmpty');
