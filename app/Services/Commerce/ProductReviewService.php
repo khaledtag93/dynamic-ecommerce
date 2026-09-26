@@ -69,13 +69,20 @@ class ProductReviewService
             ]);
         }
 
-        $review->forceFill([
-            'status' => $status,
-            'moderated_by' => $moderator->id,
-            'moderated_at' => now(),
-            'moderation_note' => $note,
-        ])->save();
+        return DB::transaction(function () use ($review, $moderator, $status, $note) {
+            $lockedReview = ProductReview::query()
+                ->whereKey($review->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        return $review->fresh();
+            $lockedReview->forceFill([
+                'status' => $status,
+                'moderated_by' => $moderator->id,
+                'moderated_at' => now(),
+                'moderation_note' => $note,
+            ])->save();
+
+            return $lockedReview->fresh();
+        });
     }
 }
