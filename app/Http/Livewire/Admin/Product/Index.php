@@ -375,6 +375,7 @@ class Index extends Component
         $this->pendingDeleteId = null;
         $this->resetSelection();
         $this->cancelAllInlineEdits();
+        $this->dispatch('close-product-delete-confirmation');
 
         session()->flash('message', "Product {$productName} deleted successfully.");
     }
@@ -419,6 +420,7 @@ class Index extends Component
 
         if (count($ids) !== $this->pendingBulkDeleteCount) {
             $this->pendingBulkDeleteCount = 0;
+            $this->dispatch('close-product-bulk-delete-confirmation');
             session()->flash('error', __('The product selection changed. Please review and confirm the deletion again.'));
             return;
         }
@@ -429,6 +431,7 @@ class Index extends Component
 
         if ($products->count() !== $this->pendingBulkDeleteCount) {
             $this->pendingBulkDeleteCount = 0;
+            $this->dispatch('close-product-bulk-delete-confirmation');
             session()->flash('error', __('The selected products changed. Please review and confirm the deletion again.'));
             return;
         }
@@ -451,6 +454,7 @@ class Index extends Component
         $this->pendingBulkDeleteCount = 0;
         $this->resetSelection();
         $this->cancelAllInlineEdits();
+        $this->dispatch('close-product-bulk-delete-confirmation');
 
         session()->flash('message', "{$deletedCount} selected product(s) deleted successfully.");
     }
