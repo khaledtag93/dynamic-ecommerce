@@ -16,8 +16,8 @@
                 @csrf
                 <div class="row g-3">
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Employee') }}</label>
-                        <select name="employee_profile_id" class="form-select @error('employee_profile_id') is-invalid @enderror" required>
+                        <label class="form-label fw-semibold" for="leaveAdjustmentEmployee">{{ __('Employee') }}</label>
+                        <select id="leaveAdjustmentEmployee" name="employee_profile_id" aria-required="true" class="form-select @error('employee_profile_id') is-invalid @enderror" required>
                             <option value="">{{ __('Select employee') }}</option>
                             @foreach($employees as $employee)
                                 <option value="{{ $employee->id }}" @selected((string)old('employee_profile_id') === (string)$employee->id)>{{ $employee->employee_code }} · {{ $employee->user?->name }}</option>
@@ -26,8 +26,8 @@
                         @error('employee_profile_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-lg-6">
-                        <label class="form-label fw-semibold">{{ __('Leave type') }}</label>
-                        <select name="employee_leave_type_id" class="form-select @error('employee_leave_type_id') is-invalid @enderror" required>
+                        <label class="form-label fw-semibold" for="leaveAdjustmentType">{{ __('Leave type') }}</label>
+                        <select id="leaveAdjustmentType" name="employee_leave_type_id" aria-required="true" class="form-select @error('employee_leave_type_id') is-invalid @enderror" required>
                             <option value="">{{ __('Select leave type') }}</option>
                             @foreach($leaveTypes as $type)
                                 <option value="{{ $type->id }}" @selected((string)old('employee_leave_type_id') === (string)$type->id)>{{ $type->displayName() }} · {{ $type->code }}</option>
@@ -36,13 +36,13 @@
                         @error('employee_leave_type_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">{{ __('Year') }}</label>
-                        <input type="number" name="year" min="2000" max="2100" value="{{ old('year', $year) }}" class="form-control @error('year') is-invalid @enderror" required>
+                        <label class="form-label fw-semibold" for="leaveAdjustmentYear">{{ __('Year') }}</label>
+                        <input id="leaveAdjustmentYear" type="number" name="year" aria-required="true" min="2000" max="2100" value="{{ old('year', $year) }}" class="form-control @error('year') is-invalid @enderror" required>
                         @error('year')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">{{ __('Adjustment type') }}</label>
-                        <select name="type" class="form-select @error('type') is-invalid @enderror" required>
+                        <label class="form-label fw-semibold" for="leaveAdjustmentKind">{{ __('Adjustment type') }}</label>
+                        <select id="leaveAdjustmentKind" name="type" aria-required="true" class="form-select @error('type') is-invalid @enderror" required>
                             @foreach(\App\Models\EmployeeLeaveAdjustment::typeOptions() as $value => $label)
                                 <option value="{{ $value }}" @selected(old('type', \App\Models\EmployeeLeaveAdjustment::TYPE_ADJUSTMENT) === $value)>{{ $label }}</option>
                             @endforeach
@@ -50,13 +50,13 @@
                         @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">{{ __('Days') }}</label>
-                        <input type="number" name="days" step="0.25" min="-365" max="365" value="{{ old('days') }}" class="form-control @error('days') is-invalid @enderror" required>
+                        <label class="form-label fw-semibold" for="leaveAdjustmentDays">{{ __('Days') }}</label>
+                        <input id="leaveAdjustmentDays" type="number" name="days" aria-required="true" step="0.25" min="-365" max="365" value="{{ old('days') }}" class="form-control @error('days') is-invalid @enderror" required>
                         @error('days')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold">{{ __('Reason') }}</label>
-                        <textarea name="reason" rows="4" maxlength="2000" class="form-control @error('reason') is-invalid @enderror" required>{{ old('reason') }}</textarea>
+                        <label class="form-label fw-semibold" for="leaveAdjustmentReason">{{ __('Reason') }}</label>
+                        <textarea id="leaveAdjustmentReason" name="reason" aria-required="true" rows="4" maxlength="2000" class="form-control @error('reason') is-invalid @enderror" required>{{ old('reason') }}</textarea>
                         @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
