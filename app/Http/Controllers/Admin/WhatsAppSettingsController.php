@@ -31,16 +31,18 @@ class WhatsAppSettingsController extends Controller
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('message_type'), fn ($query) => $query->where('message_type', $request->string('message_type')))
             ->when($request->filled('search'), function ($query) use ($request) {
-                $term = trim((string) $request->string('search'));
+                $term = mb_substr(trim((string) $request->string('search')), 0, 100);
+                $escapedTerm = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
+                $like = '%' . $escapedTerm . '%';
 
-                $query->where(function ($inner) use ($term) {
-                    $inner->where('phone', 'like', "%{$term}%")
-                        ->orWhere('normalized_phone', 'like', "%{$term}%")
-                        ->orWhere('template_name', 'like', "%{$term}%")
-                        ->orWhere('provider_message_id', 'like', "%{$term}%")
-                        ->orWhereHas('order', function ($orderQuery) use ($term) {
-                            $orderQuery->where('order_number', 'like', "%{$term}%")
-                                ->orWhere('customer_name', 'like', "%{$term}%");
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('phone', 'like', $like)
+                        ->orWhere('normalized_phone', 'like', $like)
+                        ->orWhere('template_name', 'like', $like)
+                        ->orWhere('provider_message_id', 'like', $like)
+                        ->orWhereHas('order', function ($orderQuery) use ($like) {
+                            $orderQuery->where('order_number', 'like', $like)
+                                ->orWhere('customer_name', 'like', $like);
                         });
                 });
             })
@@ -87,6 +89,8 @@ class WhatsAppSettingsController extends Controller
             'whatsapp_queue_backoff_seconds' => ['nullable', 'integer', 'min:0', 'max:3600'],
             'whatsapp_queue_timeout' => ['nullable', 'integer', 'min:10', 'max:600'],
             'whatsapp_duplicate_window_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'whatsapp_rate_limit_window_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'whatsapp_rate_limit_max_attempts' => ['nullable', 'integer', 'min:1', 'max:100'],
 
             'whatsapp_meta_base_url' => ['nullable', 'url', 'max:255'],
             'whatsapp_meta_graph_version' => ['required', 'string', 'max:30'],
@@ -126,6 +130,8 @@ class WhatsAppSettingsController extends Controller
         $data['whatsapp_queue_backoff_seconds'] = (string) ($data['whatsapp_queue_backoff_seconds'] ?? 30);
         $data['whatsapp_queue_timeout'] = (string) ($data['whatsapp_queue_timeout'] ?? 120);
         $data['whatsapp_duplicate_window_minutes'] = (string) ($data['whatsapp_duplicate_window_minutes'] ?? 30);
+        $data['whatsapp_rate_limit_window_minutes'] = (string) ($data['whatsapp_rate_limit_window_minutes'] ?? 15);
+        $data['whatsapp_rate_limit_max_attempts'] = (string) ($data['whatsapp_rate_limit_max_attempts'] ?? 5);
 
         $this->settingsService->save($data);
 
