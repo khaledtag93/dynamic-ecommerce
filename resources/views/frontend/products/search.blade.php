@@ -26,6 +26,7 @@
                             id="catalogSearch"
                             type="search"
                             name="q"
+                            maxlength="100"
                             data-live-search
                             autocomplete="off"
                             value="{{ $filters['q'] }}"
@@ -36,24 +37,24 @@
                 </div>
 
                 <div class="col-sm-6 col-lg-2">
-                    <label class="form-label fw-bold">{{ __('Availability') }}</label>
-                    <select name="availability" class="form-select lc-form-select" data-live-filter-control>
+                    <label class="form-label fw-bold" for="catalogAvailability">{{ __('Availability') }}</label>
+                    <select id="catalogAvailability" name="availability" class="form-select lc-form-select" data-live-filter-control>
                         <option value="all" @selected($filters['availability'] === 'all')>{{ __('All products') }}</option>
                         <option value="in_stock" @selected($filters['availability'] === 'in_stock')>{{ __('In stock only') }}</option>
                     </select>
                 </div>
 
                 <div class="col-sm-6 col-lg-2">
-                    <label class="form-label fw-bold">{{ __('Offers') }}</label>
-                    <select name="offer" class="form-select lc-form-select" data-live-filter-control>
+                    <label class="form-label fw-bold" for="catalogOffer">{{ __('Offers') }}</label>
+                    <select id="catalogOffer" name="offer" class="form-select lc-form-select" data-live-filter-control>
                         <option value="all" @selected($filters['offer'] === 'all')>{{ __('All offers') }}</option>
                         <option value="on_sale" @selected($filters['offer'] === 'on_sale')>{{ __('Discounted only') }}</option>
                     </select>
                 </div>
 
                 <div class="col-sm-7 col-lg-2">
-                    <label class="form-label fw-bold">{{ __('Sort by') }}</label>
-                    <select name="sort" class="form-select lc-form-select" data-live-filter-control>
+                    <label class="form-label fw-bold" for="catalogSort">{{ __('Sort by') }}</label>
+                    <select id="catalogSort" name="sort" class="form-select lc-form-select" data-live-filter-control>
                         <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('Newest first') }}</option>
                         <option value="price_low_high" @selected($filters['sort'] === 'price_low_high')>{{ __('Price: low to high') }}</option>
                         <option value="price_high_low" @selected($filters['sort'] === 'price_high_low')>{{ __('Price: high to low') }}</option>
