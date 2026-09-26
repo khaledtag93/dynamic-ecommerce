@@ -1,5 +1,21 @@
 # CURRENT PHASE
 
+## Authoritative audit checkpoint — 2026-09-26
+
+- Current audit and execution priorities: [Production foundation audit (Arabic)](docs/PRODUCTION_FOUNDATION_AUDIT_2026-09-26_AR.md).
+- Reviewed source: `e0420a31986ef11cb23c22b1b75dc56078a2389a` on `v42-clean-baseline`.
+- Exact-head [Hardening CI 36208521493](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36208521493) passed: **438 tests / 13,843 assertions**, clean MySQL migration, route/Blade/config checks and frontend build.
+- Latest operator-recorded QAS checkpoint targets `5e2a393a`; server HEAD was not independently read during this audit. Growth changes through `9526d275` are not recorded as deployed. The later `e0420a3` changes are documentation-only.
+- Production was not changed or reverified. Authenticated Admin/POS/Workforce and mobile/physical-device acceptance remain open; public QAS desktop sampling is documented in the audit.
+- New release priorities: vulnerable/outdated dependencies and upload handling; locale redirect restriction; historical secret-rotation evidence; payment E2E; database restore and scheduler/queue verification. Then storefront media/content/localization/accessibility, POS live actions, bounded statements and consolidated QAS acceptance.
+- A product detail image failed to load in the current QAS sample; this is a separate observation from the previously resolved category-media-root issue. Do not assume the old root cause has recurred.
+- No application code or deployment changed in this audit. Findings are **open**, not fixed. Continue completion before expansion, preserving the future Android/iPhone architecture constraint.
+
+### Historical checkpoints below
+
+Older source/QAS/CI/“next” statements below describe their own dates. They do not override the checkpoint above. Use the new audit to distinguish implemented features from pending acceptance and genuinely unimplemented scope.
+
+
 ## 2026-09-25 — Consolidated QAS Acceptance
 
 ### Current source state
