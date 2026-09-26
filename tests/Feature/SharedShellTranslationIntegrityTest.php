@@ -23,6 +23,7 @@ class SharedShellTranslationIntegrityTest extends TestCase
             resource_path('views/admin/customers/show.blade.php'),
             resource_path('views/admin/permissions/index.blade.php'),
             resource_path('views/admin/growth/operations.blade.php'),
+            resource_path('views/admin/growth/insights.blade.php'),
             resource_path('resources/views/components/admin/growth-validation-summary.blade.php'),
             resource_path('resources/views/admin/growth/campaign-form.blade.php'),
             resource_path('resources/views/admin/growth/rule-form.blade.php'),
