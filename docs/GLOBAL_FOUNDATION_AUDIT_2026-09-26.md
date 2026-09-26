@@ -80,7 +80,7 @@ The buyer may independently inspect source, dependencies, clean installation, up
 
 **Source action:** shared Storefront navigation now keeps in-page jumps for enabled Home sections; off Home, Offers and New arrivals go to their real filtered/sorted product list. Category/Best sellers links reach their Home sections from other pages only when those sections are enabled, and disappear when disabled. Three focused tests cover Home, another page and disabled sections. Storefront page content and user-configured hero/banner links will receive their own page-level review.
 
-**Gate:** branch-head CI plus EN/AR desktop/mobile QAS checks from Home, product/category, cart and account routes, including enabled/disabled Home-section settings. Remains IN REVIEW until matching-revision acceptance.
+**Gate:** [Hardening CI 36252296274](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/36252296274) passed on source `7ceff28f05cd7e79c5007a74ee2e2195a2f959a3`. EN/AR desktop/mobile QAS checks from Home, product/category, cart and account routes, including enabled/disabled Home-section settings, remain outstanding. GF-14 remains IN REVIEW until matching-revision acceptance.
 
 ## Global Foundation execution order
 1. Admin shell/navigation closure.
