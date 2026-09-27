@@ -16,7 +16,7 @@ class AdminWhatsAppExperienceTest extends TestCase
 
         $this->assertStringContainsString('protected function whatsAppResultResponse(?WhatsAppLog $log', $controller);
         $this->assertStringContainsString('$log->status === WhatsAppLog::STATUS_SENT', $controller);
-        $this->assertStringContainsString("return back()->with('error', $log?->error_message ?: $fallbackError);", $controller);
+        $this->assertStringContainsString("return back()->with('error', \$log?->error_message ?: \$fallbackError);", $controller);
         $this->assertSame(4, substr_count($controller, 'return $this->whatsAppResultResponse('));
         $this->assertStringNotContainsString("return back()->with('success', __('WhatsApp test send was executed. Check the latest logs for the result.'));", $controller);
         $this->assertStringNotContainsString("return back()->with('success', __('WhatsApp event was executed successfully. Check the latest logs for the result.'));", $controller);
