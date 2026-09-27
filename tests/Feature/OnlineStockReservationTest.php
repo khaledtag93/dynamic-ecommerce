@@ -267,6 +267,78 @@ class OnlineStockReservationTest extends TestCase
         $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
     }
 
+
+    public function test_cancellation_fails_safe_when_product_was_deleted_before_required_restock(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5, 100);
+        $order = $this->placeOnlineOrder($user, $product, 2);
+        $payment = $order->payments()->firstOrFail();
+
+        app(PaymentService::class)->markAsPaid($payment, [
+            'transaction_id' => 'TX-PAID-MISSING-PRODUCT',
+            'provider_status' => 'success',
+        ]);
+
+        $this->assertSame(
+            OrderStockReservation::STATUS_COMMITTED,
+            OrderStockReservation::query()->firstOrFail()->status
+        );
+
+        DB::table('products')->where('id', $product->id)->delete();
+        $this->assertNull($order->items()->firstOrFail()->product_id);
+
+        try {
+            app(OrderActionService::class)->cancel($order->fresh(), 'Legacy product disappeared.', $user->id);
+            $this->fail('Cancellation must fail instead of silently skipping required stock restoration.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertNotSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $this->assertDatabaseMissing('inventory_movements', [
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
+        ]);
+    }
+
+    public function test_cancellation_allows_missing_product_after_reservation_was_already_released(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5, 100);
+        $order = $this->placeOnlineOrder($user, $product, 2);
+        $payment = $order->payments()->firstOrFail();
+
+        app(PaymentService::class)->markAsFailed($payment, [
+            'transaction_id' => 'TX-FAIL-MISSING-PRODUCT',
+            'provider_status' => 'failed',
+        ]);
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(
+            OrderStockReservation::STATUS_RELEASED,
+            OrderStockReservation::query()->firstOrFail()->status
+        );
+
+        DB::table('products')->where('id', $product->id)->delete();
+        $this->assertNull($order->items()->firstOrFail()->product_id);
+
+        app(OrderActionService::class)->cancel(
+            $order->fresh(),
+            'Cancel after reservation was safely released.',
+            $user->id,
+        );
+
+        $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $this->assertSame(
+            1,
+            InventoryMovement::query()
+                ->where('order_id', $order->id)
+                ->where('type', InventoryMovement::TYPE_RESERVATION_RELEASE)
+                ->count()
+        );
+    }
+
     public function test_payment_retry_re_reserves_stock_and_fails_cleanly_when_stock_is_no_longer_available(): void
     {
         $user = User::factory()->create();

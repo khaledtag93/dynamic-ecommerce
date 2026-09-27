@@ -46,10 +46,6 @@ class OrderActionService
             }
 
             foreach ($lockedOrder->items()->with(['product', 'variant', 'stockReservation'])->get() as $item) {
-                if (! $item->product) {
-                    continue;
-                }
-
                 if (
                     $lockedOrder->payment_method === Order::PAYMENT_METHOD_ONLINE
                     && $item->stockReservation
@@ -59,6 +55,12 @@ class OrderActionService
                     ], true)
                 ) {
                     continue;
+                }
+
+                if (! $item->product) {
+                    throw ValidationException::withMessages([
+                        'status' => __('Order cancellation cannot restore stock because a catalog product no longer exists.'),
+                    ]);
                 }
 
                 $this->assertRestockTarget($item);
