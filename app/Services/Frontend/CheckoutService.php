@@ -202,7 +202,7 @@ class CheckoutService
             $payment = $this->paymentService->createForOrder($order);
             $this->paymentService->syncOrderPaymentStatus($order);
             $this->profitService->refreshOrderTotals($order);
-            $this->couponService->markCouponAsUsed($coupon);
+            $this->couponService->markCouponAsUsed($coupon, $order);
             $this->cartService->clear();
             $this->couponService->remove();
 

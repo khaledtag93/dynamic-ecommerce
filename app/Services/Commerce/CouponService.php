@@ -3,6 +3,7 @@
 namespace App\Services\Commerce;
 
 use App\Models\Coupon;
+use App\Models\Order;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
@@ -94,7 +95,7 @@ class CouponService
         ];
     }
 
-    public function markCouponAsUsed(?Coupon $coupon): void
+    public function markCouponAsUsed(?Coupon $coupon, ?Order $order = null): void
     {
         if (! $coupon) {
             return;
@@ -124,6 +125,50 @@ class CouponService
         }
 
         $coupon->refresh();
+
+        if ($order) {
+            $meta = $order->meta ?? [];
+            data_set($meta, 'coupon_usage.counted_at', $now->toDateTimeString());
+            data_set($meta, 'coupon_usage.coupon_id', $coupon->id);
+            data_set($meta, 'coupon_usage.code', $coupon->code);
+            data_forget($meta, 'coupon_usage.released_at');
+
+            $order->update(['meta' => $meta]);
+        }
+    }
+
+    public function releaseUsageForCancelledOrder(Order $order): void
+    {
+        $meta = $order->meta ?? [];
+
+        if (
+            ! data_get($meta, 'coupon_usage.counted_at')
+            || data_get($meta, 'coupon_usage.released_at')
+        ) {
+            return;
+        }
+
+        $couponId = (int) data_get($meta, 'coupon_usage.coupon_id');
+        if ($couponId < 1) {
+            return;
+        }
+
+        $coupon = Coupon::query()
+            ->whereKey($couponId)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $coupon) {
+            return;
+        }
+
+        Coupon::query()
+            ->whereKey($coupon->id)
+            ->where('used_count', '>', 0)
+            ->decrement('used_count');
+
+        data_set($meta, 'coupon_usage.released_at', now()->toDateTimeString());
+        $order->update(['meta' => $meta]);
     }
 
     protected function assertCouponUsable(Coupon $coupon, float $subtotal): void

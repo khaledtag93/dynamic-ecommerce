@@ -15,6 +15,7 @@ class OrderActionService
         protected OrderNotificationService $orderNotificationService,
         protected InventoryService $inventoryService,
         protected StockReservationService $stockReservationService,
+        protected CouponService $couponService,
     ) {
     }
 
@@ -91,6 +92,8 @@ class OrderActionService
                     ]
                 );
             }
+
+            $this->couponService->releaseUsageForCancelledOrder($lockedOrder);
 
             $meta = $lockedOrder->meta ?? [];
             $meta['cancelled_by'] = $actorId;
