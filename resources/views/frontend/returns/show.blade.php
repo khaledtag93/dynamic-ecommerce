@@ -89,25 +89,55 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form[data-return-cancel-live]');
-    if (!form) return;
+    if (!form || typeof window.fetch !== 'function') return;
+
+    const liveStatus = document.querySelector('[data-return-live-status]');
 
     form.addEventListener('submit', async function (event) {
+        if (form.dataset.pending === '1') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
         if (form.dataset.confirmed !== '1') return;
 
+        delete form.dataset.confirmed;
         event.preventDefault();
         event.stopImmediatePropagation();
-        if (form.dataset.pending === '1') return;
 
         form.dataset.pending = '1';
         form.setAttribute('aria-busy', 'true');
+        form.classList.add('lc-loading');
 
         const button = event.submitter || form.querySelector('button[type="submit"]');
+        const originalButtonHtml = button?.innerHTML || '';
+
         if (button) {
-            button.dataset.originalText = button.textContent;
-            button.textContent = button.dataset.loadingText || @json(__('Cancelling...'));
+            const loadingText = button.dataset.loadingText;
             button.disabled = true;
             button.setAttribute('aria-disabled', 'true');
+            if (loadingText) {
+                button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+            }
         }
+
+        if (liveStatus) {
+            liveStatus.textContent = '';
+            liveStatus.classList.add('d-none');
+            liveStatus.classList.remove('text-danger', 'text-success');
+        }
+
+        const release = () => {
+            delete form.dataset.pending;
+            form.removeAttribute('aria-busy');
+            form.classList.remove('lc-loading');
+
+            if (button) {
+                button.disabled = false;
+                button.removeAttribute('aria-disabled');
+                button.innerHTML = originalButtonHtml;
+            }
+        };
 
         try {
             const response = await fetch(form.action, {
@@ -120,11 +150,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 credentials: 'same-origin',
             });
 
-            if (!response.ok) throw new Error('return-cancel-failed');
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const firstError = Object.values(payload.errors || {}).flat()[0];
+                throw new Error(firstError || payload.message || @json(__('Could not cancel the return request. Please try again.')));
+            }
 
-            const payload = await response.json();
             const status = document.querySelector('[data-return-status]');
-            const liveStatus = document.querySelector('[data-return-live-status]');
 
             if (status) {
                 status.textContent = payload.return?.status_label || status.textContent;
@@ -132,12 +164,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (liveStatus) {
                 liveStatus.textContent = payload.message || @json(__('Return request cancelled.'));
-                liveStatus.classList.remove('d-none');
+                liveStatus.classList.remove('d-none', 'text-danger');
+                liveStatus.classList.add('text-success');
             }
 
             form.remove();
         } catch (error) {
-            form.submit();
+            release();
+            if (liveStatus) {
+                liveStatus.textContent = error.message || @json(__('Could not cancel the return request. Please try again.'));
+                liveStatus.classList.remove('d-none', 'text-success');
+                liveStatus.classList.add('text-danger');
+            }
         }
     }, true);
 });

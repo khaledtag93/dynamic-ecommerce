@@ -252,16 +252,32 @@ class ReturnRequestWorkflowTest extends TestCase
     }
 
 
-    public function test_return_cancel_live_submission_has_duplicate_guard_and_accessible_busy_state(): void
+    public function test_return_cancel_live_submission_resets_confirmation_and_recovers_without_duplicate_patch(): void
     {
         $view = file_get_contents(resource_path('views/frontend/returns/show.blade.php'));
 
         $this->assertStringContainsString('data-loading-text="{{ __(\'Cancelling...\') }}"', $view);
-        $this->assertStringContainsString("if (form.dataset.pending === '1') return;", $view);
+        $this->assertStringContainsString("if (!form || typeof window.fetch !== 'function') return;", $view);
+        $this->assertStringContainsString("if (form.dataset.pending === '1') {", $view);
+        $this->assertStringContainsString('delete form.dataset.confirmed;', $view);
         $this->assertStringContainsString("form.dataset.pending = '1';", $view);
         $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("form.classList.add('lc-loading');", $view);
         $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
-        $this->assertStringContainsString("button.dataset.loadingText || @json(__('Cancelling...'))", $view);
+        $this->assertStringContainsString('delete form.dataset.pending;', $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("button.removeAttribute('aria-disabled');", $view);
+        $this->assertStringContainsString('button.innerHTML = originalButtonHtml;', $view);
+        $this->assertStringContainsString("const payload = await response.json().catch(() => ({}));", $view);
+        $this->assertStringContainsString("Object.values(payload.errors || {}).flat()[0]", $view);
+        $this->assertStringNotContainsString("throw new Error('return-cancel-failed');", $view);
+        $this->assertStringNotContainsString('form.submit();', $view);
+
+        $arabic = json_decode(file_get_contents(lang_path('ar.json')), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame(
+            'تعذر إلغاء طلب الإرجاع. حاول مرة أخرى.',
+            $arabic['Could not cancel the return request. Please try again.'] ?? null
+        );
     }
 
     private function makeDeliveredPaidOrder(User $user, float $total): Order
