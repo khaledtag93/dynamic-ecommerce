@@ -72,6 +72,32 @@ class DeliveryService
                     $updates['delivered_at'] = now();
                 }
 
+                if ($newStatus === Order::DELIVERY_STATUS_RETURNED) {
+                    $meta = $lockedOrder->meta ?? [];
+                    $history = is_array($meta['delivery_return_history'] ?? null)
+                        ? $meta['delivery_return_history']
+                        : [];
+
+                    $history[] = [
+                        'returned_at' => now()->toDateTimeString(),
+                        'from_status' => $lockedOrder->delivery_status,
+                        'shipped_at' => $lockedOrder->shipped_at?->toDateTimeString(),
+                        'shipping_provider' => $lockedOrder->shipping_provider,
+                        'tracking_number' => $lockedOrder->tracking_number,
+                    ];
+
+                    $meta['delivery_return_history'] = array_slice($history, -20);
+                    $updates['meta'] = $meta;
+                }
+
+                if (
+                    $newStatus === Order::DELIVERY_STATUS_PREPARING
+                    && $lockedOrder->delivery_status === Order::DELIVERY_STATUS_RETURNED
+                ) {
+                    $updates['shipped_at'] = null;
+                    $updates['delivered_at'] = null;
+                }
+
                 if ($newStatus === Order::DELIVERY_STATUS_CANCELLED) {
                     $updates['shipped_at'] = null;
                     $updates['delivered_at'] = null;

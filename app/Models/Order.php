@@ -336,7 +336,6 @@ class Order extends Model
             return in_array($newStatus, match ($this->delivery_status) {
                 self::DELIVERY_STATUS_PENDING => [self::DELIVERY_STATUS_PREPARING],
                 self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_DELIVERED],
-                self::DELIVERY_STATUS_DELIVERED => [self::DELIVERY_STATUS_RETURNED],
                 default => [],
             }, true);
         }
@@ -346,7 +345,7 @@ class Order extends Model
             self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_SHIPPED],
             self::DELIVERY_STATUS_SHIPPED => [self::DELIVERY_STATUS_OUT_FOR_DELIVERY, self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_RETURNED],
             self::DELIVERY_STATUS_OUT_FOR_DELIVERY => [self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_RETURNED],
-            self::DELIVERY_STATUS_DELIVERED => [self::DELIVERY_STATUS_RETURNED],
+            self::DELIVERY_STATUS_RETURNED => [self::DELIVERY_STATUS_PREPARING],
             default => [],
         }, true);
     }

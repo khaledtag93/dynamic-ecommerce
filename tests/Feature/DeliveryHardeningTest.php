@@ -212,16 +212,65 @@ class DeliveryHardeningTest extends TestCase
 
         $this->assertFalse($sameStatus['status_changed']);
         $this->assertTrue($order->fresh()->delivered_at->equalTo($deliveredAt));
+        $this->assertFalse($order->fresh()->canTransitionDeliveryTo(Order::DELIVERY_STATUS_RETURNED));
 
-        $service->update($order->fresh(), ['delivery_status' => Order::DELIVERY_STATUS_RETURNED]);
+        Notification::assertSentToTimes($customer, DeliveryStatusUpdatedNotification::class, 4);
+        Notification::assertSentToTimes($admin, DeliveryStatusUpdatedNotification::class, 4);
+    }
 
-        $fresh = $order->fresh();
-        $this->assertSame(Order::DELIVERY_STATUS_RETURNED, $fresh->delivery_status);
-        $this->assertTrue($fresh->shipped_at->equalTo($shippedAt));
-        $this->assertTrue($fresh->delivered_at->equalTo($deliveredAt));
+    public function test_return_to_sender_can_be_reprepared_without_mutating_inventory(): void
+    {
+        Notification::fake();
 
-        Notification::assertSentToTimes($customer, DeliveryStatusUpdatedNotification::class, 5);
-        Notification::assertSentToTimes($admin, DeliveryStatusUpdatedNotification::class, 5);
+        $customer = User::factory()->create();
+        $order = $this->createOrder([
+            'user_id' => $customer->id,
+            'status' => Order::STATUS_PROCESSING,
+            'delivery_status' => Order::DELIVERY_STATUS_SHIPPED,
+            'shipped_at' => now()->subHour()->startOfSecond(),
+            'shipping_provider' => 'Courier A',
+            'tracking_number' => 'RTS-100',
+        ]);
+
+        $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldReceive('queueDeliveryUpdate')->twice();
+
+        $service = new DeliveryService($whatsApp, app(OrderActionService::class));
+        $service->update($order, ['delivery_status' => Order::DELIVERY_STATUS_RETURNED]);
+
+        $returned = $order->fresh();
+        $this->assertSame(Order::STATUS_PROCESSING, $returned->status);
+        $this->assertSame(Order::DELIVERY_STATUS_RETURNED, $returned->delivery_status);
+        $this->assertTrue($returned->canTransitionDeliveryTo(Order::DELIVERY_STATUS_PREPARING));
+        $this->assertSame('RTS-100', data_get($returned->meta, 'delivery_return_history.0.tracking_number'));
+        $this->assertSame('shipped', data_get($returned->meta, 'delivery_return_history.0.from_status'));
+
+        $service->update($returned, ['delivery_status' => Order::DELIVERY_STATUS_PREPARING]);
+
+        $retried = $order->fresh();
+        $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $retried->delivery_status);
+        $this->assertNull($retried->shipped_at);
+        $this->assertNull($retried->delivered_at);
+        $this->assertTrue($retried->canTransitionDeliveryTo(Order::DELIVERY_STATUS_SHIPPED));
+    }
+
+    public function test_delivered_and_pickup_orders_cannot_bypass_rma_through_delivery_returned(): void
+    {
+        $delivered = $this->createOrder([
+            'status' => Order::STATUS_COMPLETED,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivered_at' => now(),
+        ]);
+
+        $pickup = $this->createOrder([
+            'status' => Order::STATUS_COMPLETED,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivered_at' => now(),
+        ]);
+
+        $this->assertFalse($delivered->canTransitionDeliveryTo(Order::DELIVERY_STATUS_RETURNED));
+        $this->assertFalse($pickup->canTransitionDeliveryTo(Order::DELIVERY_STATUS_RETURNED));
     }
 
     public function test_store_pickup_skips_shipping_only_states(): void
