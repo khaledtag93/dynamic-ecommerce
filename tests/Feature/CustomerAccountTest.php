@@ -167,6 +167,21 @@ class CustomerAccountTest extends TestCase
         ]);
     }
 
+    public function test_address_live_delete_resets_confirmation_and_guards_duplicate_submits(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/account/addresses/index.blade.php'));
+
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Deleting...\') }}"', $view);
+        $this->assertStringContainsString("if (form.dataset.pending === '1') {", $view);
+        $this->assertStringContainsString('delete form.dataset.confirmed;', $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString("status.classList.remove('d-none', 'text-danger');", $view);
+        $this->assertStringContainsString("status.classList.add('text-success');", $view);
+        $this->assertStringContainsString('form.submit();', $view);
+    }
+
     public function test_address_live_save_guards_duplicate_submits_and_restores_loading_state(): void
     {
         $view = file_get_contents(resource_path('views/frontend/account/addresses/form.blade.php'));

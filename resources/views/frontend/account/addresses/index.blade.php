@@ -45,7 +45,7 @@
                                   data-confirm-ok="{{ __('Delete address') }}"
                                   data-address-delete-live>
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger btn-sm">{{ __('Delete') }}</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm" data-loading-text="{{ __('Deleting...') }}">{{ __('Delete') }}</button>
                             </form>
                         </div>
                     </div>
@@ -85,13 +85,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('form[data-address-delete-live]').forEach(function (form) {
         form.addEventListener('submit', async function (event) {
+            if (form.dataset.pending === '1') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                return;
+            }
             if (form.dataset.confirmed !== '1') return;
 
+            delete form.dataset.confirmed;
             event.preventDefault();
             event.stopImmediatePropagation();
 
+            form.dataset.pending = '1';
+            form.setAttribute('aria-busy', 'true');
+            form.classList.add('lc-loading');
+
             const button = event.submitter || form.querySelector('button[type="submit"]');
-            if (button) button.disabled = true;
+            const originalButtonHtml = button?.innerHTML || '';
+
+            if (button) {
+                const loadingText = button.dataset.loadingText;
+                button.disabled = true;
+                button.setAttribute('aria-disabled', 'true');
+                if (loadingText) {
+                    button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+                }
+            }
+
+            if (status) {
+                status.textContent = '';
+                status.classList.add('d-none');
+                status.classList.remove('text-danger', 'text-success');
+            }
 
             try {
                 const response = await fetch(form.action, {
@@ -124,7 +149,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (status) {
                     status.textContent = payload.message || @json(__('Address deleted.'));
-                    status.classList.remove('d-none');
+                    status.classList.remove('d-none', 'text-danger');
+                    status.classList.add('text-success');
                 }
             } catch (error) {
                 form.submit();
