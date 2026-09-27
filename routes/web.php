@@ -301,7 +301,7 @@ Route::prefix('admin')
                 Route::delete('/categories/{category}', 'destroy')->name('categories.destroy');
             });
 
-            Route::get('/brands', BrandIndex::class)->name('brands.index');
+            Route::livewire('/brands', BrandIndex::class)->name('brands.index');
 
             Route::controller(ProductController::class)->group(function () {
                 Route::get('/products', 'index')->name('products.index');
@@ -309,8 +309,8 @@ Route::prefix('admin')
                 Route::get('/products/{product}/edit', 'edit')->name('products.edit');
             });
 
-            Route::get('/attributes', AttributeIndex::class)->name('attributes.index');
-            Route::get('/attributes/{id}/values', AttributeValues::class)->name('attributes.values');
+            Route::livewire('/attributes', AttributeIndex::class)->name('attributes.index');
+            Route::livewire('/attributes/{id}/values', AttributeValues::class)->name('attributes.values');
         });
 
         Route::middleware('permission:reviews.manage')->controller(ProductReviewController::class)->group(function () {
