@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 class ProductService
@@ -132,6 +133,26 @@ class ProductService
 
             return $newProduct->load('images');
         });
+    }
+
+
+    public function assertCanBeDeleted(Product $product): void
+    {
+        foreach ([
+            'cart_items',
+            'order_items',
+            'supplier_items',
+            'purchase_items',
+            'inventory_movements',
+            'pos_cart_items',
+            'order_stock_reservations',
+        ] as $table) {
+            if (DB::table($table)->where('product_id', $product->id)->exists()) {
+                throw ValidationException::withMessages([
+                    'delete' => __('A product with business or inventory history cannot be deleted. Disable it instead.'),
+                ]);
+            }
+        }
     }
 
     protected function prepareProductPayload(array $data): array

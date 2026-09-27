@@ -214,6 +214,65 @@ class CatalogStockAuditTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 0);
     }
 
+
+    public function test_product_with_inventory_history_cannot_be_hard_deleted(): void
+    {
+        $this->actingAs(User::factory()->create(['role_as' => 1]));
+        $product = $this->product(0);
+
+        InventoryMovement::create([
+            'product_id' => $product->id,
+            'product_variant_id' => null,
+            'type' => InventoryMovement::TYPE_ADJUSTMENT,
+            'reason' => 'Historical product movement',
+            'quantity_change' => 1,
+            'balance_after' => 0,
+            'unit_cost' => 0,
+        ]);
+
+        Livewire::test(Index::class)
+            ->call('requestDelete', $product->id)
+            ->call('confirmDelete')
+            ->assertHasErrors(['delete']);
+
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+    }
+
+    public function test_bulk_product_delete_is_all_or_nothing_when_one_product_has_history(): void
+    {
+        $this->actingAs(User::factory()->create(['role_as' => 1]));
+        $protected = $this->product(0);
+        $free = Product::create([
+            'name' => 'Free Product',
+            'slug' => 'free-product',
+            'category_id' => $protected->category_id,
+            'base_price' => 20,
+            'quantity' => 0,
+            'stock_status' => 'in_stock',
+            'has_variants' => false,
+            'status' => true,
+        ]);
+
+        InventoryMovement::create([
+            'product_id' => $protected->id,
+            'product_variant_id' => null,
+            'type' => InventoryMovement::TYPE_ADJUSTMENT,
+            'reason' => 'Protected bulk product',
+            'quantity_change' => 1,
+            'balance_after' => 0,
+            'unit_cost' => 0,
+        ]);
+
+        Livewire::test(Index::class)
+            ->set('selectedProducts', [(string) $protected->id, (string) $free->id])
+            ->call('requestBulkDelete')
+            ->call('confirmBulkDelete')
+            ->assertHasErrors(['delete']);
+
+        $this->assertDatabaseHas('products', ['id' => $protected->id]);
+        $this->assertDatabaseHas('products', ['id' => $free->id]);
+    }
+
     private function assertMovement(int $productId, ?int $variantId, int $change, int $balance, string $source, int $actorId): void
     {
         $movement = InventoryMovement::query()

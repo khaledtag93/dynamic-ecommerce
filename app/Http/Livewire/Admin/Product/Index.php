@@ -359,13 +359,14 @@ class Index extends Component
         $this->pendingDeleteId = null;
     }
 
-    public function confirmDelete(): void
+    public function confirmDelete(ProductService $productService): void
     {
         if (! $this->pendingDeleteId) {
             return;
         }
 
         $product = Product::with('images')->findOrFail($this->pendingDeleteId);
+        $productService->assertCanBeDeleted($product);
 
         foreach ($product->images as $image) {
             $path = $image->image_path;
@@ -423,7 +424,7 @@ class Index extends Component
         $this->pendingBulkDeleteCount = 0;
     }
 
-    public function confirmBulkDelete(): void
+    public function confirmBulkDelete(ProductService $productService): void
     {
         if (empty($this->selectedProducts) || $this->pendingBulkDeleteCount < 1) {
             return;
@@ -447,6 +448,10 @@ class Index extends Component
             $this->dispatch('close-product-bulk-delete-confirmation');
             session()->flash('error', __('The selected products changed. Please review and confirm the deletion again.'));
             return;
+        }
+
+        foreach ($products as $product) {
+            $productService->assertCanBeDeleted($product);
         }
 
         foreach ($products as $product) {
