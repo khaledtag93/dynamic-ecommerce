@@ -88,6 +88,24 @@ class CustomerNotificationLiveActionsTest extends TestCase
         $this->assertSame('تم تعليم جميع الإشعارات كمقروءة.', $arabic['All notifications marked as read.'] ?? null);
     }
 
+    public function test_notification_live_actions_have_accessible_busy_state_and_restore_on_failure(): void
+    {
+        $index = file_get_contents(resource_path('views/frontend/notifications/index.blade.php'));
+        $results = file_get_contents(resource_path('views/frontend/notifications/_results.blade.php'));
+
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Updating...\') }}"', $results);
+        $this->assertStringContainsString("if (form.dataset.pending === '1') {", $index);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $index);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $index);
+        $this->assertStringContainsString("form.classList.add('lc-loading');", $index);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $index);
+        $this->assertStringContainsString('delete form.dataset.pending;', $index);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $index);
+        $this->assertStringContainsString("button.removeAttribute('aria-disabled');", $index);
+        $this->assertStringContainsString('button.innerHTML = originalButtonHtml;', $index);
+        $this->assertStringContainsString('release();', $index);
+    }
+
     private function notificationFor(User $user, string $title, ?string $actionUrl = null): DatabaseNotification
     {
         $id = (string) Str::uuid();

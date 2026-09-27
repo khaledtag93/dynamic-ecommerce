@@ -94,13 +94,40 @@
             const form = event.target.closest('[data-notification-read], [data-notification-read-all]');
             if (!form) return;
 
+            if (form.dataset.pending === '1') {
+                event.preventDefault();
+                return;
+            }
+
             event.preventDefault();
-            if (form.dataset.pending === '1') return;
+
             form.dataset.pending = '1';
+            form.setAttribute('aria-busy', 'true');
+            form.classList.add('lc-loading');
 
             const button = form.querySelector('button');
-            if (button) button.disabled = true;
+            const originalButtonHtml = button?.innerHTML || '';
+
+            if (button) {
+                const loadingText = button.dataset.loadingText || @json(__('Updating...'));
+                button.disabled = true;
+                button.setAttribute('aria-disabled', 'true');
+                button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+            }
+
             setStatus(@json(__('Updating...')));
+
+            const release = () => {
+                delete form.dataset.pending;
+                form.removeAttribute('aria-busy');
+                form.classList.remove('lc-loading');
+
+                if (button) {
+                    button.disabled = false;
+                    button.removeAttribute('aria-disabled');
+                    button.innerHTML = originalButtonHtml;
+                }
+            };
 
             try {
                 const payload = await request(form);
@@ -120,8 +147,7 @@
                     window.location.assign(payload.action_url);
                 }
             } catch (error) {
-                if (button) button.disabled = false;
-                delete form.dataset.pending;
+                release();
                 setStatus(error.message || @json(__('Could not update results. Open the full page to retry.')), true);
             }
         });

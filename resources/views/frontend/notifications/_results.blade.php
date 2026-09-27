@@ -18,7 +18,7 @@
                               data-navigate-after-read="{{ !empty($payload['action_url']) ? '1' : '0' }}"
                               data-view-label="{{ __('View update') }}">
                             @csrf @method('PATCH')
-                            <button class="btn btn-sm btn-outline-secondary rounded-4">{{ !empty($payload['action_url']) ? __('View update') : __('Mark as read') }}</button>
+                            <button class="btn btn-sm btn-outline-secondary rounded-4" data-loading-text="{{ __('Updating...') }}">{{ !empty($payload['action_url']) ? __('View update') : __('Mark as read') }}</button>
                         </form>
                     @elseif(!empty($payload['action_url']))
                         <a href="{{ $payload['action_url'] }}" class="btn btn-sm btn-outline-secondary rounded-4">{{ __('View update') }}</a>
