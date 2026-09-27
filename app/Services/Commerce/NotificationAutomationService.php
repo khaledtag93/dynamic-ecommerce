@@ -7,6 +7,7 @@ use App\Mail\OrderUpdateMail;
 use App\Models\NotificationAutomationRule;
 use App\Models\NotificationDispatchLog;
 use App\Models\Order;
+use App\Models\WhatsAppLog;
 use App\Notifications\DeliveryStatusUpdatedNotification;
 use App\Notifications\OrderStatusChangedNotification;
 use Illuminate\Support\Facades\Log;
@@ -453,12 +454,18 @@ class NotificationAutomationService
                     throw new \RuntimeException('Order customer phone is missing.');
                 }
 
-                match ($event) {
+                $whatsAppLog = match ($event) {
                     OrderNotificationService::EVENT_STATUS_UPDATED,
-                    OrderNotificationService::EVENT_CANCELLED => $this->whatsAppService->queueOrderStatusUpdate($order),
-                    OrderNotificationService::EVENT_DELIVERY_UPDATED => $this->whatsAppService->queueDeliveryUpdate($order),
+                    OrderNotificationService::EVENT_CANCELLED => $this->whatsAppService->sendOrderStatusUpdate($order),
+                    OrderNotificationService::EVENT_DELIVERY_UPDATED => $this->whatsAppService->sendDeliveryUpdate($order),
                     default => throw new \RuntimeException('WhatsApp fallback is not configured for this event.'),
                 };
+
+                if (! $whatsAppLog || $whatsAppLog->status !== WhatsAppLog::STATUS_SENT) {
+                    throw new \RuntimeException(
+                        $whatsAppLog?->error_message ?: __('WhatsApp automation delivery did not complete successfully.')
+                    );
+                }
             } else {
                 throw new \RuntimeException('Unsupported fallback channel.');
             }

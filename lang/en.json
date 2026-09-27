@@ -2308,6 +2308,7 @@
     "The WhatsApp message retry was executed safely.": "The WhatsApp message retry was executed safely.",
     "WhatsApp test send could not be completed successfully.": "WhatsApp test send could not be completed successfully.",
     "WhatsApp event could not be re-sent successfully.": "WhatsApp event could not be re-sent successfully.",
+    "WhatsApp automation delivery did not complete successfully.": "WhatsApp automation delivery did not complete successfully.",
     "WhatsApp event could not be completed successfully.": "WhatsApp event could not be completed successfully.",
     "WhatsApp test send did not complete successfully.": "WhatsApp test send did not complete successfully.",
     "WhatsApp test sends use the current order phone and the live provider configuration already set in admin.": "WhatsApp test sends use the current order phone and the live provider configuration already set in admin.",

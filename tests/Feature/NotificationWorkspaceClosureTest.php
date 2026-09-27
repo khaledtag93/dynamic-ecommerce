@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Contracts\Services\WhatsAppServiceInterface;
+use App\Models\NotificationAutomationRule;
 use App\Models\NotificationDispatchLog;
 use App\Models\Order;
 use App\Models\WhatsAppLog;
+use App\Services\Commerce\NotificationAutomationService;
 use App\Services\Commerce\NotificationTemplateService;
 use App\Services\Commerce\OrderNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,6 +98,61 @@ class NotificationWorkspaceClosureTest extends TestCase
             'whatsapp',
             'en'
         );
+    }
+
+    public function test_whatsapp_automation_failure_is_not_recorded_as_sent(): void
+    {
+        $order = Order::query()->create([
+            'order_number' => 'WA-AUTOMATION-FAIL',
+            'customer_name' => 'WhatsApp Automation',
+            'customer_email' => 'wa-automation@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+        ]);
+
+        $rule = NotificationAutomationRule::query()->create([
+            'name' => 'WhatsApp fallback test',
+            'trigger_status' => NotificationAutomationRule::TRIGGER_FAILED,
+            'action_type' => NotificationAutomationRule::ACTION_FALLBACK_CHANNEL,
+            'target_channel' => 'whatsapp',
+        ]);
+
+        $failedWhatsAppLog = new WhatsAppLog([
+            'status' => WhatsAppLog::STATUS_FAILED,
+            'error_message' => 'Provider rejected automation delivery.',
+        ]);
+
+        $whatsApp = \Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldReceive('sendOrderStatusUpdate')->once()->andReturn($failedWhatsAppLog);
+        $this->app->instance(WhatsAppServiceInterface::class, $whatsApp);
+
+        $service = app(NotificationAutomationService::class);
+        $method = new \ReflectionMethod($service, 'sendUsingChannel');
+        $method->setAccessible(true);
+
+        $result = $method->invoke(
+            $service,
+            $order,
+            OrderNotificationService::EVENT_STATUS_UPDATED,
+            'whatsapp',
+            'Automation message',
+            'Automation title',
+            $rule,
+            true
+        );
+
+        $dispatchLog = NotificationDispatchLog::query()
+            ->where('order_id', $order->id)
+            ->where('channel', 'whatsapp')
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertStringStartsWith('failed:', $result);
+        $this->assertSame(NotificationDispatchLog::STATUS_FAILED, $dispatchLog->status);
+        $this->assertNull($dispatchLog->sent_at);
+        $this->assertSame('Provider rejected automation delivery.', $dispatchLog->error_message);
     }
 
     public function test_notification_center_navigation_exposes_current_page_semantics(): void
