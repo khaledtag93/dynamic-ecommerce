@@ -964,13 +964,14 @@ class NotificationCenterController extends Controller
         }
 
         $retried = $this->whatsAppService->retry($log);
+        $retrySucceeded = $retried?->status === WhatsAppLog::STATUS_SENT;
 
         $this->adminActivityLogService->log(
             'notification_retry',
-            $retried ? 'whatsapp_log_retried' : 'whatsapp_log_retry_failed',
-            $retried
+            $retrySucceeded ? 'whatsapp_log_retried' : 'whatsapp_log_retry_failed',
+            $retrySucceeded
                 ? __('A WhatsApp retry was requested for :type.', ['type' => $log->message_type])
-                : __('A WhatsApp retry could not be completed safely.'),
+                : ($retried?->error_message ?: __('A WhatsApp retry could not be completed safely.')),
             optional(auth()->user())->id,
             $log->order,
             array_merge($inspection, [
@@ -981,8 +982,11 @@ class NotificationCenterController extends Controller
             ])
         );
 
-        return back()->with($retried ? 'success' : 'error', $retried
-            ? __('WhatsApp retry was queued safely.')
-            : __('WhatsApp retry could not be completed safely.'));
+        return back()->with(
+            $retrySucceeded ? 'success' : 'error',
+            $retrySucceeded
+                ? __('WhatsApp retry was executed safely.')
+                : ($retried?->error_message ?: __('WhatsApp retry could not be completed safely.'))
+        );
     }
 }

@@ -57,6 +57,16 @@ class AdminNotificationWorkspaceClosureTest extends TestCase
         );
     }
 
+    public function test_notification_center_whatsapp_retry_only_reports_sent_logs_as_success(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/NotificationCenterController.php'));
+
+        $this->assertStringContainsString('$retrySucceeded = $retried?->status === WhatsAppLog::STATUS_SENT;', $controller);
+        $this->assertStringContainsString("\$retrySucceeded ? 'whatsapp_log_retried' : 'whatsapp_log_retry_failed'", $controller);
+        $this->assertStringContainsString("\$retried?->error_message ?: __('WhatsApp retry could not be completed safely.')", $controller);
+        $this->assertStringNotContainsString("return back()->with(\$retried ? 'success' : 'error'", $controller);
+    }
+
     public function test_admin_bulk_read_uses_query_level_update(): void
     {
         $controller = file_get_contents(app_path('Http/Controllers/Admin/NotificationController.php'));
