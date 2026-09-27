@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\User;
+use App\Services\Commerce\PaymentService;
 use App\Services\Payments\PaymobGatewayService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -111,6 +113,67 @@ class PaymobUnifiedCheckoutTest extends TestCase
 
         $this->assertSame($first, $second);
         Http::assertSentCount(1);
+    }
+
+    public function test_online_checkout_initiation_claim_blocks_duplicate_gateway_start_until_release_or_expiry(): void
+    {
+        $order = $this->makeOnlineOrder(90);
+        $payment = $this->makePayment($order);
+        $service = app(PaymentService::class);
+
+        $firstToken = $service->claimOnlineCheckoutInitiation($payment);
+
+        $this->assertNotNull($firstToken);
+        $this->assertNull($service->claimOnlineCheckoutInitiation($payment->fresh()));
+
+        $service->releaseOnlineCheckoutInitiation($payment, 'wrong-token');
+        $this->assertNull($service->claimOnlineCheckoutInitiation($payment->fresh()));
+
+        $service->releaseOnlineCheckoutInitiation($payment, $firstToken);
+
+        $secondToken = $service->claimOnlineCheckoutInitiation($payment->fresh());
+        $this->assertNotNull($secondToken);
+        $this->assertNotSame($firstToken, $secondToken);
+
+        $fresh = $payment->fresh();
+        $meta = $fresh->meta ?? [];
+        $meta['online_checkout_initiation_claim']['expires_at'] = now()->subSecond()->toIso8601String();
+        $fresh->update(['meta' => $meta]);
+
+        $thirdToken = $service->claimOnlineCheckoutInitiation($fresh->fresh());
+
+        $this->assertNotNull($thirdToken);
+        $this->assertNotSame($secondToken, $thirdToken);
+    }
+
+    public function test_second_customer_retry_request_does_not_create_another_paymob_intention_while_claim_is_active(): void
+    {
+        $user = User::factory()->create();
+        $order = $this->makeOnlineOrder(110);
+        $order->update(['user_id' => $user->id]);
+        $payment = $this->makePayment($order);
+        $service = app(PaymentService::class);
+
+        $claimToken = $service->claimOnlineCheckoutInitiation($payment);
+        $this->assertNotNull($claimToken);
+
+        Http::fake();
+
+        $response = $this->actingAs($user)->get(route('payments.paymob.redirect', $order));
+
+        $response
+            ->assertRedirect(route('payments.paymob.result', $order))
+            ->assertSessionHas(
+                'status',
+                __('A secure payment session is already being prepared. Please wait a moment and try again.')
+            );
+
+        Http::assertNothingSent();
+
+        $this->assertSame(
+            $claimToken,
+            data_get($payment->fresh()->meta, 'online_checkout_initiation_claim.token')
+        );
     }
 
     public function test_unified_configuration_is_preferred_over_legacy_if_both_exist(): void

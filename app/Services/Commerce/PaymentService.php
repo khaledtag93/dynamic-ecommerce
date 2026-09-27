@@ -345,6 +345,70 @@ class PaymentService
         });
     }
 
+    public const ONLINE_CHECKOUT_INITIATION_CLAIM_SECONDS = 120;
+
+    public function claimOnlineCheckoutInitiation(Payment $payment): ?string
+    {
+        return DB::transaction(function () use ($payment) {
+            $lockedPayment = Payment::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (in_array($lockedPayment->status, [Payment::STATUS_PAID, Payment::STATUS_REFUNDED], true)) {
+                return null;
+            }
+
+            $meta = $lockedPayment->meta ?? [];
+            $claim = data_get($meta, 'online_checkout_initiation_claim');
+            $expiresAt = is_array($claim) ? ($claim['expires_at'] ?? null) : null;
+
+            if ($expiresAt) {
+                try {
+                    if (now()->lt(\Illuminate\Support\Carbon::parse($expiresAt))) {
+                        return null;
+                    }
+                } catch (\Throwable) {
+                    // Invalid stale metadata should never block a fresh checkout attempt.
+                }
+            }
+
+            $claimedAt = now();
+            $token = (string) Str::uuid();
+
+            data_set($meta, 'online_checkout_initiation_claim', [
+                'token' => $token,
+                'claimed_at' => $claimedAt->toIso8601String(),
+                'expires_at' => $claimedAt->copy()
+                    ->addSeconds(self::ONLINE_CHECKOUT_INITIATION_CLAIM_SECONDS)
+                    ->toIso8601String(),
+            ]);
+
+            $lockedPayment->update(['meta' => $meta]);
+
+            return $token;
+        });
+    }
+
+    public function releaseOnlineCheckoutInitiation(Payment $payment, string $token): void
+    {
+        DB::transaction(function () use ($payment, $token) {
+            $lockedPayment = Payment::query()
+                ->whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $meta = $lockedPayment->meta ?? [];
+
+            if ((string) data_get($meta, 'online_checkout_initiation_claim.token') !== $token) {
+                return;
+            }
+
+            Arr::forget($meta, 'online_checkout_initiation_claim');
+            $lockedPayment->update(['meta' => $meta]);
+        });
+    }
+
     public function prepareOnlineRetry(Order $order, Payment $payment): Payment
     {
         return DB::transaction(function () use ($order, $payment) {

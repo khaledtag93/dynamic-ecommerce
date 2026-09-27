@@ -100,31 +100,79 @@ class PaymobController extends Controller
                     ->with('success', __('This order is already marked as paid.'));
             }
 
-            $payment = $this->paymentService->prepareOnlineRetry($order, $payment);
-            $order = $order->fresh();
+            $claimToken = $this->paymentService->claimOnlineCheckoutInitiation($payment);
 
-            $reusedUrl = $this->gateway->reuseCheckoutUrlIfAvailable($payment);
+            if (! $claimToken) {
+                $payment = $payment->fresh();
+                $order = $order->fresh();
 
-            if ($reusedUrl) {
-                $this->logInfo('Paymob checkout URL reused', [
+                if (! $order->can_retry_online_payment) {
+                    return redirect()
+                        ->route('payments.paymob.result', $order)
+                        ->with(
+                            $order->payment_status === Order::PAYMENT_STATUS_PAID ? 'success' : 'status',
+                            $order->payment_status === Order::PAYMENT_STATUS_PAID
+                                ? __('This order is already marked as paid.')
+                                : __('This order is not eligible for another online payment attempt.')
+                        );
+                }
+
+                $reusedUrl = $this->gateway->reuseCheckoutUrlIfAvailable($payment);
+
+                if ($reusedUrl) {
+                    $this->logInfo('Paymob checkout URL reused while another retry request was already handled', [
+                        'order_id' => $order->id,
+                        'payment_id' => $payment->id,
+                    ]);
+
+                    return redirect()->away($reusedUrl);
+                }
+
+                return redirect()
+                    ->route('payments.paymob.result', $order)
+                    ->with('status', __('A secure payment session is already being prepared. Please wait a moment and try again.'));
+            }
+
+            try {
+                $payment = $this->paymentService->prepareOnlineRetry($order, $payment->fresh());
+                $order = $order->fresh();
+
+                if (! $order->can_retry_online_payment) {
+                    return redirect()
+                        ->route('payments.paymob.result', $order)
+                        ->with(
+                            $order->payment_status === Order::PAYMENT_STATUS_PAID ? 'success' : 'status',
+                            $order->payment_status === Order::PAYMENT_STATUS_PAID
+                                ? __('This order is already marked as paid.')
+                                : __('This order is not eligible for another online payment attempt.')
+                        );
+                }
+
+                $reusedUrl = $this->gateway->reuseCheckoutUrlIfAvailable($payment);
+
+                if ($reusedUrl) {
+                    $this->logInfo('Paymob checkout URL reused', [
+                        'order_id' => $order->id,
+                        'payment_id' => $payment->id,
+                    ]);
+
+                    return redirect()->away($reusedUrl);
+                }
+
+                $url = $this->gateway->checkoutUrl(
+                    $order->loadMissing('items', 'payments'),
+                    $payment
+                );
+
+                $this->logInfo('Paymob redirect URL generated successfully', [
                     'order_id' => $order->id,
                     'payment_id' => $payment->id,
                 ]);
 
-                return redirect()->away($reusedUrl);
+                return redirect()->away($url);
+            } finally {
+                $this->paymentService->releaseOnlineCheckoutInitiation($payment, $claimToken);
             }
-
-            $url = $this->gateway->checkoutUrl(
-                $order->loadMissing('items', 'payments'),
-                $payment
-            );
-
-            $this->logInfo('Paymob redirect URL generated successfully', [
-                'order_id' => $order->id,
-                'payment_id' => $payment->id,
-            ]);
-
-            return redirect()->away($url);
         } catch (ValidationException $e) {
             $this->logWarning('Paymob redirect blocked by stock reservation validation', [
                 'order_id' => $order->id,
