@@ -109,6 +109,21 @@ class CartCheckoutClosureTest extends TestCase
         ]);
     }
 
+    public function test_cart_coupon_live_actions_expose_and_restore_accessible_busy_state(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/cart/index.blade.php'));
+
+        $this->assertStringContainsString("form.dataset.cartCouponPending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("form.classList.add('lc-loading');", $view);
+        $this->assertStringContainsString('aria-hidden="true"', $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString("button.removeAttribute('aria-disabled');", $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("form.classList.remove('lc-loading');", $view);
+        $this->assertStringContainsString('delete form.dataset.cartCouponPending;', $view);
+    }
+
     public function test_checkout_core_fields_have_explicit_accessible_labels(): void
     {
         $view = file_get_contents(resource_path('views/frontend/checkout/index.blade.php'));

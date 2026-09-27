@@ -38,6 +38,7 @@
     function restoreButton(button) {
         if (!button) return;
         button.disabled = false;
+        button.removeAttribute('aria-disabled');
 
         if (button.dataset.liveCartOriginalHtml !== undefined) {
             button.innerHTML = button.dataset.liveCartOriginalHtml;
@@ -59,14 +60,17 @@
 
         if (form.dataset.liveCartPending === '1') return;
         form.dataset.liveCartPending = '1';
+        form.setAttribute('aria-busy', 'true');
+        form.classList.add('lc-loading');
 
         if (submitter) {
             submitter.dataset.liveCartOriginalHtml = submitter.innerHTML;
             const loadingText = submitter.dataset.loadingText;
             if (loadingText) {
-                submitter.innerHTML = '<span class="lc-loading-spinner"></span>' + loadingText;
+                submitter.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
             }
             submitter.disabled = true;
+            submitter.setAttribute('aria-disabled', 'true');
         }
 
         try {
@@ -99,6 +103,8 @@
             showFeedback(error.message || feedbackNode()?.dataset.error || 'Unable to update cart.', true);
         } finally {
             restoreButton(submitter);
+            form.removeAttribute('aria-busy');
+            form.classList.remove('lc-loading');
             delete form.dataset.liveCartPending;
         }
     }, true);

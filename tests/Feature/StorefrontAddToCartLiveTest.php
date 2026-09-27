@@ -77,6 +77,19 @@ class StorefrontAddToCartLiveTest extends TestCase
         $this->assertStringContainsString("submitter.value === 'checkout'", $script);
     }
 
+    public function test_live_add_to_cart_exposes_and_restores_accessible_busy_state(): void
+    {
+        $script = file_get_contents(public_path('js/storefront-cart-actions.js'));
+
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $script);
+        $this->assertStringContainsString("form.classList.add('lc-loading');", $script);
+        $this->assertStringContainsString('aria-hidden="true"', $script);
+        $this->assertStringContainsString("submitter.setAttribute('aria-disabled', 'true');", $script);
+        $this->assertStringContainsString("button.removeAttribute('aria-disabled');", $script);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $script);
+        $this->assertStringContainsString("form.classList.remove('lc-loading');", $script);
+    }
+
     private function makeProduct(int $quantity): Product
     {
         $categoryId = DB::table('categories')->insertGetId([

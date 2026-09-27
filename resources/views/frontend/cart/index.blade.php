@@ -382,11 +382,15 @@ document.addEventListener('DOMContentLoaded', function () {
         if (form.dataset.cartCouponPending === '1') return;
 
         form.dataset.cartCouponPending = '1';
+        form.setAttribute('aria-busy', 'true');
+        form.classList.add('lc-loading');
+
         const button = form.querySelector('button[type="submit"]');
         if (button) {
             button.dataset.originalHtml = button.innerHTML;
-            button.innerHTML = '<span class="lc-loading-spinner"></span>' + (button.dataset.loadingText || @json(__('Updating...')));
+            button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + (button.dataset.loadingText || @json(__('Updating...')));
             button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
         }
         showStatus(@json(__('Updating...')));
 
@@ -417,11 +421,14 @@ document.addEventListener('DOMContentLoaded', function () {
         } finally {
             if (button) {
                 button.disabled = false;
+                button.removeAttribute('aria-disabled');
                 if (button.dataset.originalHtml !== undefined) {
                     button.innerHTML = button.dataset.originalHtml;
                     delete button.dataset.originalHtml;
                 }
             }
+            form.removeAttribute('aria-busy');
+            form.classList.remove('lc-loading');
             delete form.dataset.cartCouponPending;
         }
     };
