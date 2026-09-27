@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\WebsiteSetting;
 use App\Services\Commerce\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -125,6 +126,30 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertTrue($service->onlineGatewayConfigured());
         $this->assertArrayHasKey(Order::PAYMENT_METHOD_ONLINE, $service->paymentOptionsForCheckout());
         $this->assertContains(Order::PAYMENT_METHOD_ONLINE, $service->enabledMethods());
+    }
+
+    public function test_disabling_all_payment_methods_does_not_force_cash_on_delivery(): void
+    {
+        WebsiteSetting::setValue('payment_cod_enabled', '0', 'payment');
+        WebsiteSetting::setValue('payment_bank_transfer_enabled', '0', 'payment');
+        WebsiteSetting::setValue('payment_online_enabled', '0', 'payment');
+
+        $service = app(PaymentService::class);
+
+        $this->assertSame([], $service->paymentOptionsForCheckout());
+        $this->assertSame([], $service->enabledMethods());
+    }
+
+    public function test_checkout_stays_blocked_when_no_payment_method_is_available(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/checkout/index.blade.php'));
+        $service = file_get_contents(app_path('Services/Commerce/PaymentService.php'));
+
+        $this->assertStringContainsString('No payment methods are currently available. Please contact support or try again later.', $view);
+        $this->assertStringContainsString('const paymentMethodsAvailable =', $view);
+        $this->assertStringContainsString('if (!checkoutSubmitting && paymentMethodsAvailable)', $view);
+        $this->assertStringContainsString('if (!paymentMethodsAvailable)', $view);
+        $this->assertStringNotContainsString('Fallback method kept active to avoid blocking checkout.', $service);
     }
 
     public function test_payment_gateway_mode_rejects_forged_values(): void

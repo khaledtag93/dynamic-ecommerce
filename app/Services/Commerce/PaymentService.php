@@ -51,14 +51,6 @@ class PaymentService
             ];
         }
 
-        if ($options === []) {
-            $options[Order::PAYMENT_METHOD_COD] = [
-                'label' => __('Cash on Delivery'),
-                'description' => __('Fallback method kept active to avoid blocking checkout.'),
-                'provider' => null,
-            ];
-        }
-
         return $options;
     }
 

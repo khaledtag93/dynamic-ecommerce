@@ -127,6 +127,11 @@
                                 <span><i class="bi bi-shield-check"></i>{{ __('Protected checkout') }}</span>
                             </div>
 
+                            @if($paymentOptions === [])
+                                <div class="alert alert-warning mb-0" role="alert">
+                                    {{ __('No payment methods are currently available. Please contact support or try again later.') }}
+                                </div>
+                            @else
                             <div class="row g-3" role="radiogroup" aria-label="{{ __('Payment method') }}" aria-required="true">
                                 @foreach($paymentOptions as $value => $option)
                                     @php
@@ -150,6 +155,7 @@
                                     </div>
                                 @endforeach
                             </div>
+                            @endif
                             @error('payment_method') <div class="invalid-feedback d-block mt-2">{{ $message }}</div> @enderror
                         </div>
 
@@ -450,6 +456,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const meta = form.querySelector('[data-shipping-meta]');
     const total = form.querySelector('[data-shipping-total]');
     const submit = form.querySelector('[data-shipping-submit]');
+    const paymentMethodsAvailable = form.querySelector('input[name="payment_method"]') !== null;
     const token = form.querySelector('input[name="_token"]')?.value;
     const billingSame = form.querySelector('[data-billing-same]');
     const billingFields = form.querySelector('#billingFields');
@@ -535,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             meta.textContent = details.join(' · ');
             status.textContent = @json(__('Shipping quote confirmed.'));
-            if (!checkoutSubmitting) {
+            if (!checkoutSubmitting && paymentMethodsAvailable) {
                 submit.disabled = false;
                 submit.setAttribute('aria-disabled', 'false');
             }
@@ -620,6 +627,11 @@ document.addEventListener('DOMContentLoaded', function () {
     syncBillingRequired();
 
     form.addEventListener('submit', function (event) {
+        if (!paymentMethodsAvailable) {
+            event.preventDefault();
+            return;
+        }
+
         if (checkoutSubmitting) {
             event.preventDefault();
             return;
