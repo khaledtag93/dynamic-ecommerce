@@ -324,6 +324,47 @@ class SupportCaseFoundationTest extends TestCase
             ->assertDontSee(route('admin.payments.show', $payment), false);
     }
 
+    public function test_customer_support_create_keeps_an_owned_selected_order_available_beyond_the_recent_window(): void
+    {
+        $customer = User::factory()->create(['role_as' => 0]);
+        $selectedOrder = $this->orderFor($customer, 'SUP-OLDER-ORDER');
+
+        foreach (range(1, 51) as $number) {
+            $this->orderFor($customer, 'SUP-RECENT-'.str_pad((string) $number, 2, '0', STR_PAD_LEFT));
+        }
+
+        $this->actingAs($customer)
+            ->get(route('support.create', ['order_id' => $selectedOrder->id]))
+            ->assertOk()
+            ->assertSee('SUP-OLDER-ORDER')
+            ->assertSee('value="' . $selectedOrder->id . '" selected', false);
+    }
+
+    public function test_customer_support_create_does_not_expose_another_customers_selected_order(): void
+    {
+        $customer = User::factory()->create(['role_as' => 0]);
+        $otherCustomer = User::factory()->create(['role_as' => 0]);
+        $otherOrder = $this->orderFor($otherCustomer, 'SUP-PRIVATE-ORDER');
+
+        $this->actingAs($customer)
+            ->get(route('support.create', ['order_id' => $otherOrder->id]))
+            ->assertOk()
+            ->assertDontSee('SUP-PRIVATE-ORDER')
+            ->assertDontSee('value="' . $otherOrder->id . '" selected', false);
+    }
+
+    public function test_order_detail_links_support_with_the_current_order_context(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/orders/show.blade.php'));
+
+        $this->assertStringContainsString(
+            "route('support.create', ['order_id' => \$order->id])",
+            $view
+        );
+        $this->assertStringContainsString("{{ __('Contact support') }}", $view);
+    }
+
+
     private function staffWithRole(string $slug): User
     {
         $user = User::factory()->create(['role_as' => 1]);

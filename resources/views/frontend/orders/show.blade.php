@@ -166,7 +166,10 @@
 
                 <div class="lc-card p-4">
                     <h4 class="fw-bold mb-3">{{ __('Need help?') }}</h4>
-                    <div class="text-muted small">{{ __('You can keep tracking payment and delivery updates from your account notifications.') }}</div>
+                    <div class="text-muted small mb-3">{{ __('You can keep tracking payment and delivery updates from your account notifications.') }}</div>
+                    <a href="{{ route('support.create', ['order_id' => $order->id]) }}" class="btn lc-btn-soft btn-sm">
+                        <i class="bi bi-headset me-2"></i>{{ __('Contact support') }}
+                    </a>
                 </div>
             </div>
         </div>

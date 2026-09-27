@@ -34,13 +34,37 @@ class SupportController extends Controller
 
     public function create(Request $request)
     {
+        $oldOrderId = $request->old('order_id');
+        $requestedOrderId = is_scalar($oldOrderId) && ctype_digit((string) $oldOrderId)
+            ? (int) $oldOrderId
+            : $request->integer('order_id');
+
+        $orderColumns = ['id', 'order_number', 'status', 'placed_at', 'created_at'];
+
         $orders = $request->user()
             ->orders()
             ->latest('id')
             ->limit(50)
-            ->get(['id', 'order_number', 'status', 'placed_at', 'created_at']);
+            ->get($orderColumns);
 
-        return view('frontend.support.create', compact('orders'));
+        if ($requestedOrderId > 0 && ! $orders->contains('id', $requestedOrderId)) {
+            $selectedOrder = $request->user()
+                ->orders()
+                ->whereKey($requestedOrderId)
+                ->first($orderColumns);
+
+            if ($selectedOrder) {
+                $orders->prepend($selectedOrder);
+            } else {
+                $requestedOrderId = 0;
+            }
+        }
+
+        $selectedOrderId = $requestedOrderId > 0 && $orders->contains('id', $requestedOrderId)
+            ? $requestedOrderId
+            : null;
+
+        return view('frontend.support.create', compact('orders', 'selectedOrderId'));
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse

@@ -17,7 +17,7 @@
                     <select id="supportOrder" name="order_id" class="form-select lc-form-control @error('order_id') is-invalid @enderror">
                         <option value="">{{ __('Not related to an order') }}</option>
                         @foreach($orders as $order)
-                            <option value="{{ $order->id }}" @selected((string)old('order_id') === (string)$order->id)>{{ $order->order_number }} · {{ $order->status_label }}</option>
+                            <option value="{{ $order->id }}" @selected((string)old('order_id', $selectedOrderId ?? '') === (string)$order->id)>{{ $order->order_number }} · {{ $order->status_label }}</option>
                         @endforeach
                     </select>
                     @error('order_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
