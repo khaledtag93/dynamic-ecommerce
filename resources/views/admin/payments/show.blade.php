@@ -98,7 +98,7 @@
                 @method('PATCH')
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="paymentDetailStatus">{{ __('Status') }}</label>
-                    <select id="paymentDetailStatus" class="form-select" name="status" aria-required="true" @disabled($paymentLocked)>
+                    <select id="paymentDetailStatus" class="form-select" name="status" required aria-required="true" @disabled($paymentLocked)>
                         @foreach($statusOptions as $value => $label)
                             <option value="{{ $value }}" @selected($payment->status === $value)>{{ $label }}</option>
                         @endforeach
@@ -106,11 +106,11 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="paymentDetailProviderStatus">{{ __('Provider status') }}</label>
-                    <input id="paymentDetailProviderStatus" type="text" name="provider_status" class="form-control" @disabled($paymentLocked) value="{{ old('provider_status', $payment->provider_status) }}" placeholder="{{ __('Optional gateway status') }}">
+                    <input id="paymentDetailProviderStatus" type="text" name="provider_status" maxlength="255" class="form-control" @disabled($paymentLocked) value="{{ old('provider_status', $payment->provider_status) }}" placeholder="{{ __('Optional gateway status') }}">
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="paymentDetailNotes">{{ __('Notes') }}</label>
-                    <textarea id="paymentDetailNotes" name="notes" rows="4" class="form-control" @disabled($paymentLocked) placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
+                    <textarea id="paymentDetailNotes" name="notes" rows="4" maxlength="1000" class="form-control" @disabled($paymentLocked) placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
                 </div>
                 @unless($paymentLocked)<div class="alert alert-warning border-0 small">{{ __('Check the provider or transaction evidence before marking a payment as paid or failed.') }}</div>@endunless<button type="submit" class="btn btn-primary w-100 btn-text-icon" data-loading-text="{{ __('Saving...') }}" @disabled($paymentLocked)><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save payment update') }}</span></button>
             </form>
@@ -125,10 +125,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!form) return;
 
     const status = form.querySelector('[name="status"]');
-    let confirmed = false;
 
-    form.addEventListener('submit', function (event) {
-        if (confirmed || !status || status.value === form.dataset.currentStatus) return;
+    form.addEventListener('submit', function () {
+        if (!status || status.value === form.dataset.currentStatus) {
+            form.removeAttribute('data-confirm-message');
+            form.removeAttribute('data-confirm-ok');
+            form.removeAttribute('data-confirm-cancel');
+            return;
+        }
 
         let message = null;
         if (status.value === form.dataset.paidStatus) {
@@ -137,12 +141,15 @@ document.addEventListener('DOMContentLoaded', function () {
             message = @json(__('Mark this payment as Failed manually? For online payments this can release the active stock reservation.'));
         }
 
-        if (!message || window.confirm(message)) {
-            confirmed = true;
-            return;
+        if (message) {
+            form.setAttribute('data-confirm-message', message);
+            form.setAttribute('data-confirm-ok', @json(__('Confirm status change')));
+            form.setAttribute('data-confirm-cancel', @json(__('Keep current status')));
+        } else {
+            form.removeAttribute('data-confirm-message');
+            form.removeAttribute('data-confirm-ok');
+            form.removeAttribute('data-confirm-cancel');
         }
-
-        event.preventDefault();
     });
 });
 </script>
