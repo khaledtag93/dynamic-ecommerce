@@ -172,13 +172,13 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Return reason') }}</label>
-                            <input type="text" name="reason" value="{{ old('reason') }}" maxlength="255" required class="form-control @error('reason') is-invalid @enderror" placeholder="{{ __('e.g. Customer return, damaged item, wrong item') }}">
+                            <label class="form-label" for="posReturnReason">{{ __('Return reason') }}</label>
+                            <input id="posReturnReason" type="text" name="reason" value="{{ old('reason') }}" maxlength="255" required aria-required="true" class="form-control @error('reason') is-invalid @enderror" placeholder="{{ __('e.g. Customer return, damaged item, wrong item') }}">
                             @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Notes') }}</label>
-                            <input type="text" name="notes" value="{{ old('notes') }}" maxlength="1000" class="form-control" placeholder="{{ __('Optional return notes') }}">
+                            <label class="form-label" for="posReturnNotes">{{ __('Notes') }}</label>
+                            <input id="posReturnNotes" type="text" name="notes" value="{{ old('notes') }}" maxlength="1000" class="form-control" placeholder="{{ __('Optional return notes') }}">
                         </div>
                     </div>
                     @error('items')<div class="text-danger small mt-2">{{ $message }}</div>@enderror

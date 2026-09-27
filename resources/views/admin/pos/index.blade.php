@@ -83,16 +83,16 @@
                     <summary class="fw-semibold" style="cursor:pointer"><i class="mdi mdi-cash-check me-1"></i>{{ __('Close and reconcile shift') }}</summary>
                     <form method="POST" action="{{ route('admin.pos.shifts.close', $cashShift) }}" class="row g-3 mt-1" data-submit-loading data-confirm-title="{{ __('Close cash shift?') }}" data-confirm-message="{{ __('The counted cash will be compared with the expected drawer amount and the variance will be recorded.') }}" data-confirm-ok="{{ __('Close shift') }}">
                         @csrf
-                        <div class="col-md-4"><label class="form-label">{{ __('Counted cash') }}</label><input name="closing_cash_counted" type="number" min="0" step="0.01" required class="form-control" placeholder="0.00"></div>
-                        <div class="col-md-6"><label class="form-label">{{ __('Closing notes') }} <span class="text-muted">({{ __('optional') }})</span></label><input name="closing_notes" maxlength="1000" class="form-control" placeholder="{{ __('Explain any variance or handover note') }}"></div>
+                        <div class="col-md-4"><label class="form-label" for="posClosingCash">{{ __('Counted cash') }}</label><input id="posClosingCash" name="closing_cash_counted" type="number" min="0" max="999999999.99" step="0.01" required aria-required="true" class="form-control" placeholder="0.00"></div>
+                        <div class="col-md-6"><label class="form-label" for="posClosingNotes">{{ __('Closing notes') }} <span class="text-muted">({{ __('optional') }})</span></label><input id="posClosingNotes" name="closing_notes" maxlength="1000" class="form-control" placeholder="{{ __('Explain any variance or handover note') }}"></div>
                         <div class="col-md-2 d-flex align-items-end"><button class="btn btn-outline-danger w-100">{{ __('Close shift') }}</button></div>
                     </form>
                 </details>
             @else
                 <form method="POST" action="{{ route('admin.pos.shifts.open') }}" class="row g-3 mt-1" data-submit-loading>
                     @csrf
-                    <div class="col-md-4"><label class="form-label">{{ __('Opening cash') }}</label><input name="opening_cash" type="number" min="0" step="0.01" value="{{ old('opening_cash', '0.00') }}" required class="form-control"></div>
-                    <div class="col-md-6"><label class="form-label">{{ __('Opening notes') }} <span class="text-muted">({{ __('optional') }})</span></label><input name="opening_notes" maxlength="1000" class="form-control" placeholder="{{ __('Drawer handover or opening note') }}"></div>
+                    <div class="col-md-4"><label class="form-label" for="posOpeningCash">{{ __('Opening cash') }}</label><input id="posOpeningCash" name="opening_cash" type="number" min="0" max="999999999.99" step="0.01" value="{{ old('opening_cash', '0.00') }}" required aria-required="true" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label" for="posOpeningNotes">{{ __('Opening notes') }} <span class="text-muted">({{ __('optional') }})</span></label><input id="posOpeningNotes" name="opening_notes" maxlength="1000" class="form-control" placeholder="{{ __('Drawer handover or opening note') }}"></div>
                     <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100"><i class="mdi mdi-cash-register me-1"></i>{{ __('Open shift') }}</button></div>
                 </form>
             @endif
@@ -263,19 +263,19 @@
                                                     @csrf
                                                     @method('PATCH')
                                                     <div>
-                                                        <label class="form-label small fw-semibold">{{ __('Discount type') }}</label>
-                                                        <select name="discount_type" class="form-select form-select-sm" required>
+                                                        <label class="form-label small fw-semibold" for="posLineDiscountType-{{ $item->id }}">{{ __('Discount type') }}</label>
+                                                        <select id="posLineDiscountType-{{ $item->id }}" name="discount_type" class="form-select form-select-sm" required aria-required="true">
                                                             <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED }}" @selected($item->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
                                                             <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT }}" @selected($item->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
                                                         </select>
                                                     </div>
                                                     <div>
-                                                        <label class="form-label small fw-semibold">{{ __('Discount value') }}</label>
-                                                        <input name="discount_value" type="number" min="0.01" step="0.01" max="999999999.99" value="{{ (float) ($item->discount_value ?? 0) ?: '' }}" class="form-control form-control-sm" required>
+                                                        <label class="form-label small fw-semibold" for="posLineDiscountValue-{{ $item->id }}">{{ __('Discount value') }}</label>
+                                                        <input id="posLineDiscountValue-{{ $item->id }}" name="discount_value" type="number" min="0.01" step="0.01" max="999999999.99" value="{{ (float) ($item->discount_value ?? 0) ?: '' }}" class="form-control form-control-sm" required aria-required="true">
                                                     </div>
                                                     <div>
-                                                        <label class="form-label small fw-semibold">{{ __('Discount reason') }}</label>
-                                                        <input name="discount_reason" type="text" maxlength="255" value="{{ $item->discount_reason }}" class="form-control form-control-sm" placeholder="{{ __('Required for audit') }}" required>
+                                                        <label class="form-label small fw-semibold" for="posLineDiscountReason-{{ $item->id }}">{{ __('Discount reason') }}</label>
+                                                        <input id="posLineDiscountReason-{{ $item->id }}" name="discount_reason" type="text" maxlength="255" value="{{ $item->discount_reason }}" class="form-control form-control-sm" placeholder="{{ __('Required for audit') }}" required aria-required="true">
                                                     </div>
                                                     <button class="btn btn-sm btn-light border" data-loading-text="{{ __('Applying...') }}">{{ __('Apply discount') }}</button>
                                                 </form>
@@ -464,20 +464,20 @@
                                         @method('PATCH')
                                         <div class="row g-2">
                                             <div class="col-sm-5">
-                                                <label class="form-label small fw-semibold">{{ __('Discount type') }}</label>
-                                                <select name="discount_type" class="form-select form-select-sm" required>
+                                                <label class="form-label small fw-semibold" for="posSaleDiscountType">{{ __('Discount type') }}</label>
+                                                <select id="posSaleDiscountType" name="discount_type" class="form-select form-select-sm" required aria-required="true">
                                                     <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED }}" @selected($cart->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_FIXED)>{{ __('Fixed amount') }}</option>
                                                     <option value="{{ \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT }}" @selected($cart->discount_type === \App\Services\Commerce\PosService::DISCOUNT_TYPE_PERCENT)>{{ __('Percentage') }}</option>
                                                 </select>
                                             </div>
                                             <div class="col-sm-7">
-                                                <label class="form-label small fw-semibold">{{ __('Discount value') }}</label>
-                                                <input name="discount_value" type="number" min="0.01" step="0.01" max="999999999.99" value="{{ (float) ($cart->discount_value ?? 0) ?: '' }}" class="form-control form-control-sm" required>
+                                                <label class="form-label small fw-semibold" for="posSaleDiscountValue">{{ __('Discount value') }}</label>
+                                                <input id="posSaleDiscountValue" name="discount_value" type="number" min="0.01" step="0.01" max="999999999.99" value="{{ (float) ($cart->discount_value ?? 0) ?: '' }}" class="form-control form-control-sm" required aria-required="true">
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="form-label small fw-semibold">{{ __('Discount reason') }}</label>
-                                            <input name="discount_reason" type="text" maxlength="255" value="{{ $cart->discount_reason }}" class="form-control form-control-sm" placeholder="{{ __('Required for audit') }}" required>
+                                            <label class="form-label small fw-semibold" for="posSaleDiscountReason">{{ __('Discount reason') }}</label>
+                                            <input id="posSaleDiscountReason" name="discount_reason" type="text" maxlength="255" value="{{ $cart->discount_reason }}" class="form-control form-control-sm" placeholder="{{ __('Required for audit') }}" required aria-required="true">
                                         </div>
                                         <div class="small text-muted">{{ __('Fixed discounts are amounts in EGP; percentage discounts are calculated from current locked prices.') }}</div>
                                         <button class="btn btn-sm btn-light border" data-loading-text="{{ __('Applying...') }}">{{ __('Apply discount') }}</button>
@@ -521,7 +521,7 @@
 
                         <div class="mb-3">
                             <label for="posPaymentMethod" class="form-label fw-semibold">{{ __('Payment method') }}</label>
-                            <select id="posPaymentMethod" name="payment_method" class="form-select @error('payment_method') is-invalid @enderror" required>
+                            <select id="posPaymentMethod" name="payment_method" class="form-select @error('payment_method') is-invalid @enderror" required aria-required="true">
                                 <option value="{{ $cashPaymentMethod }}" @selected(old('payment_method', $cashPaymentMethod) === $cashPaymentMethod) @disabled(!$cashShift)>{{ __('Cash') }} @unless($cashShift)· {{ __('Open shift required') }}@endunless</option>
                                 <option value="{{ $cardPaymentMethod }}" @selected(old('payment_method') === $cardPaymentMethod)>{{ __('Card terminal') }}</option>
                             </select>
@@ -530,7 +530,7 @@
 
                         <div class="mb-3" id="posCashReceivedWrap">
                             <label for="posCashReceived" class="form-label fw-semibold">{{ __('Cash received') }}</label>
-                            <input id="posCashReceived" name="cash_received" type="number" min="0" step="0.01" value="{{ old('cash_received', number_format($summary['grand_total'], 2, '.', '')) }}" class="form-control @error('cash_received') is-invalid @enderror">
+                            <input id="posCashReceived" name="cash_received" type="number" min="0" max="999999999.99" step="0.01" value="{{ old('cash_received', number_format($summary['grand_total'], 2, '.', '')) }}" class="form-control @error('cash_received') is-invalid @enderror">
                             @error('cash_received')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             <div class="form-text">{{ __('Change is calculated again on the server from the final locked total.') }}</div>
                         </div>
@@ -605,6 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (cashInput) {
             cashInput.disabled = !isCash;
             cashInput.required = isCash;
+            cashInput.setAttribute('aria-required', isCash ? 'true' : 'false');
         }
     };
 

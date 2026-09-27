@@ -247,6 +247,48 @@ class PosCashierTest extends TestCase
         $this->assertStringContainsString('id="shiftCashierSearch" type="search" name="cashier" maxlength="100"', $shiftView);
     }
 
+    public function test_pos_forms_match_server_contract_and_expose_accessible_required_state(): void
+    {
+        $posView = file_get_contents(resource_path('views/admin/pos/index.blade.php'));
+        $saleView = file_get_contents(resource_path('views/admin/pos/sale.blade.php'));
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/PosController.php'));
+
+        foreach ([
+            'posOpeningCash',
+            'posOpeningNotes',
+            'posClosingCash',
+            'posClosingNotes',
+            'posSaleDiscountType',
+            'posSaleDiscountValue',
+            'posSaleDiscountReason',
+            'posPaymentMethod',
+            'posCashReceived',
+        ] as $controlId) {
+            $this->assertStringContainsString('id="' . $controlId . '"', $posView);
+        }
+
+        $this->assertStringContainsString('id="posOpeningCash" name="opening_cash" type="number" min="0" max="999999999.99" step="0.01"', $posView);
+        $this->assertStringContainsString('id="posClosingCash" name="closing_cash_counted" type="number" min="0" max="999999999.99" step="0.01" required aria-required="true"', $posView);
+        $this->assertStringContainsString('id="posPaymentMethod" name="payment_method"', $posView);
+        $this->assertStringContainsString('id="posCashReceived" name="cash_received" type="number" min="0" max="999999999.99"', $posView);
+        $this->assertStringContainsString("cashInput.setAttribute('aria-required', isCash ? 'true' : 'false');", $posView);
+        $this->assertStringContainsString('id="posLineDiscountType-{{ $item->id }}"', $posView);
+        $this->assertStringContainsString('id="posLineDiscountValue-{{ $item->id }}"', $posView);
+        $this->assertStringContainsString('id="posLineDiscountReason-{{ $item->id }}"', $posView);
+
+        $this->assertStringContainsString('for="posReturnReason"', $saleView);
+        $this->assertStringContainsString('id="posReturnReason" type="text" name="reason"', $saleView);
+        $this->assertStringContainsString('required aria-required="true"', $saleView);
+        $this->assertStringContainsString('for="posReturnNotes"', $saleView);
+        $this->assertStringContainsString('id="posReturnNotes" type="text" name="notes"', $saleView);
+
+        $this->assertStringContainsString("'opening_cash' => ['required', 'numeric', 'min:0', 'max:999999999.99']", $controller);
+        $this->assertStringContainsString("'closing_cash_counted' => ['required', 'numeric', 'min:0', 'max:999999999.99']", $controller);
+        $this->assertStringContainsString("'cash_received' => ['nullable', 'numeric', 'min:0', 'max:999999999.99']", $controller);
+        $this->assertStringContainsString("'discount_reason' => ['required', 'string', 'max:255']", $controller);
+        $this->assertStringContainsString("'reason' => ['required', 'string', 'max:255']", $controller);
+    }
+
     public function test_manual_catalog_add_does_not_require_a_barcode(): void
     {
         $admin = $this->createSuperAdmin();
