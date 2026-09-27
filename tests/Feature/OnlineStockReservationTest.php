@@ -157,6 +157,78 @@ class OnlineStockReservationTest extends TestCase
         ]);
     }
 
+    public function test_paid_callback_flags_unfulfillable_variant_reservation_instead_of_committing_it(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(0, 100);
+        $product->update(['has_variants' => true]);
+
+        $variant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'RES-PAID-'.Str::upper(Str::random(6)),
+            'barcode' => '6224'.random_int(100000000, 999999999),
+            'price' => 100,
+            'cost_price' => 20,
+            'stock' => 5,
+            'is_default' => true,
+            'status' => true,
+            'sort_order' => 0,
+        ]);
+
+        $this->actingAs($user);
+
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'product_name' => $product->name,
+            'variant_name' => $variant->sku,
+            'sku' => $variant->sku,
+            'unit_price' => 100,
+            'quantity' => 2,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $order = app(CheckoutService::class)->place([
+            'customer_name' => 'Paid Variant Reservation Customer',
+            'customer_email' => 'paid-variant-reservation@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Reservation Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ], $user);
+
+        $payment = $order->payments()->firstOrFail();
+        $variant->delete();
+
+        app(PaymentService::class)->markAsPaid($payment, [
+            'transaction_id' => 'TX-MISSING-VARIANT',
+            'provider_status' => 'success',
+        ]);
+
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(
+            OrderStockReservation::STATUS_RESERVED,
+            OrderStockReservation::query()->firstOrFail()->status
+        );
+        $this->assertSame(
+            'paid_without_fulfillable_reservation',
+            data_get($order->fresh()->meta, 'stock_reservation_exception.code')
+        );
+        $this->assertSame(
+            'paid_without_fulfillable_reservation',
+            data_get($payment->fresh()->meta, 'stock_reservation_exception.code')
+        );
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'action' => 'paid_order_stock_reservation_exception',
+            'subject_id' => $order->id,
+        ]);
+    }
+
     public function test_failed_online_payment_releases_stock_once_and_cancellation_does_not_double_restock(): void
     {
         $user = User::factory()->create();

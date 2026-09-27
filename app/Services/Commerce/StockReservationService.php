@@ -150,6 +150,8 @@ class StockReservationService
                 }
 
                 if ($reservation?->isReserved()) {
+                    $this->assertInventoryTarget($item->product, $item->variant, $item);
+
                     if ($extendExpiration && ($reservation->expires_at === null || $reservation->expires_at->lt($expiresAt))) {
                         $reservation->update(['expires_at' => $expiresAt]);
                     }
@@ -177,6 +179,7 @@ class StockReservationService
     {
         return DB::transaction(function () use ($order) {
             $reservations = OrderStockReservation::query()
+                ->with(['product', 'variant', 'orderItem'])
                 ->where('order_id', $order->id)
                 ->where('status', OrderStockReservation::STATUS_RESERVED)
                 ->orderBy('id')
@@ -184,6 +187,12 @@ class StockReservationService
                 ->get();
 
             foreach ($reservations as $reservation) {
+                $this->assertInventoryTarget(
+                    $reservation->product,
+                    $reservation->variant,
+                    $reservation->orderItem,
+                );
+
                 $reservation->update([
                     'status' => OrderStockReservation::STATUS_COMMITTED,
                     'committed_at' => now(),
