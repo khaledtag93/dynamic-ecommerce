@@ -5062,6 +5062,8 @@
     "Order subtotal must be at least :amount to use this coupon.": "يجب ألا يقل المجموع الفرعي للطلب عن :amount لاستخدام هذا الكوبون.",
     "This coupon does not apply to the current cart.": "هذا الكوبون لا ينطبق على سلة التسوق الحالية.",
     "Your cart is empty.": "سلة التسوق فارغة.",
+    "Not enough stock for :product. Available: :stock. Please update your cart.": "المخزون غير كافٍ للمنتج :product. المتاح: :stock. يرجى تحديث سلة التسوق.",
+    "Product data is missing for :product. Please review your cart.": "بيانات المنتج :product غير متاحة. يرجى مراجعة سلة التسوق.",
     "Order placed successfully. Redirecting to secure payment...": "تم تسجيل الطلب بنجاح. جارٍ تحويلك إلى الدفع الآمن...",
     "Order placed successfully.": "تم تسجيل الطلب بنجاح.",
     "العربية": "العربية",

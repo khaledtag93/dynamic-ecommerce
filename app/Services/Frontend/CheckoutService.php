@@ -42,7 +42,7 @@ class CheckoutService
 
             if ($summary['items']->isEmpty()) {
                 throw ValidationException::withMessages([
-                    'cart' => 'Your cart is empty.',
+                    'cart' => __('Your cart is empty.'),
                 ]);
             }
 
@@ -53,7 +53,10 @@ class CheckoutService
 
                     if ($currentStock < $item->quantity) {
                         throw ValidationException::withMessages([
-                            'cart' => "Not enough stock for {$item->product_name}. Available: {$currentStock}. Please update your cart.",
+                            'cart' => __('Not enough stock for :product. Available: :stock. Please update your cart.', [
+                                'product' => $item->product_name,
+                                'stock' => $currentStock,
+                            ]),
                         ]);
                     }
                 } elseif ($item->product) {
@@ -61,12 +64,17 @@ class CheckoutService
 
                     if ($currentStock < $item->quantity) {
                         throw ValidationException::withMessages([
-                            'cart' => "Not enough stock for {$item->product_name}. Available: {$currentStock}. Please update your cart.",
+                            'cart' => __('Not enough stock for :product. Available: :stock. Please update your cart.', [
+                                'product' => $item->product_name,
+                                'stock' => $currentStock,
+                            ]),
                         ]);
                     }
                 } else {
                     throw ValidationException::withMessages([
-                        'cart' => "Product data is missing for {$item->product_name}. Please review your cart.",
+                        'cart' => __('Product data is missing for :product. Please review your cart.', [
+                            'product' => $item->product_name,
+                        ]),
                     ]);
                 }
             }

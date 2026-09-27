@@ -39,4 +39,23 @@ class StorefrontCheckoutBilingualFeedbackTest extends TestCase
         );
         $this->assertSame('تم تسجيل الطلب بنجاح.', $arabic['Order placed successfully.'] ?? null);
     }
+
+    public function test_checkout_service_failure_messages_are_translation_aware(): void
+    {
+        $source = file_get_contents(app_path('Services/Frontend/CheckoutService.php'));
+        $arabic = json_decode(file_get_contents(lang_path('ar.json')), true, flags: JSON_THROW_ON_ERROR);
+
+        foreach ([
+            'Your cart is empty.',
+            'Not enough stock for :product. Available: :stock. Please update your cart.',
+            'Product data is missing for :product. Please review your cart.',
+        ] as $message) {
+            $this->assertStringContainsString("__('{$message}'", $source);
+            $this->assertArrayHasKey($message, $arabic);
+            $this->assertNotSame('', trim((string) $arabic[$message]));
+        }
+
+        $this->assertStringNotContainsString('Not enough stock for {$item->product_name}', $source);
+        $this->assertStringNotContainsString('Product data is missing for {$item->product_name}', $source);
+    }
 }
