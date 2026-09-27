@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\GrowthAttributionTouch;
 use App\Models\GrowthAudienceSegment;
 use App\Models\GrowthAutomationRule;
 use App\Models\GrowthCampaign;
@@ -13,6 +14,7 @@ use App\Models\GrowthMessageLog;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WebsiteSetting;
+use App\Services\Growth\GrowthAttributionService;
 use App\Services\Growth\GrowthCampaignService;
 use App\Services\Growth\GrowthCohortRetentionService;
 use App\Services\Growth\GrowthDeliveryService;
@@ -302,6 +304,73 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertSame(230.0, (float) $snapshot->revenue_30d);
         $this->assertSame(430.0, (float) $snapshot->revenue_60d);
         $this->assertSame(730.0, (float) $snapshot->revenue_90d);
+    }
+
+    public function test_attribution_weights_and_revenue_are_normalized_per_realized_order(): void
+    {
+        $user = User::factory()->create();
+        $olderDelivery = GrowthDelivery::query()->create([
+            'user_id' => $user->id,
+            'channel' => 'in_app',
+            'provider' => 'database',
+            'status' => 'sent',
+            'sent_at' => now()->subHours(2),
+        ]);
+        $newerDelivery = GrowthDelivery::query()->create([
+            'user_id' => $user->id,
+            'channel' => 'in_app',
+            'provider' => 'database',
+            'status' => 'sent',
+            'sent_at' => now()->subHour(),
+        ]);
+
+        $order = Order::query()->create([
+            'user_id' => $user->id,
+            'order_number' => 'ATTR-NORMALIZED-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'currency' => 'EGP',
+            'subtotal' => 100,
+            'discount_total' => 10,
+            'shipping_total' => 0,
+            'tax_total' => 0,
+            'grand_total' => 100,
+            'refund_total' => 20,
+            'profit_total' => 50,
+            'customer_name' => 'Attribution Customer',
+            'customer_email' => 'attribution@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'placed_at' => now()->subMinutes(30),
+            'delivered_at' => now()->subMinutes(20),
+        ]);
+
+        $service = app(GrowthAttributionService::class);
+        $service->syncForDelivery($olderDelivery);
+        $service->syncForDelivery($newerDelivery);
+
+        $touches = GrowthAttributionTouch::query()
+            ->where('order_id', $order->id)
+            ->orderBy('delivery_id')
+            ->get();
+
+        $this->assertCount(2, $touches);
+        $this->assertSame(1.0, round((float) $touches->sum('attribution_weight'), 4));
+        $this->assertSame(80.0, round((float) $touches->sum('revenue'), 2));
+        $this->assertSame(10.0, round((float) $touches->sum('discount_total'), 2));
+        $this->assertSame(50.0, round((float) $touches->sum('profit_total'), 2));
+        $this->assertSame('assist', $touches->firstWhere('delivery_id', $olderDelivery->id)->touch_type);
+        $this->assertSame('last_touch', $touches->firstWhere('delivery_id', $newerDelivery->id)->touch_type);
+
+        $summary = $service->summary();
+        $this->assertSame(1, $summary['attributed_orders']);
+        $this->assertSame(80.0, $summary['attributed_revenue']);
     }
 
     public function test_skipped_growth_delivery_does_not_record_a_sent_timestamp(): void

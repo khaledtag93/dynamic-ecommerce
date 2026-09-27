@@ -61,15 +61,10 @@ class GrowthAttributionService
 
         $matchedOrderIds = [];
 
-        foreach ($orders as $index => $order) {
+        foreach ($orders as $order) {
             $matchedOrderIds[] = $order->id;
-            $touchType = $index === 0 ? 'last_touch' : 'assist';
-            $weight = $index === 0 ? 1.0 : 0.35;
-
-            if ($couponCode && strcasecmp((string) $couponCode, (string) $order->coupon_code) === 0) {
-                $weight = 1.0;
-                $touchType = 'coupon_match';
-            }
+            $couponMatch = $couponCode
+                && strcasecmp((string) $couponCode, (string) $order->coupon_code) === 0;
 
             GrowthAttributionTouch::query()->updateOrCreate(
                 [
@@ -80,16 +75,16 @@ class GrowthAttributionService
                     'campaign_id' => $delivery->campaign_id,
                     'experiment_id' => $delivery->experiment_id,
                     'user_id' => $order->user_id ?: $delivery->user_id,
-                    'touch_type' => $touchType,
+                    'touch_type' => $couponMatch ? 'coupon_match' : 'assist',
                     'status' => 'attributed',
-                    'attribution_weight' => $weight,
-                    'revenue' => round((float) $order->realized_revenue * $weight, 2),
-                    'discount_total' => round((float) $order->discount_total * $weight, 2),
-                    'profit_total' => round((float) ($order->profit_total ?? 0) * $weight, 2),
+                    'attribution_weight' => $couponMatch ? 1.0 : 0.35,
+                    'revenue' => 0,
+                    'discount_total' => 0,
+                    'profit_total' => 0,
                     'occurred_at' => $order->placed_at ?: $order->created_at,
                     'attributed_at' => now(),
                     'meta' => [
-                        'coupon_match' => $couponCode ? strcasecmp((string) $couponCode, (string) $order->coupon_code) === 0 : false,
+                        'coupon_match' => (bool) $couponMatch,
                         'order_coupon_code' => $order->coupon_code,
                         'delivery_status' => $delivery->status,
                         'channel' => $delivery->channel,
@@ -104,7 +99,105 @@ class GrowthAttributionService
         if ($matchedOrderIds !== []) {
             $staleQuery->whereNotIn('order_id', $matchedOrderIds);
         }
+
+        $staleOrderIds = (clone $staleQuery)
+            ->pluck('order_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
         $staleQuery->delete();
+
+        foreach (array_values(array_unique(array_merge($matchedOrderIds, $staleOrderIds))) as $orderId) {
+            $this->normalizeOrderAttribution((int) $orderId);
+        }
+    }
+
+    protected function normalizeOrderAttribution(int $orderId): void
+    {
+        $order = Order::query()->commerciallyRealized()->find($orderId);
+
+        if (! $order) {
+            GrowthAttributionTouch::query()->where('order_id', $orderId)->delete();
+            return;
+        }
+
+        $touches = GrowthAttributionTouch::query()
+            ->where('order_id', $orderId)
+            ->with('delivery')
+            ->get();
+
+        if ($touches->isEmpty()) {
+            return;
+        }
+
+        $latestTouch = $touches->sortByDesc(function (GrowthAttributionTouch $touch): int {
+            $sentAt = $touch->delivery?->sent_at ?: $touch->created_at;
+
+            return (($sentAt?->getTimestamp() ?? 0) * 1000000) + (int) $touch->id;
+        })->first();
+
+        $weighted = $touches->map(function (GrowthAttributionTouch $touch) use ($latestTouch): array {
+            $couponMatch = (bool) data_get($touch->meta, 'coupon_match', false)
+                || $touch->touch_type === 'coupon_match';
+            $isLastTouch = ! $couponMatch && $latestTouch && $touch->is($latestTouch);
+            $rawWeight = ($couponMatch || $isLastTouch) ? 1.0 : 0.35;
+
+            return [
+                'touch' => $touch,
+                'coupon_match' => $couponMatch,
+                'is_last_touch' => $isLastTouch,
+                'raw_weight' => $rawWeight,
+            ];
+        })->values();
+
+        $rawTotal = max(0.0001, (float) $weighted->sum('raw_weight'));
+        $revenueCents = (int) round((float) $order->realized_revenue * 100);
+        $discountCents = (int) round((float) $order->discount_total * 100);
+        $profitCents = (int) round((float) ($order->profit_total ?? 0) * 100);
+        $allocatedWeight = 0.0;
+        $allocatedRevenue = 0;
+        $allocatedDiscount = 0;
+        $allocatedProfit = 0;
+        $lastIndex = $weighted->count() - 1;
+
+        foreach ($weighted as $index => $entry) {
+            /** @var GrowthAttributionTouch $touch */
+            $touch = $entry['touch'];
+            $ratio = (float) $entry['raw_weight'] / $rawTotal;
+
+            if ($index === $lastIndex) {
+                $weight = round(max(0, 1 - $allocatedWeight), 4);
+                $touchRevenueCents = $revenueCents - $allocatedRevenue;
+                $touchDiscountCents = $discountCents - $allocatedDiscount;
+                $touchProfitCents = $profitCents - $allocatedProfit;
+            } else {
+                $weight = floor($ratio * 10000) / 10000;
+                $touchRevenueCents = (int) floor($revenueCents * $ratio);
+                $touchDiscountCents = (int) floor($discountCents * $ratio);
+                $touchProfitCents = (int) ($profitCents * $ratio);
+
+                $allocatedWeight += $weight;
+                $allocatedRevenue += $touchRevenueCents;
+                $allocatedDiscount += $touchDiscountCents;
+                $allocatedProfit += $touchProfitCents;
+            }
+
+            $meta = $touch->meta ?? [];
+            $meta['raw_attribution_weight'] = (float) $entry['raw_weight'];
+            $meta['normalized_attribution'] = true;
+
+            $touch->update([
+                'touch_type' => $entry['coupon_match']
+                    ? 'coupon_match'
+                    : ($entry['is_last_touch'] ? 'last_touch' : 'assist'),
+                'attribution_weight' => $weight,
+                'revenue' => round($touchRevenueCents / 100, 2),
+                'discount_total' => round($touchDiscountCents / 100, 2),
+                'profit_total' => round($touchProfitCents / 100, 2),
+                'meta' => $meta,
+            ]);
+        }
     }
 
     public function summary(): array
