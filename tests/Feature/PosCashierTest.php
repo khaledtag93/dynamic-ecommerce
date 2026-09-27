@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\InventoryMovement;
 use App\Models\Order;
+use App\Models\OrderRefund;
 use App\Models\Payment;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
@@ -547,6 +548,49 @@ class PosCashierTest extends TestCase
             'action' => 'pos_cash_shift_closed',
             'subject_id' => $shift->id,
         ]);
+    }
+
+    public function test_cash_shift_keeps_original_cash_sale_when_order_is_fully_refunded(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $shiftService = app(PosCashShiftService::class);
+        $shift = $shiftService->openShift($admin, 100);
+
+        $order = Order::query()->create([
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'order_number' => 'POS-SHIFT-REFUND-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+            'grand_total' => 100,
+            'refund_total' => 100,
+            'customer_name' => 'Cash Refund Customer',
+            'customer_email' => 'cash-refund@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'POS counter',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+            'meta' => [
+                'cashier_user_id' => $admin->id,
+                'pos_cash_shift_id' => $shift->id,
+            ],
+        ]);
+
+        OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 100,
+            'reason' => 'Full cash return',
+            'processed_by' => $admin->id,
+            'processed_at' => now(),
+        ]);
+
+        $summary = $shiftService->summary($shift->fresh());
+
+        $this->assertSame(100.0, $summary['cash_sales']);
+        $this->assertSame(100.0, $summary['cash_refunds']);
+        $this->assertSame(100.0, $summary['expected_cash']);
     }
 
     public function test_cash_checkout_rejects_insufficient_cash_without_writing_sale_or_stock(): void

@@ -43,7 +43,6 @@ class PosCashShiftService
         $cashSales = (float) Order::query()
             ->where('sales_channel', Order::SALES_CHANNEL_POS)
             ->where('payment_method', Order::PAYMENT_METHOD_POS_CASH)
-            ->where('payment_status', '!=', Order::PAYMENT_STATUS_REFUNDED)
             ->whereBetween('placed_at', [$shift->opened_at, $shift->closed_at ?? now()])
             ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(meta, '$.cashier_user_id')) = ?", [(string) $shift->cashier_user_id])
             ->sum('grand_total');
