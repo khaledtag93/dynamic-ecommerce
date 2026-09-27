@@ -466,6 +466,36 @@ class AdminProductEditorExperienceTest extends TestCase
             ->assertSet('featuredFilter', '1');
     }
 
+    public function test_variant_products_are_included_in_low_stock_catalog_filter_and_health(): void
+    {
+        $category = $this->createCategory('Variant Low Stock', 'variant-low-stock');
+        $product = Product::create([
+            'name' => 'Variant Low Stock Product',
+            'slug' => 'variant-low-stock-product',
+            'category_id' => $category->id,
+            'base_price' => 25,
+            'quantity' => 0,
+            'has_variants' => true,
+            'status' => 1,
+        ]);
+
+        ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'LOW-VAR-001',
+            'price' => 25,
+            'stock' => 2,
+            'reorder_point' => 3,
+            'status' => true,
+        ]);
+
+        $component = Livewire::test(Index::class)
+            ->set('stockFilter', 'low')
+            ->assertSee('Variant Low Stock Product')
+            ->assertSee('LOW-VAR-001');
+
+        $this->assertSame(1, $component->instance()->catalogHealth['low_stock']);
+    }
+
     public function test_product_sku_cannot_duplicate_another_product_sku(): void
     {
         $category = $this->createCategory('SKU Collision', 'sku-collision');

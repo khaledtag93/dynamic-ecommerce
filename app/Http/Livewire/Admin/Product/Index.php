@@ -305,10 +305,19 @@ class Index extends Component
             ->count();
 
         $lowStock = Product::query()
-            ->where('has_variants', false)
-            ->whereNotNull('low_stock_threshold')
-            ->where('quantity', '>', 0)
-            ->whereColumn('quantity', '<=', 'low_stock_threshold')
+            ->where(function ($stockQuery) {
+                $stockQuery->where(function ($simpleQuery) {
+                    $simpleQuery->where('has_variants', false)
+                        ->whereNotNull('low_stock_threshold')
+                        ->where('quantity', '>', 0)
+                        ->whereColumn('quantity', '<=', 'low_stock_threshold');
+                })->orWhere(function ($variantQuery) {
+                    $variantQuery->where('has_variants', true)
+                        ->whereHas('activeVariants', fn ($activeQuery) => $activeQuery
+                            ->where('stock', '>', 0)
+                            ->whereColumn('stock', '<=', 'reorder_point'));
+                });
+            })
             ->count();
 
         $outOfStock = Product::query()
@@ -969,10 +978,19 @@ class Index extends Component
     protected function applyStockFilter($query): void
     {
         if ($this->stockFilter === 'low') {
-            $query->where('has_variants', false)
-                ->whereNotNull('low_stock_threshold')
-                ->where('quantity', '>', 0)
-                ->whereColumn('quantity', '<=', 'low_stock_threshold');
+            $query->where(function ($stockQuery) {
+                $stockQuery->where(function ($simpleQuery) {
+                    $simpleQuery->where('has_variants', false)
+                        ->whereNotNull('low_stock_threshold')
+                        ->where('quantity', '>', 0)
+                        ->whereColumn('quantity', '<=', 'low_stock_threshold');
+                })->orWhere(function ($variantQuery) {
+                    $variantQuery->where('has_variants', true)
+                        ->whereHas('activeVariants', fn ($activeQuery) => $activeQuery
+                            ->where('stock', '>', 0)
+                            ->whereColumn('stock', '<=', 'reorder_point'));
+                });
+            });
 
             return;
         }
