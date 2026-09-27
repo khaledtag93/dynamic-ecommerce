@@ -62,8 +62,8 @@ class OrderWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString('id="orderShippingProvider" type="text" name="shipping_provider" maxlength="120"', $view);
         $this->assertStringContainsString('id="orderTrackingNumber" type="text" name="tracking_number" maxlength="120"', $view);
         $this->assertStringContainsString('id="orderDeliveryNotes" name="delivery_notes" rows="3" maxlength="1000"', $view);
-        $this->assertMatchesRegularExpression('/id="orderRefundAmount"[^>]*required aria-required="true"/', $view);
-        $this->assertMatchesRegularExpression('/id="orderRefundReason"[^>]*maxlength="255"[^>]*required aria-required="true"/', $view);
+        $this->assertStringContainsString('name="amount" class="form-control" value="{{ old(\'amount\', $order->refundable_balance) }}" required aria-required="true"', $view);
+        $this->assertStringContainsString('name="reason" maxlength="255" class="form-control" value="{{ old(\'reason\') }}" placeholder="{{ __(\'Refund reason\') }}" required aria-required="true"', $view);
         $this->assertStringContainsString('id="orderRefundNotes" name="notes" rows="3" maxlength="1000"', $view);
 
         $this->assertStringContainsString("'status' => ['required', Rule::in(array_keys(Order::statusOptions()))]", $orderController);
