@@ -7,7 +7,9 @@ use App\Models\AnalyticsEvent;
 use App\Models\Coupon;
 use App\Models\InventoryMovement;
 use App\Models\Order;
+use App\Models\OrderRefund;
 use App\Models\Payment;
+use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
@@ -20,6 +22,7 @@ use App\Services\Commerce\InventoryService;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\OrderNotificationService;
 use App\Services\Commerce\PaymentService;
+use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\StockReservationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -189,6 +192,61 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull(data_get($fullyRestated->meta, 'restatement_requested_at'));
     }
 
+    public function test_profit_uses_net_order_value_and_reverses_cogs_only_for_restocked_units(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 90);
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'subtotal' => 100,
+            'discount_total' => 10,
+            'grand_total' => 90,
+        ]);
+
+        $item = $order->items()->create([
+            'product_name' => 'Profit Test Item',
+            'sku' => 'PROFIT-TEST',
+            'unit_price' => 50,
+            'unit_cost' => 30,
+            'quantity' => 2,
+            'line_total' => 100,
+            'profit_amount' => 40,
+        ]);
+
+        $service = app(ProfitService::class);
+        $fresh = $service->refreshOrderTotals($order->fresh());
+
+        $this->assertSame(60.0, (float) $fresh->cost_total);
+        $this->assertSame(30.0, (float) $fresh->profit_total);
+
+        $refund = OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 45,
+            'reason' => 'Financial adjustment',
+            'processed_at' => now(),
+        ]);
+        $order->update([
+            'refund_total' => 45,
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+        ]);
+
+        $fresh = $service->refreshOrderTotals($order->fresh());
+        $this->assertSame(-15.0, (float) $fresh->profit_total);
+
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refund->id,
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'amount' => 45,
+            'restocked' => true,
+        ]);
+
+        $fresh = $service->refreshOrderTotals($order->fresh());
+
+        $this->assertSame(60.0, (float) $fresh->cost_total);
+        $this->assertSame(15.0, (float) $fresh->profit_total);
+    }
+
     public function test_inventory_decrement_refuses_oversell_and_records_successful_movement(): void
     {
         $product = $this->makeProduct(1);
@@ -284,7 +342,8 @@ class BusinessIntegrityHardeningTest extends TestCase
             app(InventoryService::class),
             app(StockReservationService::class),
             app(CouponService::class),
-            app(AnalyticsTracker::class)
+            app(AnalyticsTracker::class),
+            app(ProfitService::class)
         );
 
         $service->cancel($order->fresh(), 'Coupon order cancelled.');
@@ -314,12 +373,15 @@ class BusinessIntegrityHardeningTest extends TestCase
         $notifications->shouldReceive('notifyCancelled')->once();
         $notifications->shouldReceive('notifyDeliveryUpdated')->once();
 
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
 
         $service->cancel($order, 'test cancellation', 1);
         $service->cancel($order->fresh(), 'duplicate cancellation', 1);
 
-        $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $cancelledOrder = $order->fresh();
+        $this->assertSame(Order::STATUS_CANCELLED, $cancelledOrder->status);
+        $this->assertSame(40.0, (float) $cancelledOrder->cost_total);
+        $this->assertSame(0.0, (float) $cancelledOrder->profit_total);
         $this->assertSame(2, (int) $product->fresh()->quantity);
         $this->assertSame(35.0, (float) $product->fresh()->cost_price);
         $this->assertDatabaseCount('inventory_movements', 1);
@@ -371,7 +433,8 @@ class BusinessIntegrityHardeningTest extends TestCase
             app(InventoryService::class),
             app(StockReservationService::class),
             app(CouponService::class),
-            app(AnalyticsTracker::class)
+            app(AnalyticsTracker::class),
+            app(ProfitService::class)
         );
 
         try {
@@ -398,7 +461,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $notifications = Mockery::mock(OrderNotificationService::class);
         $notifications->shouldReceive('notifyRefundRecorded')->once();
 
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
         $service->refund($order, 70, 'partial refund', null, $actor->id);
 
         try {
@@ -430,7 +493,8 @@ class BusinessIntegrityHardeningTest extends TestCase
             app(InventoryService::class),
             app(StockReservationService::class),
             app(CouponService::class),
-            app(AnalyticsTracker::class)
+            app(AnalyticsTracker::class),
+            app(ProfitService::class)
         );
 
         $first = $service->refund($order, 20, 'duplicate safe refund', 'same request', $actor->id, null, $key);
@@ -463,7 +527,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $notifications = Mockery::mock(OrderNotificationService::class);
         $notifications->shouldReceive('notifyRefundRecorded')->once();
 
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
         $service->refund($order, 100, 'full refund');
 
         $this->assertSame(100.0, (float) $order->fresh()->refund_total);
@@ -486,7 +550,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $payment = $this->makePayment($order, Payment::STATUS_PENDING);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
 
         try {
             $service->updateStatus($order, Order::STATUS_PROCESSING);
@@ -514,7 +578,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         ]);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
 
         try {
             $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
@@ -533,7 +597,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $payment = $this->makePayment($order, Payment::STATUS_PENDING);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
 
         $service->updateStatus($order, Order::STATUS_PROCESSING);
         $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
@@ -572,7 +636,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertFalse($order->fresh()->can_user_cancel);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
 
         try {
             $service->cancel($order->fresh(), 'Attempted cancellation after shipping.');
@@ -596,7 +660,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $payment = $this->makePayment($order, Payment::STATUS_PENDING);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
-        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class));
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
 
         $service->cancel($order, 'cancelled for test');
 

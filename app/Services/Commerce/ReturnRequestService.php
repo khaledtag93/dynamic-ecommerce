@@ -19,6 +19,7 @@ class ReturnRequestService
         protected InventoryService $inventoryService,
         protected OrderActionService $orderActionService,
         protected AdminActivityLogService $activityLogService,
+        protected ProfitService $profitService,
     ) {
     }
 
@@ -520,6 +521,8 @@ class ReturnRequestService
                 'completed_by_user_id' => $actor->id,
                 'completed_at' => now(),
             ]);
+
+            $this->profitService->refreshOrderTotals($order->fresh());
 
             $this->activityLogService->log(
                 'returns',

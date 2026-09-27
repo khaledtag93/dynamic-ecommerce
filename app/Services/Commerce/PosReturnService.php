@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\Analytics\AnalyticsTracker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -18,6 +19,8 @@ class PosReturnService
         protected InventoryService $inventoryService,
         protected AdminActivityLogService $activityLogService,
         protected ReturnRequestService $returnRequestService,
+        protected ProfitService $profitService,
+        protected AnalyticsTracker $analyticsTracker,
     ) {
     }
 
@@ -184,6 +187,9 @@ class PosReturnService
                 'refunded_at' => now(),
                 'payment_status' => $newPaymentStatus,
             ]);
+
+            $this->profitService->refreshOrderTotals($lockedOrder);
+            $this->analyticsTracker->syncRealizedPurchase($lockedOrder->fresh(['items']));
 
             if ($newPaymentStatus === Order::PAYMENT_STATUS_REFUNDED) {
                 $refundedAt = now();

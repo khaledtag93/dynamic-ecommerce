@@ -18,6 +18,7 @@ class OrderActionService
         protected StockReservationService $stockReservationService,
         protected CouponService $couponService,
         protected AnalyticsTracker $analyticsTracker,
+        protected ProfitService $profitService,
     ) {
     }
 
@@ -121,6 +122,7 @@ class OrderActionService
                 'meta' => $meta,
             ]);
 
+            $this->profitService->refreshOrderTotals($lockedOrder);
             $freshOrder = $lockedOrder->fresh(['items', 'refunds', 'user']);
             $this->analyticsTracker->syncRealizedPurchase($freshOrder);
 
@@ -372,6 +374,7 @@ class OrderActionService
                     });
             }
 
+            $this->profitService->refreshOrderTotals($lockedOrder);
             $freshOrder = $lockedOrder->fresh(['refunds', 'user']);
             $this->analyticsTracker->syncRealizedPurchase($freshOrder);
 
