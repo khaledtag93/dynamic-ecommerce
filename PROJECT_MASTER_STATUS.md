@@ -1,5 +1,26 @@
 # MASTER PROJECT STATUS
 
+## Customer commerce hardening checkpoint — 2026-09-27
+
+- Active hardening branch: `sec03-framework-upgrade`.
+- Latest application source checkpoint: `b7646b7ec158c6e71067381b3fb3786dd88fa249`.
+- Hardening CI **#2061** is Green on that exact SHA. CI runs **#2053 through #2061** are consecutively Green across the customer-commerce hardening chain.
+- Recent source/CI-verified closures:
+  - `684e711f` — live Product Review hardening.
+  - `0b494b99` — live Order Cancel state hardening.
+  - `d5935067` — live Address Save state hardening.
+  - `2e7f3c53` — live Address Delete state hardening.
+  - `f406758c` — Profile/Password live form state hardening.
+  - `d38e0724` — Return Cancel hardening, including removal of duplicate fallback PATCH behavior after live failure.
+  - `8275cdd1` — Support Reply busy/loading/accessibility state closure.
+  - `12f0431a` — Notification mark-one/mark-all live action state closure.
+  - `b7646b7e` — DB-serialized Paymob retry initiation with stale-claim recovery and terminal-state recheck.
+- Latest confirmed QAS application on the intended branch: `71d9b6e1abf0b99a2d3953ae448b22598a5c3001`. Source after that SHA is not yet matching-revision QAS accepted. Production is unchanged.
+- Current completion position: Global Foundation and much of the Customer commerce/account surface are source/CI hardened; strict buyer-grade closure still requires matching-QAS evidence, remaining Admin/POS/Workforce page closure, cross-page journey acceptance, and the independent release/audit gates.
+- Open Production blockers: OPS-01 credential rotation evidence, PAY-01 real Paymob E2E, OPS-02 isolated database restore rehearsal. OPS-03 is proven on QAS only and must be reproduced/verified on Production at release.
+- Do not describe source/CI-complete pages as fully CLOSED until exact-revision authenticated QAS checks cover EN/AR, RTL/LTR, responsive/mobile, keyboard/accessibility and relevant failure/retry states.
+
+### Earlier checkpoints below
 ## GF-17 — Storefront account/auth semantics — 2026-09-26
 
 - Source `e82b3f9d82afdc3be71506827b29f71fb377f967` on `sec03-framework-upgrade` removes ambiguous Account Overview current-state matching, adds current-state semantics to the desktop account dropdown, and aligns Login/Register shell + form-label associations with the shared customer auth pattern.

@@ -1,5 +1,18 @@
 # CURRENT PHASE
 
+## Customer commerce/live closure + Paymob retry serialization — 2026-09-27
+
+- Active branch: `sec03-framework-upgrade`.
+- Latest application source checkpoint: `b7646b7ec158c6e71067381b3fb3786dd88fa249` (`fix: serialize paymob retry initiation`).
+- Hardening CI **#2061** passed on that exact application SHA, including Composer validation/audit, clean MySQL migration, Laravel boot/routes, Blade/config compile, full PHPUnit, shared browser interaction tests and frontend production build.
+- The source/CI closure chain from `684e711f` through `b7646b7e` hardened Product Reviews, Order Cancel, Address Save/Delete, Profile/Password live forms, Return Cancel, Support Reply, Notification actions and Paymob retry initiation. The live actions now consistently guard repeated submissions, expose accessible busy/disabled state where relevant, recover cleanly after failures, and preserve server-authoritative ownership/money/stock rules.
+- Paymob retry initiation is now serialized with a DB-backed payment-row claim before gateway initiation. A second overlapping retry does not create a second gateway intention; stale claims expire, token release is ownership-safe, and payment eligibility is rechecked after the claim to avoid starting a new session after a concurrent terminal payment transition.
+- Latest confirmed QAS deployment on the intended `sec03-framework-upgrade` line is `71d9b6e1abf0b99a2d3953ae448b22598a5c3001`. A later deployment from the wrong branch is not acceptance evidence. Therefore changes after `71d9b6e1` remain **source/CI verified, matching-QAS pending**.
+- Production remains unchanged.
+- Remaining P0 release gates remain **OPS-01 historical credential rotation evidence**, **PAY-01 real Paymob E2E**, and **OPS-02 database restore rehearsal**. OPS-03 is QAS-accepted but still requires Production runtime setup/verification at release.
+- **Next source work:** continue strict Page Closure only on substantive remaining gaps. Do not reopen the just-closed customer actions without a new defect. Finish the remaining customer journey findings, then continue Admin/POS/Workforce page closure in dependency order. Matching-revision authenticated QAS EN/AR/RTL/mobile/keyboard acceptance remains required before any page is truly CLOSED.
+
+### Earlier checkpoints below
 ## Storefront account/auth semantics checkpoint — 2026-09-26
 
 - Active source branch: `sec03-framework-upgrade`. GF-17 application source is `e82b3f9d82afdc3be71506827b29f71fb377f967`.

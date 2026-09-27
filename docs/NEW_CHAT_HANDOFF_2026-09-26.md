@@ -1,5 +1,22 @@
-# New Chat Handoff — Dynamic — 2026-09-26
+# New Chat Handoff — Dynamic — 2026-09-27
 
+## Current checkpoint — customer commerce hardening through Paymob retry serialization
+
+Continue on `sec03-framework-upgrade`. Latest application source checkpoint is `b7646b7ec158c6e71067381b3fb3786dd88fa249`; Hardening CI **#2061** passed on that exact SHA.
+
+The latest source/CI chain closes live-state and repeated-action gaps across Product Reviews, Order Cancel, Address Save/Delete, Profile/Password, Return Cancel, Support Reply and Notifications. The latest Paymob change adds a DB-backed initiation claim so overlapping retry requests cannot create duplicate gateway sessions, with stale-claim expiry, ownership-safe release and terminal-payment recheck before gateway initiation.
+
+Latest confirmed QAS deployment on the intended `sec03-framework-upgrade` line is `71d9b6e1abf0b99a2d3953ae448b22598a5c3001`. Do **not** treat later source as QAS accepted until the exact application revision is deployed and checked. Production remains unchanged.
+
+Remaining release blockers: **OPS-01 credential rotation evidence**, **PAY-01 real Paymob E2E**, **OPS-02 database restore rehearsal**. OPS-03 is accepted on QAS only and still needs Production setup/verification during release.
+
+**Next:** continue strict Page Closure only for substantive remaining findings; finish remaining Customer journey gaps, then Admin/POS/Workforce in dependency order. Keep new product features deferred until existing implemented surfaces are closed. Matching-revision authenticated EN/AR/RTL/mobile/keyboard QAS acceptance remains mandatory before CLOSED.
+
+Paste-ready continuation:
+
+> نكمل Dynamic على `sec03-framework-upgrade` من application SHA `b7646b7e`، وHardening CI #2061 Green. آخر QAS صحيح على نفس الفرع هو `71d9b6e1`، لذلك كل source بعده QAS pending وProduction unchanged. سلسلة Customer live hardening وPaymob retry serialization مقفولة source/CI؛ كمل أول finding حقيقي في Page Closure بدون إعادة شغل مقفول، ثم Admin/POS/Workforce. لا Production قبل OPS-01 وPAY-01 وOPS-02 والقبول النهائي.
+
+### Earlier checkpoints below
 ## Current checkpoint — GF-17 account/auth semantics
 
 Continue on `sec03-framework-upgrade`. Application source for GF-17 is `e82b3f9d82afdc3be71506827b29f71fb377f967`: Account Overview current-state matching is now exact, Address Book no longer competes with it for `aria-current="page"`, the desktop account dropdown exposes active destinations, and Login/Register share the auth page shell with explicit label associations. Regression coverage was added in `StorefrontExperienceTest`.
