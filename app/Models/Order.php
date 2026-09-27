@@ -353,7 +353,11 @@ class Order extends Model
 
     public function canBeCancelledByUser(): bool
     {
-        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING], true);
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING], true)
+            && in_array($this->delivery_status, [
+                self::DELIVERY_STATUS_PENDING,
+                self::DELIVERY_STATUS_PREPARING,
+            ], true);
     }
 
     public function canBeRefunded(): bool

@@ -38,6 +38,15 @@ class OrderActionService
                 ]);
             }
 
+            if (! in_array($lockedOrder->delivery_status, [
+                Order::DELIVERY_STATUS_PENDING,
+                Order::DELIVERY_STATUS_PREPARING,
+            ], true)) {
+                throw ValidationException::withMessages([
+                    'status' => __('Orders cannot be cancelled after shipping has started. Use the return workflow instead.'),
+                ]);
+            }
+
             if ($lockedOrder->payment_method === Order::PAYMENT_METHOD_ONLINE) {
                 $this->stockReservationService->releaseForOrder(
                     $lockedOrder,

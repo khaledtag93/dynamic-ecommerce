@@ -287,6 +287,47 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNotNull($payment->fresh()->paid_at);
     }
 
+    public function test_cancellation_is_blocked_after_shipping_starts_without_restock(): void
+    {
+        $product = $this->makeProduct(0);
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_UNPAID, 100);
+        $order->update([
+            'status' => Order::STATUS_PROCESSING,
+            'delivery_status' => Order::DELIVERY_STATUS_SHIPPED,
+            'shipped_at' => now(),
+        ]);
+
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'unit_price' => 50,
+            'unit_cost' => 20,
+            'quantity' => 2,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $this->assertFalse($order->fresh()->can_user_cancel);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
+
+        try {
+            $service->cancel($order->fresh(), 'Attempted cancellation after shipping.');
+            $this->fail('A shipped order must not be cancelled through the stock-restoring cancellation flow.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
+        $this->assertSame(Order::DELIVERY_STATUS_SHIPPED, $order->fresh()->delivery_status);
+        $this->assertSame(0, (int) $product->fresh()->quantity);
+        $this->assertDatabaseMissing('inventory_movements', [
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
+        ]);
+    }
+
     public function test_cancellation_marks_pending_payment_ledger_failed(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);

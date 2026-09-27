@@ -5796,5 +5796,6 @@
     "Online orders cannot enter fulfillment until payment is confirmed.": "لا يمكن بدء تجهيز الطلبات المدفوعة إلكترونيًا حتى يتم تأكيد الدفع.",
     "This paid online order requires stock review before fulfillment can continue.": "يتطلب هذا الطلب المدفوع إلكترونيًا مراجعة المخزون قبل متابعة التجهيز.",
     "Bank transfer orders cannot enter fulfillment until payment is confirmed.": "لا يمكن بدء تجهيز طلبات التحويل البنكي حتى يتم تأكيد الدفع.",
-    "Storefront orders cannot be completed before delivery is marked Delivered.": "لا يمكن إكمال طلبات المتجر قبل تسجيل حالة التوصيل كمُسلَّم."
+    "Storefront orders cannot be completed before delivery is marked Delivered.": "لا يمكن إكمال طلبات المتجر قبل تسجيل حالة التوصيل كمُسلَّم.",
+    "Orders cannot be cancelled after shipping has started. Use the return workflow instead.": "لا يمكن إلغاء الطلب بعد بدء الشحن. استخدم مسار الإرجاع بدلًا من ذلك."
 }
