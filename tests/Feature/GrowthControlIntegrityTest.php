@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\GrowthAudienceSegment;
 use App\Models\GrowthAutomationRule;
 use App\Models\GrowthCampaign;
+use App\Models\GrowthCohortSnapshot;
 use App\Models\GrowthExperiment;
 use App\Models\GrowthMessageTemplate;
 use App\Models\GrowthDelivery;
@@ -13,6 +14,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\WebsiteSetting;
 use App\Services\Growth\GrowthCampaignService;
+use App\Services\Growth\GrowthCohortRetentionService;
 use App\Services\Growth\GrowthDeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -230,6 +232,76 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertSame(1, $score->completed_orders_count);
         $this->assertSame('150.00', $score->total_revenue);
         $this->assertSame('150.00', $score->average_order_value);
+    }
+
+    public function test_cohort_revenue_accumulates_all_realized_repeat_orders_within_each_window(): void
+    {
+        $user = User::factory()->create();
+        $firstAt = now()->startOfDay()->subDays(80);
+
+        $createOrder = function (
+            string $number,
+            int $daysAfterFirst,
+            float $grandTotal,
+            string $status = Order::STATUS_COMPLETED,
+            string $paymentStatus = Order::PAYMENT_STATUS_PAID,
+            float $refundTotal = 0
+        ) use ($user, $firstAt): Order {
+            return Order::query()->create([
+                'user_id' => $user->id,
+                'order_number' => $number,
+                'status' => $status,
+                'payment_status' => $paymentStatus,
+                'payment_method' => Order::PAYMENT_METHOD_COD,
+                'delivery_status' => $status === Order::STATUS_COMPLETED
+                    ? Order::DELIVERY_STATUS_DELIVERED
+                    : Order::DELIVERY_STATUS_CANCELLED,
+                'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+                'currency' => 'EGP',
+                'subtotal' => $grandTotal,
+                'discount_total' => 0,
+                'shipping_total' => 0,
+                'tax_total' => 0,
+                'grand_total' => $grandTotal,
+                'refund_total' => $refundTotal,
+                'customer_name' => 'Cohort Customer',
+                'customer_email' => 'cohort-customer@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test address',
+                'shipping_city' => 'Cairo',
+                'shipping_country' => 'Egypt',
+                'billing_same_as_shipping' => true,
+                'placed_at' => $firstAt->copy()->addDays($daysAfterFirst),
+            ]);
+        };
+
+        $createOrder('COHORT-FIRST', 0, 50);
+        $createOrder('COHORT-10D', 10, 100);
+        $createOrder(
+            'COHORT-25D-PARTIAL',
+            25,
+            150,
+            Order::STATUS_COMPLETED,
+            Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            20
+        );
+        $createOrder('COHORT-CANCELLED', 15, 999, Order::STATUS_CANCELLED, Order::PAYMENT_STATUS_FAILED);
+        $createOrder('COHORT-50D', 50, 200);
+        $createOrder('COHORT-75D', 75, 300);
+
+        app(GrowthCohortRetentionService::class)->refreshSnapshots(6);
+
+        $snapshot = GrowthCohortSnapshot::query()
+            ->where('cohort_key', $firstAt->format('Y-m'))
+            ->firstOrFail();
+
+        $this->assertSame(1, $snapshot->cohort_size);
+        $this->assertSame(1, $snapshot->retained_30d);
+        $this->assertSame(1, $snapshot->retained_60d);
+        $this->assertSame(1, $snapshot->retained_90d);
+        $this->assertSame(230.0, (float) $snapshot->revenue_30d);
+        $this->assertSame(430.0, (float) $snapshot->revenue_60d);
+        $this->assertSame(730.0, (float) $snapshot->revenue_90d);
     }
 
     public function test_skipped_growth_delivery_does_not_record_a_sent_timestamp(): void

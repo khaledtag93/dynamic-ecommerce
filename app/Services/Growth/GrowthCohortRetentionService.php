@@ -67,28 +67,39 @@ class GrowthCohortRetentionService
 
             foreach ($sorted->skip(1) as $repeatOrder) {
                 $repeatAt = $repeatOrder->placed_at ?: $repeatOrder->created_at;
-                $days = $firstAt->diffInDays($repeatAt);
+                $days = (int) $firstAt->diffInDays($repeatAt, true);
 
-                if ($days <= 30 && ! $has30) {
-                    $cohorts[$key]['retained_30d']++;
-                    $cohorts[$key]['revenue_30d'] += (float) $repeatOrder->realized_revenue;
-                    $has30 = true;
-                }
-
-                if ($days <= 60 && ! $has60) {
-                    $cohorts[$key]['retained_60d']++;
-                    $cohorts[$key]['revenue_60d'] += (float) $repeatOrder->realized_revenue;
-                    $has60 = true;
-                }
-
-                if ($days <= 90 && ! $has90) {
-                    $cohorts[$key]['retained_90d']++;
-                    $cohorts[$key]['revenue_90d'] += (float) $repeatOrder->realized_revenue;
-                    $has90 = true;
-                }
-
-                if ($has30 && $has60 && $has90) {
+                if ($days > 90) {
                     break;
+                }
+
+                $realizedRevenue = (float) $repeatOrder->realized_revenue;
+
+                if ($days <= 30) {
+                    if (! $has30) {
+                        $cohorts[$key]['retained_30d']++;
+                        $has30 = true;
+                    }
+
+                    $cohorts[$key]['revenue_30d'] += $realizedRevenue;
+                }
+
+                if ($days <= 60) {
+                    if (! $has60) {
+                        $cohorts[$key]['retained_60d']++;
+                        $has60 = true;
+                    }
+
+                    $cohorts[$key]['revenue_60d'] += $realizedRevenue;
+                }
+
+                if ($days <= 90) {
+                    if (! $has90) {
+                        $cohorts[$key]['retained_90d']++;
+                        $has90 = true;
+                    }
+
+                    $cohorts[$key]['revenue_90d'] += $realizedRevenue;
                 }
             }
         }
