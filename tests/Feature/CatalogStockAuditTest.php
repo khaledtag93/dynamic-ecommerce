@@ -141,6 +141,42 @@ class CatalogStockAuditTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 1);
     }
 
+    public function test_variant_with_business_history_cannot_be_hard_deleted(): void
+    {
+        $this->actingAs(User::factory()->create(['role_as' => 1]));
+        $product = $this->product(0, true);
+        $this->variant($product, 0, 'KEEP-HISTORY');
+
+        $referenced = ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'USED-HISTORY',
+            'price' => 20,
+            'stock' => 0,
+            'status' => true,
+            'is_default' => false,
+        ]);
+
+        InventoryMovement::create([
+            'product_id' => $product->id,
+            'product_variant_id' => $referenced->id,
+            'type' => InventoryMovement::TYPE_ADJUSTMENT,
+            'reason' => 'Historical movement',
+            'quantity_change' => 1,
+            'balance_after' => 0,
+            'unit_cost' => 0,
+        ]);
+
+        $form = Livewire::test(ProductForm::class, ['productId' => $product->id]);
+        $form->set('variants', [$form->get('variants')[0]])
+            ->call('save')
+            ->assertHasErrors(['variants']);
+
+        $this->assertDatabaseHas('product_variants', [
+            'id' => $referenced->id,
+            'product_id' => $product->id,
+        ]);
+    }
+
     public function test_switching_a_stocked_simple_product_to_variants_is_rejected(): void
     {
         $this->actingAs(User::factory()->create(['role_as' => 1]));

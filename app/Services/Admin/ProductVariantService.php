@@ -86,6 +86,7 @@ class ProductVariantService
                 ->pluck('id');
 
             if ($removedVariantIds->isNotEmpty()) {
+                $this->assertVariantsCanBeDeleted($removedVariantIds->all());
                 ProductVariantAttribute::whereIn('variant_id', $removedVariantIds)->delete();
                 ProductVariant::whereIn('id', $removedVariantIds)->delete();
             }
@@ -98,6 +99,34 @@ class ProductVariantService
                 ProductVariant::where('id', $defaultVariantId)->update(['is_default' => true]);
             }
         });
+    }
+
+    /**
+     * Historical/operational references must keep their variant identity intact.
+     *
+     * @param  array<int,int>  $variantIds
+     */
+    protected function assertVariantsCanBeDeleted(array $variantIds): void
+    {
+        if ($variantIds === []) {
+            return;
+        }
+
+        foreach ([
+            'cart_items',
+            'order_items',
+            'supplier_items',
+            'purchase_items',
+            'inventory_movements',
+            'pos_cart_items',
+            'order_stock_reservations',
+        ] as $table) {
+            if (DB::table($table)->whereIn('product_variant_id', $variantIds)->exists()) {
+                throw ValidationException::withMessages([
+                    'variants' => __('A variant with business or inventory history cannot be deleted. Disable it instead.'),
+                ]);
+            }
+        }
     }
 
     protected function normalizeVariantAttributes(array $attributes)
