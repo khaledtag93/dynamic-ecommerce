@@ -222,6 +222,54 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
     }
 
+    public function test_bank_transfer_cannot_enter_fulfillment_until_payment_is_confirmed(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+        $payment = $this->makePayment($order, Payment::STATUS_PENDING);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
+
+        try {
+            $service->updateStatus($order, Order::STATUS_PROCESSING);
+            $this->fail('Pending bank transfer orders must not enter fulfillment.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+
+        app(PaymentService::class)->updateStatus($payment, Payment::STATUS_PAID);
+        $service->updateStatus($order->fresh(), Order::STATUS_PROCESSING);
+
+        $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+    }
+
+    public function test_non_cod_storefront_order_cannot_complete_before_delivery(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $order->update([
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'status' => Order::STATUS_PROCESSING,
+            'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
+        ]);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class));
+
+        try {
+            $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
+            $this->fail('A storefront order must not complete before delivery is marked Delivered.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
+        $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $order->fresh()->delivery_status);
+    }
+
     public function test_cod_completion_marks_payment_ledger_paid(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);

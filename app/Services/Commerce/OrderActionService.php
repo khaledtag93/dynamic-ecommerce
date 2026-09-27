@@ -165,6 +165,17 @@ class OrderActionService
                 $this->assertFulfillmentReady($lockedOrder);
             }
 
+            if (
+                $newStatus === Order::STATUS_COMPLETED
+                && $lockedOrder->sales_channel !== Order::SALES_CHANNEL_POS
+                && $lockedOrder->payment_method !== Order::PAYMENT_METHOD_COD
+                && $lockedOrder->delivery_status !== Order::DELIVERY_STATUS_DELIVERED
+            ) {
+                throw ValidationException::withMessages([
+                    'status' => __('Storefront orders cannot be completed before delivery is marked Delivered.'),
+                ]);
+            }
+
             $updates = [
                 'status' => $newStatus,
             ];
@@ -210,7 +221,10 @@ class OrderActionService
 
     private function assertFulfillmentReady(Order $order): void
     {
-        if ($order->payment_method !== Order::PAYMENT_METHOD_ONLINE) {
+        if (! in_array($order->payment_method, [
+            Order::PAYMENT_METHOD_ONLINE,
+            Order::PAYMENT_METHOD_BANK_TRANSFER,
+        ], true)) {
             return;
         }
 
@@ -219,11 +233,16 @@ class OrderActionService
             Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
         ], true)) {
             throw ValidationException::withMessages([
-                'status' => __('Online orders cannot enter fulfillment until payment is confirmed.'),
+                'status' => $order->payment_method === Order::PAYMENT_METHOD_BANK_TRANSFER
+                    ? __('Bank transfer orders cannot enter fulfillment until payment is confirmed.')
+                    : __('Online orders cannot enter fulfillment until payment is confirmed.'),
             ]);
         }
 
-        if (data_get($order->meta, 'stock_reservation_exception')) {
+        if (
+            $order->payment_method === Order::PAYMENT_METHOD_ONLINE
+            && data_get($order->meta, 'stock_reservation_exception')
+        ) {
             throw ValidationException::withMessages([
                 'status' => __('This paid online order requires stock review before fulfillment can continue.'),
             ]);
