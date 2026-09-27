@@ -205,7 +205,8 @@ class BusinessIntegrityHardeningTest extends TestCase
         $service = new OrderActionService(
             $notifications,
             app(InventoryService::class),
-            app(StockReservationService::class)
+            app(StockReservationService::class),
+            app(CouponService::class)
         );
 
         try {
