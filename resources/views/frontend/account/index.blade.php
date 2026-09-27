@@ -39,7 +39,7 @@
                             <input id="accountEmailPassword" type="password" name="current_password" autocomplete="current-password" class="form-control lc-form-control @error('current_password') is-invalid @enderror">
                             @error('current_password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
-                        <div><button type="submit" class="btn lc-btn-primary">{{ __('Save profile') }}</button></div>
+                        <div><button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Saving...') }}">{{ __('Save profile') }}</button></div>
                     </form>
                 </div>
 
@@ -62,7 +62,7 @@
                             <label for="passwordConfirm" class="form-label fw-bold">{{ __('Confirm new password') }}</label>
                             <input id="passwordConfirm" type="password" name="password_confirmation" aria-required="true" autocomplete="new-password" class="form-control lc-form-control" required minlength="8">
                         </div>
-                        <div><button type="submit" class="btn lc-btn-soft">{{ __('Update password') }}</button></div>
+                        <div><button type="submit" class="btn lc-btn-soft" data-loading-text="{{ __('Updating...') }}">{{ __('Update password') }}</button></div>
                     </form>
                 </div>
             </div>
@@ -104,12 +104,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('form[data-account-live]').forEach(function (form) {
         form.addEventListener('submit', async function (event) {
+            if (form.dataset.pending === '1') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                return;
+            }
+
             event.preventDefault();
             event.stopImmediatePropagation();
 
+            form.dataset.pending = '1';
+            form.setAttribute('aria-busy', 'true');
+            form.classList.add('lc-loading');
+
             const button = event.submitter || form.querySelector('button[type="submit"]');
-            if (button) button.disabled = true;
+            const originalButtonHtml = button?.innerHTML || '';
+
+            if (button) {
+                const loadingText = button.dataset.loadingText;
+                button.disabled = true;
+                button.setAttribute('aria-disabled', 'true');
+                if (loadingText) {
+                    button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+                }
+            }
+
             setStatus('');
+
+            const release = () => {
+                delete form.dataset.pending;
+                form.removeAttribute('aria-busy');
+                form.classList.remove('lc-loading');
+
+                if (button) {
+                    button.disabled = false;
+                    button.removeAttribute('aria-disabled');
+                    button.innerHTML = originalButtonHtml;
+                }
+            };
 
             try {
                 const response = await fetch(form.action, {
@@ -138,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 setStatus(error.message, true);
             } finally {
-                if (button) button.disabled = false;
+                release();
             }
         }, true);
     });

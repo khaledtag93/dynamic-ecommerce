@@ -167,6 +167,24 @@ class CustomerAccountTest extends TestCase
         ]);
     }
 
+    public function test_account_live_forms_guard_duplicate_submits_and_restore_loading_state(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/account/index.blade.php'));
+
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Saving...\') }}"', $view);
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Updating...\') }}"', $view);
+        $this->assertStringContainsString("if (form.dataset.pending === '1') {", $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString('delete form.dataset.pending;', $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("button.removeAttribute('aria-disabled');", $view);
+        $this->assertStringContainsString('button.innerHTML = originalButtonHtml;', $view);
+        $this->assertStringContainsString('finally {', $view);
+        $this->assertStringContainsString('release();', $view);
+    }
+
     public function test_address_live_delete_resets_confirmation_and_guards_duplicate_submits(): void
     {
         $view = file_get_contents(resource_path('views/frontend/account/addresses/index.blade.php'));
