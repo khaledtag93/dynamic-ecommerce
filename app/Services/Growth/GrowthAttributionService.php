@@ -52,6 +52,7 @@ class GrowthAttributionService
         $couponCode = data_get($delivery->payload, 'coupon_code') ?: data_get($delivery->meta, 'coupon_code');
 
         $orders = Order::query()
+            ->commerciallyRealized()
             ->when($delivery->user_id, fn (Builder $query) => $query->where('user_id', $delivery->user_id))
             ->when(! $delivery->user_id && $delivery->recipient, fn (Builder $query) => $query->where('customer_email', $delivery->recipient))
             ->whereBetween(DB::raw('COALESCE(placed_at, created_at)'), [$sentAt, $windowEnd])
@@ -82,7 +83,7 @@ class GrowthAttributionService
                     'touch_type' => $touchType,
                     'status' => 'attributed',
                     'attribution_weight' => $weight,
-                    'revenue' => round((float) $order->grand_total * $weight, 2),
+                    'revenue' => round((float) $order->realized_revenue * $weight, 2),
                     'discount_total' => round((float) $order->discount_total * $weight, 2),
                     'profit_total' => round((float) ($order->profit_total ?? 0) * $weight, 2),
                     'occurred_at' => $order->placed_at ?: $order->created_at,

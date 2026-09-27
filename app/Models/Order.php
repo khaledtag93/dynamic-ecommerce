@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -357,6 +358,21 @@ class Order extends Model
                 self::DELIVERY_STATUS_PENDING,
                 self::DELIVERY_STATUS_PREPARING,
             ], true);
+    }
+
+    public function scopeCommerciallyRealized(Builder $query): Builder
+    {
+        return $query
+            ->where('status', self::STATUS_COMPLETED)
+            ->whereIn('payment_status', [
+                self::PAYMENT_STATUS_PAID,
+                self::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            ]);
+    }
+
+    public function getRealizedRevenueAttribute(): float
+    {
+        return round(max(0, (float) $this->grand_total - (float) $this->refund_total), 2);
     }
 
     public function canBeRefunded(): bool

@@ -337,14 +337,15 @@ class AnalyticsDashboardService
     protected function buildCouponPerformance(Carbon $from, Carbon $to): Collection
     {
         return Order::query()
+            ->commerciallyRealized()
             ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
             ->whereNotNull('coupon_code')
             ->select(
                 'coupon_code',
                 DB::raw('COUNT(*) as orders_count'),
-                DB::raw('SUM(grand_total) as revenue_gross'),
+                DB::raw('SUM(grand_total - refund_total) as revenue_gross'),
                 DB::raw('SUM(discount_total) as discount_total'),
-                DB::raw('AVG(grand_total) as average_order_value')
+                DB::raw('AVG(grand_total - refund_total) as average_order_value')
             )
             ->groupBy('coupon_code')
             ->orderByDesc('revenue_gross')
@@ -355,11 +356,12 @@ class AnalyticsDashboardService
     protected function buildUserInsights(Carbon $from, Carbon $to): array
     {
         $orderScope = Order::query()
+            ->commerciallyRealized()
             ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()]);
 
         $orderUsers = (clone $orderScope)
             ->whereNotNull('user_id')
-            ->select('user_id', DB::raw('COUNT(*) as orders_count'), DB::raw('SUM(grand_total) as revenue_gross'))
+            ->select('user_id', DB::raw('COUNT(*) as orders_count'), DB::raw('SUM(grand_total - refund_total) as revenue_gross'))
             ->groupBy('user_id')
             ->orderByDesc('revenue_gross')
             ->limit(5)
@@ -381,7 +383,8 @@ class AnalyticsDashboardService
         $newUsersCount = (clone $orderScope)
             ->whereNotNull('user_id')
             ->whereDoesntHave('user.orders', function ($query) use ($from) {
-                $query->whereDate(DB::raw('COALESCE(placed_at, created_at)'), '<', $from->toDateString());
+                $query->commerciallyRealized()
+                    ->whereDate(DB::raw('COALESCE(placed_at, created_at)'), '<', $from->toDateString());
             })
             ->distinct('user_id')
             ->count('user_id');

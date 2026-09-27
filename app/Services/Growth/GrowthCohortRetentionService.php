@@ -17,6 +17,7 @@ class GrowthCohortRetentionService
 
         $months = max(3, $months);
         $orders = Order::query()
+            ->commerciallyRealized()
             ->whereNotNull('user_id')
             ->orderByRaw('COALESCE(placed_at, created_at) asc')
             ->get()
@@ -70,19 +71,19 @@ class GrowthCohortRetentionService
 
                 if ($days <= 30 && ! $has30) {
                     $cohorts[$key]['retained_30d']++;
-                    $cohorts[$key]['revenue_30d'] += (float) $repeatOrder->grand_total;
+                    $cohorts[$key]['revenue_30d'] += (float) $repeatOrder->realized_revenue;
                     $has30 = true;
                 }
 
                 if ($days <= 60 && ! $has60) {
                     $cohorts[$key]['retained_60d']++;
-                    $cohorts[$key]['revenue_60d'] += (float) $repeatOrder->grand_total;
+                    $cohorts[$key]['revenue_60d'] += (float) $repeatOrder->realized_revenue;
                     $has60 = true;
                 }
 
                 if ($days <= 90 && ! $has90) {
                     $cohorts[$key]['retained_90d']++;
-                    $cohorts[$key]['revenue_90d'] += (float) $repeatOrder->grand_total;
+                    $cohorts[$key]['revenue_90d'] += (float) $repeatOrder->realized_revenue;
                     $has90 = true;
                 }
 

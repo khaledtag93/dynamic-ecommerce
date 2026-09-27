@@ -702,6 +702,7 @@ class GrowthCampaignService
         $since = now()->subDays(max(7, $lookbackDays))->startOfDay();
 
         $rows = Order::query()
+            ->commerciallyRealized()
             ->whereNotNull('user_id')
             ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$since->toDateString(), now()->toDateString()])
             ->select('user_id', DB::raw('COUNT(*) as orders_count'), DB::raw('MAX(COALESCE(placed_at, created_at)) as latest_order_at'))
@@ -1271,10 +1272,11 @@ class GrowthCampaignService
             );
 
             $ordersByUser = Order::query()
+                ->commerciallyRealized()
                 ->whereIn('user_id', $userIds)
                 ->whereBetween('created_at', [$firstSentAt, $lastWindowEnd])
                 ->orderBy('created_at')
-                ->get(['user_id', 'created_at', 'grand_total'])
+                ->get(['user_id', 'created_at', 'grand_total', 'refund_total'])
                 ->groupBy('user_id');
         }
 
@@ -1297,7 +1299,7 @@ class GrowthCampaignService
 
                 if ($matchingOrders->isNotEmpty()) {
                     $converted++;
-                    $revenue += (float) $matchingOrders->sum('grand_total');
+                    $revenue += (float) $matchingOrders->sum(fn (Order $order) => $order->realized_revenue);
                 }
             }
 

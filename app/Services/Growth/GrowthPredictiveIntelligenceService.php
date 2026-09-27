@@ -34,11 +34,12 @@ class GrowthPredictiveIntelligenceService
     public function refreshUserScore(User $user): GrowthCustomerScore
     {
         $orders = Order::query()
+            ->commerciallyRealized()
             ->where('user_id', $user->id)
             ->orderByRaw('COALESCE(placed_at, created_at) asc')
             ->get();
 
-        $completedOrders = $orders->where('status', Order::STATUS_COMPLETED);
+        $completedOrders = $orders;
         $latestOrder = $orders->sortByDesc(fn (Order $order) => $order->placed_at ?: $order->created_at)->first();
         $lastOrderAt = $latestOrder?->placed_at ?: $latestOrder?->created_at;
         $daysSinceLastOrder = $lastOrderAt ? now()->diffInDays($lastOrderAt) : 9999;
@@ -55,7 +56,7 @@ class GrowthPredictiveIntelligenceService
 
         $ordersCount = $orders->count();
         $completedOrdersCount = $completedOrders->count();
-        $totalRevenue = (float) $orders->sum('grand_total');
+        $totalRevenue = (float) $orders->sum(fn (Order $order) => $order->realized_revenue);
         $averageOrderValue = $ordersCount > 0 ? $totalRevenue / $ordersCount : 0.0;
         $viewCount30d = (int) $events30->where('event_type', AnalyticsEvent::EVENT_VIEW_PRODUCT)->count();
         $cartCount30d = (int) $events30->where('event_type', AnalyticsEvent::EVENT_ADD_TO_CART)->count();

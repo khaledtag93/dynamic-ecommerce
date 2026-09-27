@@ -162,7 +162,10 @@ class GrowthControlIntegrityTest extends TestCase
         $order = Order::query()->create([
             'user_id' => $user->id,
             'order_number' => 'GROWTH-PERF-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
             'grand_total' => 120,
+            'refund_total' => 20,
             'customer_name' => 'Growth Test',
             'customer_email' => 'growth-performance@example.test',
             'customer_phone' => '01000000000',
@@ -179,12 +182,12 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertSame(2, $result['a']['deliveries']);
         $this->assertSame(1, $result['a']['converted']);
         $this->assertSame(50.0, $result['a']['conversion_rate']);
-        $this->assertSame(120.0, $result['a']['revenue']);
+        $this->assertSame(100.0, $result['a']['revenue']);
 
         $this->assertSame(1, $result['b']['deliveries']);
         $this->assertSame(1, $result['b']['converted']);
         $this->assertSame(100.0, $result['b']['conversion_rate']);
-        $this->assertSame(120.0, $result['b']['revenue']);
+        $this->assertSame(100.0, $result['b']['revenue']);
 
         $serviceSource = file_get_contents(app_path('Services/Growth/GrowthCampaignService.php'));
         $methodStart = strpos($serviceSource, 'public function variantPerformance(GrowthExperiment $experiment): array');
@@ -194,6 +197,39 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertSame(1, substr_count($methodSource, 'GrowthDelivery::query()'));
         $this->assertSame(1, substr_count($methodSource, 'Order::query()'));
         $this->assertStringNotContainsString('->exists()', $methodSource);
+    }
+
+    public function test_predictive_commerce_metrics_ignore_unrealized_orders_and_use_net_revenue(): void
+    {
+        $user = User::factory()->create();
+
+        foreach ([
+            ['number' => 'REALIZED-001', 'status' => Order::STATUS_COMPLETED, 'payment' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 'total' => 200, 'refund' => 50],
+            ['number' => 'CANCELLED-001', 'status' => Order::STATUS_CANCELLED, 'payment' => Order::PAYMENT_STATUS_PAID, 'total' => 300, 'refund' => 0],
+            ['number' => 'UNPAID-001', 'status' => Order::STATUS_COMPLETED, 'payment' => Order::PAYMENT_STATUS_UNPAID, 'total' => 400, 'refund' => 0],
+        ] as $row) {
+            Order::query()->create([
+                'user_id' => $user->id,
+                'order_number' => $row['number'],
+                'status' => $row['status'],
+                'payment_status' => $row['payment'],
+                'grand_total' => $row['total'],
+                'refund_total' => $row['refund'],
+                'customer_name' => 'Commercial Integrity',
+                'customer_email' => 'commercial-integrity@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test address',
+                'shipping_city' => 'Cairo',
+                'placed_at' => now()->subDay(),
+            ]);
+        }
+
+        $score = app(\App\Services\Growth\GrowthPredictiveIntelligenceService::class)->refreshUserScore($user);
+
+        $this->assertSame(1, $score->orders_count);
+        $this->assertSame(1, $score->completed_orders_count);
+        $this->assertSame('150.00', $score->total_revenue);
+        $this->assertSame('150.00', $score->average_order_value);
     }
 
     public function test_skipped_growth_delivery_does_not_record_a_sent_timestamp(): void
