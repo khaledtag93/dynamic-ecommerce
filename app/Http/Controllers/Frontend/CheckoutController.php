@@ -220,7 +220,7 @@ public function store(Request $request): RedirectResponse
 
     public function success(Order $order)
     {
-        abort_unless((int) $order->user_id === (int) auth()->id(), 403);
+        abort_unless((int) $order->user_id === (int) auth()->id(), 404);
 
         $order->load(['items', 'refunds', 'payments']);
         $paymentInstructions = $this->paymentService->checkoutInstructionsFor($order);
@@ -246,7 +246,7 @@ public function store(Request $request): RedirectResponse
 
     public function showOrder(Order $order)
     {
-        abort_unless((int) $order->user_id === (int) auth()->id(), 403);
+        abort_unless((int) $order->user_id === (int) auth()->id(), 404);
 
         $order->load(['items', 'refunds', 'payments', 'returnRequests.items']);
         $paymentInstructions = $this->paymentService->checkoutInstructionsFor($order);
@@ -265,7 +265,7 @@ public function store(Request $request): RedirectResponse
 
     public function receipt(Order $order)
     {
-        abort_unless((int) $order->user_id === (int) auth()->id(), 403);
+        abort_unless((int) $order->user_id === (int) auth()->id(), 404);
 
         $order->load(['items', 'payments', 'refunds']);
 
@@ -279,7 +279,7 @@ public function store(Request $request): RedirectResponse
 
     public function cancelOrder(Request $request, Order $order): RedirectResponse|JsonResponse
     {
-        abort_unless((int) $order->user_id === (int) auth()->id(), 403);
+        abort_unless((int) $order->user_id === (int) auth()->id(), 404);
 
         if (($this->storeSettingsService->all()['orders_allow_customer_cancellation'] ?? '1') !== '1') {
             $message = __('Customer-side cancellation is disabled right now. Please contact support.');

@@ -61,7 +61,7 @@ class PaymobController extends Controller
 
     public function redirect(Order $order)
     {
-        abort_unless((int) $order->user_id === (int) auth()->id(), 403);
+        abort_unless((int) $order->user_id === (int) auth()->id(), 404);
 
         try {
             $this->logInfo('Paymob redirect flow started', [
@@ -295,7 +295,7 @@ class PaymobController extends Controller
 
     public function result(Order $order)
     {
-        abort_unless((int) $order->user_id === (int) auth()->id(), 403);
+        abort_unless((int) $order->user_id === (int) auth()->id(), 404);
 
         try {
             $order->load(['items', 'payments']);

@@ -42,8 +42,32 @@ class OnlineOrderReceiptTest extends TestCase
 
         $this->actingAs($otherCustomer)
             ->get(route('orders.receipt', $order))
-            ->assertForbidden();
+            ->assertNotFound();
     }
+
+    public function test_customer_order_endpoints_hide_foreign_order_existence(): void
+    {
+        $owner = User::factory()->create();
+        $otherCustomer = User::factory()->create();
+        $order = $this->makeOrder($owner, 'EGP');
+
+        foreach ([
+            route('orders.success', $order),
+            route('orders.show', $order),
+            route('orders.receipt', $order),
+            route('payments.paymob.redirect', $order),
+            route('payments.paymob.result', $order),
+        ] as $url) {
+            $this->actingAs($otherCustomer)
+                ->get($url)
+                ->assertNotFound();
+        }
+
+        $this->actingAs($otherCustomer)
+            ->patch(route('orders.cancel', $order))
+            ->assertNotFound();
+    }
+
 
     public function test_orders_view_admin_can_open_the_same_read_only_receipt(): void
     {

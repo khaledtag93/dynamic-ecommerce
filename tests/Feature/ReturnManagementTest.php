@@ -321,11 +321,17 @@ class ReturnManagementTest extends TestCase
         ]]);
 
         $this->actingAs($other)
-            ->get(route('returns.show', $return))
-            ->assertForbidden();
+            ->get(route('returns.create', $order))
+            ->assertNotFound();
+
+        $this->post(route('returns.store', $order))
+            ->assertNotFound();
+
+        $this->get(route('returns.show', $return))
+            ->assertNotFound();
 
         $this->patch(route('returns.cancel', $return))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->assertSame(ReturnRequest::STATUS_REQUESTED, $return->fresh()->status);
     }

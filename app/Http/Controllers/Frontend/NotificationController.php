@@ -23,7 +23,7 @@ class NotificationController extends Controller
 
     public function markRead(Request $request, DatabaseNotification $notification)
     {
-        abort_unless((int) $notification->notifiable_id === (int) auth()->id(), 403);
+        abort_unless((int) $notification->notifiable_id === (int) auth()->id(), 404);
 
         if (! $notification->read_at) {
             $notification->markAsRead();

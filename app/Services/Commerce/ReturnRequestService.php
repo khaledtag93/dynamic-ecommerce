@@ -253,7 +253,7 @@ class ReturnRequestService
             $locked = $this->lockRequest($returnRequest);
 
             if ((int) $locked->user_id !== (int) $user->id) {
-                abort(403);
+                abort(404);
             }
 
             if (! $locked->canTransitionTo(ReturnRequest::STATUS_CANCELLED)) {

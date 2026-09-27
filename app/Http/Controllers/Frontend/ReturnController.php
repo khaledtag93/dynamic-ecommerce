@@ -39,7 +39,7 @@ class ReturnController extends Controller
 
     public function create(Request $request, Order $order)
     {
-        abort_unless((int) $order->user_id === (int) $request->user()->id, 403);
+        abort_unless((int) $order->user_id === (int) $request->user()->id, 404);
 
         if (! $this->returnRequestService->canCustomerRequest($order, $request->user())) {
             return redirect()
@@ -64,7 +64,7 @@ class ReturnController extends Controller
 
     public function store(Request $request, Order $order): RedirectResponse|JsonResponse
     {
-        abort_unless((int) $order->user_id === (int) $request->user()->id, 403);
+        abort_unless((int) $order->user_id === (int) $request->user()->id, 404);
 
         $data = $request->validate([
             'customer_notes' => ['nullable', 'string', 'max:2000'],
@@ -112,7 +112,7 @@ class ReturnController extends Controller
 
     public function show(Request $request, ReturnRequest $returnRequest)
     {
-        abort_unless((int) $returnRequest->user_id === (int) $request->user()->id, 403);
+        abort_unless((int) $returnRequest->user_id === (int) $request->user()->id, 404);
 
         $returnRequest->load([
             'order',

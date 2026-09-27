@@ -41,7 +41,7 @@ class CustomerNotificationLiveActionsTest extends TestCase
 
         $this->actingAs($other)
             ->patchJson(route('notifications.read', $notification))
-            ->assertForbidden();
+            ->assertNotFound();
 
         $this->assertNull($notification->fresh()->read_at);
     }
