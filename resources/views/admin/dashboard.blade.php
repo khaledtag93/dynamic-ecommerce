@@ -141,10 +141,18 @@
                     <div class="admin-card h-100">
                         <div class="admin-home-card-head"><div><h3>{{ __('Stock snapshot') }}</h3><p class="text-muted small mb-0">{{ __('Products with the lowest available quantity.') }}</p></div><a href="{{ route('admin.products.index') }}">{{ __('View all') }}</a></div>
                         <div class="admin-home-stock-list">
-                            @forelse($lowStockProducts as $product)
-                                <a href="{{ route('admin.products.edit', $product) }}"><span>{{ $product->name }}</span><strong>{{ number_format($product->quantity) }}</strong></a>
+                            @forelse($lowStockItems as $item)
+                                <a href="{{ route('admin.products.edit', $item['product']) }}">
+                                    <span>
+                                        {{ $item['product']->name }}
+                                        @if($item['variant'])
+                                            <small class="text-muted d-block">{{ $item['variant']->sku ?: $item['variant']->name }}</small>
+                                        @endif
+                                    </span>
+                                    <strong>{{ number_format($item['stock']) }}</strong>
+                                </a>
                             @empty
-                                <p class="text-muted mb-0">{{ __('No products yet.') }}</p>
+                                <p class="text-muted mb-0">{{ __('No low-stock items right now.') }}</p>
                             @endforelse
                         </div>
                     </div>

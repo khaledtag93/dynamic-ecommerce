@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\Permission;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
@@ -37,6 +40,44 @@ class AdminDashboardExperienceTest extends TestCase
             ->assertSee(route('admin.products.create'))
             ->assertSee('UX-PAID')
             ->assertSee('UX-UNPAID');
+    }
+
+    public function test_dashboard_low_stock_snapshot_includes_variant_inventory(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $category = Category::create([
+            'name' => 'Variant stock category',
+            'slug' => 'variant-stock-category',
+            'status' => false,
+        ]);
+        $product = Product::create([
+            'name' => 'Variant dashboard product',
+            'slug' => 'variant-dashboard-product',
+            'category_id' => $category->id,
+            'base_price' => 100,
+            'quantity' => 0,
+            'low_stock_threshold' => 2,
+            'has_variants' => true,
+            'status' => true,
+        ]);
+        ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'VAR-LOW-001',
+            'price' => 100,
+            'stock' => 1,
+            'reorder_point' => 3,
+            'status' => true,
+        ]);
+
+        $this->actingAs($owner)->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertViewHas('stats', fn ($stats) => $stats['products_low_stock'] === 1)
+            ->assertViewHas('lowStockItems', fn ($items) => $items->count() === 1
+                && $items->first()['product']->is($product)
+                && $items->first()['variant']->sku === 'VAR-LOW-001'
+                && $items->first()['stock'] === 1)
+            ->assertSee('VAR-LOW-001')
+            ->assertSee('1');
     }
 
     public function test_dashboard_search_and_navigation_respect_staff_permissions(): void
