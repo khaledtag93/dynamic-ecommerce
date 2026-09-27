@@ -5087,5 +5087,9 @@
     "Move, disable, or remove items. Active items appear on the storefront.": "Move, disable, or remove items. Active items appear on the storefront.",
     "Review product data, pricing, stock, SEO fields, and image ordering, then save this product when you are ready.": "Review product data, pricing, stock, SEO fields, and image ordering, then save this product when you are ready.",
     "Back": "Back",
-    "Online payment is not completed yet.": "Online payment is not completed yet."
+    "Online payment is not completed yet.": "Online payment is not completed yet.",
+    "Expired or expiring within the next 30 days.": "Expired or expiring within the next 30 days.",
+    "Expiry attention": "Expiry attention",
+    "No expired products or items expiring in the next 30 days.": "No expired products or items expiring in the next 30 days.",
+    "Reorder point": "Reorder point"
 }
