@@ -16,6 +16,9 @@ use Illuminate\Validation\ValidationException;
 
 class PurchaseController extends Controller
 {
+    private const MONEY_MAX_CENTS = 999999999999;
+    private const PURCHASE_QUANTITY_MAX = 4294967295;
+
     public function __construct(
         protected PurchaseService $purchaseService,
         protected PurchaseReceivingService $purchaseReceivingService,
@@ -199,18 +202,67 @@ class PurchaseController extends Controller
         $data = $request->validate([
             'supplier_id' => ['required', 'exists:suppliers,id'],
             'purchase_date' => ['nullable', 'date'],
-            'shipping_total' => ['nullable', 'numeric', 'min:0'],
-            'tax_total' => ['nullable', 'numeric', 'min:0'],
+            'shipping_total' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
+            'tax_total' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
             'items.*.product_variant_id' => ['nullable', 'exists:product_variants,id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
-            'items.*.unit_cost' => ['required', 'numeric', 'min:0'],
+            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:'.self::PURCHASE_QUANTITY_MAX],
+            'items.*.unit_cost' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'items.*.expiration_date' => ['nullable', 'date'],
         ]);
 
-        $createdPurchase = DB::transaction(function () use ($data) {
+        $subtotalCents = 0;
+
+        foreach ($data['items'] as $index => &$item) {
+            $quantity = (int) $item['quantity'];
+            $unitCostCents = $this->moneyToCents($item['unit_cost']);
+
+            if ($unitCostCents > intdiv(self::MONEY_MAX_CENTS, $quantity)) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.unit_cost" => __('This purchase line total exceeds the supported maximum.'),
+                ]);
+            }
+
+            $lineTotalCents = $unitCostCents * $quantity;
+
+            if ($subtotalCents > self::MONEY_MAX_CENTS - $lineTotalCents) {
+                throw ValidationException::withMessages([
+                    'items' => __('The purchase total exceeds the supported maximum.'),
+                ]);
+            }
+
+            $subtotalCents += $lineTotalCents;
+            $item['unit_cost'] = $this->centsToMoney($unitCostCents);
+            $item['line_total'] = $this->centsToMoney($lineTotalCents);
+        }
+        unset($item);
+
+        $shippingCents = $this->moneyToCents($data['shipping_total'] ?? 0);
+        $taxCents = $this->moneyToCents($data['tax_total'] ?? 0);
+
+        if ($subtotalCents > self::MONEY_MAX_CENTS - $shippingCents) {
+            throw ValidationException::withMessages([
+                'shipping_total' => __('The purchase total exceeds the supported maximum.'),
+            ]);
+        }
+
+        $grandTotalCents = $subtotalCents + $shippingCents;
+
+        if ($grandTotalCents > self::MONEY_MAX_CENTS - $taxCents) {
+            throw ValidationException::withMessages([
+                'tax_total' => __('The purchase total exceeds the supported maximum.'),
+            ]);
+        }
+
+        $grandTotalCents += $taxCents;
+        $data['shipping_total'] = $this->centsToMoney($shippingCents);
+        $data['tax_total'] = $this->centsToMoney($taxCents);
+        $subtotal = $this->centsToMoney($subtotalCents);
+        $grandTotal = $this->centsToMoney($grandTotalCents);
+
+        $createdPurchase = DB::transaction(function () use ($data, $subtotal, $grandTotal) {
             $products = Product::query()->whereIn('id', collect($data['items'])->pluck('product_id')->unique())
                 ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $variants = ProductVariant::query()->whereIn('id', collect($data['items'])->pluck('product_variant_id')->filter()->unique())
@@ -236,15 +288,14 @@ class PurchaseController extends Controller
                 }
             }
 
-            $subtotal = collect($data['items'])->sum(fn ($item) => ((float) $item['unit_cost']) * ((int) $item['quantity']));
             $purchase = Purchase::create([
                 'supplier_id' => $data['supplier_id'],
                 'purchase_date' => $data['purchase_date'] ?? now()->toDateString(),
                 'status' => Purchase::STATUS_ORDERED,
-                'shipping_total' => $data['shipping_total'] ?? 0,
-                'tax_total' => $data['tax_total'] ?? 0,
+                'shipping_total' => $data['shipping_total'],
+                'tax_total' => $data['tax_total'],
                 'subtotal' => $subtotal,
-                'grand_total' => $subtotal + (float) ($data['shipping_total'] ?? 0) + (float) ($data['tax_total'] ?? 0),
+                'grand_total' => $grandTotal,
                 'notes' => $data['notes'] ?? null,
             ]);
 
@@ -259,8 +310,8 @@ class PurchaseController extends Controller
                     'variant_name' => $variant?->sku,
                     'sku' => $variant?->sku ?? $product->sku,
                     'quantity' => (int) $item['quantity'],
-                    'unit_cost' => (float) $item['unit_cost'],
-                    'line_total' => (int) $item['quantity'] * (float) $item['unit_cost'],
+                    'unit_cost' => $item['unit_cost'],
+                    'line_total' => $item['line_total'],
                     'expiration_date' => $item['expiration_date'] ?? null,
                 ]);
             }
@@ -269,6 +320,20 @@ class PurchaseController extends Controller
         });
 
         return redirect()->route('admin.purchases.show', $createdPurchase)->with('success', __('Purchase order created successfully.'));
+    }
+
+    protected function moneyToCents(mixed $value): int
+    {
+        $money = trim((string) ($value ?? '0'));
+        [$whole, $fraction] = array_pad(explode('.', $money, 2), 2, '');
+        $fraction = str_pad($fraction, 2, '0');
+
+        return ((int) $whole * 100) + (int) $fraction;
+    }
+
+    protected function centsToMoney(int $cents): string
+    {
+        return intdiv($cents, 100) . '.' . str_pad((string) ($cents % 100), 2, '0', STR_PAD_LEFT);
     }
 
     public function receive(Purchase $purchase)

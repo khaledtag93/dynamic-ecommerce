@@ -141,6 +141,71 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertDatabaseCount('purchases', 0);
     }
 
+    public function test_purchase_creation_preserves_exact_cents_and_rejects_storage_overflow(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $supplier = $this->supplier();
+
+        $this->actingAs($admin)->post(route('admin.purchases.store'), [
+            'supplier_id' => $supplier->id,
+            'shipping_total' => '0.20',
+            'tax_total' => '0.10',
+            'items' => [[
+                'product_id' => $product->id,
+                'quantity' => 3,
+                'unit_cost' => '0.10',
+            ]],
+        ])->assertSessionHasNoErrors();
+
+        $purchase = Purchase::query()->latest('id')->firstOrFail();
+        $item = $purchase->items()->firstOrFail();
+
+        $this->assertSame('0.30', $purchase->subtotal);
+        $this->assertSame('0.60', $purchase->grand_total);
+        $this->assertSame('0.10', $item->unit_cost);
+        $this->assertSame('0.30', $item->line_total);
+
+        $before = Purchase::count();
+
+        $this->post(route('admin.purchases.store'), [
+            'supplier_id' => $supplier->id,
+            'shipping_total' => '0.00',
+            'tax_total' => '0.00',
+            'items' => [[
+                'product_id' => $product->id,
+                'quantity' => 2,
+                'unit_cost' => '6000000000.00',
+            ]],
+        ])->assertSessionHasErrors('items.0.unit_cost');
+
+        $this->assertSame($before, Purchase::count());
+
+        $this->post(route('admin.purchases.store'), [
+            'supplier_id' => $supplier->id,
+            'shipping_total' => '0.01',
+            'tax_total' => '0.00',
+            'items' => [[
+                'product_id' => $product->id,
+                'quantity' => 1,
+                'unit_cost' => '9999999999.99',
+            ]],
+        ])->assertSessionHasErrors('shipping_total');
+
+        $this->assertSame($before, Purchase::count());
+
+        $this->post(route('admin.purchases.store'), [
+            'supplier_id' => $supplier->id,
+            'items' => [[
+                'product_id' => $product->id,
+                'quantity' => 1,
+                'unit_cost' => '1.001',
+            ]],
+        ])->assertSessionHasErrors('items.0.unit_cost');
+
+        $this->assertSame($before, Purchase::count());
+    }
+
     public function test_admin_receive_replay_is_informational_and_cancelled_order_has_no_receive_action(): void
     {
         $admin = $this->createSuperAdmin();

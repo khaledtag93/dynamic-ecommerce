@@ -5759,5 +5759,7 @@
     "Expired or expiring within the next 30 days.": "أصناف منتهية الصلاحية أو ستنتهي خلال الثلاثين يومًا القادمة.",
     "Expiry attention": "تنبيهات انتهاء الصلاحية",
     "No expired products or items expiring in the next 30 days.": "لا توجد أصناف منتهية الصلاحية أو ستنتهي خلال الثلاثين يومًا القادمة.",
-    "Reorder point": "نقطة إعادة الطلب"
+    "Reorder point": "نقطة إعادة الطلب",
+    "This purchase line total exceeds the supported maximum.": "إجمالي بند الشراء يتجاوز الحد الأقصى المدعوم.",
+    "The purchase total exceeds the supported maximum.": "إجمالي أمر الشراء يتجاوز الحد الأقصى المدعوم."
 }
