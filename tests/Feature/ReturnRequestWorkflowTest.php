@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
@@ -203,6 +204,123 @@ class ReturnRequestWorkflowTest extends TestCase
 
         $this->assertSame(80.0, (float) $order->fresh()->refund_total);
         $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+    }
+
+    public function test_rma_restock_fails_safe_when_variant_was_deleted(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $product->update(['has_variants' => true]);
+
+        $variant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'RMA-VAR-'.Str::upper(Str::random(6)),
+            'price' => 100,
+            'cost_price' => 40,
+            'stock' => 0,
+            'is_default' => true,
+            'status' => true,
+            'sort_order' => 0,
+        ]);
+
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'product_name' => $product->name,
+            'variant_name' => $variant->sku,
+            'sku' => $variant->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+
+        $variant->delete();
+
+        try {
+            $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 1], $manager);
+            $this->fail('RMA should not restore deleted variant stock into the product-level bucket.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items', $exception->errors());
+        }
+
+        $this->assertSame(ReturnRequest::STATUS_APPROVED, $return->fresh()->status);
+        $this->assertSame(0, (int) $product->fresh()->quantity);
+        $this->assertDatabaseMissing('inventory_movements', [
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_RETURN_RESTOCK,
+        ]);
+    }
+
+    public function test_pos_return_fails_safe_when_variant_was_deleted(): void
+    {
+        $customer = User::factory()->create();
+        $cashier = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $product->update(['has_variants' => true]);
+
+        $variant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'POS-RET-'.Str::upper(Str::random(6)),
+            'price' => 100,
+            'cost_price' => 40,
+            'stock' => 0,
+            'is_default' => true,
+            'status' => true,
+            'sort_order' => 0,
+        ]);
+
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $order->update(['sales_channel' => Order::SALES_CHANNEL_POS]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'product_name' => $product->name,
+            'variant_name' => $variant->sku,
+            'sku' => $variant->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $variant->delete();
+
+        try {
+            app(PosReturnService::class)->process(
+                $order->fresh(),
+                [$item->id => 1],
+                'Customer return',
+                null,
+                $cashier->id,
+            );
+            $this->fail('POS return should not restore deleted variant stock into the product-level bucket.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('return', $exception->errors());
+        }
+
+        $this->assertSame(0, (int) $product->fresh()->quantity);
+        $this->assertDatabaseCount('order_refunds', 0);
+        $this->assertDatabaseMissing('inventory_movements', [
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
+        ]);
     }
 
     public function test_rma_cannot_reuse_quantity_already_returned_through_pos(): void

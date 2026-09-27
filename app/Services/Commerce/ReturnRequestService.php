@@ -364,6 +364,19 @@ class ReturnRequestService
                     ]);
                 }
 
+                $lineWasVariantBased = filled($orderItem?->variant_name) || $orderItem?->product_variant_id !== null;
+                if ($restock > 0 && $lineWasVariantBased && ! $orderItem?->variant) {
+                    throw ValidationException::withMessages([
+                        'items' => __('A received item cannot be restocked because its product variant no longer exists.'),
+                    ]);
+                }
+
+                if ($restock > 0 && $orderItem?->variant && (int) $orderItem->variant->product_id !== (int) $orderItem->product_id) {
+                    throw ValidationException::withMessages([
+                        'items' => __('A received item cannot be restocked because its product variant no longer matches the product.'),
+                    ]);
+                }
+
                 if ($restock > 0) {
                     $this->inventoryService->increase(
                         $orderItem->product,

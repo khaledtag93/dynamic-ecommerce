@@ -134,7 +134,13 @@ class PosReturnService
                     ? ProductVariant::query()->whereKey($item->product_variant_id)->lockForUpdate()->first()
                     : null;
 
-                if (! $product || ($item->product_variant_id && ! $variant)) {
+                $lineWasVariantBased = filled($item->variant_name) || $item->product_variant_id !== null;
+
+                if (
+                    ! $product
+                    || ($lineWasVariantBased && ! $variant)
+                    || ($variant && (int) $variant->product_id !== (int) $product->id)
+                ) {
                     throw ValidationException::withMessages([
                         'return' => __('A returned item can no longer be matched to its inventory record.'),
                     ]);
