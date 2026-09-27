@@ -45,7 +45,10 @@ class AnalyticsDashboardService
             ->orderBy('stat_date')
             ->get();
 
-        $hasAggregated = $dailyStats->isNotEmpty();
+        $hasDirtyStats = $dailyStats->contains(
+            fn (AnalyticsDailyStat $stat): bool => filled(data_get($stat->meta, 'restatement_requested_at'))
+        );
+        $hasAggregated = $dailyStats->isNotEmpty() && ! $hasDirtyStats;
 
         $totals = $hasAggregated
             ? $this->buildTotalsFromDailyStats($dailyStats)
@@ -62,7 +65,7 @@ class AnalyticsDashboardService
             'top_categories' => $this->buildTopCategories($from, $to),
             'coupon_performance' => $this->buildCouponPerformance($from, $to),
             'user_insights' => $this->buildUserInsights($from, $to),
-            'last_aggregated_at' => $dailyStats->max('aggregated_at'),
+            'last_aggregated_at' => $hasAggregated ? $dailyStats->max('aggregated_at') : null,
             'last_event_at' => AnalyticsEvent::query()->whereBetween('occurred_at', [$from, $to])->max('occurred_at'),
         ];
     }

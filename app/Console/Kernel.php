@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('ops:heartbeat')->everyMinute()->withoutOverlapping();
         $schedule->command('analytics:aggregate --date=' . now()->subDay()->toDateString())->dailyAt('01:10');
         $schedule->command('analytics:aggregate --date=' . now()->toDateString())->hourlyAt(10);
+        $schedule->command('analytics:restate-dirty --limit=30')->cron('5,15,25,35,45,55 * * * *')->withoutOverlapping();
         $schedule->command('growth:run')->everyFifteenMinutes()->withoutOverlapping();
         $schedule->command('notifications:scan-escalations')->everyTenMinutes()->withoutOverlapping();
         $schedule->command('payments:expire-stock-reservations')->everyFiveMinutes()->withoutOverlapping();

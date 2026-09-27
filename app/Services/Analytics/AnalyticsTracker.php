@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsEvent;
 use App\Models\Order;
 use App\Models\Product;
@@ -109,7 +110,14 @@ class AnalyticsTracker
             ], true);
 
         if (! $isRealized) {
-            $eventQuery->delete();
+            $event = $eventQuery->first();
+            $restatementDate = $event?->occurred_at?->toDateString();
+
+            if ($event) {
+                $event->delete();
+                $this->markDailyStatForRestatement($restatementDate);
+            }
+
             return;
         }
 
@@ -145,15 +153,38 @@ class AnalyticsTracker
         ];
 
         if ($event) {
-            $event->update($attributes);
+            $event->fill($attributes);
+
+            if ($event->isDirty()) {
+                $event->save();
+                $this->markDailyStatForRestatement($event->occurred_at?->toDateString());
+            }
+
             return;
         }
 
-        AnalyticsEvent::query()->create(array_merge($attributes, [
+        $event = AnalyticsEvent::query()->create(array_merge($attributes, [
             'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
             'entity_type' => AnalyticsEvent::ENTITY_ORDER,
             'entity_id' => (string) $order->id,
         ]));
+
+        $this->markDailyStatForRestatement($event->occurred_at?->toDateString());
+    }
+
+    protected function markDailyStatForRestatement(?string $date): void
+    {
+        if (! $date) {
+            return;
+        }
+
+        $stat = AnalyticsDailyStat::query()->firstOrNew(['stat_date' => $date]);
+        $meta = $stat->meta ?? [];
+        $meta['restatement_requested_at'] = now()->toIso8601String();
+        $meta['restatement_reason'] = 'realized_purchase_changed';
+
+        $stat->meta = $meta;
+        $stat->save();
     }
 
     public function currentVisitorQuery(): Builder

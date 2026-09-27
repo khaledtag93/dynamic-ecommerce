@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsEvent;
 use App\Models\Coupon;
 use App\Models\InventoryMovement;
@@ -10,6 +11,8 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
+use App\Services\Analytics\AnalyticsAggregationService;
+use App\Services\Analytics\AnalyticsDashboardService;
 use App\Services\Analytics\AnalyticsTracker;
 use App\Services\Commerce\BehaviorTrackingService;
 use App\Services\Commerce\CouponService;
@@ -19,6 +22,7 @@ use App\Services\Commerce\OrderNotificationService;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\StockReservationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -110,6 +114,79 @@ class BusinessIntegrityHardeningTest extends TestCase
             'entity_type' => AnalyticsEvent::ENTITY_ORDER,
             'entity_id' => (string) $order->id,
         ]);
+    }
+
+    public function test_late_refunds_mark_historical_analytics_dirty_and_restate_net_revenue(): void
+    {
+        $deliveredAt = now()->subDays(10)->startOfDay()->addHours(12);
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'placed_at' => $deliveredAt->copy()->subDay(),
+            'delivered_at' => $deliveredAt,
+        ]);
+
+        $tracker = app(AnalyticsTracker::class);
+        $aggregation = app(AnalyticsAggregationService::class);
+        $dashboard = app(AnalyticsDashboardService::class);
+
+        $tracker->syncRealizedPurchase($order->fresh());
+
+        $dirtyStat = AnalyticsDailyStat::query()
+            ->whereDate('stat_date', $deliveredAt->toDateString())
+            ->firstOrFail();
+
+        $this->assertNotNull(data_get($dirtyStat->meta, 'restatement_requested_at'));
+
+        $aggregation->aggregateDay($deliveredAt);
+
+        $cleanStat = $dirtyStat->fresh();
+        $this->assertNull(data_get($cleanStat->meta, 'restatement_requested_at'));
+        $this->assertSame(100.0, (float) $cleanStat->revenue_gross);
+
+        $order->update([
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'refund_total' => 25,
+        ]);
+        $tracker->syncRealizedPurchase($order->fresh());
+
+        $dirtyStat = $cleanStat->fresh();
+        $this->assertNotNull(data_get($dirtyStat->meta, 'restatement_requested_at'));
+        $this->assertSame(100.0, (float) $dirtyStat->revenue_gross);
+
+        $snapshot = $dashboard->buildSnapshot(
+            $deliveredAt->copy()->startOfDay(),
+            $deliveredAt->copy()->endOfDay()
+        );
+
+        $this->assertFalse($snapshot['current']['is_aggregated']);
+        $this->assertSame(75.0, (float) $snapshot['current']['totals']['revenue_gross']);
+
+        $this->assertSame(0, Artisan::call('analytics:restate-dirty', ['--limit' => 30]));
+
+        $restated = $dirtyStat->fresh();
+        $this->assertNull(data_get($restated->meta, 'restatement_requested_at'));
+        $this->assertSame(1, (int) $restated->purchases);
+        $this->assertSame(75.0, (float) $restated->revenue_gross);
+
+        $order->update([
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'refund_total' => 100,
+        ]);
+        $tracker->syncRealizedPurchase($order->fresh());
+
+        $this->assertNotNull(data_get(
+            $restated->fresh()->meta,
+            'restatement_requested_at'
+        ));
+
+        $this->assertSame(0, Artisan::call('analytics:restate-dirty', ['--limit' => 30]));
+
+        $fullyRestated = $restated->fresh();
+        $this->assertSame(0, (int) $fullyRestated->purchases);
+        $this->assertSame(0.0, (float) $fullyRestated->revenue_gross);
+        $this->assertNull(data_get($fullyRestated->meta, 'restatement_requested_at'));
     }
 
     public function test_inventory_decrement_refuses_oversell_and_records_successful_movement(): void
