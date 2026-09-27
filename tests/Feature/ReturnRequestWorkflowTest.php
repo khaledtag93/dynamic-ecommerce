@@ -117,6 +117,93 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertDatabaseCount('order_refunds', 0);
     }
 
+    public function test_rma_refund_respects_storefront_order_level_discount(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 160);
+        $order->update([
+            'subtotal' => 200,
+            'discount_total' => 40,
+            'grand_total' => 160,
+        ]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+        try {
+            $service->complete($return->fresh(), 100, null, 'Attempted gross-price refund.', $manager);
+            $this->fail('RMA refund should not exceed the discounted net value of the received unit.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund_amount', $exception->errors());
+        }
+
+        $service->complete($return->fresh(), 80, null, 'Refunded at discounted net value.', $manager);
+
+        $this->assertSame(80.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
+    }
+
+    public function test_rma_refund_does_not_double_apply_pos_discounts(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 80);
+        $order->update([
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'subtotal' => 100,
+            'discount_total' => 20,
+            'grand_total' => 80,
+        ]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 80,
+            'profit_amount' => 40,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+        $service->complete($return->fresh(), 80, null, 'Refunded POS net line value.', $manager);
+
+        $this->assertSame(80.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+    }
+
     public function test_exchange_order_must_belong_to_same_customer(): void
     {
         $customer = User::factory()->create();

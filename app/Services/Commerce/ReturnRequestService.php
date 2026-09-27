@@ -437,11 +437,17 @@ class ReturnRequestService
                 }
             }
 
+            $order = $locked->order()->firstOrFail();
+
             $maxRmaRefund = round((float) $locked->items()
-                ->with('orderItem:id,unit_price')
+                ->with('orderItem:id,unit_price,quantity,line_total')
                 ->where('requested_resolution', ReturnRequestItem::RESOLUTION_REFUND)
                 ->get()
-                ->sum(fn (ReturnRequestItem $item) => (float) ($item->orderItem?->unit_price ?? 0) * (int) $item->received_quantity), 2);
+                ->sum(fn (ReturnRequestItem $item) => $this->refundableReceivedItemValue(
+                    $order,
+                    $item->orderItem,
+                    (int) $item->received_quantity,
+                )), 2);
 
             if ($refundAmount > $maxRmaRefund) {
                 throw ValidationException::withMessages([
@@ -459,7 +465,7 @@ class ReturnRequestService
 
             if ($refundAmount > 0) {
                 $this->orderActionService->refund(
-                    $locked->order()->firstOrFail(),
+                    $order,
                     $refundAmount,
                     __('Return :reference completed.', ['reference' => $locked->reference]),
                     $notes,
@@ -490,6 +496,30 @@ class ReturnRequestService
 
             return $locked->fresh(['items.orderItem', 'order', 'refunds', 'exchangeOrder']);
         });
+    }
+
+    private function refundableReceivedItemValue(Order $order, ?OrderItem $orderItem, int $receivedQuantity): float
+    {
+        if (! $orderItem || $receivedQuantity < 1 || (int) $orderItem->quantity < 1) {
+            return 0.0;
+        }
+
+        $linePaidTotal = round(max(0, (float) $orderItem->line_total), 2);
+
+        if ($order->sales_channel !== Order::SALES_CHANNEL_POS) {
+            $subtotal = round(max(0, (float) $order->subtotal), 2);
+            $discountTotal = round(min($subtotal, max(0, (float) $order->discount_total)), 2);
+
+            if ($subtotal > 0 && $discountTotal > 0 && $linePaidTotal > 0) {
+                $discountShare = round($discountTotal * ($linePaidTotal / $subtotal), 2);
+                $linePaidTotal = round(max(0, $linePaidTotal - min($linePaidTotal, $discountShare)), 2);
+            }
+        }
+
+        $quantity = (int) $orderItem->quantity;
+        $receivedQuantity = min($quantity, max(0, $receivedQuantity));
+
+        return round(($linePaidTotal / $quantity) * $receivedQuantity, 2);
     }
 
     private function lockRequest(ReturnRequest $returnRequest): ReturnRequest
