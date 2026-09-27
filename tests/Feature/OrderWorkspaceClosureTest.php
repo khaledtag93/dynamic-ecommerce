@@ -15,6 +15,23 @@ class OrderWorkspaceClosureTest extends TestCase
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
     }
 
+    public function test_customer_order_cancel_live_action_resets_confirmation_and_pending_state(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/orders/show.blade.php'));
+
+        $this->assertStringContainsString("if (form.dataset.pending === '1') {", $view);
+        $this->assertStringContainsString('delete form.dataset.confirmed;', $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString('delete form.dataset.pending;', $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString("button.removeAttribute('aria-disabled');", $view);
+        $this->assertStringContainsString("liveStatus.classList.remove('d-none', 'text-danger');", $view);
+        $this->assertStringContainsString("liveStatus.classList.add('text-success');", $view);
+        $this->assertStringContainsString('release();', $view);
+    }
+
     public function test_order_list_filters_have_explicit_labels(): void
     {
         $view = file_get_contents(resource_path('views/admin/orders/index.blade.php'));

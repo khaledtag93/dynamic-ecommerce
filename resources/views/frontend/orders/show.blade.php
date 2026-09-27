@@ -184,13 +184,51 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!form) return;
 
     form.addEventListener('submit', async function (event) {
+        if (form.dataset.pending === '1') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
         if (form.dataset.confirmed !== '1') return;
 
+        delete form.dataset.confirmed;
         event.preventDefault();
         event.stopImmediatePropagation();
 
+        form.dataset.pending = '1';
+        form.setAttribute('aria-busy', 'true');
+        form.classList.add('lc-loading');
+
         const button = event.submitter || form.querySelector('button[type="submit"]');
-        if (button) button.disabled = true;
+        const originalButtonHtml = button?.innerHTML || '';
+        const liveStatus = document.querySelector('[data-order-live-status]');
+
+        if (button) {
+            const loadingText = button.dataset.loadingText;
+            button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
+            if (loadingText) {
+                button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+            }
+        }
+
+        if (liveStatus) {
+            liveStatus.textContent = '';
+            liveStatus.classList.add('d-none');
+            liveStatus.classList.remove('text-danger', 'text-success');
+        }
+
+        const release = () => {
+            delete form.dataset.pending;
+            form.removeAttribute('aria-busy');
+            form.classList.remove('lc-loading');
+
+            if (button) {
+                button.disabled = false;
+                button.removeAttribute('aria-disabled');
+                button.innerHTML = originalButtonHtml;
+            }
+        };
 
         try {
             const response = await fetch(form.action, {
@@ -216,7 +254,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const status = document.querySelector('[data-order-status]');
             const payment = document.querySelector('[data-order-payment-status]');
             const delivery = document.querySelector('[data-order-delivery-status]');
-            const liveStatus = document.querySelector('[data-order-live-status]');
 
             if (status) {
                 status.textContent = order.status_label || status.textContent;
@@ -232,19 +269,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (liveStatus) {
                 liveStatus.textContent = payload.message || @json(__('Order cancelled successfully. Stock was restored and the order timeline was updated.'));
-                liveStatus.classList.remove('d-none');
+                liveStatus.classList.remove('d-none', 'text-danger');
+                liveStatus.classList.add('text-success');
             }
 
             document.querySelectorAll('[data-order-payment-retry], [data-order-payment-retry-notice]').forEach((element) => element.remove());
             form.remove();
         } catch (error) {
-            const liveStatus = document.querySelector('[data-order-live-status]');
+            release();
             if (liveStatus) {
                 liveStatus.textContent = error.message;
                 liveStatus.classList.remove('d-none', 'text-success');
                 liveStatus.classList.add('text-danger');
             }
-            if (button) button.disabled = false;
         }
     }, true);
 });
