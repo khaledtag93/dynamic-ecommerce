@@ -51,6 +51,15 @@ class OrderActionService
                 ]);
             }
 
+            if ($lockedOrder->refundable_balance > 0 && in_array($lockedOrder->payment_status, [
+                Order::PAYMENT_STATUS_PAID,
+                Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            ], true)) {
+                throw ValidationException::withMessages([
+                    'status' => __('Refund the remaining paid balance before cancelling this order.'),
+                ]);
+            }
+
             if ($lockedOrder->payment_method === Order::PAYMENT_METHOD_ONLINE) {
                 $this->stockReservationService->releaseForOrder(
                     $lockedOrder,

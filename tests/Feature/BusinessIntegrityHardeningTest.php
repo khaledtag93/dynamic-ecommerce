@@ -353,6 +353,48 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNotNull(data_get($order->fresh()->meta, 'coupon_usage.released_at'));
     }
 
+    public function test_paid_order_cannot_be_cancelled_until_remaining_balance_is_refunded(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $product = $this->makeProduct(0);
+
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class)
+        );
+
+        try {
+            $service->cancel($order, 'Paid order cancellation attempt.');
+            $this->fail('Paid orders with refundable value must be refunded before cancellation.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(0.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(0, (int) $product->fresh()->quantity);
+        $this->assertDatabaseMissing('inventory_movements', [
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
+        ]);
+    }
+
     public function test_repeated_cancellation_does_not_restore_stock_twice(): void
     {
         $product = $this->makeProduct(0);
