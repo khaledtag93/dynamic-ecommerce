@@ -12,6 +12,7 @@ class OrderRefund extends Model
     protected $fillable = [
         'order_id',
         'return_request_id',
+        'idempotency_key',
         'amount',
         'reason',
         'notes',

@@ -65,10 +65,13 @@ class OrderWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString('name="amount" class="form-control" value="{{ old(\'amount\', $order->refundable_balance) }}" required aria-required="true"', $view);
         $this->assertStringContainsString('name="reason" maxlength="255" class="form-control" value="{{ old(\'reason\') }}" placeholder="{{ __(\'Refund reason\') }}" required aria-required="true"', $view);
         $this->assertStringContainsString('id="orderRefundNotes" name="notes" rows="3" maxlength="1000"', $view);
+        $this->assertStringContainsString('name="refund_idempotency_key"', $view);
+        $this->assertStringContainsString("Str::uuid()", $view);
 
         $this->assertStringContainsString("'status' => ['required', Rule::in(array_keys(Order::statusOptions()))]", $orderController);
         $this->assertStringContainsString("'reason' => ['required', 'string', 'max:255']", $orderController);
         $this->assertStringContainsString("'notes' => ['nullable', 'string', 'max:1000']", $orderController);
+        $this->assertStringContainsString("'refund_idempotency_key' => ['required', 'uuid']", $orderController);
         $this->assertStringContainsString("'shipping_provider' => ['nullable', 'string', 'max:120']", $deliveryController);
         $this->assertStringContainsString("'tracking_number' => ['nullable', 'string', 'max:120']", $deliveryController);
         $this->assertStringContainsString("'delivery_notes' => ['nullable', 'string', 'max:1000']", $deliveryController);

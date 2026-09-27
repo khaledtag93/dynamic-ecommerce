@@ -250,6 +250,45 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull($payment->fresh()->refunded_at);
     }
 
+    public function test_direct_refund_idempotency_prevents_replayed_financial_mutation(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PAID);
+        $actor = User::factory()->create();
+        $key = (string) Str::uuid();
+
+        $notifications = Mockery::mock(OrderNotificationService::class);
+        $notifications->shouldReceive('notifyRefundRecorded')->once();
+
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class)
+        );
+
+        $first = $service->refund($order, 20, 'duplicate safe refund', 'same request', $actor->id, null, $key);
+        $replay = $service->refund($order->fresh(), 20, 'duplicate safe refund', 'same request', $actor->id, null, $key);
+
+        $this->assertTrue($first['created']);
+        $this->assertFalse($replay['created']);
+        $this->assertSame($first['refund']->id, $replay['refund']->id);
+        $this->assertDatabaseCount('order_refunds', 1);
+        $this->assertSame(20.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+
+        try {
+            $service->refund($order->fresh(), 25, 'changed replay', 'same request', $actor->id, null, $key);
+            $this->fail('Reusing a refund idempotency key with different details must be rejected.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('order_refunds', 1);
+        $this->assertSame(20.0, (float) $order->fresh()->refund_total);
+    }
+
     public function test_full_refund_marks_payment_ledger_refunded_and_blocks_late_gateway_downgrade(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);

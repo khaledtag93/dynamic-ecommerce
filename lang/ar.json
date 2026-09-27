@@ -5797,5 +5797,7 @@
     "This paid online order requires stock review before fulfillment can continue.": "يتطلب هذا الطلب المدفوع إلكترونيًا مراجعة المخزون قبل متابعة التجهيز.",
     "Bank transfer orders cannot enter fulfillment until payment is confirmed.": "لا يمكن بدء تجهيز طلبات التحويل البنكي حتى يتم تأكيد الدفع.",
     "Storefront orders cannot be completed before delivery is marked Delivered.": "لا يمكن إكمال طلبات المتجر قبل تسجيل حالة التوصيل كمُسلَّم.",
-    "Orders cannot be cancelled after shipping has started. Use the return workflow instead.": "لا يمكن إلغاء الطلب بعد بدء الشحن. استخدم مسار الإرجاع بدلًا من ذلك."
+    "Orders cannot be cancelled after shipping has started. Use the return workflow instead.": "لا يمكن إلغاء الطلب بعد بدء الشحن. استخدم مسار الإرجاع بدلًا من ذلك.",
+    "This refund request key was already used with different details.": "تم استخدام مفتاح طلب الاسترداد هذا مسبقًا ببيانات مختلفة.",
+    "This refund request was already recorded.": "تم تسجيل طلب الاسترداد هذا بالفعل."
 }

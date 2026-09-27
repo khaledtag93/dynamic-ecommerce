@@ -261,7 +261,7 @@ class OrderActionService
         }
     }
 
-    public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null): Order
+    public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null, ?string $idempotencyKey = null): array
     {
         if ($amount <= 0) {
             throw ValidationException::withMessages([
@@ -269,11 +269,40 @@ class OrderActionService
             ]);
         }
 
-        return DB::transaction(function () use ($order, $amount, $reason, $notes, $processedBy, $returnRequestId) {
+        return DB::transaction(function () use ($order, $amount, $reason, $notes, $processedBy, $returnRequestId, $idempotencyKey) {
             $lockedOrder = Order::query()
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            $idempotencyKey = filled($idempotencyKey) ? trim((string) $idempotencyKey) : null;
+            $reason = trim($reason);
+            $notes = filled($notes) ? trim((string) $notes) : null;
+
+            if ($idempotencyKey) {
+                $existingRefund = $lockedOrder->refunds()
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+
+                if ($existingRefund) {
+                    $samePayload = round((float) $existingRefund->amount, 2) === round($amount, 2)
+                        && (string) $existingRefund->reason === $reason
+                        && (string) ($existingRefund->notes ?? '') === (string) ($notes ?? '')
+                        && (int) ($existingRefund->processed_by ?? 0) === (int) ($processedBy ?? 0);
+
+                    if (! $samePayload) {
+                        throw ValidationException::withMessages([
+                            'refund' => __('This refund request key was already used with different details.'),
+                        ]);
+                    }
+
+                    return [
+                        'order' => $lockedOrder->fresh(['refunds', 'user']),
+                        'refund' => $existingRefund,
+                        'created' => false,
+                    ];
+                }
+            }
 
             $alreadyRefunded = round((float) $lockedOrder->refunds()->sum('amount'), 2);
             $refundableBalance = round(max(0, (float) $lockedOrder->grand_total - $alreadyRefunded), 2);
@@ -293,8 +322,9 @@ class OrderActionService
                 ]);
             }
 
-            $lockedOrder->refunds()->create([
+            $refund = $lockedOrder->refunds()->create([
                 'return_request_id' => $returnRequestId,
+                'idempotency_key' => $idempotencyKey,
                 'amount' => $amount,
                 'reason' => $reason,
                 'notes' => $notes,
@@ -342,7 +372,11 @@ class OrderActionService
 
             $this->orderNotificationService->notifyRefundRecorded($freshOrder);
 
-            return $freshOrder;
+            return [
+                'order' => $freshOrder,
+                'refund' => $refund,
+                'created' => true,
+            ];
         });
     }
 

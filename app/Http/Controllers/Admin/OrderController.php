@@ -184,32 +184,43 @@ class OrderController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'reason' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'refund_idempotency_key' => ['required', 'uuid'],
         ]);
 
         try {
-            $this->orderActionService->refund(
+            $result = $this->orderActionService->refund(
                 $order,
                 (float) $validated['amount'],
                 $validated['reason'],
                 $validated['notes'] ?? null,
                 optional(auth()->user())->id,
+                null,
+                $validated['refund_idempotency_key'],
             );
 
-            $this->adminActivityLogService->log(
-                'order_management',
-                'refund_recorded',
-                __('Refund recorded for order :order.', ['order' => $order->order_number]),
-                optional(auth()->user())->id,
-                $order,
-                [
-                    'amount' => (float) $validated['amount'],
-                    'reason' => $validated['reason'],
-                ]
-            );
+            if ($result['created']) {
+                $this->adminActivityLogService->log(
+                    'order_management',
+                    'refund_recorded',
+                    __('Refund recorded for order :order.', ['order' => $order->order_number]),
+                    optional(auth()->user())->id,
+                    $result['order'],
+                    [
+                        'amount' => (float) $validated['amount'],
+                        'reason' => $validated['reason'],
+                        'order_refund_id' => $result['refund']->id,
+                    ]
+                );
+            }
 
             return redirect()
                 ->route('admin.orders.show', $order)
-                ->with('success', __('Refund recorded successfully.'));
+                ->with(
+                    'success',
+                    $result['created']
+                        ? __('Refund recorded successfully.')
+                        : __('This refund request was already recorded.')
+                );
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }

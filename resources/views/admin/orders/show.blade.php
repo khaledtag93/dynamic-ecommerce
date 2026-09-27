@@ -384,6 +384,7 @@
                     @if($can('orders.manage'))
                     <form method="POST" action="{{ route('admin.orders.refund', $order) }}" data-submit-loading data-refund-form data-refund-currency="{{ $currency }}">
                         @csrf
+                        <input type="hidden" name="refund_idempotency_key" value="{{ old('refund_idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="orderRefundAmount">{{ __('Amount') }}</label>
                             <input id="orderRefundAmount" type="number" step="0.01" min="0.01" max="{{ $order->refundable_balance }}" name="amount" class="form-control" value="{{ old('amount', $order->refundable_balance) }}" required aria-required="true">
