@@ -5,6 +5,7 @@ namespace App\Services\Commerce;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PosReturnItem;
 use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
@@ -44,11 +45,36 @@ class ReturnRequestService
 
     public function remainingReturnableQuantity(OrderItem $item): int
     {
-        $reserved = ReturnRequestItem::query()
+        $rmaReserved = (int) ($this->rmaReservedQuantities([$item->id])[$item->id] ?? 0);
+        $posReturned = (int) PosReturnItem::query()
             ->where('order_item_id', $item->id)
+            ->sum('quantity');
+
+        return max(0, (int) $item->quantity - $rmaReserved - $posReturned);
+    }
+
+    /**
+     * @param  array<int,int>  $orderItemIds
+     * @return array<int,int>
+     */
+    public function rmaReservedQuantities(array $orderItemIds): array
+    {
+        $ids = collect($orderItemIds)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        return ReturnRequestItem::query()
+            ->whereIn('order_item_id', $ids->all())
             ->with('returnRequest:id,status')
             ->get()
-            ->sum(function (ReturnRequestItem $returnItem) {
+            ->groupBy('order_item_id')
+            ->map(fn ($items) => (int) $items->sum(function (ReturnRequestItem $returnItem) {
                 $status = $returnItem->returnRequest?->status;
 
                 return match ($status) {
@@ -58,9 +84,9 @@ class ReturnRequestService
                     ReturnRequest::STATUS_COMPLETED => (int) ($returnItem->approved_quantity ?? $returnItem->requested_quantity),
                     default => 0,
                 };
-            });
-
-        return max(0, (int) $item->quantity - (int) $reserved);
+            }))
+            ->mapWithKeys(fn ($quantity, $orderItemId) => [(int) $orderItemId => (int) $quantity])
+            ->all();
     }
 
     public function createForCustomer(Order $order, User $user, array $items, ?string $notes = null): ReturnRequest

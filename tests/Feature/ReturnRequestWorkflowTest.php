@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
+use App\Services\Commerce\PosReturnService;
 use App\Services\Commerce\ReturnRequestService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -202,6 +203,93 @@ class ReturnRequestWorkflowTest extends TestCase
 
         $this->assertSame(80.0, (float) $order->fresh()->refund_total);
         $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+    }
+
+    public function test_rma_cannot_reuse_quantity_already_returned_through_pos(): void
+    {
+        $customer = User::factory()->create();
+        $cashier = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 200);
+        $order->update(['sales_channel' => Order::SALES_CHANNEL_POS]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+
+        app(PosReturnService::class)->process(
+            $order,
+            [$item->id => 1],
+            'Customer return',
+            null,
+            $cashier->id,
+        );
+
+        $service = app(ReturnRequestService::class);
+        $this->assertSame(1, $service->remainingReturnableQuantity($item->fresh()));
+
+        try {
+            $service->createForCustomer($order->fresh(), $customer, [[
+                'order_item_id' => $item->id,
+                'quantity' => 2,
+                'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+            ]]);
+            $this->fail('RMA should not reuse quantity already returned through POS.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('return_requests', 0);
+    }
+
+    public function test_pos_return_cannot_reuse_quantity_reserved_by_rma(): void
+    {
+        $customer = User::factory()->create();
+        $cashier = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 200);
+        $order->update(['sales_channel' => Order::SALES_CHANNEL_POS]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+
+        app(ReturnRequestService::class)->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+
+        try {
+            app(PosReturnService::class)->process(
+                $order->fresh(),
+                [$item->id => 2],
+                'Customer return',
+                null,
+                $cashier->id,
+            );
+            $this->fail('POS return should not reuse quantity reserved by an RMA.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('order_refunds', 0);
     }
 
     public function test_exchange_order_must_belong_to_same_customer(): void

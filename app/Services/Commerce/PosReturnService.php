@@ -17,6 +17,7 @@ class PosReturnService
     public function __construct(
         protected InventoryService $inventoryService,
         protected AdminActivityLogService $activityLogService,
+        protected ReturnRequestService $returnRequestService,
     ) {
     }
 
@@ -56,6 +57,8 @@ class PosReturnService
                 ->groupBy('order_item_id')
                 ->pluck('returned_quantity', 'order_item_id');
 
+            $rmaReserved = $this->returnRequestService->rmaReservedQuantities($items->keys()->all());
+
             $selected = [];
             $refundAmount = 0.0;
 
@@ -76,7 +79,8 @@ class PosReturnService
                 }
 
                 $alreadyReturned = (int) ($previous[$item->id] ?? 0);
-                $remainingQuantity = max(0, (int) $item->quantity - $alreadyReturned);
+                $reservedByRma = (int) ($rmaReserved[$item->id] ?? 0);
+                $remainingQuantity = max(0, (int) $item->quantity - $alreadyReturned - $reservedByRma);
 
                 if ($quantity > $remainingQuantity) {
                     throw ValidationException::withMessages([
