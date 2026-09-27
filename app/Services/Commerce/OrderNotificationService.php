@@ -168,7 +168,7 @@ class OrderNotificationService
                     default => 'skipped',
                 };
 
-                if ($result === 'skipped') {
+                if ($result === 'skipped' || $result === false) {
                     $this->markDispatchSkipped($log, __('Recipient is missing or the channel is reserved for later.'));
 
                     if ($log) {
