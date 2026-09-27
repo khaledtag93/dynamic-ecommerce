@@ -1,5 +1,22 @@
 # CURRENT PHASE
 
+## Financial Integrity QAS checkpoint — 2026-09-27
+
+- Active branch: `sec03-framework-upgrade`.
+- **Verified source / QAS application:** `0054e7d110520d3f9c9c3b3275e02c71e8eec978` (`0054e7d1`).
+- **Hardening CI #2135: Green** on that exact SHA.
+- QAS deployment is operator-confirmed on the same SHA. Deployment completed with application health HTTP 200 and static asset health HTTP 200; maintenance mode is off.
+- Immutable repository tag: `qas-financial-integrity-2026-09-27`.
+- The current closed source/QAS slice is **Commerce Financial Integrity**: Orders, Payments, Refunds, POS cash-shift reconciliation, customer commercial value, offer/coupon analytics, and realized-commerce metrics.
+- Key lifecycle contracts now enforced include: paid balances must be refunded before cancellation; cancelled orders cannot be manually reopened through payment status changes; late gateway payment after cancellation preserves financial truth without reactivating stock/fulfillment and raises a refund-required exception; full refund resolves that exception; POS cash reconciliation preserves the original cash sale and records refunds as separate cash outflows.
+- Realized-commerce reporting uses completed + paid/partially-refunded orders and net revenue after recorded refunds; cancelled/unpaid orders are excluded from customer value, growth, cohort, attribution and offer analytics.
+- Matching regression coverage and the full Hardening suite are green. Public QAS sanity checks for storefront, login, admin redirect, static assets and baseline security headers pass.
+- **Status:** this financial-integrity slice is CLOSED for source/CI/QAS deployment evidence. Authenticated destructive browser scenarios should only be rerun when needed against controlled QAS test records; do not mutate arbitrary QAS business data merely to repeat CI-proven invariants.
+- **Next source slice:** Purchasing + Inventory lifecycle integrity — receiving, cancellations/reversals, supplier obligations, stock valuation/cost lineage, partial receiving, duplicate/replayed receipts, and cross-module accounting boundaries.
+- Production remains unchanged. Production release gates remain separate and include OPS-01 credential rotation evidence, PAY-01 real Paymob E2E, OPS-02 isolated database restore rehearsal, and Production scheduler/queue verification.
+
+### Earlier checkpoints below
+
 ## QAS candidate gate — 2026-09-27
 
 - Active branch: `sec03-framework-upgrade`.

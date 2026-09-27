@@ -1,5 +1,20 @@
 # MASTER PROJECT STATUS
 
+## Financial Integrity closure checkpoint — 2026-09-27
+
+- Active branch: `sec03-framework-upgrade`.
+- **Current verified application SHA:** `0054e7d110520d3f9c9c3b3275e02c71e8eec978` (`0054e7d1`).
+- **Hardening CI #2135: Green** on the exact application SHA.
+- **QAS:** deployed on the exact same SHA; deploy completed successfully with HTTP 200 application health and HTTP 200 static-asset health.
+- Repository checkpoint tag: `qas-financial-integrity-2026-09-27`.
+- **Commerce Financial Integrity is CLOSED at this checkpoint** for the audited slice spanning Orders, Payments, Refunds, POS cash reconciliation, realized-commerce analytics, customer value metrics and offer/coupon revenue semantics.
+- Closed integrity contracts include cancellation/refund ordering, refund idempotency and bounds, late-payment-after-cancellation handling, payment terminal-state protection, refund-ledger authority, POS sale/refund cash-flow separation, realized/net revenue reporting, and exclusion of unrealized commerce from customer/growth/offer metrics.
+- QAS public sanity checks confirm storefront/login availability, expected Admin redirect behavior, static assets and baseline security headers on the deployed revision.
+- Production is unchanged and must not inherit a CLOSED claim from QAS. OPS-01, PAY-01, OPS-02 and Production scheduler/queue setup remain independent release gates.
+- **Next major audit:** Purchasing + Inventory lifecycle integrity, then continue the broader Business Process & ERP Integrity Audit.
+
+### Earlier checkpoints below
+
 ## QAS candidate checkpoint — 2026-09-27
 
 - Active branch: `sec03-framework-upgrade`.
