@@ -22,7 +22,7 @@
     <div class="col-md-6 col-xl-3">
         <x-admin.stat-card
             :label="__('Low stock')"
-            :value="$lowStockProducts->count()"
+            :value="$lowStockItems->count()"
             icon="mdi-alert-outline"
             tone="warning"
             :help="__('Products that need replenishment attention.')"
@@ -31,11 +31,11 @@
     </div>
     <div class="col-md-6 col-xl-3">
         <x-admin.stat-card
-            :label="__('Near expiry')"
-            :value="$nearExpiryProducts->count()"
+            :label="__('Expiry attention')"
+            :value="$expiryRiskItems->count()"
             icon="mdi-calendar-clock-outline"
             tone="warning"
-            :help="__('Products expiring within the next 30 days.')"
+            :help="__('Expired or expiring within the next 30 days.')"
             class="h-100"
         />
     </div>
@@ -56,19 +56,27 @@
             <div class="admin-card-body">
                 <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
                     <h4 class="mb-0">{{ __('Low stock attention') }}</h4>
-                    <span class="badge admin-status-badge badge-soft-warning">{{ $lowStockProducts->count() }} {{ __('items') }}</span>
+                    <span class="badge admin-status-badge badge-soft-warning">{{ $lowStockItems->count() }} {{ __('items') }}</span>
                 </div>
 
-                @forelse($lowStockProducts as $product)
+                @forelse($lowStockItems as $item)
+                    @php($product = $item['product'])
+                    @php($variant = $item['variant'])
                     <div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
                         <div>
-                            <div class="fw-semibold">{{ $product->name ?: __('Unnamed product') }}</div>
-                            <div class="text-muted small">{{ $product->category?->name ?? __('No category') }}</div>
-                            <a href="{{ route('admin.products.edit', $product) }}" class="small text-decoration-none">{{ __('Open product') }} <i class="mdi mdi-arrow-top-right"></i></a>
+                            <div class="fw-semibold">{{ $product?->name ?: __('Unnamed product') }}</div>
+                            @if($variant)
+                                <div class="text-muted small font-monospace">{{ $variant->sku ?: ('#' . $variant->id) }}</div>
+                            @endif
+                            <div class="text-muted small">{{ $product?->category?->name ?? __('No category') }}</div>
+                            @if($product)
+                                <a href="{{ route('admin.products.edit', $product) }}" class="small text-decoration-none">{{ __('Open product') }} <i class="mdi mdi-arrow-top-right"></i></a>
+                            @endif
                         </div>
                         <div class="text-end">
-                            <div class="fw-bold">{{ $product->quantity_value ?? $product->quantity ?? 0 }}</div>
+                            <div class="fw-bold">{{ $item['stock'] }}</div>
                             <div class="text-muted small">{{ __('available') }}</div>
+                            <div class="text-muted small">{{ __('Reorder point') }}: {{ $item['threshold'] }}</div>
                         </div>
                     </div>
                 @empty
@@ -86,26 +94,38 @@
         <div class="admin-card h-100">
             <div class="admin-card-body">
                 <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
-                    <h4 class="mb-0">{{ __('Near expiry') }}</h4>
-                    <span class="badge admin-status-badge badge-soft-secondary">{{ $nearExpiryProducts->count() }} {{ __('items') }}</span>
+                    <h4 class="mb-0">{{ __('Expiry attention') }}</h4>
+                    <span class="badge admin-status-badge badge-soft-secondary">{{ $expiryRiskItems->count() }} {{ __('items') }}</span>
                 </div>
 
-                @forelse($nearExpiryProducts as $product)
+                @forelse($expiryRiskItems as $item)
+                    @php($product = $item['product'])
+                    @php($variant = $item['variant'])
+                    @php($expiryDate = $item['expiration_date'])
                     <div class="d-flex justify-content-between align-items-center gap-3 py-2 border-bottom">
                         <div>
-                            <div class="fw-semibold">{{ $product->name ?: __('Unnamed product') }}</div>
-                            <div class="text-muted small">{{ $product->category?->name ?? __('No category') }}</div>
+                            <div class="fw-semibold">{{ $product?->name ?: __('Unnamed product') }}</div>
+                            @if($variant)
+                                <div class="text-muted small font-monospace">{{ $variant->sku ?: ('#' . $variant->id) }}</div>
+                            @endif
+                            <div class="text-muted small">{{ $product?->category?->name ?? __('No category') }}</div>
+                            @if($product)
+                                <a href="{{ route('admin.products.edit', $product) }}" class="small text-decoration-none">{{ __('Open product') }} <i class="mdi mdi-arrow-top-right"></i></a>
+                            @endif
                         </div>
                         <div class="text-end">
-                            <div class="fw-semibold">{{ optional($product->expiration_date)->format('M d, Y') ?: __('Not set') }}</div>
+                            <div class="fw-semibold {{ $expiryDate?->lt(today()) ? 'text-danger' : '' }}">{{ optional($expiryDate)->format('M d, Y') ?: __('Not set') }}</div>
                             <div class="text-muted small">{{ __('expiry date') }}</div>
+                            <span class="badge admin-status-badge {{ $expiryDate?->lt(today()) ? 'badge-soft-danger' : 'badge-soft-warning' }}">
+                                {{ $expiryDate?->lt(today()) ? __('Expired') : __('Upcoming') }}
+                            </span>
                         </div>
                     </div>
                 @empty
                     <div class="admin-empty-state py-4">
                         <div class="empty-icon"><i class="mdi mdi-calendar-check-outline"></i></div>
                         <h5 class="mb-2">{{ __('No products near expiry') }}</h5>
-                        <p class="text-muted mb-0">{{ __('Nothing is expiring in the next 30 days.') }}</p>
+                        <p class="text-muted mb-0">{{ __('No expired products or items expiring in the next 30 days.') }}</p>
                     </div>
                 @endforelse
             </div>

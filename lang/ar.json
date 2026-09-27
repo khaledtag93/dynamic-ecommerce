@@ -5755,5 +5755,9 @@
     "Move, disable, or remove items. Active items appear on the storefront.": "أعد ترتيب العناصر أو عطّلها أو احذفها. تظهر العناصر النشطة في واجهة المتجر.",
     "Review product data, pricing, stock, SEO fields, and image ordering, then save this product when you are ready.": "راجع بيانات المنتج والأسعار والمخزون وحقول تحسين محركات البحث وترتيب الصور، ثم احفظ المنتج عندما تكون جاهزًا.",
     "Back": "رجوع",
-    "Online payment is not completed yet.": "لم يكتمل الدفع الإلكتروني بعد."
+    "Online payment is not completed yet.": "لم يكتمل الدفع الإلكتروني بعد.",
+    "Expired or expiring within the next 30 days.": "أصناف منتهية الصلاحية أو ستنتهي خلال الثلاثين يومًا القادمة.",
+    "Expiry attention": "تنبيهات انتهاء الصلاحية",
+    "No expired products or items expiring in the next 30 days.": "لا توجد أصناف منتهية الصلاحية أو ستنتهي خلال الثلاثين يومًا القادمة.",
+    "Reorder point": "نقطة إعادة الطلب"
 }

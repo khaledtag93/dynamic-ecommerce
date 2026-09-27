@@ -6,6 +6,7 @@ use App\Exceptions\ProductIdentifierAmbiguityException;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryMovement;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Services\Commerce\Code128BarcodeService;
 use App\Services\Commerce\InventoryAdjustmentService;
 use App\Services\Commerce\ProductIdentifierService;
@@ -56,22 +57,77 @@ class InventoryController extends Controller
         }
 
         $lowStockProducts = Product::query()
+            ->with('category')
+            ->where('has_variants', false)
             ->where(function ($query) {
-                $query->where('has_variants', false)->whereColumn('quantity', '<=', 'reorder_point');
-            })
-            ->orWhere(function ($query) {
-                $query->where('has_variants', false)->whereColumn('quantity', '<=', 'low_stock_threshold');
+                $query->whereColumn('quantity', '<=', 'reorder_point')
+                    ->orWhereColumn('quantity', '<=', 'low_stock_threshold');
             })
             ->latest('id')
             ->take(12)
             ->get();
 
-        $nearExpiryProducts = Product::query()
+        $lowStockVariants = ProductVariant::query()
+            ->with('product.category')
+            ->where('status', true)
+            ->whereHas('product', fn ($query) => $query->where('has_variants', true))
+            ->whereColumn('stock', '<=', 'reorder_point')
+            ->orderBy('stock')
+            ->latest('id')
+            ->take(12)
+            ->get();
+
+        $lowStockItems = $lowStockProducts
+            ->map(fn (Product $product) => [
+                'product' => $product,
+                'variant' => null,
+                'stock' => (int) $product->quantity,
+                'threshold' => max((int) $product->reorder_point, (int) $product->low_stock_threshold),
+            ])
+            ->concat($lowStockVariants->map(fn (ProductVariant $variant) => [
+                'product' => $variant->product,
+                'variant' => $variant,
+                'stock' => (int) $variant->stock,
+                'threshold' => (int) $variant->reorder_point,
+            ]))
+            ->sortBy(fn (array $item) => $item['stock'] - $item['threshold'])
+            ->take(12)
+            ->values();
+
+        $expiryCutoff = today()->addDays(30);
+
+        $expiryRiskProducts = Product::query()
+            ->with('category')
+            ->where('has_variants', false)
             ->whereNotNull('expiration_date')
-            ->whereDate('expiration_date', '<=', now()->addDays(30))
+            ->whereDate('expiration_date', '<=', $expiryCutoff)
             ->orderBy('expiration_date')
             ->take(12)
             ->get();
+
+        $expiryRiskVariants = ProductVariant::query()
+            ->with('product.category')
+            ->whereHas('product', fn ($query) => $query->where('has_variants', true))
+            ->whereNotNull('expiration_date')
+            ->whereDate('expiration_date', '<=', $expiryCutoff)
+            ->orderBy('expiration_date')
+            ->take(12)
+            ->get();
+
+        $expiryRiskItems = $expiryRiskProducts
+            ->map(fn (Product $product) => [
+                'product' => $product,
+                'variant' => null,
+                'expiration_date' => $product->expiration_date,
+            ])
+            ->concat($expiryRiskVariants->map(fn (ProductVariant $variant) => [
+                'product' => $variant->product,
+                'variant' => $variant,
+                'expiration_date' => $variant->expiration_date,
+            ]))
+            ->sortBy('expiration_date')
+            ->take(12)
+            ->values();
 
         $movementTypes = InventoryMovement::query()
             ->whereNotNull('type')
@@ -86,8 +142,8 @@ class InventoryController extends Controller
 
         return view('admin.inventory.index', compact(
             'movements',
-            'lowStockProducts',
-            'nearExpiryProducts',
+            'lowStockItems',
+            'expiryRiskItems',
             'filters',
             'movementTypes',
             'inventoryStats',
