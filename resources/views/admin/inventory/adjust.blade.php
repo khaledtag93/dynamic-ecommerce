@@ -16,7 +16,7 @@
                     <h4 class="mb-1">{{ __('Find an item') }}</h4>
                     <p class="text-muted small mb-3">{{ __('Search by product name, SKU, or barcode, then choose the exact stock item.') }}</p>
                     <form method="GET" action="{{ route('admin.inventory.adjust') }}" class="d-flex gap-2 mb-3" data-submit-loading>
-                        <input name="search" value="{{ $search }}" class="form-control" placeholder="{{ __('Name, SKU, or barcode') }}" aria-label="{{ __('Search products') }}">
+                        <input name="search" value="{{ $search }}" maxlength="100" class="form-control" placeholder="{{ __('Name, SKU, or barcode') }}" aria-label="{{ __('Search products') }}">
                         <button class="btn btn-primary" data-loading-text="{{ __('Searching...') }}">{{ __('Search') }}</button>
                     </form>
 
@@ -81,12 +81,12 @@
                                 <div class="row g-3">
                                     <div class="col-md-5">
                                         <label for="new_stock" class="form-label fw-semibold">{{ __('Counted quantity') }}</label>
-                                        <input id="new_stock" name="new_stock" type="number" min="0" max="999999999" step="1" required value="{{ old('new_stock', max(0, $currentStock)) }}" class="form-control @error('new_stock') is-invalid @enderror">
+                                        <input id="new_stock" name="new_stock" type="number" min="0" max="999999999" step="1" required aria-required="true" value="{{ old('new_stock', max(0, $currentStock)) }}" class="form-control @error('new_stock') is-invalid @enderror">
                                         @error('new_stock')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                     <div class="col-md-7">
                                         <label for="reason" class="form-label fw-semibold">{{ __('Reason') }}</label>
-                                        <input id="reason" name="reason" type="text" minlength="5" maxlength="255" required value="{{ old('reason') }}" class="form-control @error('reason') is-invalid @enderror" placeholder="{{ __('For example: physical count correction') }}">
+                                        <input id="reason" name="reason" type="text" minlength="5" maxlength="255" required aria-required="true" value="{{ old('reason') }}" class="form-control @error('reason') is-invalid @enderror" placeholder="{{ __('For example: physical count correction') }}">
                                         @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                 </div>
