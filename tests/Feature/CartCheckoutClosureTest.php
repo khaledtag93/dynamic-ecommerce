@@ -220,7 +220,8 @@ class CartCheckoutClosureTest extends TestCase
         $this->assertStringContainsString('let checkoutSubmitting = false;', $view);
         $this->assertStringContainsString('if (checkoutSubmitting) {', $view);
         $this->assertStringContainsString('controller?.abort();', $view);
-        $this->assertStringContainsString('if (!checkoutSubmitting) {', $view);
+        $this->assertStringContainsString('const paymentMethodsAvailable =', $view);
+        $this->assertStringContainsString('if (!checkoutSubmitting && paymentMethodsAvailable) {', $view);
 
         foreach ([
             "'customer_name' => ['required', 'string', 'max:255']",
