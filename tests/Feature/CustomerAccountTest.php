@@ -167,6 +167,22 @@ class CustomerAccountTest extends TestCase
         ]);
     }
 
+    public function test_address_live_save_guards_duplicate_submits_and_restores_loading_state(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/account/addresses/form.blade.php'));
+
+        $this->assertStringContainsString('data-loading-text="{{ __(\'Saving...\') }}"', $view);
+        $this->assertStringContainsString("if (form.dataset.pending === '1') {", $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("button.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString('delete form.dataset.pending;', $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("button.removeAttribute('aria-disabled');", $view);
+        $this->assertStringContainsString('button.innerHTML = originalButtonHtml;', $view);
+        $this->assertStringContainsString('release();', $view);
+    }
+
     public function test_saved_addresses_prefill_checkout_but_orders_keep_their_own_snapshot(): void
     {
         $user = User::factory()->create();

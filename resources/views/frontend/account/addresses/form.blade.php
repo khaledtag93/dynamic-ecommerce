@@ -48,7 +48,7 @@
                         </div>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
-                        <button type="submit" class="btn lc-btn-primary">{{ __('Save address') }}</button>
+                        <button type="submit" class="btn lc-btn-primary" data-loading-text="{{ __('Saving...') }}">{{ __('Save address') }}</button>
                         <a href="{{ route('account.addresses.index') }}" class="btn lc-btn-soft">{{ __('Cancel') }}</a>
                     </div>
                 </form>
@@ -73,11 +73,44 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     form.addEventListener('submit', async function (event) {
+        if (form.dataset.pending === '1') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+
         event.preventDefault();
         event.stopImmediatePropagation();
+
+        form.dataset.pending = '1';
+        form.setAttribute('aria-busy', 'true');
+        form.classList.add('lc-loading');
+
         const button = event.submitter || form.querySelector('button[type="submit"]');
-        if (button) button.disabled = true;
+        const originalButtonHtml = button?.innerHTML || '';
+
+        if (button) {
+            const loadingText = button.dataset.loadingText;
+            button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
+            if (loadingText) {
+                button.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+            }
+        }
+
         show('');
+
+        const release = () => {
+            delete form.dataset.pending;
+            form.removeAttribute('aria-busy');
+            form.classList.remove('lc-loading');
+
+            if (button) {
+                button.disabled = false;
+                button.removeAttribute('aria-disabled');
+                button.innerHTML = originalButtonHtml;
+            }
+        };
 
         try {
             const response = await fetch(form.action, {
@@ -95,11 +128,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 const firstError = Object.values(payload.errors || {}).flat()[0];
                 throw new Error(firstError || payload.message || @json(__('Could not save the address. Please review the form and try again.')));
             }
+
             show(payload.message || @json(__('Address saved.')));
-            if (payload.redirect_url) window.location.assign(payload.redirect_url);
+            if (payload.redirect_url) {
+                window.location.assign(payload.redirect_url);
+                return;
+            }
+
+            release();
         } catch (error) {
+            release();
             show(error.message, true);
-            if (button) button.disabled = false;
         }
     }, true);
 });
