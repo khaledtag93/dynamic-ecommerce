@@ -22,6 +22,12 @@
         @if($filters['type']) · <strong>{{ __('Movement type') }}:</strong> {{ ['order' => __('Orders'), 'payment' => __('Payments'), 'refund' => __('Refunds'), 'return' => __('Returns')][$filters['type']] ?? $filters['type'] }} @endif
     </div>
     <div class="no-balance">{{ __('This statement lists recorded commercial activity. It does not calculate a running customer balance.') }}</div>
+    @if($statement['truncated'])
+        <div class="no-balance">{{ __('This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement.', [
+            'shown' => number_format($statement['displayed_count']),
+            'total' => number_format($statement['matching_count']),
+        ]) }}</div>
+    @endif
 
     @if($statement['totals_by_currency']->isNotEmpty())
         <div class="totals">

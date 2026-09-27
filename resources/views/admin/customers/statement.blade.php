@@ -19,6 +19,15 @@
         <div class="small">{{ __('Dynamic does not show a running balance here because no customer debit/credit ledger exists yet. Amounts are grouped by their recorded currency and are not converted.') }}</div>
     </div>
 
+    @if($statement['matching_count'] > $statement['print_limit'] || $statement['matching_count'] > $statement['export_limit'])
+        <div class="alert alert-warning border-0 rounded-4">
+            {{ __('Large statements are paginated on screen. Print is limited to :print rows and CSV export to :export rows; narrow the filters to create a complete smaller document.', [
+                'print' => number_format($statement['print_limit']),
+                'export' => number_format($statement['export_limit']),
+            ]) }}
+        </div>
+    @endif
+
     <div class="admin-card mb-4">
         <div class="admin-card-body">
             <form method="GET" action="{{ route('admin.customers.statement', $user) }}" class="admin-filter-grid">
@@ -126,5 +135,18 @@
             </table>
         </div>
     </div>
+
+    @if($statement['movements']->hasPages())
+        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mt-3">
+            <div class="text-muted small">
+                {{ __('Showing :from–:to of :total matching movements.', [
+                    'from' => number_format($statement['movements']->firstItem() ?? 0),
+                    'to' => number_format($statement['movements']->lastItem() ?? 0),
+                    'total' => number_format($statement['movements']->total()),
+                ]) }}
+            </div>
+            <div>{{ $statement['movements']->links() }}</div>
+        </div>
+    @endif
 </div>
 @endsection

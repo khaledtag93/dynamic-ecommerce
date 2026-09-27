@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Services\Commerce\CustomerAccountStatementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Tests\TestCase;
 
 class CustomerStatementWorkspaceClosureTest extends TestCase
@@ -35,7 +36,7 @@ class CustomerStatementWorkspaceClosureTest extends TestCase
             'updated_at' => '2026-09-20 10:00:00',
         ])->saveQuietly();
 
-        $otherOrder = $this->order($other, 'STATEMENT-OTHER', 999, 'EGP', '2026-09-18 12:00:00');
+        $this->order($other, 'STATEMENT-OTHER', 999, 'EGP', '2026-09-18 12:00:00');
 
         $statement = app(CustomerAccountStatementService::class)->build($customer, [
             'type' => 'order',
@@ -55,6 +56,58 @@ class CustomerStatementWorkspaceClosureTest extends TestCase
 
         $this->assertNotNull($egp);
         $this->assertSame(130.0, $egp['order_value']);
+    }
+
+    public function test_statement_paginates_rows_but_keeps_full_database_summary(): void
+    {
+        $customer = User::factory()->create();
+
+        foreach (range(1, 55) as $number) {
+            $this->order(
+                $customer,
+                'STATEMENT-PAGE-' . str_pad((string) $number, 3, '0', STR_PAD_LEFT),
+                10,
+                'EGP',
+                '2026-09-20 10:00:00',
+            );
+        }
+
+        $service = app(CustomerAccountStatementService::class);
+        $statement = $service->build($customer, [
+            'type' => 'order',
+            'date_from' => '2026-09-01',
+            'date_to' => '2026-09-30',
+        ], 25, 1);
+
+        $this->assertInstanceOf(LengthAwarePaginator::class, $statement['movements']);
+        $this->assertCount(25, $statement['movements']);
+        $this->assertSame(55, $statement['movements']->total());
+        $this->assertSame(55, $statement['counts']['orders']);
+        $this->assertSame(55, $statement['matching_count']);
+
+        $egp = $statement['totals_by_currency']->firstWhere('currency', 'EGP');
+        $this->assertNotNull($egp);
+        $this->assertSame(550.0, $egp['order_value']);
+
+        $bounded = $service->buildBounded($customer, [
+            'type' => 'order',
+            'date_from' => '2026-09-01',
+            'date_to' => '2026-09-30',
+        ], 10);
+
+        $this->assertCount(10, $bounded['movements']);
+        $this->assertSame(55, $bounded['matching_count']);
+        $this->assertSame(10, $bounded['displayed_count']);
+        $this->assertTrue($bounded['truncated']);
+    }
+
+    public function test_statement_print_and_export_use_explicit_row_bounds(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/CustomerController.php'));
+
+        $this->assertStringContainsString('CustomerAccountStatementService::PRINT_LIMIT', $controller);
+        $this->assertStringContainsString('CustomerAccountStatementService::EXPORT_LIMIT', $controller);
+        $this->assertStringContainsString("'X-Statement-Truncated'", $controller);
     }
 
     public function test_statement_filters_have_explicit_labels(): void

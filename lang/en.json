@@ -5093,5 +5093,8 @@
     "No expired products or items expiring in the next 30 days.": "No expired products or items expiring in the next 30 days.",
     "Reorder point": "Reorder point",
     "This purchase line total exceeds the supported maximum.": "This purchase line total exceeds the supported maximum.",
-    "The purchase total exceeds the supported maximum.": "The purchase total exceeds the supported maximum."
+    "The purchase total exceeds the supported maximum.": "The purchase total exceeds the supported maximum.",
+    "Large statements are paginated on screen. Print is limited to :print rows and CSV export to :export rows; narrow the filters to create a complete smaller document.": "Large statements are paginated on screen. Print is limited to :print rows and CSV export to :export rows; narrow the filters to create a complete smaller document.",
+    "Showing :from–:to of :total matching movements.": "Showing :from–:to of :total matching movements.",
+    "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement.": "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement."
 }

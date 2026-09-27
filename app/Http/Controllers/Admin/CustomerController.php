@@ -116,7 +116,11 @@ class CustomerController extends Controller
     public function statementPrint(Request $request, User $user)
     {
         $filters = $this->statementFilters($request);
-        $statement = $this->statementService->build($user, $filters);
+        $statement = $this->statementService->buildBounded(
+            $user,
+            $filters,
+            CustomerAccountStatementService::PRINT_LIMIT,
+        );
 
         return view('admin.customers.statement-print', compact('user', 'filters', 'statement'));
     }
@@ -124,7 +128,11 @@ class CustomerController extends Controller
     public function statementExport(Request $request, User $user): StreamedResponse
     {
         $filters = $this->statementFilters($request);
-        $statement = $this->statementService->build($user, $filters);
+        $statement = $this->statementService->buildBounded(
+            $user,
+            $filters,
+            CustomerAccountStatementService::EXPORT_LIMIT,
+        );
         $fileName = 'customer-statement-'.$user->id.'-'.now()->format('Ymd-His').'.csv';
 
         return response()->streamDownload(function () use ($statement) {
@@ -156,6 +164,9 @@ class CustomerController extends Controller
             fclose($handle);
         }, $fileName, [
             'Content-Type' => 'text/csv; charset=UTF-8',
+            'X-Statement-Row-Limit' => (string) CustomerAccountStatementService::EXPORT_LIMIT,
+            'X-Statement-Matching-Rows' => (string) $statement['matching_count'],
+            'X-Statement-Truncated' => $statement['truncated'] ? '1' : '0',
         ]);
     }
 

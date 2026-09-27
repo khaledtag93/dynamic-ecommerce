@@ -63,3 +63,18 @@ Customer-facing access is not introduced in V1.
 - Follow-up authorization-test alignment completed at `962cce1`.
 - Hardening CI #1363 passed on `962cce1`.
 - Production unchanged; QAS acceptance remains separate.
+
+
+## Production scalability hardening — 2026-09-27
+
+The statement no longer materializes all matching Orders, Payments, Refunds, and Returns in PHP memory.
+
+- The on-screen timeline uses a database UNION index query and hydrates only the current page (50 movements).
+- Counts are calculated in SQL for the complete filtered period.
+- Currency totals are grouped and summed in SQL for the complete filtered period.
+- Print is intentionally bounded to 500 movements.
+- CSV export is intentionally bounded to 5,000 movements and returns row-limit/truncation response headers.
+- The UI and printable view disclose truncation rather than silently implying that a bounded document is complete.
+- Composite indexes were added for the customer/date access paths used by Orders, Payments, Refunds, and Return Requests.
+
+This keeps memory use bounded even when a customer has a long transaction history while preserving canonical source semantics and the no-running-balance contract.
