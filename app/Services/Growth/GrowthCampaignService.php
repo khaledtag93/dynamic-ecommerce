@@ -649,7 +649,7 @@ class GrowthCampaignService
         return $rows->filter(function ($row) use ($cutoff) {
             return ! AnalyticsEvent::query()
                 ->where(fn (Builder $query) => $this->applyAudienceMatch($query, $row->user_id, $row->session_id))
-                ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+                ->where('event_type', AnalyticsEvent::EVENT_ORDER_PLACED)
                 ->where('occurred_at', '>=', $cutoff)
                 ->exists();
         })->map(function ($row) {
@@ -685,7 +685,7 @@ class GrowthCampaignService
         return $rows->filter(function ($row) use ($cutoff) {
             return ! AnalyticsEvent::query()
                 ->where(fn (Builder $query) => $this->applyAudienceMatch($query, $row->user_id, $row->session_id))
-                ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+                ->where('event_type', AnalyticsEvent::EVENT_ORDER_PLACED)
                 ->where('occurred_at', '>=', $cutoff)
                 ->exists();
         })->map(fn ($row) => [
@@ -745,7 +745,7 @@ class GrowthCampaignService
         return $rows->filter(function ($row) use ($since) {
             return ! AnalyticsEvent::query()
                 ->where(fn (Builder $query) => $this->applyAudienceMatch($query, $row->user_id, $row->session_id))
-                ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+                ->where('event_type', AnalyticsEvent::EVENT_ORDER_PLACED)
                 ->where('occurred_at', '>=', $since)
                 ->exists();
         })->map(fn ($row) => [

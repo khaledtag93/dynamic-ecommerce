@@ -6,6 +6,7 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Services\Analytics\AnalyticsTracker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -16,6 +17,7 @@ class OrderActionService
         protected InventoryService $inventoryService,
         protected StockReservationService $stockReservationService,
         protected CouponService $couponService,
+        protected AnalyticsTracker $analyticsTracker,
     ) {
     }
 
@@ -120,6 +122,7 @@ class OrderActionService
             ]);
 
             $freshOrder = $lockedOrder->fresh(['items', 'refunds', 'user']);
+            $this->analyticsTracker->syncRealizedPurchase($freshOrder);
 
             $this->orderNotificationService->notifyCancelled(
                 $freshOrder,
@@ -220,6 +223,7 @@ class OrderActionService
             $lockedOrder->update($updates);
 
             $freshOrder = $lockedOrder->fresh(['user']);
+            $this->analyticsTracker->syncRealizedPurchase($freshOrder);
 
             $this->orderNotificationService->notifyStatusUpdated($freshOrder);
 
@@ -369,6 +373,7 @@ class OrderActionService
             }
 
             $freshOrder = $lockedOrder->fresh(['refunds', 'user']);
+            $this->analyticsTracker->syncRealizedPurchase($freshOrder);
 
             $this->orderNotificationService->notifyRefundRecorded($freshOrder);
 

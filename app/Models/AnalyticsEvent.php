@@ -14,6 +14,7 @@ class AnalyticsEvent extends Model
     public const EVENT_ADD_TO_CART = 'add_to_cart';
     public const EVENT_REMOVE_FROM_CART = 'remove_from_cart';
     public const EVENT_CHECKOUT_START = 'checkout_start';
+    public const EVENT_ORDER_PLACED = 'order_placed';
     public const EVENT_PURCHASE_SUCCESS = 'purchase_success';
 
     public const ENTITY_PRODUCT = 'product';

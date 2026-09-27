@@ -17,6 +17,7 @@ class BehaviorTrackingService
     public const EVENT_ADD_TO_CART = 'add_to_cart';
     public const EVENT_CHECKOUT_START = 'checkout_start';
     public const EVENT_ORDER_COMPLETE = 'order_complete';
+    public const EVENT_ORDER_PLACED = 'order_placed';
     public const EVENT_PURCHASE_SUCCESS = 'purchase_success';
     public const EVENT_VIEW_CART = 'view_cart';
     public const EVENT_REMOVE_FROM_CART = 'remove_from_cart';
@@ -33,7 +34,7 @@ class BehaviorTrackingService
         ]);
 
         $normalizedEvent = match ($event) {
-            self::EVENT_ORDER_COMPLETE => self::EVENT_PURCHASE_SUCCESS,
+            self::EVENT_ORDER_COMPLETE => self::EVENT_ORDER_PLACED,
             default => $event,
         };
 
@@ -41,11 +42,11 @@ class BehaviorTrackingService
             self::EVENT_VIEW_PRODUCT, self::EVENT_ADD_TO_CART, self::EVENT_REMOVE_FROM_CART => 'product',
             self::EVENT_VIEW_CART => 'cart',
             self::EVENT_CHECKOUT_START => 'checkout',
-            self::EVENT_PURCHASE_SUCCESS => 'order',
+            self::EVENT_ORDER_PLACED, self::EVENT_PURCHASE_SUCCESS => 'order',
             default => $productId ? 'product' : null,
         };
 
-        $entityId = $normalizedEvent === self::EVENT_PURCHASE_SUCCESS
+        $entityId = in_array($normalizedEvent, [self::EVENT_ORDER_PLACED, self::EVENT_PURCHASE_SUCCESS], true)
             ? ($meta['order_id'] ?? null)
             : $productId;
 

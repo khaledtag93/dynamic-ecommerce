@@ -12,6 +12,7 @@ use App\Models\PosCashShift;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
+use App\Services\Analytics\AnalyticsTracker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -25,6 +26,7 @@ class PosService
         protected ProductIdentifierService $identifierService,
         protected InventoryService $inventoryService,
         protected AdminActivityLogService $activityLogService,
+        protected AnalyticsTracker $analyticsTracker,
     ) {
     }
 
@@ -1195,6 +1197,8 @@ class PosService
                 'customer_name' => $customerName,
                 'notes' => $data['notes'] ?? null,
             ]);
+
+            $this->analyticsTracker->syncRealizedPurchase($order->fresh(['items']));
 
             $this->activityLogService->log(
                 'pos',

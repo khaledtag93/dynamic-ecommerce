@@ -90,12 +90,35 @@ class AnalyticsTracker
 
     public function trackPurchaseSuccess(Order $order): void
     {
+        $this->syncRealizedPurchase($order);
+    }
+
+    public function syncRealizedPurchase(Order $order): void
+    {
         $order->loadMissing('items');
 
-        $this->track(AnalyticsEvent::EVENT_PURCHASE_SUCCESS, AnalyticsEvent::ENTITY_ORDER, $order->id, [
+        $eventQuery = AnalyticsEvent::query()
+            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+            ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
+            ->where('entity_id', (string) $order->id);
+
+        $isRealized = $order->status === Order::STATUS_COMPLETED
+            && in_array($order->payment_status, [
+                Order::PAYMENT_STATUS_PAID,
+                Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            ], true);
+
+        if (! $isRealized) {
+            $eventQuery->delete();
+            return;
+        }
+
+        $payload = [
             'order_id' => (int) $order->id,
             'order_number' => (string) $order->order_number,
-            'grand_total' => (float) $order->grand_total,
+            'grand_total' => (float) $order->realized_revenue,
+            'original_grand_total' => (float) $order->grand_total,
+            'refund_total' => (float) $order->refund_total,
             'subtotal' => (float) $order->subtotal,
             'discount_total' => (float) $order->discount_total,
             'shipping_total' => (float) $order->shipping_total,
@@ -111,7 +134,26 @@ class AnalyticsTracker
                 'unit_price' => (float) $item->unit_price,
                 'line_total' => (float) $item->line_total,
             ])->values()->all(),
-        ]);
+        ];
+
+        $event = $eventQuery->first();
+        $attributes = [
+            'user_id' => $order->user_id,
+            'session_id' => null,
+            'occurred_at' => $event?->occurred_at ?: ($order->delivered_at ?: now()),
+            'meta' => $payload,
+        ];
+
+        if ($event) {
+            $event->update($attributes);
+            return;
+        }
+
+        AnalyticsEvent::query()->create(array_merge($attributes, [
+            'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+            'entity_type' => AnalyticsEvent::ENTITY_ORDER,
+            'entity_id' => (string) $order->id,
+        ]));
     }
 
     public function currentVisitorQuery(): Builder
