@@ -1087,7 +1087,7 @@ class ProductForm extends Component
 
             if (isset($seen[$key])) {
                 throw ValidationException::withMessages([
-                    'variants' => 'Duplicate variant combinations are not allowed. Please remove or edit the repeated combination.',
+                    'variants' => __('Duplicate variant combinations are not allowed. Please remove or edit the repeated combination.'),
                 ]);
             }
 
@@ -1188,7 +1188,7 @@ class ProductForm extends Component
 
         if ($salePrice !== null && $salePrice !== '' && (float) $salePrice > (float) $basePrice) {
             throw ValidationException::withMessages([
-                'sale_price' => 'Sale price cannot be greater than the base price.',
+                'sale_price' => __('Sale price cannot be greater than the base price.'),
             ]);
         }
     }
@@ -1204,14 +1204,14 @@ class ProductForm extends Component
 
                 if ($attributeId && $value === '') {
                     throw ValidationException::withMessages([
-                        'variants.' . $variantIndex . '.attributes.' . $attributeIndex . '.value' => 'Please enter a value for the selected attribute.',
+                        'variants.' . $variantIndex . '.attributes.' . $attributeIndex . '.value' => __('Please enter a value for the selected attribute.'),
                     ]);
                 }
 
                 if ($attributeId) {
                     if (in_array($attributeId, $usedAttributeIds, true)) {
                         throw ValidationException::withMessages([
-                            'variants.' . $variantIndex . '.attributes' => 'The same attribute cannot be selected twice inside one variant.',
+                            'variants.' . $variantIndex . '.attributes' => __('The same attribute cannot be selected twice inside one variant.'),
                         ]);
                     }
 
@@ -1224,7 +1224,7 @@ class ProductForm extends Component
 
             if ($salePrice !== null && $salePrice !== '' && (float) $salePrice > $price) {
                 throw ValidationException::withMessages([
-                    'variants.' . $variantIndex . '.sale_price' => 'Sale price cannot be greater than the variant price.',
+                    'variants.' . $variantIndex . '.sale_price' => __('Sale price cannot be greater than the variant price.'),
                 ]);
             }
         }

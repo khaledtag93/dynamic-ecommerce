@@ -179,4 +179,22 @@ class CatalogWorkspaceV2Test extends TestCase
         $this->assertStringContainsString('min-height: 44px;', $source);
     }
 
+    public function test_product_editor_business_rule_errors_are_localized_in_arabic(): void
+    {
+        $source = file_get_contents(app_path('Http/Livewire/Admin/Product/ProductForm.php'));
+        $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        foreach ([
+            'Duplicate variant combinations are not allowed. Please remove or edit the repeated combination.',
+            'Sale price cannot be greater than the base price.',
+            'Please enter a value for the selected attribute.',
+            'The same attribute cannot be selected twice inside one variant.',
+            'Sale price cannot be greater than the variant price.',
+        ] as $message) {
+            $this->assertStringContainsString("__('{$message}')", $source);
+            $this->assertArrayHasKey($message, $translations);
+            $this->assertNotSame('', trim((string) $translations[$message]));
+        }
+    }
+
 }
