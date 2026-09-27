@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SupplierController extends Controller
@@ -95,12 +96,27 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
-        if ($supplier->purchases()->exists()) {
-            return back()->with('error', __('This supplier already has purchases and cannot be deleted.'));
-        }
+        $deleted = DB::transaction(function () use ($supplier) {
+            $lockedSupplier = Supplier::query()
+                ->whereKey($supplier->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $supplier->delete();
-        return back()->with('success', __('Supplier deleted successfully.'));
+            if ($lockedSupplier->purchases()->exists()) {
+                return false;
+            }
+
+            $lockedSupplier->delete();
+
+            return true;
+        });
+
+        return back()->with(
+            $deleted ? 'success' : 'error',
+            $deleted
+                ? __('Supplier deleted successfully.')
+                : __('This supplier already has purchases and cannot be deleted.')
+        );
     }
 
     protected function validated(Request $request): array
