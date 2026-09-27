@@ -48,6 +48,10 @@ class AdminDashboardExperienceTest extends TestCase
         $category = Category::create([
             'name' => 'Variant stock category',
             'slug' => 'variant-stock-category',
+            'description' => 'Dashboard variant stock test category',
+            'meta_title' => 'Variant stock',
+            'meta_keyword' => 'variant stock',
+            'meta_description' => 'Dashboard variant stock test category',
             'status' => false,
         ]);
         $product = Product::create([
