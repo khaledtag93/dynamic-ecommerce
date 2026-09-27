@@ -7,6 +7,7 @@ use App\Mail\OrderUpdateMail;
 use App\Models\NotificationDispatchLog;
 use App\Models\NotificationMessageTemplate;
 use App\Models\Order;
+use App\Models\WhatsAppLog;
 use App\Notifications\DeliveryStatusUpdatedNotification;
 use App\Notifications\OrderStatusChangedNotification;
 use Illuminate\Support\Arr;
@@ -190,12 +191,18 @@ class NotificationTemplateService
         }
 
         if ($channel === 'whatsapp') {
-            match ($event) {
+            $log = match ($event) {
                 OrderNotificationService::EVENT_STATUS_UPDATED,
                 OrderNotificationService::EVENT_CANCELLED => $this->whatsAppService->sendOrderStatusUpdate($order),
                 OrderNotificationService::EVENT_DELIVERY_UPDATED => $this->whatsAppService->sendDeliveryUpdate($order),
                 default => throw new RuntimeException(__('WhatsApp test send is not available for this event yet.')),
             };
+
+            if (! $log || $log->status !== WhatsAppLog::STATUS_SENT) {
+                throw new RuntimeException(
+                    $log?->error_message ?: __('WhatsApp test send did not complete successfully.')
+                );
+            }
 
             return;
         }

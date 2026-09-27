@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\Services\WhatsAppServiceInterface;
 use App\Models\NotificationDispatchLog;
 use App\Models\Order;
+use App\Models\WhatsAppLog;
+use App\Services\Commerce\NotificationTemplateService;
 use App\Services\Commerce\OrderNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -61,6 +64,38 @@ class NotificationWorkspaceClosureTest extends TestCase
                 $logs[$channel]->error_message
             );
         }
+    }
+
+    public function test_failed_whatsapp_test_send_is_not_reported_as_success(): void
+    {
+        $order = Order::query()->create([
+            'order_number' => 'WA-TEST-FAIL',
+            'customer_name' => 'WhatsApp Test',
+            'customer_email' => 'wa-test@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+        ]);
+
+        $failedLog = new WhatsAppLog([
+            'status' => WhatsAppLog::STATUS_FAILED,
+            'error_message' => 'Provider rejected the test request.',
+        ]);
+
+        $whatsApp = \Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldReceive('sendOrderStatusUpdate')->once()->with(\Mockery::on(fn ($value) => $value instanceof Order && $value->is($order)))->andReturn($failedLog);
+        $this->app->instance(WhatsAppServiceInterface::class, $whatsApp);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Provider rejected the test request.');
+
+        app(NotificationTemplateService::class)->sendTest(
+            $order,
+            OrderNotificationService::EVENT_STATUS_UPDATED,
+            'whatsapp',
+            'en'
+        );
     }
 
     public function test_notification_center_navigation_exposes_current_page_semantics(): void
