@@ -101,6 +101,23 @@ class PosCashierTest extends TestCase
             ->assertSessionHasErrors(['barcode' => 'حقل الباركود مطلوب.']);
     }
 
+    public function test_pos_service_and_cash_shift_messages_have_arabic_translations(): void
+    {
+        $arabic = json_decode(file_get_contents(lang_path('ar.json')), true, flags: JSON_THROW_ON_ERROR);
+
+        foreach ([
+            'Choose an exact variant before adding this product to the POS cart.',
+            'Open a cash shift before completing a cash sale.',
+            'You already have an open cash shift.',
+            'POS cash shift opened.',
+            'This cash shift cannot be closed by the current cashier.',
+            'POS cash shift closed.',
+        ] as $message) {
+            $this->assertArrayHasKey($message, $arabic);
+            $this->assertNotSame('', trim((string) $arabic[$message]));
+        }
+    }
+
     public function test_cashier_role_can_use_pos_without_broader_order_management_access(): void
     {
         app(AuthorizationService::class)->syncDefaults();
