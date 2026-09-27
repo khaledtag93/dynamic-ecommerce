@@ -10,6 +10,18 @@ class AdminWhatsAppExperienceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_whatsapp_actions_only_report_success_for_sent_logs(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/WhatsAppSettingsController.php'));
+
+        $this->assertStringContainsString('protected function whatsAppResultResponse(?WhatsAppLog $log', $controller);
+        $this->assertStringContainsString('$log->status === WhatsAppLog::STATUS_SENT', $controller);
+        $this->assertStringContainsString("return back()->with('error', $log?->error_message ?: $fallbackError);", $controller);
+        $this->assertSame(4, substr_count($controller, 'return $this->whatsAppResultResponse('));
+        $this->assertStringNotContainsString("return back()->with('success', __('WhatsApp test send was executed. Check the latest logs for the result.'));", $controller);
+        $this->assertStringNotContainsString("return back()->with('success', __('WhatsApp event was executed successfully. Check the latest logs for the result.'));", $controller);
+    }
+
     public function test_whatsapp_settings_use_sectioned_workspace_and_aligned_switch_cards(): void
     {
         $owner = $this->createSuperAdmin();

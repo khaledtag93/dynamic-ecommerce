@@ -152,9 +152,11 @@ class WhatsAppSettingsController extends Controller
 
         $retried = $this->whatsAppService->retry($log);
 
-        return back()->with($retried ? 'success' : 'error', $retried
-            ? __('The WhatsApp message retry was queued or executed safely.')
-            : __('The WhatsApp retry could not be completed safely.'));
+        return $this->whatsAppResultResponse(
+            $retried,
+            __('The WhatsApp message retry was executed safely.'),
+            __('The WhatsApp retry could not be completed safely.')
+        );
     }
 
 
@@ -180,13 +182,17 @@ class WhatsAppSettingsController extends Controller
         $order->customer_phone = $validated['phone'];
         $order->meta = $meta;
 
-        match ($validated['message_type']) {
+        $result = match ($validated['message_type']) {
             'order_confirmation' => $this->whatsAppService->sendOrderConfirmation($order),
             'order_status_update' => $this->whatsAppService->sendOrderStatusUpdate($order),
             'delivery_update' => $this->whatsAppService->sendDeliveryUpdate($order),
         };
 
-        return back()->with('success', __('WhatsApp test send was executed. Check the latest logs for the result.'));
+        return $this->whatsAppResultResponse(
+            $result,
+            __('WhatsApp test send was executed successfully.'),
+            __('WhatsApp test send could not be completed successfully.')
+        );
     }
 
     public function resendOrderEvent(Order $order, Request $request): RedirectResponse
@@ -195,13 +201,17 @@ class WhatsAppSettingsController extends Controller
             'message_type' => ['required', 'in:order_confirmation,order_status_update,delivery_update'],
         ]);
 
-        match ($validated['message_type']) {
+        $result = match ($validated['message_type']) {
             'order_confirmation' => $this->whatsAppService->sendOrderConfirmation($order),
             'order_status_update' => $this->whatsAppService->sendOrderStatusUpdate($order),
             'delivery_update' => $this->whatsAppService->sendDeliveryUpdate($order),
         };
 
-        return back()->with('success', __('WhatsApp event was re-sent successfully.'));
+        return $this->whatsAppResultResponse(
+            $result,
+            __('WhatsApp event was re-sent successfully.'),
+            __('WhatsApp event could not be re-sent successfully.')
+        );
     }
 
     public function sendOrderEvent(Request $request): RedirectResponse
@@ -213,12 +223,25 @@ class WhatsAppSettingsController extends Controller
 
         $order = Order::query()->findOrFail($validated['order_id']);
 
-        match ($validated['message_type']) {
+        $result = match ($validated['message_type']) {
             'order_confirmation' => $this->whatsAppService->sendOrderConfirmation($order),
             'order_status_update' => $this->whatsAppService->sendOrderStatusUpdate($order),
             'delivery_update' => $this->whatsAppService->sendDeliveryUpdate($order),
         };
 
-        return back()->with('success', __('WhatsApp event was executed successfully. Check the latest logs for the result.'));
+        return $this->whatsAppResultResponse(
+            $result,
+            __('WhatsApp event was executed successfully.'),
+            __('WhatsApp event could not be completed successfully.')
+        );
+    }
+
+    protected function whatsAppResultResponse(?WhatsAppLog $log, string $successMessage, string $fallbackError): RedirectResponse
+    {
+        if ($log && $log->status === WhatsAppLog::STATUS_SENT) {
+            return back()->with('success', $successMessage);
+        }
+
+        return back()->with('error', $log?->error_message ?: $fallbackError);
     }
 }
