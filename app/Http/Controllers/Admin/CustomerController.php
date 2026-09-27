@@ -37,7 +37,9 @@ class CustomerController extends Controller
         $users = User::query()
             ->with('roles:id,name')
             ->withCount('orders')
-            ->withSum('orders', 'grand_total')
+            ->withCount(['orders as realized_orders_count' => fn ($query) => $query->commerciallyRealized()])
+            ->withSum(['orders as realized_orders_sum_grand_total' => fn ($query) => $query->commerciallyRealized()], 'grand_total')
+            ->withSum(['orders as realized_orders_sum_refund_total' => fn ($query) => $query->commerciallyRealized()], 'refund_total')
             ->when($search, function ($query) use ($like) {
                 $query->where(function ($inner) use ($like) {
                     $inner->where('name', 'like', $like)
@@ -45,18 +47,20 @@ class CustomerController extends Controller
                 });
             })
             ->when($role !== '', fn ($query) => $query->where('role_as', (int) $role))
-            ->when($activity === 'buyers', fn ($query) => $query->has('orders'))
+            ->when($activity === 'buyers', fn ($query) => $query->whereHas('orders', fn ($orders) => $orders->commerciallyRealized()))
             ->when($activity === 'no_orders', fn ($query) => $query->doesntHave('orders'))
-            ->when($value === 'repeat', fn ($query) => $query->has('orders', '>=', 2))
-            ->when($value === 'high_value', fn ($query) => $query->whereHas('orders')->withSum('orders as value_spend', 'grand_total')->orderByDesc('value_spend'))
+            ->when($value === 'repeat', fn ($query) => $query->whereHas('orders', fn ($orders) => $orders->commerciallyRealized(), '>=', 2))
+            ->when($value === 'high_value', fn ($query) => $query
+                ->whereHas('orders', fn ($orders) => $orders->commerciallyRealized())
+                ->orderByRaw('(COALESCE(realized_orders_sum_grand_total, 0) - COALESCE(realized_orders_sum_refund_total, 0)) DESC'))
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();
 
         $queueStats = [
-            'buyers' => User::has('orders')->count(),
+            'buyers' => User::whereHas('orders', fn ($orders) => $orders->commerciallyRealized())->count(),
             'no_orders' => User::doesntHave('orders')->count(),
-            'repeat_buyers' => User::has('orders', '>=', 2)->count(),
+            'repeat_buyers' => User::whereHas('orders', fn ($orders) => $orders->commerciallyRealized(), '>=', 2)->count(),
         ];
 
         if ($request->header('X-Live-List') === '1') {
@@ -75,7 +79,11 @@ class CustomerController extends Controller
             'total' => User::count(),
             'admins' => User::where('role_as', 1)->count(),
             'customers' => User::where('role_as', 0)->count(),
-            'revenue' => (float) Order::whereNotNull('user_id')->sum('grand_total'),
+            'revenue' => (float) Order::query()
+                ->commerciallyRealized()
+                ->whereNotNull('user_id')
+                ->selectRaw('COALESCE(SUM(grand_total - refund_total), 0) as realized_revenue')
+                ->value('realized_revenue'),
         ];
 
         return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'value', 'perPage', 'stats', 'queueStats'));
@@ -93,13 +101,20 @@ class CustomerController extends Controller
             $staffRoles = Role::query()->where('slug', '!=', 'super_admin')->orderBy('name')->get();
         }
 
+        $realizedOrders = $user->orders()->commerciallyRealized();
+        $realizedCount = (clone $realizedOrders)->count();
+        $realizedGross = (float) (clone $realizedOrders)->sum('grand_total');
+        $realizedRefunds = (float) (clone $realizedOrders)->sum('refund_total');
+        $realizedNet = max(0, $realizedGross - $realizedRefunds);
+
         $summary = [
             'orders_count' => $user->orders()->count(),
-            'total_spend' => (float) $user->orders()->sum('grand_total'),
-            'refund_total' => (float) $user->orders()->sum('refund_total'),
-            'latest_order_at' => optional($user->orders()->latest('id')->first())->created_at,
-            'net_spend' => max(0, (float) $user->orders()->sum('grand_total') - (float) $user->orders()->sum('refund_total')),
-            'average_order_value' => $user->orders()->count() > 0 ? (float) $user->orders()->avg('grand_total') : 0,
+            'realized_orders_count' => $realizedCount,
+            'total_spend' => $realizedGross,
+            'refund_total' => $realizedRefunds,
+            'latest_order_at' => optional((clone $realizedOrders)->latest('id')->first())->created_at,
+            'net_spend' => $realizedNet,
+            'average_order_value' => $realizedCount > 0 ? $realizedNet / $realizedCount : 0,
         ];
 
         return view('admin.customers.show', compact('user', 'summary', 'staffRoles'));

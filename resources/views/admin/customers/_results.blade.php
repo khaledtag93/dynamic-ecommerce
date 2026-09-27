@@ -50,7 +50,7 @@
                                     </span>
                                 </td>
                                 <td>{{ $user->orders_count }}</td>
-                                <td class="fw-semibold">EGP {{ number_format((float) ($user->orders_sum_grand_total ?? 0), 2) }}</td>
+                                <td class="fw-semibold">EGP {{ number_format(max(0, (float) ($user->realized_orders_sum_grand_total ?? 0) - (float) ($user->realized_orders_sum_refund_total ?? 0)), 2) }}</td>
                                 <td>
                                     <div>{{ $user->created_at?->format('d M Y') }}</div>
                                     <div class="text-muted small">{{ $user->created_at?->format('h:i A') }}</div>

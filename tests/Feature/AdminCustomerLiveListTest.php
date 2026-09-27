@@ -67,6 +67,58 @@ class AdminCustomerLiveListTest extends TestCase
         $this->actingAs($cashier)->get($url)->assertForbidden();
     }
 
+    public function test_customer_value_filters_only_use_commercially_realized_orders(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $owner = $this->createSuperAdmin();
+        $realized = User::factory()->create([
+            'name' => 'Realized Buyer',
+            'email' => 'realized@example.test',
+            'role_as' => 0,
+        ]);
+        $unrealized = User::factory()->create([
+            'name' => 'Unrealized Customer',
+            'email' => 'unrealized@example.test',
+            'role_as' => 0,
+        ]);
+
+        $realizedOrder = $this->orderFor($realized, 'REALIZED-CUST-1', 100);
+        $realizedOrder->update([
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'refund_total' => 25,
+        ]);
+
+        Order::create([
+            'user_id' => $unrealized->id,
+            'order_number' => 'UNREALIZED-CUST-1',
+            'customer_name' => $unrealized->name,
+            'customer_email' => $unrealized->email,
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+            'grand_total' => 500,
+            'status' => Order::STATUS_CANCELLED,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+        ]);
+
+        $response = $this->actingAs($owner)->get(route('admin.customers.index', ['activity' => 'buyers']));
+
+        $response
+            ->assertOk()
+            ->assertSee('realized@example.test')
+            ->assertSee('EGP 75.00')
+            ->assertDontSee('unrealized@example.test');
+
+        $profile = $this->actingAs($owner)->get(route('admin.customers.show', $realized));
+
+        $profile
+            ->assertOk()
+            ->assertSee('EGP 100.00')
+            ->assertSee('EGP 25.00')
+            ->assertSee('EGP 75.00');
+    }
+
     private function orderFor(User $user, string $number, float $total): Order
     {
         return Order::create([
@@ -78,7 +130,8 @@ class AdminCustomerLiveListTest extends TestCase
             'shipping_address_line_1' => '1 Test Street',
             'shipping_city' => 'Cairo',
             'grand_total' => $total,
-            'status' => Order::STATUS_PENDING,
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
         ]);
     }
 }

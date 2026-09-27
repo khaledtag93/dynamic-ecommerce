@@ -32,7 +32,7 @@
         <div class="col-xl-4">
             <div class="admin-card admin-card-sticky">
                 <div class="admin-card-body">
-                    <div class="d-flex justify-content-between align-items-start gap-2 mb-3"><div><div class="admin-inline-label">{{ __('Account summary') }}</div><div class="text-muted small">{{ __('Identity, access, and customer relationship context.') }}</div></div><span class="badge admin-status-badge {{ $summary['orders_count'] > 0 ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ $summary['orders_count'] > 0 ? __('Buyer') : __('Registered') }}</span></div>
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-3"><div><div class="admin-inline-label">{{ __('Account summary') }}</div><div class="text-muted small">{{ __('Identity, access, and customer relationship context.') }}</div></div><span class="badge admin-status-badge {{ $summary['realized_orders_count'] > 0 ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ $summary['realized_orders_count'] > 0 ? __('Buyer') : __('Registered') }}</span></div>
                     <div class="mb-3">
                         <div class="fw-bold">{{ $user->name }}</div>
                         <div class="text-muted">{{ $user->email }}</div>
