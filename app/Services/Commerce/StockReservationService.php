@@ -36,6 +36,7 @@ class StockReservationService
         ?Carbon $expiresAt = null,
     ): OrderStockReservation {
         return DB::transaction(function () use ($order, $orderItem, $product, $variant, $expiresAt) {
+            $this->assertInventoryTarget($product, $variant, $orderItem, true);
             $expiresAt ??= now()->addMinutes($this->reservationMinutes());
 
             $reservation = OrderStockReservation::query()
@@ -210,6 +211,12 @@ class StockReservationService
             $released = 0;
 
             foreach ($reservations as $reservation) {
+                $this->assertInventoryTarget(
+                    $reservation->product,
+                    $reservation->variant,
+                    $reservation->orderItem,
+                );
+
                 if ($reservation->product) {
                     $this->inventoryService->increase(
                         $reservation->product,
@@ -245,6 +252,29 @@ class StockReservationService
 
             return $released;
         });
+    }
+
+    private function assertInventoryTarget(?Product $product, ?ProductVariant $variant, ?OrderItem $orderItem, bool $validateCurrentProductMode = false): void
+    {
+        if (! $product) {
+            throw ValidationException::withMessages([
+                'payment' => __('Reserved stock cannot be changed because its catalog product no longer exists.'),
+            ]);
+        }
+
+        $lineWasVariantBased = filled($orderItem?->variant_name) || $orderItem?->product_variant_id !== null;
+
+        if (($lineWasVariantBased || ($validateCurrentProductMode && $product->has_variants)) && ! $variant) {
+            throw ValidationException::withMessages([
+                'payment' => __('Reserved stock cannot be changed because its product variant no longer exists.'),
+            ]);
+        }
+
+        if ($variant && (int) $variant->product_id !== (int) $product->id) {
+            throw ValidationException::withMessages([
+                'payment' => __('Reserved stock cannot be changed because its product variant no longer matches the product.'),
+            ]);
+        }
     }
 
     public function activeReservationExpiry(Order $order): ?Carbon

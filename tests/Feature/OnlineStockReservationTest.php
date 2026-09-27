@@ -8,10 +8,12 @@ use App\Models\Order;
 use App\Models\OrderStockReservation;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\WebsiteSetting;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\PaymentService;
+use App\Services\Commerce\StockReservationService;
 use App\Services\Frontend\CheckoutService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -86,6 +88,73 @@ class OnlineStockReservationTest extends TestCase
                 ->where('type', InventoryMovement::TYPE_ORDER_RESERVATION)
                 ->count()
         );
+    }
+
+    public function test_variant_reservation_release_fails_safe_when_variant_was_deleted(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(0, 100);
+        $product->update(['has_variants' => true]);
+
+        $variant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'RES-VAR-'.Str::upper(Str::random(6)),
+            'barcode' => '6223'.random_int(100000000, 999999999),
+            'price' => 100,
+            'cost_price' => 20,
+            'stock' => 5,
+            'is_default' => true,
+            'status' => true,
+            'sort_order' => 0,
+        ]);
+
+        $this->actingAs($user);
+
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'product_name' => $product->name,
+            'variant_name' => $variant->sku,
+            'sku' => $variant->sku,
+            'unit_price' => 100,
+            'quantity' => 2,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $order = app(CheckoutService::class)->place([
+            'customer_name' => 'Variant Reservation Customer',
+            'customer_email' => 'variant-reservation@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Reservation Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ], $user);
+
+        $this->assertSame(3, (int) $variant->fresh()->stock);
+
+        $variant->delete();
+
+        $reservation = OrderStockReservation::query()->firstOrFail();
+        $this->assertNull($reservation->fresh()->product_variant_id);
+        $this->assertNull($order->items()->firstOrFail()->product_variant_id);
+
+        try {
+            app(StockReservationService::class)->releaseForOrder($order->fresh(), 'Gateway failed.');
+            $this->fail('Variant reservation release should fail instead of restoring stock to product-level quantity.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('payment', $exception->errors());
+        }
+
+        $this->assertSame(0, (int) $product->fresh()->quantity);
+        $this->assertSame(OrderStockReservation::STATUS_RESERVED, $reservation->fresh()->status);
+        $this->assertDatabaseMissing('inventory_movements', [
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_RESERVATION_RELEASE,
+        ]);
     }
 
     public function test_failed_online_payment_releases_stock_once_and_cancellation_does_not_double_restock(): void
