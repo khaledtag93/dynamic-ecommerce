@@ -189,7 +189,7 @@ class DeliveryHardeningTest extends TestCase
         ]);
 
         $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
-        $whatsApp->shouldReceive('queueDeliveryUpdate')->times(5);
+        $whatsApp->shouldReceive('queueDeliveryUpdate')->times(4);
 
         $service = new DeliveryService($whatsApp, app(OrderActionService::class));
 
