@@ -74,7 +74,7 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label class="form-label fw-bold" for="reviewRating">{{ __('Rating') }}</label>
-                                    <select id="reviewRating" name="rating" class="form-select lc-form-select" required>
+                                    <select id="reviewRating" name="rating" class="form-select lc-form-select" required aria-required="true">
                                         <option value="">{{ __('Choose a rating') }}</option>
                                         @foreach([5,4,3,2,1] as $rating)
                                             <option value="{{ $rating }}" @selected((int) old('rating', $currentUserReview?->rating) === $rating)>
@@ -108,24 +108,23 @@
                                 </button>
                             </form>
 
-                            @if($currentUserReview)
-                                <form
-                                    method="POST"
-                                    action="{{ route('reviews.destroy', $product) }}"
-                                    class="mt-2"
-                                    data-confirm-title="{{ __('Remove review') }}"
-                                    data-confirm-message="{{ __('Remove your review from this product?') }}"
-                                    data-confirm-subtitle="{{ __('This removes your submitted review record. You can submit a new review later while the purchase remains eligible.') }}"
-                                    data-confirm-ok="{{ __('Remove review') }}"
-                                    data-confirm-cancel="{{ __('Keep review') }}"
-                                    data-submit-loading
-                                    data-review-delete-live
-                                >
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn lc-btn-danger-soft w-100" data-loading-text="{{ __('Removing...') }}">{{ __('Remove review') }}</button>
-                                </form>
-                            @endif
+                            <form
+                                method="POST"
+                                action="{{ route('reviews.destroy', $product) }}"
+                                class="mt-2"
+                                data-confirm-title="{{ __('Remove review') }}"
+                                data-confirm-message="{{ __('Remove your review from this product?') }}"
+                                data-confirm-subtitle="{{ __('This removes your submitted review record. You can submit a new review later while the purchase remains eligible.') }}"
+                                data-confirm-ok="{{ __('Remove review') }}"
+                                data-confirm-cancel="{{ __('Keep review') }}"
+                                data-submit-loading
+                                data-review-delete-live
+                                @if(! $currentUserReview) hidden @endif
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn lc-btn-danger-soft w-100" data-loading-text="{{ __('Removing...') }}">{{ __('Remove review') }}</button>
+                            </form>
                         <div class="small mt-3 d-none" role="status" aria-live="polite" data-review-live-status></div>
                         @else
                             <div class="text-center py-3">
@@ -184,15 +183,46 @@ document.addEventListener('DOMContentLoaded', function () {
     workspace.addEventListener('submit', async function (event) {
         const form = event.target.closest('[data-review-live], [data-review-delete-live]');
         if (!form) return;
-        if (form.matches('[data-review-delete-live]') && form.dataset.confirmed !== '1') return;
+
+        const deleting = form.matches('[data-review-delete-live]');
+        if (deleting && form.dataset.confirmed !== '1') return;
+        if (form.dataset.pending === '1') return;
+
+        if (deleting) {
+            delete form.dataset.confirmed;
+        }
 
         event.preventDefault();
         event.stopImmediatePropagation();
+
+        form.dataset.pending = '1';
+        form.setAttribute('aria-busy', 'true');
+        form.classList.add('lc-loading');
+
         const button = event.submitter || form.querySelector('button[type="submit"]');
-        if (button) button.disabled = true;
+        const originalButtonText = button?.textContent || '';
+
+        if (button) {
+            button.disabled = true;
+            button.setAttribute('aria-disabled', 'true');
+            button.textContent = button.dataset.loadingText || originalButtonText;
+        }
+
+        const release = (nextButtonText = originalButtonText) => {
+            delete form.dataset.pending;
+            form.removeAttribute('aria-busy');
+            form.classList.remove('lc-loading');
+
+            if (button) {
+                button.disabled = false;
+                button.removeAttribute('aria-disabled');
+                button.textContent = nextButtonText;
+            }
+        };
+
+        setStatus('');
 
         try {
-            const deleting = form.matches('[data-review-delete-live]');
             const payload = await request(form, deleting ? 'DELETE' : 'POST');
             setStatus(payload.message);
 
@@ -209,15 +239,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 summary.innerHTML = '<div><div class="fw-bold">' + @json(__('Your review')) + '</div><div class="text-muted small">' + @json(__('Edits are moderated again before they are published.')) + '</div></div><span data-review-status class="lc-status-badge lc-badge-processing"><span data-review-status-label></span></span>';
                 form.before(summary);
             }
+
             const label = workspace.querySelector('[data-review-status-label]');
             const badge = workspace.querySelector('[data-review-status]');
             if (label && payload.review?.status_label) label.textContent = payload.review.status_label;
             if (badge && payload.review?.status) {
                 badge.className = 'lc-status-badge ' + (payload.review.status === 'approved' ? 'lc-badge-success' : (payload.review.status === 'rejected' ? 'lc-badge-danger' : 'lc-badge-processing'));
             }
-            if (button) button.disabled = false;
+
+            const deleteForm = workspace.querySelector('[data-review-delete-live]');
+            if (deleteForm) deleteForm.hidden = false;
+
+            release(@json(__('Update review')));
         } catch (error) {
-            if (button) button.disabled = false;
+            release();
             setStatus(error.message, true);
         }
     }, true);
