@@ -161,6 +161,10 @@ class OrderActionService
                 ]);
             }
 
+            if (in_array($newStatus, [Order::STATUS_PROCESSING, Order::STATUS_COMPLETED], true)) {
+                $this->assertFulfillmentReady($lockedOrder);
+            }
+
             $updates = [
                 'status' => $newStatus,
             ];
@@ -202,6 +206,28 @@ class OrderActionService
 
             return $freshOrder;
         });
+    }
+
+    private function assertFulfillmentReady(Order $order): void
+    {
+        if ($order->payment_method !== Order::PAYMENT_METHOD_ONLINE) {
+            return;
+        }
+
+        if (! in_array($order->payment_status, [
+            Order::PAYMENT_STATUS_PAID,
+            Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+        ], true)) {
+            throw ValidationException::withMessages([
+                'status' => __('Online orders cannot enter fulfillment until payment is confirmed.'),
+            ]);
+        }
+
+        if (data_get($order->meta, 'stock_reservation_exception')) {
+            throw ValidationException::withMessages([
+                'status' => __('This paid online order requires stock review before fulfillment can continue.'),
+            ]);
+        }
     }
 
     public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null): Order

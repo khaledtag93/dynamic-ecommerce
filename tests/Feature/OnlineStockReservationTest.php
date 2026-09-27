@@ -229,6 +229,67 @@ class OnlineStockReservationTest extends TestCase
         ]);
     }
 
+    public function test_failed_online_payment_cannot_enter_fulfillment_after_stock_release(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5, 100);
+        $order = $this->placeOnlineOrder($user, $product, 2);
+        $payment = $order->payments()->firstOrFail();
+
+        app(PaymentService::class)->markAsFailed($payment, [
+            'transaction_id' => 'TX-FAIL-NO-FULFILLMENT',
+            'provider_status' => 'failed',
+        ]);
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(Order::PAYMENT_STATUS_FAILED, $order->fresh()->payment_status);
+
+        try {
+            app(OrderActionService::class)->updateStatus($order->fresh(), Order::STATUS_PROCESSING);
+            $this->fail('An unpaid online order with released stock must not enter fulfillment.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+    }
+
+    public function test_paid_online_order_with_stock_exception_cannot_enter_fulfillment(): void
+    {
+        Carbon::setTestNow('2026-09-25 12:00:00');
+        WebsiteSetting::setValue('payment_stock_reservation_minutes', '5', 'payment');
+
+        $user = User::factory()->create();
+        $product = $this->makeProduct(2, 100);
+        $order = $this->placeOnlineOrder($user, $product, 2);
+        $payment = $order->payments()->firstOrFail();
+
+        Carbon::setTestNow('2026-09-25 12:06:00');
+        app(PaymentService::class)->expireStockReservation($order->fresh());
+        Product::query()->whereKey($product->id)->update(['quantity' => 0]);
+
+        app(PaymentService::class)->markAsPaid($payment->fresh(), [
+            'transaction_id' => 'TX-PAID-STOCK-EXCEPTION',
+            'provider_status' => 'success',
+        ]);
+
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(
+            'paid_without_fulfillable_reservation',
+            data_get($order->fresh()->meta, 'stock_reservation_exception.code')
+        );
+
+        try {
+            app(OrderActionService::class)->updateStatus($order->fresh(), Order::STATUS_PROCESSING);
+            $this->fail('A paid online order with unresolved stock exception must not enter fulfillment.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+    }
+
     public function test_failed_online_payment_releases_stock_once_and_cancellation_does_not_double_restock(): void
     {
         $user = User::factory()->create();

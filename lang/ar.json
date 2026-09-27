@@ -5792,5 +5792,7 @@
     "The purchase total exceeds the supported maximum.": "إجمالي أمر الشراء يتجاوز الحد الأقصى المدعوم.",
     "Large statements are paginated on screen. Print is limited to :print rows and CSV export to :export rows; narrow the filters to create a complete smaller document.": "يتم تقسيم كشوف الحساب الكبيرة إلى صفحات على الشاشة. الطباعة محدودة بـ :print صفًا وتصدير CSV بـ :export صفًا؛ ضيّق عوامل التصفية لإنشاء مستند كامل أصغر.",
     "Showing :from–:to of :total matching movements.": "عرض :from–:to من أصل :total حركة مطابقة.",
-    "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement.": "نسخة الطباعة هذه محدودة بأول :shown من أصل :total حركة مطابقة. ضيّق عوامل التصفية لطباعة كشف كامل."
+    "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement.": "نسخة الطباعة هذه محدودة بأول :shown من أصل :total حركة مطابقة. ضيّق عوامل التصفية لطباعة كشف كامل.",
+    "Online orders cannot enter fulfillment until payment is confirmed.": "لا يمكن بدء تجهيز الطلبات المدفوعة إلكترونيًا حتى يتم تأكيد الدفع.",
+    "This paid online order requires stock review before fulfillment can continue.": "يتطلب هذا الطلب المدفوع إلكترونيًا مراجعة المخزون قبل متابعة التجهيز."
 }
