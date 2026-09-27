@@ -334,16 +334,16 @@ class Order extends Model
 
         if ($this->delivery_method === self::DELIVERY_METHOD_PICKUP) {
             return in_array($newStatus, match ($this->delivery_status) {
-                self::DELIVERY_STATUS_PENDING => [self::DELIVERY_STATUS_PREPARING, self::DELIVERY_STATUS_CANCELLED],
-                self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_CANCELLED],
+                self::DELIVERY_STATUS_PENDING => [self::DELIVERY_STATUS_PREPARING],
+                self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_DELIVERED],
                 self::DELIVERY_STATUS_DELIVERED => [self::DELIVERY_STATUS_RETURNED],
                 default => [],
             }, true);
         }
 
         return in_array($newStatus, match ($this->delivery_status) {
-            self::DELIVERY_STATUS_PENDING => [self::DELIVERY_STATUS_PREPARING, self::DELIVERY_STATUS_CANCELLED],
-            self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_SHIPPED, self::DELIVERY_STATUS_CANCELLED],
+            self::DELIVERY_STATUS_PENDING => [self::DELIVERY_STATUS_PREPARING],
+            self::DELIVERY_STATUS_PREPARING => [self::DELIVERY_STATUS_SHIPPED],
             self::DELIVERY_STATUS_SHIPPED => [self::DELIVERY_STATUS_OUT_FOR_DELIVERY, self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_RETURNED],
             self::DELIVERY_STATUS_OUT_FOR_DELIVERY => [self::DELIVERY_STATUS_DELIVERED, self::DELIVERY_STATUS_RETURNED],
             self::DELIVERY_STATUS_DELIVERED => [self::DELIVERY_STATUS_RETURNED],

@@ -65,6 +65,33 @@ class DeliveryHardeningTest extends TestCase
         ]);
     }
 
+
+    public function test_delivery_cannot_be_cancelled_independently_from_order_cancellation(): void
+    {
+        $order = $this->createOrder([
+            'status' => Order::STATUS_PROCESSING,
+            'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
+        ]);
+
+        $this->assertFalse($order->canTransitionDeliveryTo(Order::DELIVERY_STATUS_CANCELLED));
+
+        $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldNotReceive('queueDeliveryUpdate');
+
+        try {
+            (new DeliveryService($whatsApp))->update($order, [
+                'delivery_status' => Order::DELIVERY_STATUS_CANCELLED,
+            ]);
+            $this->fail('Delivery cancellation must go through the order cancellation flow so inventory is restored consistently.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('delivery_status', $exception->errors());
+        }
+
+        $fresh = $order->fresh();
+        $this->assertSame(Order::STATUS_PROCESSING, $fresh->status);
+        $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $fresh->delivery_status);
+    }
+
     public function test_out_for_delivery_requires_a_recorded_shipment_timestamp(): void
     {
         $order = $this->createOrder([
