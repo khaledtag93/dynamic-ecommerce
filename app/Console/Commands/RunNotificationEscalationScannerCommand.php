@@ -30,7 +30,11 @@ class RunNotificationEscalationScannerCommand extends Command
             $result
         );
 
-        $this->info(__('Scanned: :scanned | Matched: :matched | Recovered: :recovered', $result));
+        $this->info(__('Scanned: :scanned | Matched: :matched | Recovered: :recovered', [
+            'scanned' => (int) ($result['scanned'] ?? 0),
+            'matched' => (int) ($result['matched'] ?? 0),
+            'recovered' => (int) ($result['recovered'] ?? 0),
+        ]));
 
         return self::SUCCESS;
     }

@@ -34,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useBootstrapFive();
 
+        // Preserve the legacy class-based Livewire namespace after the Livewire 4 upgrade.
+        Livewire::addLocation(classNamespace: 'App\\Http\\Livewire');
+
         Livewire::component('admin.product.index', ProductIndex::class);
         Livewire::component('admin.product.product-form', ProductForm::class);
 
