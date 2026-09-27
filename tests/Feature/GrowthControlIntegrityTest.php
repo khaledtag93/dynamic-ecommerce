@@ -8,10 +8,12 @@ use App\Models\GrowthCampaign;
 use App\Models\GrowthExperiment;
 use App\Models\GrowthMessageTemplate;
 use App\Models\GrowthDelivery;
+use App\Models\GrowthMessageLog;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WebsiteSetting;
 use App\Services\Growth\GrowthCampaignService;
+use App\Services\Growth\GrowthDeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -192,6 +194,26 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertSame(1, substr_count($methodSource, 'GrowthDelivery::query()'));
         $this->assertSame(1, substr_count($methodSource, 'Order::query()'));
         $this->assertStringNotContainsString('->exists()', $methodSource);
+    }
+
+    public function test_skipped_growth_delivery_does_not_record_a_sent_timestamp(): void
+    {
+        $delivery = GrowthDelivery::query()->create([
+            'channel' => 'in_app',
+            'provider' => 'database',
+            'status' => 'pending',
+            'message' => 'Growth message without a recipient.',
+            'payload' => ['message' => 'Growth message without a recipient.'],
+            'scheduled_for' => now(),
+        ]);
+
+        $result = app(GrowthDeliveryService::class)->send($delivery->id);
+        $messageLog = GrowthMessageLog::query()->where('delivery_id', $delivery->id)->firstOrFail();
+
+        $this->assertSame('skipped', $result->status);
+        $this->assertNull($result->sent_at);
+        $this->assertSame('skipped', $messageLog->status);
+        $this->assertNull($messageLog->sent_at);
     }
 
     public function test_disabled_growth_run_returns_a_complete_result_shape(): void

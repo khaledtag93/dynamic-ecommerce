@@ -135,7 +135,7 @@ class GrowthDeliveryService
                 'offer_label' => $payload['offer_label'] ?? null,
                 'timing_reason' => $payload['timing_reason'] ?? null,
             ],
-            'sent_at' => now(),
+            'sent_at' => null,
         ]);
 
         if (! $delivery->message_log_id) {
@@ -174,7 +174,7 @@ class GrowthDeliveryService
             'status' => $status,
             'recipient' => $result['recipient'] ?? $messageLog->recipient,
             'meta' => array_merge($messageLog->meta ?? [], $result['meta'] ?? []),
-            'sent_at' => now(),
+            'sent_at' => in_array($status, ['sent', 'delivered'], true) ? now() : $messageLog->sent_at,
         ]);
 
         optional($delivery->triggerLog)->update(['status' => $status === 'skipped' ? 'skipped' : 'sent', 'processed_at' => now()]);
