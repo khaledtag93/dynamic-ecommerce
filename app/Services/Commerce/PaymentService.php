@@ -121,7 +121,7 @@ class PaymentService
 
         if ($status === Payment::STATUS_REFUNDED) {
             throw ValidationException::withMessages([
-                'status' => 'Record refunds from the order refund action so the financial ledger stays consistent.',
+                'status' => __('Record refunds from the order refund action so the financial ledger stays consistent.'),
             ]);
         }
 
@@ -138,7 +138,7 @@ class PaymentService
 
             if ($lockedPayment->status === Payment::STATUS_REFUNDED) {
                 throw ValidationException::withMessages([
-                    'status' => 'A refunded payment is terminal and cannot be changed manually.',
+                    'status' => __('A refunded payment is terminal and cannot be changed manually.'),
                 ]);
             }
 

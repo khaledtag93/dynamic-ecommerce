@@ -86,6 +86,8 @@
     "A notification dispatch retry was requested for :channel on event :event.": "تم طلب إعادة محاولة إرسال الإشعار للقناة :channel في الحدث :event.",
     "A notification test send was triggered for :channel / :event.": "تم تشغيل إرسال اختبار للإشعار للقناة :channel / الحدث :event.",
     "A paid payment cannot be downgraded manually. Use the order refund action when money is returned.": "لا يمكن إرجاع حالة دفعة مدفوعة يدويًا. استخدم إجراء استرداد الطلب عند إعادة الأموال.",
+    "A refunded payment is terminal and cannot be changed manually.": "الدفعة المستردة حالة نهائية ولا يمكن تغييرها يدويًا.",
+    "Record refunds from the order refund action so the financial ledger stays consistent.": "سجّل عمليات الاسترداد من إجراء استرداد الطلب حتى يظل السجل المالي متسقًا.",
     "A practical baseline that keeps customer communication stable while Phase 4 continues growing.": "إعداد عملي أساسي يحافظ على استقرار تواصل العملاء مع استمرار تطوير المرحلة 4.",
     "A predictive win-back flow for customers whose churn risk is rising.": "مسار استعادة تنبؤي للعملاء الذين يرتفع لديهم خطر الانقطاع.",
     "A quick guide to how the engine, channels, and retries work together.": "دليل سريع يوضح كيف يعمل المحرك والقنوات وإعادة المحاولة معًا.",

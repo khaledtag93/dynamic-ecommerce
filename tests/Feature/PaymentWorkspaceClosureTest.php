@@ -100,4 +100,19 @@ class PaymentWorkspaceClosureTest extends TestCase
             ])
             ->assertSessionHasErrors('payment_gateway_mode');
     }
+
+    public function test_terminal_payment_business_rule_errors_are_localized_in_arabic(): void
+    {
+        $source = file_get_contents(app_path('Services/Commerce/PaymentService.php'));
+        $translations = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        foreach ([
+            'Record refunds from the order refund action so the financial ledger stays consistent.',
+            'A refunded payment is terminal and cannot be changed manually.',
+        ] as $message) {
+            $this->assertStringContainsString("__('{$message}')", $source);
+            $this->assertArrayHasKey($message, $translations);
+            $this->assertNotSame('', trim((string) $translations[$message]));
+        }
+    }
 }
