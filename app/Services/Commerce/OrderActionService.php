@@ -4,6 +4,7 @@ namespace App\Services\Commerce;
 
 use App\Models\InventoryMovement;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -59,6 +60,8 @@ class OrderActionService
                 ) {
                     continue;
                 }
+
+                $this->assertRestockTarget($item);
 
                 $this->inventoryService->increase(
                     $item->product,
@@ -119,6 +122,23 @@ class OrderActionService
 
             return $freshOrder;
         });
+    }
+
+    private function assertRestockTarget(OrderItem $item): void
+    {
+        $lineWasVariantBased = filled($item->variant_name) || $item->product_variant_id !== null;
+
+        if ($lineWasVariantBased && ! $item->variant) {
+            throw ValidationException::withMessages([
+                'status' => __('Order cancellation cannot restore stock because a product variant no longer exists.'),
+            ]);
+        }
+
+        if ($item->variant && (int) $item->variant->product_id !== (int) $item->product_id) {
+            throw ValidationException::withMessages([
+                'status' => __('Order cancellation cannot restore stock because the product variant no longer matches the product.'),
+            ]);
+        }
     }
 
     public function updateStatus(Order $order, string $newStatus): Order

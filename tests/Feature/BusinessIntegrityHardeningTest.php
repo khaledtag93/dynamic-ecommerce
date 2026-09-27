@@ -7,6 +7,7 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\Commerce\CouponService;
 use App\Services\Commerce\InventoryService;
@@ -114,6 +115,60 @@ class BusinessIntegrityHardeningTest extends TestCase
             'quantity_change' => 2,
             'balance_after' => 2,
             'unit_cost' => 20,
+        ]);
+    }
+
+    public function test_cancellation_fails_safe_when_variant_stock_target_was_deleted(): void
+    {
+        $product = $this->makeProduct(0);
+        $product->update(['has_variants' => true]);
+
+        $variant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'CANCEL-VAR-'.Str::upper(Str::random(6)),
+            'price' => 50,
+            'cost_price' => 20,
+            'stock' => 0,
+            'is_default' => true,
+            'status' => true,
+            'sort_order' => 0,
+        ]);
+
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_UNPAID, 100);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'product_name' => $product->name,
+            'variant_name' => $variant->sku,
+            'sku' => $variant->sku,
+            'unit_price' => 50,
+            'unit_cost' => 20,
+            'quantity' => 2,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $variant->delete();
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class)
+        );
+
+        try {
+            $service->cancel($order, 'Variant was removed before cancellation.');
+            $this->fail('Cancellation should fail rather than restoring variant stock to the product-level bucket.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+        $this->assertSame(0, (int) $product->fresh()->quantity);
+        $this->assertDatabaseMissing('inventory_movements', [
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_REFUND_RESTOCK,
         ]);
     }
 
