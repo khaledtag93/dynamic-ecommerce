@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Payment Settings') . ' | Admin')
+@section('title', __('Payment Settings') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Settings')" :title="__('Payment Settings')" :description="__('Enable methods safely and prepare gateway configuration without breaking checkout flow.')" />

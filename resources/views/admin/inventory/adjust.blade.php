@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Adjust stock') . ' | Admin')
+@section('title', __('Adjust stock') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Inventory')" :title="__('Adjust stock')" :description="__('Record a counted quantity with a reason. The change will appear in inventory movements.')">

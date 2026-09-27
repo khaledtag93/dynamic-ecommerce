@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('New Purchase') . ' | Admin')
+@section('title', __('New Purchase') . ' | ' . __('Admin'))
 
 @section('content')
     <x-admin.page-header :kicker="__('Procurement')" :title="__('New Purchase')" :description="__('Create a purchase order and receive stock later without breaking inventory flow.')">

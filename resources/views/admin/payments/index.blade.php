@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Payments') . ' | Admin')
+@section('title', __('Payments') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Finance')" :title="__('Payments')" :description="__('Payment foundation is now ready for COD, transfer, and future gateway integrations.')">

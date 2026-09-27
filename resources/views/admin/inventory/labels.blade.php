@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Barcode labels') . ' | Admin')
+@section('title', __('Barcode labels') . ' | ' . __('Admin'))
 
 @section('content')
 <style>

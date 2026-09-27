@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', ($mode === 'edit' ? __('Edit Promotion') : __('Create Promotion')) . ' | Admin')
+@section('title', ($mode === 'edit' ? __('Edit Promotion') : __('Create Promotion')) . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header

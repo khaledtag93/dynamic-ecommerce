@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Permissions & Staff Roles') . ' | Admin')
+@section('title', __('Permissions & Staff Roles') . ' | ' . __('Admin'))
 
 @php
     $systemRoles = $roles->where('is_system', true);

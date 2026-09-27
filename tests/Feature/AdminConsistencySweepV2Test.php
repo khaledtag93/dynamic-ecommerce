@@ -66,4 +66,26 @@ class AdminConsistencySweepV2Test extends TestCase
             $this->assertStringNotContainsString('admin-card admin-stat-card h-100', $source);
         }
     }
+
+    public function test_admin_page_title_suffix_is_localizable(): void
+    {
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(resource_path('views/admin'))
+        );
+
+        foreach ($files as $file) {
+            if (! $file->isFile() || ! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+
+            $source = file_get_contents($file->getPathname());
+            $this->assertStringNotContainsString(' | Admin', $source, $file->getPathname());
+        }
+
+        foreach (['en', 'ar'] as $locale) {
+            $translations = json_decode(file_get_contents(base_path("lang/{$locale}.json")), true, 512, JSON_THROW_ON_ERROR);
+            $this->assertArrayHasKey('Admin', $translations);
+            $this->assertNotSame('', trim((string) $translations['Admin']));
+        }
+    }
 }

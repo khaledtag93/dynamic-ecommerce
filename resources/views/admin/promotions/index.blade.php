@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Promotions') . ' | Admin')
+@section('title', __('Promotions') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Store Content') . ' | Admin')
+@section('title', __('Store Content') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Settings')" :title="__('Store Content & Policies')" :description="__('Manage public contact details, legal pages, trust copy, and cancellation rules from one consistent workspace.')" />

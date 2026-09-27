@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', $order->order_number . ' | Admin')
+@section('title', $order->order_number . ' | ' . __('Admin'))
 
 @section('content')
 @php

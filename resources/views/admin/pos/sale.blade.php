@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('POS Sale') . ' ' . $order->order_number . ' | Admin')
+@section('title', __('POS Sale') . ' ' . $order->order_number . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Point of Sale')" :title="__('Sale complete')" :description="$order->order_number">

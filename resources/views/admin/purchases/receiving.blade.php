@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Barcode receiving') . ' | Admin')
+@section('title', __('Barcode receiving') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Barcode receiving')" :description="__('Verify each physical unit before the final protected stock receipt.')">

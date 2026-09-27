@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Notifications') . ' | Admin')
+@section('title', __('Notifications') . ' | ' . __('Admin'))
 
 @section('content')
 <div class="container-fluid">

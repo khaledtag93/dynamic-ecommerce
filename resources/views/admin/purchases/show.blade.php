@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Purchase Details') . ' | Admin')
+@section('title', __('Purchase Details') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Purchase Details')" :description="__('Reference') . ': ' . $purchase->reference">

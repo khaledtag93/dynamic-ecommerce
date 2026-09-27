@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Point of Sale') . ' | Admin')
+@section('title', __('Point of Sale') . ' | ' . __('Admin'))
 
 @section('content')
 <style>

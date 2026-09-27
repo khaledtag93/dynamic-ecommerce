@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Cash Shift Review') . ' | Admin')
+@section('title', __('Cash Shift Review') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Point of Sale')" :title="__('Cash Shift Review')" :description="__('Review cashier drawer sessions, expected cash, counted cash, and reconciliation variances.')">

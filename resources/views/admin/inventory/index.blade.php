@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Inventory') . ' | Admin')
+@section('title', __('Inventory') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Operations')" :title="__('Inventory')" :description="__('Monitor stock movement, low stock alerts, and expiration risks with safer fallbacks.')">

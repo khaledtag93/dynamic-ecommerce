@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Edit employee') . ' | Admin')
+@section('title', __('Edit employee') . ' | ' . __('Admin'))
 
 @section('content')
 <div class="admin-page-shell">

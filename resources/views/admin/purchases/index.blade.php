@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Purchases') . ' | Admin')
+@section('title', __('Purchases') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Purchases')" :description="__('Track procurement activity, receive stock safely, and keep supplier purchasing history clear.')">

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Shipping zones & cities') . ' | Admin')
+@section('title', __('Shipping zones & cities') . ' | ' . __('Admin'))
 
 @section('content')
 <div class="admin-page-shell">

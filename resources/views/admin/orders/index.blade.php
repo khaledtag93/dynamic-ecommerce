@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Orders Management') . ' | Admin')
+@section('title', __('Orders Management') . ' | ' . __('Admin'))
 
 @php
     $sort = $filters['sort'] ?? 'created_at';

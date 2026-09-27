@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', $returnRequest->reference . ' | Admin')
+@section('title', $returnRequest->reference . ' | ' . __('Admin'))
 
 @section('content')
 @php

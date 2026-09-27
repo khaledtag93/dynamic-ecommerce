@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', ($payment->transaction_reference ?: __('Payment')) . ' | Admin')
+@section('title', ($payment->transaction_reference ?: __('Payment')) . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Payment details')" :title="($payment->transaction_reference ?: __('Payment record'))" :description="__('Linked order: :order', ['order' => optional($payment->order)->order_number ?: __('Missing order')])">

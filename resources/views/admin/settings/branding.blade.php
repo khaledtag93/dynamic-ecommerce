@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('White-label Settings') . ' | Admin')
+@section('title', __('White-label Settings') . ' | ' . __('Admin'))
 
 @php
     use App\Support\AdminBranding;

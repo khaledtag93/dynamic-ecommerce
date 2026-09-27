@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Leave review') . ' | Admin')
+@section('title', __('Leave review') . ' | ' . __('Admin'))
 
 @section('content')
 <div class="admin-page-shell" data-live-list>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Scan barcode') . ' | Admin')
+@section('title', __('Scan barcode') . ' | ' . __('Admin'))
 
 @section('content')
 <x-admin.page-header :kicker="__('Inventory')" :title="__('Scan barcode')" :description="__('Find the exact catalog item before opening a stock action. Scanner lookup never guesses between duplicate barcodes.')">

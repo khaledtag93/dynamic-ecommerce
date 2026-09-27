@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', __('Cost Calculator') . ' | Admin')
+@section('title', __('Cost Calculator') . ' | ' . __('Admin'))
 
 @section('content')
 @php
