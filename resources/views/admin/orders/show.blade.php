@@ -85,7 +85,7 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center gap-3">
-                                            <img src="{{ $item->image_url ?: 'https://via.placeholder.com/100x100?text=No+Image' }}" alt="{{ $item->product_name ?: __('Order item') }}" width="70" height="70" class="rounded-4" style="object-fit:cover;">
+                                            <img src="{{ $item->image_url ?: asset('images/storefront-placeholder.svg') }}" alt="{{ $item->product_name ?: __('Order item') }}" width="70" height="70" class="rounded-4" style="object-fit:cover;">
                                             <div>
                                                 <div class="fw-bold">{{ $item->product_name ?: __('Deleted product') }}</div>
                                                 @if($item->variant_name)<div class="text-muted small">{{ $item->variant_name }}</div>@endif
@@ -231,7 +231,7 @@
                     @method('PATCH')
                     <div class="mb-3">
                         <label class="form-label fw-semibold" for="orderStatusSelect">{{ __('Order status') }}</label>
-                        <select id="orderStatusSelect" name="status" class="form-select">
+                        <select id="orderStatusSelect" name="status" class="form-select" required aria-required="true">
                             @foreach($statusOptions as $value => $label)
                                 <option value="{{ $value }}" @selected($order->status === $value) @disabled(!$order->canTransitionTo($value) && $order->status !== $value)>{{ $label }}</option>
                             @endforeach
@@ -301,7 +301,7 @@
                     @method('PATCH')
                     <div class="mb-3">
                         <label class="form-label fw-semibold" for="orderDeliveryStatus">{{ __('Delivery status') }}</label>
-                        <select id="orderDeliveryStatus" name="delivery_status" class="form-select">
+                        <select id="orderDeliveryStatus" name="delivery_status" class="form-select" required aria-required="true">
                             @foreach($deliveryStatusOptions as $value => $label)
                                 <option value="{{ $value }}" @selected($order->delivery_status === $value) @disabled(!$order->canTransitionDeliveryTo($value))>{{ $label }}</option>
                             @endforeach
@@ -310,11 +310,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold" for="orderShippingProvider">{{ __('Courier') }}</label>
-                        <input id="orderShippingProvider" type="text" name="shipping_provider" class="form-control" value="{{ old('shipping_provider', $order->shipping_provider) }}" placeholder="{{ __('Courier name') }}">
+                        <input id="orderShippingProvider" type="text" name="shipping_provider" maxlength="120" class="form-control" value="{{ old('shipping_provider', $order->shipping_provider) }}" placeholder="{{ __('Courier name') }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold" for="orderTrackingNumber">{{ __('Tracking number') }}</label>
-                        <input id="orderTrackingNumber" type="text" name="tracking_number" class="form-control" value="{{ old('tracking_number', $order->tracking_number) }}" placeholder="{{ __('Tracking number') }}">
+                        <input id="orderTrackingNumber" type="text" name="tracking_number" maxlength="120" class="form-control" value="{{ old('tracking_number', $order->tracking_number) }}" placeholder="{{ __('Tracking number') }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold" for="orderEstimatedDeliveryDate">{{ __('Estimated delivery date') }}</label>
@@ -322,7 +322,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold" for="orderDeliveryNotes">{{ __('Delivery notes') }}</label>
-                        <textarea id="orderDeliveryNotes" name="delivery_notes" rows="3" class="form-control">{{ old('delivery_notes', $order->delivery_notes) }}</textarea>
+                        <textarea id="orderDeliveryNotes" name="delivery_notes" rows="3" maxlength="1000" class="form-control">{{ old('delivery_notes', $order->delivery_notes) }}</textarea>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Saving...') }}"><i class="mdi mdi-content-save-check-outline"></i><span>{{ __('Save delivery details') }}</span></button>
                 </form>
@@ -386,15 +386,15 @@
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="orderRefundAmount">{{ __('Amount') }}</label>
-                            <input id="orderRefundAmount" type="number" step="0.01" min="0.01" max="{{ $order->refundable_balance }}" name="amount" class="form-control" value="{{ old('amount', $order->refundable_balance) }}">
+                            <input id="orderRefundAmount" type="number" step="0.01" min="0.01" max="{{ $order->refundable_balance }}" name="amount" class="form-control" value="{{ old('amount', $order->refundable_balance) }}" required aria-required="true">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="orderRefundReason">{{ __('Reason') }}</label>
-                            <input id="orderRefundReason" type="text" name="reason" class="form-control" value="{{ old('reason') }}" placeholder="{{ __('Refund reason') }}">
+                            <input id="orderRefundReason" type="text" name="reason" maxlength="255" class="form-control" value="{{ old('reason') }}" placeholder="{{ __('Refund reason') }}" required aria-required="true">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="orderRefundNotes">{{ __('Notes') }}</label>
-                            <textarea id="orderRefundNotes" name="notes" rows="3" class="form-control" placeholder="{{ __('Optional refund notes') }}">{{ old('notes') }}</textarea>
+                            <textarea id="orderRefundNotes" name="notes" rows="3" maxlength="1000" class="form-control" placeholder="{{ __('Optional refund notes') }}">{{ old('notes') }}</textarea>
                         </div>
                         <button type="submit" class="btn btn-light border w-100 btn-text-icon justify-content-center" data-loading-text="{{ __('Recording...') }}"><i class="mdi mdi-cash-refund"></i><span>{{ __('Record refund') }}</span></button>
                     </form>
