@@ -221,14 +221,14 @@ class GrowthAttributionService
             ->where('sent_at', '>=', now()->subDays(30))
             ->count();
 
-        $attributedOrdersRecent = (int) $recent->distinct('order_id')->count('order_id');
+        $attributedOrdersRecent = (int) (clone $recent)->distinct('order_id')->count('order_id');
         $liftOrders = $deliveriesWithRevenue > 0 ? round(($attributedOrdersRecent / max(1, $deliveriesWithRevenue)) * 100, 2) : 0.0;
-        $liftRevenue = (float) $recent->sum('revenue');
+        $liftRevenue = (float) (clone $recent)->sum('revenue');
 
         return [
-            'attributed_orders' => (int) $base->distinct('order_id')->count('order_id'),
-            'attributed_revenue' => round((float) $base->sum('revenue'), 2),
-            'attributed_profit' => round((float) $base->sum('profit_total'), 2),
+            'attributed_orders' => (int) (clone $base)->distinct('order_id')->count('order_id'),
+            'attributed_revenue' => round((float) (clone $base)->sum('revenue'), 2),
+            'attributed_profit' => round((float) (clone $base)->sum('profit_total'), 2),
             'coupon_assisted_orders' => (int) GrowthAttributionTouch::query()->where('touch_type', 'coupon_match')->distinct('order_id')->count('order_id'),
             'lift_revenue_30d' => round($liftRevenue, 2),
             'lift_orders_30d' => $liftOrders,
