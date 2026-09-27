@@ -42,7 +42,7 @@ class GrowthPredictiveIntelligenceService
         $completedOrders = $orders;
         $latestOrder = $orders->sortByDesc(fn (Order $order) => $order->placed_at ?: $order->created_at)->first();
         $lastOrderAt = $latestOrder?->placed_at ?: $latestOrder?->created_at;
-        $daysSinceLastOrder = $lastOrderAt ? now()->diffInDays($lastOrderAt) : 9999;
+        $daysSinceLastOrder = $lastOrderAt ? (int) now()->diffInDays($lastOrderAt, true) : 9999;
 
         $events30 = AnalyticsEvent::query()
             ->where('user_id', $user->id)
