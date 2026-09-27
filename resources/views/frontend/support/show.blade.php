@@ -111,16 +111,39 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     form.addEventListener('submit', async function (event) {
+        if (form.dataset.pending === '1') {
+            event.preventDefault();
+            return;
+        }
+
         event.preventDefault();
-        if (form.dataset.pending === '1') return;
 
         form.dataset.pending = '1';
+        form.setAttribute('aria-busy', 'true');
+        form.classList.add('lc-loading');
+
+        const originalSubmitHtml = submit?.innerHTML || '';
         if (submit) {
+            const loadingText = submit.dataset.loadingText;
             submit.disabled = true;
-            submit.dataset.originalText = submit.textContent;
-            submit.textContent = submit.dataset.loadingText || @json(__('Sending reply...'));
+            submit.setAttribute('aria-disabled', 'true');
+            if (loadingText) {
+                submit.innerHTML = '<span class="lc-loading-spinner" aria-hidden="true"></span>' + loadingText;
+            }
         }
         setStatus('');
+
+        const release = () => {
+            delete form.dataset.pending;
+            form.removeAttribute('aria-busy');
+            form.classList.remove('lc-loading');
+
+            if (submit) {
+                submit.disabled = false;
+                submit.removeAttribute('aria-disabled');
+                submit.innerHTML = originalSubmitHtml;
+            }
+        };
 
         try {
             const response = await fetch(form.action, {
@@ -160,12 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             setStatus(error.message || @json(__('Could not send your reply. Please try again.')), true);
         } finally {
-            if (submit) {
-                submit.disabled = false;
-                submit.textContent = submit.dataset.originalText || @json(__('Send reply'));
-                delete submit.dataset.originalText;
-            }
-            delete form.dataset.pending;
+            release();
         }
     });
 });

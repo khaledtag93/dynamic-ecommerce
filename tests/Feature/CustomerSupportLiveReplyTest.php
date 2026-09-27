@@ -89,6 +89,23 @@ class CustomerSupportLiveReplyTest extends TestCase
     }
 
 
+    public function test_support_reply_live_submission_has_accessible_busy_state_and_restores_ui(): void
+    {
+        $view = file_get_contents(resource_path('views/frontend/support/show.blade.php'));
+
+        $this->assertStringContainsString("if (form.dataset.pending === '1') {", $view);
+        $this->assertStringContainsString("form.dataset.pending = '1';", $view);
+        $this->assertStringContainsString("form.setAttribute('aria-busy', 'true');", $view);
+        $this->assertStringContainsString("form.classList.add('lc-loading');", $view);
+        $this->assertStringContainsString("submit.setAttribute('aria-disabled', 'true');", $view);
+        $this->assertStringContainsString('delete form.dataset.pending;', $view);
+        $this->assertStringContainsString("form.removeAttribute('aria-busy');", $view);
+        $this->assertStringContainsString("submit.removeAttribute('aria-disabled');", $view);
+        $this->assertStringContainsString('submit.innerHTML = originalSubmitHtml;', $view);
+        $this->assertStringContainsString('finally {', $view);
+        $this->assertStringContainsString('release();', $view);
+    }
+
     public function test_support_create_live_submission_has_duplicate_guard_and_accessible_busy_state(): void
     {
         $view = file_get_contents(resource_path('views/frontend/support/create.blade.php'));
