@@ -1,16 +1,15 @@
 # CURRENT PHASE
 
-## Customer commerce/live closure + Paymob retry serialization — 2026-09-27
+## QAS candidate gate — 2026-09-27
 
 - Active branch: `sec03-framework-upgrade`.
-- Latest application source checkpoint: `b7646b7ec158c6e71067381b3fb3786dd88fa249` (`fix: serialize paymob retry initiation`).
-- Hardening CI **#2061** passed on that exact application SHA, including Composer validation/audit, clean MySQL migration, Laravel boot/routes, Blade/config compile, full PHPUnit, shared browser interaction tests and frontend production build.
-- The source/CI closure chain from `684e711f` through `b7646b7e` hardened Product Reviews, Order Cancel, Address Save/Delete, Profile/Password live forms, Return Cancel, Support Reply, Notification actions and Paymob retry initiation. The live actions now consistently guard repeated submissions, expose accessible busy/disabled state where relevant, recover cleanly after failures, and preserve server-authoritative ownership/money/stock rules.
-- Paymob retry initiation is now serialized with a DB-backed payment-row claim before gateway initiation. A second overlapping retry does not create a second gateway intention; stale claims expire, token release is ownership-safe, and payment eligibility is rechecked after the claim to avoid starting a new session after a concurrent terminal payment transition.
-- Latest confirmed QAS deployment on the intended `sec03-framework-upgrade` line is `71d9b6e1abf0b99a2d3953ae448b22598a5c3001`. A later deployment from the wrong branch is not acceptance evidence. Therefore changes after `71d9b6e1` remain **source/CI verified, matching-QAS pending**.
-- Production remains unchanged.
-- Remaining P0 release gates remain **OPS-01 historical credential rotation evidence**, **PAY-01 real Paymob E2E**, and **OPS-02 database restore rehearsal**. OPS-03 is QAS-accepted but still requires Production runtime setup/verification at release.
-- **Next source work:** continue strict Page Closure only on substantive remaining gaps. Do not reopen the just-closed customer actions without a new defect. Finish the remaining customer journey findings, then continue Admin/POS/Workforce page closure in dependency order. Matching-revision authenticated QAS EN/AR/RTL/mobile/keyboard acceptance remains required before any page is truly CLOSED.
+- Application candidate: `583717c655b21bb7803ce86cc6cac1ddaa2bb6aa` (`583717c6`), with Hardening CI **#2073 Green**.
+- Order Cancel live state and Address Book Save/Delete live state are already closed in source with regression coverage; do not reopen them without a reproduced defect.
+- The later hardening chain also closes cart busy-state alignment, Admin order/payment contracts, Inventory adjustment/variant risks/translation parity, POS form contracts, purchase monetary bounds, supplier-delete serialization, and Customer Account Statement scalability.
+- There is no known source blocker that should delay refreshing QAS to this candidate. The next meaningful gate is exact-revision authenticated QAS acceptance, not another speculative source sweep.
+- Deploy this rehearsal branch explicitly because `deploy-qas.sh` defaults to `v42-clean-baseline`: `./deploy-qas.sh sec03-framework-upgrade`.
+- After deployment, execute `docs/COMPLETION_PASS_QAS_CHECKLIST_2026-09-25.md` and fix only reproduced findings before release-readiness review.
+- Production remains unchanged. OPS-01, PAY-01 and OPS-02 remain separate Production release blockers; OPS-03 still requires Production runtime setup/verification at release.
 
 ### Earlier checkpoints below
 ## Storefront account/auth semantics checkpoint — 2026-09-26

@@ -1,24 +1,21 @@
 # MASTER PROJECT STATUS
 
-## Customer commerce hardening checkpoint — 2026-09-27
+## QAS candidate checkpoint — 2026-09-27
 
-- Active hardening branch: `sec03-framework-upgrade`.
-- Latest application source checkpoint: `b7646b7ec158c6e71067381b3fb3786dd88fa249`.
-- Hardening CI **#2061** is Green on that exact SHA. CI runs **#2053 through #2061** are consecutively Green across the customer-commerce hardening chain.
-- Recent source/CI-verified closures:
-  - `684e711f` — live Product Review hardening.
-  - `0b494b99` — live Order Cancel state hardening.
-  - `d5935067` — live Address Save state hardening.
-  - `2e7f3c53` — live Address Delete state hardening.
-  - `f406758c` — Profile/Password live form state hardening.
-  - `d38e0724` — Return Cancel hardening, including removal of duplicate fallback PATCH behavior after live failure.
-  - `8275cdd1` — Support Reply busy/loading/accessibility state closure.
-  - `12f0431a` — Notification mark-one/mark-all live action state closure.
-  - `b7646b7e` — DB-serialized Paymob retry initiation with stale-claim recovery and terminal-state recheck.
-- Latest confirmed QAS application on the intended branch: `71d9b6e1abf0b99a2d3953ae448b22598a5c3001`. Source after that SHA is not yet matching-revision QAS accepted. Production is unchanged.
-- Current completion position: Global Foundation and much of the Customer commerce/account surface are source/CI hardened; strict buyer-grade closure still requires matching-QAS evidence, remaining Admin/POS/Workforce page closure, cross-page journey acceptance, and the independent release/audit gates.
-- Open Production blockers: OPS-01 credential rotation evidence, PAY-01 real Paymob E2E, OPS-02 isolated database restore rehearsal. OPS-03 is proven on QAS only and must be reproduced/verified on Production at release.
-- Do not describe source/CI-complete pages as fully CLOSED until exact-revision authenticated QAS checks cover EN/AR, RTL/LTR, responsive/mobile, keyboard/accessibility and relevant failure/retry states.
+- Active branch: `sec03-framework-upgrade`.
+- **QAS candidate application source:** `583717c655b21bb7803ce86cc6cac1ddaa2bb6aa` (`583717c6`) — `perf: scale customer account statements`.
+- **Hardening CI #2073 is Green** on that exact application SHA. It passed Composer validation/security audit, PHP/Bash syntax, clean MySQL migration, Laravel boot/routes, config/Blade compilation, the full PHPUnit suite, shared browser interaction tests and the frontend production build.
+- The previously open customer live-state items are already source/CI closed and must not be reimplemented without a new defect:
+  - `0b494b99` — Order Cancel duplicate-submit, confirmation reset, accessible busy/loading and failure recovery.
+  - `d5935067` — Address Save duplicate-submit, accessible busy/loading and failure recovery.
+  - `2e7f3c53` — Address Delete confirmation/pending-state hardening.
+- Additional source/CI closures after the customer-action chain include storefront cart busy-state alignment, Admin order/payment contract alignment, Inventory adjustment and variant-risk hardening, POS form contracts, inventory translation parity, purchase money boundaries, serialized supplier deletion, and the bounded Customer Account Statement implementation.
+- Customer Account Statement now uses database pagination/aggregation, hydrates only the current page, adds supporting indexes, bounds Print/CSV output, and discloses truncation. This removes the known unbounded-history memory risk before QAS.
+- **Pre-QAS source gate:** no currently known source defect from the active hardening queue is blocking deployment of this candidate. Remaining unchecked items in the consolidated checklist are intentionally **QAS acceptance work**, not a reason to keep making speculative source changes.
+- Latest previously confirmed QAS application on this branch remains `71d9b6e1abf0b99a2d3953ae448b22598a5c3001`. QAS must therefore be refreshed to the new candidate before newer work can be accepted.
+- After deployment, run the consolidated authenticated EN/AR, RTL/LTR, desktop/mobile, keyboard/accessibility, permission, money, stock and failure-state checks in `docs/COMPLETION_PASS_QAS_CHECKLIST_2026-09-25.md`. Any real defect found there returns to source for closure.
+- Production remains unchanged. Production promotion is still blocked by the separate release gates **OPS-01 credential rotation evidence**, **PAY-01 real Paymob E2E**, and **OPS-02 isolated database restore rehearsal**; OPS-03 also requires Production runtime setup/verification at release.
+- Deployment note: `deploy-qas.sh` defaults to `v42-clean-baseline`, so this rehearsal candidate must be deployed explicitly as `./deploy-qas.sh sec03-framework-upgrade` unless/until the branch is merged.
 
 ### Earlier checkpoints below
 ## GF-17 — Storefront account/auth semantics — 2026-09-26
