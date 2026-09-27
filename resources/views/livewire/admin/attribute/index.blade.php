@@ -101,7 +101,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($attributes as $attr)
+                        @forelse ($attributeRows as $attr)
                             <tr>
                                 <td>{{ $attr->id }}</td>
                                 <td>{{ $attr->name }}</td>
@@ -129,7 +129,7 @@
                 </table>
             </div>
         </div>
-        <div class="card-footer">{{ $attributes->links() }}</div>
+        <div class="card-footer">{{ $attributeRows->links() }}</div>
     </div>
 
     <div class="modal fade" id="attributeDeleteConfirmationModal" tabindex="-1" aria-hidden="true" wire:ignore.self>

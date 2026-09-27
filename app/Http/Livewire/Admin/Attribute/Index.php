@@ -156,7 +156,7 @@ class Index extends Component
             ->when($this->coverage === 'in_use', fn ($query) => $query->has('variantAttributes'));
 
         return view('livewire.admin.attribute.index', [
-            'attributes' => $query->latest()->paginate($this->perPage),
+            'attributeRows' => $query->latest()->paginate($this->perPage),
             'stats' => [
                 'total' => ProductAttribute::count(),
                 'with_values' => ProductAttribute::has('values')->count(),
