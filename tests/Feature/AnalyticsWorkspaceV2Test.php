@@ -75,6 +75,22 @@ class AnalyticsWorkspaceV2Test extends TestCase
         }
     }
 
+    public function test_analytics_service_fallback_labels_are_explicitly_catalogued(): void
+    {
+        $english = json_decode(file_get_contents(base_path('lang/en.json')), true, 512, JSON_THROW_ON_ERROR);
+        $arabic = json_decode(file_get_contents(base_path('lang/ar.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        foreach ([
+            'Checkout starts',
+            'Category #:id',
+            'User #:id',
+        ] as $key) {
+            $this->assertArrayHasKey($key, $english);
+            $this->assertArrayHasKey($key, $arabic);
+            $this->assertNotSame('', trim((string) $arabic[$key]));
+        }
+    }
+
     public function test_analytics_workspaces_keep_mobile_filter_and_theme_token_contracts(): void
     {
         $overview = file_get_contents(resource_path('views/admin/analytics/index.blade.php'));
