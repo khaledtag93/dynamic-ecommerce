@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AnalyticsEvent;
 use App\Models\GrowthAttributionTouch;
 use App\Models\GrowthAudienceSegment;
 use App\Models\GrowthAutomationRule;
@@ -14,6 +15,7 @@ use App\Models\GrowthMessageLog;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WebsiteSetting;
+use App\Services\Analytics\GrowthAutomationService;
 use App\Services\Growth\GrowthAttributionService;
 use App\Services\Growth\GrowthCampaignService;
 use App\Services\Growth\GrowthCohortRetentionService;
@@ -392,6 +394,88 @@ class GrowthControlIntegrityTest extends TestCase
         $summary = $service->summary();
         $this->assertSame(0, $summary['attributed_orders']);
         $this->assertSame(0.0, $summary['attributed_revenue']);
+    }
+
+    public function test_growth_opportunities_stop_targeting_placed_orders_and_ignore_unrealized_sales(): void
+    {
+        $user = User::factory()->create();
+        $sessionId = 'growth-order-placed-session';
+        $occurredAt = now()->subHour();
+
+        foreach ([
+            AnalyticsEvent::EVENT_ADD_TO_CART,
+            AnalyticsEvent::EVENT_CHECKOUT_START,
+            AnalyticsEvent::EVENT_ORDER_PLACED,
+        ] as $eventType) {
+            AnalyticsEvent::query()->create([
+                'user_id' => $user->id,
+                'session_id' => $sessionId,
+                'event_type' => $eventType,
+                'occurred_at' => $occurredAt,
+            ]);
+        }
+
+        $createOrder = function (
+            string $number,
+            string $status,
+            string $paymentStatus,
+            float $discount
+        ) use ($user): void {
+            Order::query()->create([
+                'user_id' => $user->id,
+                'order_number' => $number,
+                'status' => $status,
+                'payment_status' => $paymentStatus,
+                'payment_method' => Order::PAYMENT_METHOD_COD,
+                'delivery_status' => $status === Order::STATUS_COMPLETED
+                    ? Order::DELIVERY_STATUS_DELIVERED
+                    : Order::DELIVERY_STATUS_PENDING,
+                'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+                'currency' => 'EGP',
+                'subtotal' => 100,
+                'discount_total' => $discount,
+                'shipping_total' => 0,
+                'tax_total' => 0,
+                'grand_total' => 100 - $discount,
+                'customer_name' => 'Growth Summary Customer',
+                'customer_email' => 'growth-summary@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test address',
+                'shipping_city' => 'Cairo',
+                'shipping_country' => 'Egypt',
+                'billing_same_as_shipping' => true,
+                'placed_at' => now()->subMinutes(30),
+            ]);
+        };
+
+        $createOrder(
+            'GROWTH-REALIZED-001',
+            Order::STATUS_COMPLETED,
+            Order::PAYMENT_STATUS_PAID,
+            10
+        );
+        $createOrder(
+            'GROWTH-REALIZED-002',
+            Order::STATUS_COMPLETED,
+            Order::PAYMENT_STATUS_PAID,
+            0
+        );
+        $createOrder(
+            'GROWTH-UNREALIZED-001',
+            Order::STATUS_PENDING,
+            Order::PAYMENT_STATUS_UNPAID,
+            25
+        );
+
+        $snapshot = app(GrowthAutomationService::class)->buildSnapshot(
+            now()->subDay()->startOfDay(),
+            now()->endOfDay()
+        );
+
+        $this->assertSame(0, $snapshot['summary']['warm_cart_sessions']);
+        $this->assertSame(0, $snapshot['summary']['checkout_drop_sessions']);
+        $this->assertSame(1, $snapshot['summary']['repeat_customer_candidates']);
+        $this->assertSame(1, $snapshot['summary']['discounted_orders']);
     }
 
     public function test_skipped_growth_delivery_does_not_record_a_sent_timestamp(): void

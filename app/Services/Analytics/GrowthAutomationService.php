@@ -38,15 +38,16 @@ class GrowthAutomationService
                 'session_id',
                 DB::raw("SUM(CASE WHEN event_type = 'add_to_cart' THEN 1 ELSE 0 END) as add_count"),
                 DB::raw("SUM(CASE WHEN event_type = 'checkout_start' THEN 1 ELSE 0 END) as checkout_count"),
-                DB::raw("SUM(CASE WHEN event_type = 'purchase_success' THEN 1 ELSE 0 END) as purchase_count")
+                DB::raw("SUM(CASE WHEN event_type = 'order_placed' THEN 1 ELSE 0 END) as order_placed_count")
             )
             ->groupBy('session_id')
             ->get();
 
-        $warmCartSessions = $sessionStats->filter(fn ($row) => (int) $row->add_count > 0 && (int) $row->purchase_count === 0)->count();
-        $checkoutDropSessions = $sessionStats->filter(fn ($row) => (int) $row->checkout_count > 0 && (int) $row->purchase_count === 0)->count();
+        $warmCartSessions = $sessionStats->filter(fn ($row) => (int) $row->add_count > 0 && (int) $row->order_placed_count === 0)->count();
+        $checkoutDropSessions = $sessionStats->filter(fn ($row) => (int) $row->checkout_count > 0 && (int) $row->order_placed_count === 0)->count();
 
         $repeatCustomers = Order::query()
+            ->commerciallyRealized()
             ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
             ->whereNotNull('user_id')
             ->select('user_id')
@@ -56,6 +57,7 @@ class GrowthAutomationService
             ->count();
 
         $discountedOrders = Order::query()
+            ->commerciallyRealized()
             ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
             ->where('discount_total', '>', 0)
             ->count();
