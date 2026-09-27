@@ -329,6 +329,91 @@ class OnlineStockReservationTest extends TestCase
     }
 
 
+    public function test_cancelled_order_rejects_manual_payment_reopen(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5, 100);
+        $order = $this->placeOnlineOrder($user, $product, 2);
+        $payment = $order->payments()->firstOrFail();
+
+        app(PaymentService::class)->markAsFailed($payment, [
+            'transaction_id' => 'TX-CANCEL-MANUAL-FAIL',
+            'provider_status' => 'failed',
+        ]);
+
+        app(OrderActionService::class)->cancel(
+            $order->fresh(),
+            'Customer cancelled after failed payment.',
+            $user->id,
+        );
+
+        try {
+            app(PaymentService::class)->updateStatus($payment->fresh(), Payment::STATUS_PAID);
+            $this->fail('Cancelled orders must not allow manual payment reopening.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_FAILED, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_FAILED, $payment->fresh()->status);
+    }
+
+    public function test_late_paid_callback_after_cancellation_preserves_payment_truth_without_reactivating_stock(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5, 100);
+        $order = $this->placeOnlineOrder($user, $product, 2);
+        $payment = $order->payments()->firstOrFail();
+
+        app(PaymentService::class)->markAsFailed($payment, [
+            'transaction_id' => 'TX-CANCEL-LATE-FAIL',
+            'provider_status' => 'failed',
+        ]);
+
+        app(OrderActionService::class)->cancel(
+            $order->fresh(),
+            'Customer cancelled before gateway confirmation.',
+            $user->id,
+        );
+
+        $reservation = OrderStockReservation::query()->firstOrFail();
+        $this->assertSame(OrderStockReservation::STATUS_RELEASED, $reservation->status);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+
+        app(PaymentService::class)->markAsPaid($payment->fresh(), [
+            'transaction_id' => 'TX-CANCEL-LATE-PAID',
+            'provider_status' => 'success',
+        ]);
+
+        $this->assertSame(Order::STATUS_CANCELLED, $order->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+        $this->assertSame(OrderStockReservation::STATUS_RELEASED, $reservation->fresh()->status);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame('paid_after_cancellation', data_get($order->fresh()->meta, 'payment_exception.code'));
+        $this->assertTrue((bool) data_get($order->fresh()->meta, 'payment_exception.refund_required'));
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'action' => 'paid_cancelled_order_refund_required',
+            'subject_id' => $order->id,
+        ]);
+
+        app(OrderActionService::class)->refund(
+            $order->fresh(),
+            (float) $order->grand_total,
+            'Refund late payment after cancellation.',
+            null,
+            $user->id,
+        );
+
+        $refundedOrder = $order->fresh();
+        $this->assertSame(Order::STATUS_CANCELLED, $refundedOrder->status);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $refundedOrder->payment_status);
+        $this->assertFalse((bool) data_get($refundedOrder->meta, 'payment_exception.refund_required'));
+        $this->assertNotEmpty(data_get($refundedOrder->meta, 'payment_exception.resolved_at'));
+        $this->assertSame(Payment::STATUS_REFUNDED, $payment->fresh()->status);
+    }
+
     public function test_cancellation_fails_safe_when_product_was_deleted_before_required_restock(): void
     {
         $user = User::factory()->create();

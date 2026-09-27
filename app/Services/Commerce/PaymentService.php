@@ -134,6 +134,12 @@ class PaymentService
                 ]);
             }
 
+            if ($lockedOrder && $lockedOrder->status === Order::STATUS_CANCELLED && $lockedPayment->status !== $status) {
+                throw ValidationException::withMessages([
+                    'status' => __('Cancelled orders cannot have payment status changed manually.'),
+                ]);
+            }
+
             if ($lockedPayment->status === Payment::STATUS_PAID && $status !== Payment::STATUS_PAID) {
                 throw ValidationException::withMessages([
                     'status' => __('A paid payment cannot be downgraded manually. Use the order refund action when money is returned.'),
@@ -296,7 +302,37 @@ class PaymentService
                 'at' => now()->toDateTimeString(),
             ];
 
-            if ($lockedOrder) {
+            if ($lockedOrder && $lockedOrder->status === Order::STATUS_CANCELLED) {
+                if ($status !== Payment::STATUS_PAID) {
+                    return $lockedPayment;
+                }
+
+                $exception = [
+                    'code' => 'paid_after_cancellation',
+                    'payment_id' => $lockedPayment->id,
+                    'transaction_id' => $incomingTransactionId,
+                    'at' => now()->toIso8601String(),
+                    'refund_required' => true,
+                ];
+
+                $meta['payment_exception'] = $exception;
+
+                $orderMeta = $lockedOrder->meta ?? [];
+                $orderMeta['payment_exception'] = $exception;
+                $lockedOrder->update(['meta' => $orderMeta]);
+
+                $this->activityLogService->log(
+                    'commerce',
+                    'paid_cancelled_order_refund_required',
+                    __('Payment was confirmed after the order was cancelled. Refund review is required.'),
+                    null,
+                    $lockedOrder,
+                    [
+                        'payment_id' => $lockedPayment->id,
+                        'transaction_id' => $incomingTransactionId,
+                    ]
+                );
+            } elseif ($lockedOrder) {
                 $this->applyStockReservationTransition($lockedOrder, $lockedPayment, $status, $meta);
             }
 

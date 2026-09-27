@@ -31,6 +31,13 @@
     </div>
 @endif
 
+@if(data_get($order->meta, 'payment_exception.code') === 'paid_after_cancellation' && data_get($order->meta, 'payment_exception.refund_required'))
+    <div class="alert alert-danger rounded-4 border-0 mb-4">
+        <div class="fw-bold mb-1">{{ __('Cancelled order received payment') }}</div>
+        <div>{{ __('Payment was confirmed after cancellation. Keep the order cancelled, do not fulfill it, and process the remaining refund balance.') }}</div>
+    </div>
+@endif
+
 <nav class="admin-order-jump" aria-label="{{ __('Page sections') }}">
     <a href="#order-items">{{ __('Items') }}</a>
     <a href="#order-customer">{{ __('Customer & Shipping') }}</a>

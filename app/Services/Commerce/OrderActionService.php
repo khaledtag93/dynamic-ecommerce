@@ -361,6 +361,13 @@ class OrderActionService
             if ($newPaymentStatus === Order::PAYMENT_STATUS_REFUNDED) {
                 $refundedAt = now();
 
+                $orderMeta = $lockedOrder->meta ?? [];
+                if (data_get($orderMeta, 'payment_exception.code') === 'paid_after_cancellation') {
+                    data_set($orderMeta, 'payment_exception.refund_required', false);
+                    data_set($orderMeta, 'payment_exception.resolved_at', $refundedAt->toIso8601String());
+                    $lockedOrder->update(['meta' => $orderMeta]);
+                }
+
                 $lockedOrder->payments()
                     ->where('status', Payment::STATUS_PAID)
                     ->lockForUpdate()
@@ -374,6 +381,11 @@ class OrderActionService
                             'at' => $refundedAt->toDateTimeString(),
                         ];
                         $meta['events'] = array_slice($events, -20);
+
+                        if (data_get($meta, 'payment_exception.code') === 'paid_after_cancellation') {
+                            data_set($meta, 'payment_exception.refund_required', false);
+                            data_set($meta, 'payment_exception.resolved_at', $refundedAt->toIso8601String());
+                        }
 
                         $payment->update([
                             'status' => Payment::STATUS_REFUNDED,
