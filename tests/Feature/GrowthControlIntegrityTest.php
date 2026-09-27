@@ -371,6 +371,27 @@ class GrowthControlIntegrityTest extends TestCase
         $summary = $service->summary();
         $this->assertSame(1, $summary['attributed_orders']);
         $this->assertSame(80.0, $summary['attributed_revenue']);
+
+        $olderDelivery->update(['sent_at' => now()->subDays(30)]);
+        $newerDelivery->update(['sent_at' => now()->subDays(29)]);
+        GrowthAttributionTouch::query()
+            ->where('order_id', $order->id)
+            ->update(['attributed_at' => now()->subMinute()]);
+
+        $order->update([
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'refund_total' => 100,
+        ]);
+
+        $service->syncRecentAttribution();
+
+        $this->assertDatabaseMissing('growth_attribution_touches', [
+            'order_id' => $order->id,
+        ]);
+
+        $summary = $service->summary();
+        $this->assertSame(0, $summary['attributed_orders']);
+        $this->assertSame(0.0, $summary['attributed_revenue']);
     }
 
     public function test_skipped_growth_delivery_does_not_record_a_sent_timestamp(): void

@@ -33,6 +33,22 @@ class GrowthAttributionService
         foreach ($deliveries as $delivery) {
             $this->syncForDelivery($delivery, $windowHours);
         }
+
+        $staleOrderIds = GrowthAttributionTouch::query()
+            ->join('orders', 'orders.id', '=', 'growth_attribution_touches.order_id')
+            ->where(function (Builder $query) {
+                $query->whereNull('growth_attribution_touches.attributed_at')
+                    ->orWhereColumn('orders.updated_at', '>=', 'growth_attribution_touches.attributed_at');
+            })
+            ->distinct()
+            ->limit($limit)
+            ->pluck('growth_attribution_touches.order_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        foreach ($staleOrderIds as $orderId) {
+            $this->normalizeOrderAttribution($orderId);
+        }
     }
 
     public function syncForDelivery(GrowthDelivery $delivery, ?int $windowHours = null): void
@@ -195,6 +211,7 @@ class GrowthAttributionService
                 'revenue' => round($touchRevenueCents / 100, 2),
                 'discount_total' => round($touchDiscountCents / 100, 2),
                 'profit_total' => round($touchProfitCents / 100, 2),
+                'attributed_at' => now(),
                 'meta' => $meta,
             ]);
         }
