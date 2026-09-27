@@ -106,7 +106,8 @@ class AnalyticsController extends Controller
             $topOrderItems = OrderItem::query()
                 ->where('product_id', $product->id)
                 ->whereHas('order', function ($query) use ($from, $to) {
-                    $query->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()]);
+                    $query->commerciallyRealized()
+                        ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()]);
                 })
                 ->select(
                     'product_variant_id',
@@ -150,14 +151,15 @@ class AnalyticsController extends Controller
 
         $drilldown = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($from, $to) {
             $couponRows = Order::query()
+                ->commerciallyRealized()
                 ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
                 ->whereNotNull('coupon_code')
                 ->select(
                     'coupon_code',
                     DB::raw('COUNT(*) as orders_count'),
-                    DB::raw('SUM(grand_total) as revenue_gross'),
+                    DB::raw('SUM(grand_total - refund_total) as revenue_gross'),
                     DB::raw('SUM(discount_total) as discount_total'),
-                    DB::raw('AVG(grand_total) as average_order_value')
+                    DB::raw('AVG(grand_total - refund_total) as average_order_value')
                 )
                 ->groupBy('coupon_code')
                 ->orderByDesc('revenue_gross')
@@ -176,11 +178,12 @@ class AnalyticsController extends Controller
             });
 
             $discountedOrders = Order::query()
+                ->commerciallyRealized()
                 ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
                 ->where('discount_total', '>', 0)
                 ->selectRaw('COUNT(*) as orders_count')
                 ->selectRaw('SUM(discount_total) as discount_total')
-                ->selectRaw('SUM(grand_total) as revenue_gross')
+                ->selectRaw('SUM(grand_total - refund_total) as revenue_gross')
                 ->first();
 
             $activePromotions = PromotionRule::query()
@@ -191,7 +194,8 @@ class AnalyticsController extends Controller
 
             $topDiscountedProduct = OrderItem::query()
                 ->whereHas('order', function ($query) use ($from, $to) {
-                    $query->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
+                    $query->commerciallyRealized()
+                        ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
                         ->where('discount_total', '>', 0);
                 })
                 ->select('product_id', DB::raw('MAX(product_name) as product_name'))

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AnalyticsDailyStat;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -89,6 +90,53 @@ class AdminAnalyticsExperienceTest extends TestCase
 
         $source = file_get_contents(resource_path('views/admin/growth/insights.blade.php'));
         $this->assertSame(4, substr_count($source, '<x-admin.stat-card'));
+    }
+
+    public function test_offers_analytics_uses_realized_net_order_value(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        Order::query()->create([
+            'order_number' => 'OFFERS-REALIZED-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'grand_total' => 100,
+            'refund_total' => 25,
+            'discount_total' => 10,
+            'coupon_code' => 'NET25',
+            'customer_name' => 'Realized Customer',
+            'customer_email' => 'offers-realized@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+
+        Order::query()->create([
+            'order_number' => 'OFFERS-CANCELLED-001',
+            'status' => Order::STATUS_CANCELLED,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'grand_total' => 500,
+            'discount_total' => 50,
+            'coupon_code' => 'NET25',
+            'customer_name' => 'Cancelled Customer',
+            'customer_email' => 'offers-cancelled@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+
+        Cache::flush();
+
+        $response = $this->actingAs($owner)
+            ->get(route('admin.analytics.offers', ['range' => 'today']));
+
+        $response
+            ->assertOk()
+            ->assertSee('NET25')
+            ->assertSee('EGP 75.00')
+            ->assertDontSee('EGP 500.00');
     }
 
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void
