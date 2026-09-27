@@ -116,7 +116,7 @@ class CatalogStockAuditTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 1);
     }
 
-    public function test_variant_stock_must_be_zero_before_deletion_and_stale_variant_edits_are_rejected(): void
+    public function test_variant_stock_must_be_zero_before_removal_and_stale_variant_edits_are_rejected(): void
     {
         $this->actingAs(User::factory()->create(['role_as' => 1]));
         $product = $this->product(0, true);
@@ -136,8 +136,15 @@ class CatalogStockAuditTest extends TestCase
         $form->set('variants.1.stock', 0)->call('save')->assertHasNoErrors();
         $this->assertMovement($product->id, $removed->id, -3, 0, 'catalog_editor', auth()->id());
 
-        $form->set('variants', [$form->get('variants')[0]])->call('save')->assertHasNoErrors();
-        $this->assertDatabaseMissing('product_variants', ['id' => $removed->id]);
+        $form->set('variants', [$form->get('variants')[0]])
+            ->call('save')
+            ->assertHasErrors(['variants']);
+
+        $this->assertDatabaseHas('product_variants', [
+            'id' => $removed->id,
+            'product_id' => $product->id,
+            'stock' => 0,
+        ]);
         $this->assertDatabaseCount('inventory_movements', 1);
     }
 
