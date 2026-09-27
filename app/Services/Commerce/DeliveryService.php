@@ -13,6 +13,7 @@ class DeliveryService
 {
     public function __construct(
         protected WhatsAppServiceInterface $whatsAppService,
+        protected OrderActionService $orderActionService,
     ) {
     }
 
@@ -35,6 +36,16 @@ class DeliveryService
             if ($statusChanged && ! $lockedOrder->canTransitionDeliveryTo($newStatus)) {
                 throw ValidationException::withMessages([
                     'delivery_status' => __('This delivery status transition is not allowed.'),
+                ]);
+            }
+
+            if (
+                $statusChanged
+                && $newStatus !== Order::DELIVERY_STATUS_PENDING
+                && $lockedOrder->status === Order::STATUS_PENDING
+            ) {
+                throw ValidationException::withMessages([
+                    'delivery_status' => __('Move the order to Processing before advancing delivery.'),
                 ]);
             }
 
@@ -71,6 +82,17 @@ class DeliveryService
 
             if ($lockedOrder->isDirty()) {
                 $lockedOrder->save();
+            }
+
+            if (
+                $statusChanged
+                && $newStatus === Order::DELIVERY_STATUS_DELIVERED
+                && $lockedOrder->status === Order::STATUS_PROCESSING
+            ) {
+                $lockedOrder = $this->orderActionService->updateStatus(
+                    $lockedOrder->fresh(),
+                    Order::STATUS_COMPLETED
+                );
             }
 
             return $lockedOrder->fresh('user');

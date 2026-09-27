@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Notifications\DeliveryStatusUpdatedNotification;
 use App\Services\Commerce\DeliveryService;
+use App\Services\Commerce\OrderActionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
@@ -33,7 +34,7 @@ class DeliveryHardeningTest extends TestCase
         $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
         $whatsApp->shouldNotReceive('queueDeliveryUpdate');
 
-        $result = (new DeliveryService($whatsApp))->update($order, [
+        $result = (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
             'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
             'shipping_provider' => 'Updated Courier',
             'tracking_number' => 'TRK-200',
@@ -60,7 +61,7 @@ class DeliveryHardeningTest extends TestCase
 
         $this->expectException(ValidationException::class);
 
-        (new DeliveryService($whatsApp))->update($order, [
+        (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
             'delivery_status' => Order::DELIVERY_STATUS_OUT_FOR_DELIVERY,
         ]);
     }
@@ -79,7 +80,7 @@ class DeliveryHardeningTest extends TestCase
         $whatsApp->shouldNotReceive('queueDeliveryUpdate');
 
         try {
-            (new DeliveryService($whatsApp))->update($order, [
+            (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
                 'delivery_status' => Order::DELIVERY_STATUS_CANCELLED,
             ]);
             $this->fail('Delivery cancellation must go through the order cancellation flow so inventory is restored consistently.');
@@ -90,6 +91,67 @@ class DeliveryHardeningTest extends TestCase
         $fresh = $order->fresh();
         $this->assertSame(Order::STATUS_PROCESSING, $fresh->status);
         $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $fresh->delivery_status);
+    }
+
+    public function test_delivery_cannot_advance_while_order_is_still_pending(): void
+    {
+        $order = $this->createOrder([
+            'status' => Order::STATUS_PENDING,
+            'delivery_status' => Order::DELIVERY_STATUS_PENDING,
+        ]);
+
+        $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldNotReceive('queueDeliveryUpdate');
+
+        try {
+            (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
+                'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
+            ]);
+            $this->fail('Delivery should not advance before the order enters Processing.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('delivery_status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+        $this->assertSame(Order::DELIVERY_STATUS_PENDING, $order->fresh()->delivery_status);
+    }
+
+    public function test_delivered_delivery_completes_order_and_settles_cod_payment(): void
+    {
+        Notification::fake();
+
+        $customer = User::factory()->create();
+        $order = $this->createOrder([
+            'user_id' => $customer->id,
+            'status' => Order::STATUS_PROCESSING,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ]);
+
+        $payment = $order->payments()->create([
+            'method' => Order::PAYMENT_METHOD_COD,
+            'status' => \App\Models\Payment::STATUS_PENDING,
+            'transaction_reference' => 'COD-DELIVERED',
+            'amount' => $order->grand_total,
+            'currency' => $order->currency,
+        ]);
+
+        $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldReceive('queueDeliveryUpdate')->once();
+
+        (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+        ]);
+
+        $fresh = $order->fresh();
+        $this->assertSame(Order::STATUS_COMPLETED, $fresh->status);
+        $this->assertSame(Order::DELIVERY_STATUS_DELIVERED, $fresh->delivery_status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $fresh->payment_status);
+        $this->assertNotNull($fresh->delivered_at);
+        $this->assertSame(\App\Models\Payment::STATUS_PAID, $payment->fresh()->status);
+        $this->assertNotNull($payment->fresh()->paid_at);
     }
 
     public function test_out_for_delivery_requires_a_recorded_shipment_timestamp(): void
@@ -103,7 +165,7 @@ class DeliveryHardeningTest extends TestCase
         $whatsApp->shouldNotReceive('queueDeliveryUpdate');
 
         try {
-            (new DeliveryService($whatsApp))->update($order, [
+            (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
                 'delivery_status' => Order::DELIVERY_STATUS_OUT_FOR_DELIVERY,
             ]);
 
@@ -129,7 +191,7 @@ class DeliveryHardeningTest extends TestCase
         $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
         $whatsApp->shouldReceive('queueDeliveryUpdate')->times(5);
 
-        $service = new DeliveryService($whatsApp);
+        $service = new DeliveryService($whatsApp, app(OrderActionService::class));
 
         $service->update($order, ['delivery_status' => Order::DELIVERY_STATUS_PREPARING]);
         $service->update($order->fresh(), ['delivery_status' => Order::DELIVERY_STATUS_SHIPPED]);
@@ -176,7 +238,7 @@ class DeliveryHardeningTest extends TestCase
         $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
         $whatsApp->shouldReceive('queueDeliveryUpdate')->twice();
 
-        $service = new DeliveryService($whatsApp);
+        $service = new DeliveryService($whatsApp, app(OrderActionService::class));
         $service->update($order, ['delivery_status' => Order::DELIVERY_STATUS_PREPARING]);
         $service->update($order->fresh(), ['delivery_status' => Order::DELIVERY_STATUS_DELIVERED]);
 
