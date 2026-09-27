@@ -43,11 +43,11 @@ class PaymentService
             ];
         }
 
-        if (($settings['payment_online_enabled'] ?? '1') === '1') {
+        if (($settings['payment_online_enabled'] ?? '1') === '1' && $this->onlineGatewayConfigured()) {
             $options[Order::PAYMENT_METHOD_ONLINE] = [
                 'label' => __('Online Payment'),
                 'description' => __('Continue to a secure hosted payment page after placing the order.'),
-                'provider' => $settings['payment_gateway_provider'] ?? 'custom_gateway',
+                'provider' => $this->gatewayProvider(),
             ];
         }
 

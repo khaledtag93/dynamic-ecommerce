@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Order;
+use App\Services\Commerce\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -87,6 +89,42 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString("'status' => ['required', Rule::in(array_keys(Payment::statusOptions()))]", $controller);
         $this->assertStringContainsString("'provider_status' => ['nullable', 'string', 'max:255']", $controller);
         $this->assertStringContainsString("'notes' => ['nullable', 'string', 'max:1000']", $controller);
+    }
+
+    public function test_unconfigured_online_gateway_is_not_offered_to_checkout(): void
+    {
+        config([
+            'services.paymob.api_key' => '',
+            'services.paymob.secret_key' => '',
+            'services.paymob.public_key' => '',
+            'services.paymob.hmac_secret' => '',
+            'services.paymob.integration_id' => '',
+            'services.paymob.iframe_id' => '',
+        ]);
+
+        $service = app(PaymentService::class);
+
+        $this->assertFalse($service->onlineGatewayConfigured());
+        $this->assertArrayNotHasKey(Order::PAYMENT_METHOD_ONLINE, $service->paymentOptionsForCheckout());
+        $this->assertNotContains(Order::PAYMENT_METHOD_ONLINE, $service->enabledMethods());
+    }
+
+    public function test_configured_online_gateway_is_offered_to_checkout(): void
+    {
+        config([
+            'services.paymob.api_key' => '',
+            'services.paymob.secret_key' => 'egy_sk_test_server_secret',
+            'services.paymob.public_key' => 'egy_pk_test_public_key',
+            'services.paymob.hmac_secret' => 'test-hmac-secret',
+            'services.paymob.integration_id' => '4345907',
+            'services.paymob.iframe_id' => '',
+        ]);
+
+        $service = app(PaymentService::class);
+
+        $this->assertTrue($service->onlineGatewayConfigured());
+        $this->assertArrayHasKey(Order::PAYMENT_METHOD_ONLINE, $service->paymentOptionsForCheckout());
+        $this->assertContains(Order::PAYMENT_METHOD_ONLINE, $service->enabledMethods());
     }
 
     public function test_payment_gateway_mode_rejects_forged_values(): void

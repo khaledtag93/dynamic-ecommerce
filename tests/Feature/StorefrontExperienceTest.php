@@ -191,6 +191,13 @@ class StorefrontExperienceTest extends TestCase
             'meta' => ['product_slug' => $product->slug],
         ]);
 
+        config([
+            'services.paymob.secret_key' => 'egy_sk_test_server_secret',
+            'services.paymob.public_key' => 'egy_pk_test_public_key',
+            'services.paymob.hmac_secret' => 'test-hmac-secret',
+            'services.paymob.integration_id' => '4345907',
+        ]);
+
         $response = $this->actingAs($user)->get(route('checkout.index'));
 
         $response
