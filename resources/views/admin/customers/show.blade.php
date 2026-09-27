@@ -44,7 +44,7 @@
                     </div>
                     <div class="border-top pt-3">
                     @if(request()->user()?->isSuperAdmin() && ! $user->isSuperAdmin())
-                        <form method="POST" action="{{ route('admin.customers.update-role', $user) }}" class="d-grid gap-3" data-submit-loading data-account-access-form data-current-access="{{ (int) $user->role_as }}">
+                        <form method="POST" action="{{ route('admin.customers.update-role', $user) }}" class="d-grid gap-3" data-submit-loading data-account-access-form data-current-access="{{ (int) $user->role_as }}" data-confirm-message="" data-grant-admin-message="{{ __('Grant admin staff access to this account? The selected staff role will control its admin permissions.') }}" data-return-customer-message="{{ __('Return this account to customer access? Any assigned staff roles will be removed.') }}" data-confirm-ok="{{ __('Update access') }}" data-confirm-cancel="{{ __('Keep editing') }}">
                             @csrf
                             @method('PATCH')
                             <div>
@@ -142,22 +142,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!form) return;
 
     const access = form.querySelector('[name="role_as"]');
-    let confirmed = false;
+    if (!access) return;
 
-    form.addEventListener('submit', function (event) {
-        if (confirmed || !access || access.value === form.dataset.currentAccess) return;
-
-        const message = access.value === '1'
-            ? @json(__('Grant admin staff access to this account? The selected staff role will control its admin permissions.'))
-            : @json(__('Return this account to customer access? Any assigned staff roles will be removed.'));
-
-        if (window.confirm(message)) {
-            confirmed = true;
+    const syncConfirmation = function () {
+        if (access.value === form.dataset.currentAccess) {
+            form.setAttribute('data-confirm-message', '');
             return;
         }
 
-        event.preventDefault();
-    });
+        form.setAttribute(
+            'data-confirm-message',
+            access.value === '1'
+                ? form.dataset.grantAdminMessage
+                : form.dataset.returnCustomerMessage
+        );
+    };
+
+    access.addEventListener('change', syncConfirmation);
+    syncConfirmation();
 });
 </script>
 @endpush

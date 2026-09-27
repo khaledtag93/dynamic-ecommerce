@@ -33,4 +33,17 @@ class CustomerWorkspaceClosureTest extends TestCase
             $this->assertStringContainsString('id="' . $controlId . '"', $view);
         }
     }
+
+    public function test_customer_access_changes_use_shared_admin_confirmation_dialog(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/customers/show.blade.php'));
+
+        $this->assertStringContainsString('data-account-access-form', $view);
+        $this->assertStringContainsString('data-confirm-message=""', $view);
+        $this->assertStringContainsString('data-grant-admin-message=', $view);
+        $this->assertStringContainsString('data-return-customer-message=', $view);
+        $this->assertStringContainsString("form.setAttribute('data-confirm-message'", $view);
+        $this->assertStringNotContainsString('window.confirm(', $view);
+        $this->assertStringNotContainsString('window.alert(', $view);
+    }
 }
