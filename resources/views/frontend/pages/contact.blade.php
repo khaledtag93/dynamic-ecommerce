@@ -21,6 +21,15 @@
                 <div class="lc-card p-4 h-100">
                     <h4 class="fw-bold mb-3">{{ __('How we can help') }}</h4>
                     <p class="text-muted mb-4">{{ $settings['contact_page_intro'] ?? '' }}</p>
+                    @auth
+                        <div class="border rounded-4 p-3 mb-4 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                            <div>
+                                <div class="fw-bold mb-1">{{ __('Help & Support') }}</div>
+                                <div class="text-muted small">{{ __('Open a support request and keep every reply connected to the same case.') }}</div>
+                            </div>
+                            <a href="{{ route('support.create') }}" class="btn lc-btn-soft btn-sm">{{ __('New support request') }}</a>
+                        </div>
+                    @endauth
                     <div class="row g-3">
                         @if(($settings['contact_show_email'] ?? '1') === '1' && !empty($settings['store_support_email']))
                             <div class="col-md-6">
@@ -68,7 +77,7 @@
                         @if(!empty($settings['store_business_website']))
                             <div class="d-flex justify-content-between gap-3 mb-3 flex-wrap">
                                 <span class="text-muted">{{ __('Website') }}</span>
-                                <a href="{{ $settings['store_business_website'] }}" target="_blank" rel="noopener">{{ $settings['store_business_website'] }}</a>
+                                <a href="{{ $settings['store_business_website'] }}" target="_blank" rel="noopener noreferrer">{{ $settings['store_business_website'] }}</a>
                             </div>
                         @endif
                         @if(($settings['contact_show_hours'] ?? '1') === '1' && !empty($settings['store_contact_hours']))
@@ -95,7 +104,7 @@
             <div class="lc-card p-4 mt-4">
                 <h4 class="fw-bold mb-3">{{ __('Map') }}</h4>
                 <div class="ratio ratio-21x9 rounded-4 overflow-hidden">
-                    <iframe src="{{ $settings['store_contact_map_url'] }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <iframe src="{{ $settings['store_contact_map_url'] }}" title="{{ __('Map') }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         @endif

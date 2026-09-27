@@ -113,6 +113,40 @@ class AdminContentSettingsExperienceTest extends TestCase
     }
 
 
+    public function test_contact_page_links_signed_in_customers_to_tracked_support_and_labels_map_embed(): void
+    {
+        $customer = User::factory()->create(['role_as' => 0]);
+
+        $this->actingAs($customer)
+            ->get(route('frontend.contact'))
+            ->assertOk()
+            ->assertSee(route('support.create'), false)
+            ->assertSee(__('New support request'));
+
+        $view = file_get_contents(resource_path('views/frontend/pages/contact.blade.php'));
+
+        $this->assertStringContainsString('title="{{ __(\'Map\') }}"', $view);
+        $this->assertStringContainsString('rel="noopener noreferrer"', $view);
+    }
+
+    public function test_contact_external_urls_reject_non_http_schemes(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $this->actingAs($admin)
+            ->from(route('admin.settings.content'))
+            ->put(route('admin.settings.content.update'), [
+                'store_contact_map_url' => 'ftp://example.com/map',
+                'store_business_website' => 'ftp://example.com',
+            ])
+            ->assertRedirect(route('admin.settings.content'))
+            ->assertSessionHasErrors([
+                'store_contact_map_url',
+                'store_business_website',
+            ]);
+    }
+
+
     public function test_footer_social_channels_reject_non_web_urls(): void
     {
         $admin = $this->createSuperAdmin();
