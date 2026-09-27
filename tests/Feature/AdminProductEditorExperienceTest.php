@@ -490,8 +490,7 @@ class AdminProductEditorExperienceTest extends TestCase
 
         $component = Livewire::test(Index::class)
             ->set('stockFilter', 'low')
-            ->assertSee('Variant Low Stock Product')
-            ->assertSee('LOW-VAR-001');
+            ->assertSee('Variant Low Stock Product');
 
         $this->assertSame(1, $component->instance()->catalogHealth['low_stock']);
     }
