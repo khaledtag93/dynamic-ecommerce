@@ -5109,5 +5109,10 @@
     "The purchase total exceeds the supported maximum.": "The purchase total exceeds the supported maximum.",
     "Large statements are paginated on screen. Print is limited to :print rows and CSV export to :export rows; narrow the filters to create a complete smaller document.": "Large statements are paginated on screen. Print is limited to :print rows and CSV export to :export rows; narrow the filters to create a complete smaller document.",
     "Showing :from–:to of :total matching movements.": "Showing :from–:to of :total matching movements.",
-    "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement.": "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement."
+    "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement.": "This printable statement is limited to the first :shown of :total matching movements. Narrow the filters to print a complete statement.",
+    "Refund the remaining paid balance before cancelling this order.": "Refund the remaining paid balance before cancelling this order.",
+    "Cancelled orders cannot have payment status changed manually.": "Cancelled orders cannot have payment status changed manually.",
+    "Payment was confirmed after the order was cancelled. Refund review is required.": "Payment was confirmed after the order was cancelled. Refund review is required.",
+    "Cancelled order received payment": "Cancelled order received payment",
+    "Payment was confirmed after cancellation. Keep the order cancelled, do not fulfill it, and process the remaining refund balance.": "Payment was confirmed after cancellation. Keep the order cancelled, do not fulfill it, and process the remaining refund balance."
 }
