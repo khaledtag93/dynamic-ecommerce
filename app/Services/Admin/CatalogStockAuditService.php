@@ -6,12 +6,16 @@ use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\Commerce\AdminActivityLogService;
+use App\Services\Commerce\InventoryLotService;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 class CatalogStockAuditService
 {
-    public function __construct(protected AdminActivityLogService $activityLogService) {}
+    public function __construct(
+        protected AdminActivityLogService $activityLogService,
+        protected InventoryLotService $inventoryLotService,
+    ) {}
 
     /**
      * Called inside the product editor's transaction before any catalog writes.
@@ -102,6 +106,13 @@ class CatalogStockAuditService
                 'variant_sku' => $variant?->sku,
             ],
         ]);
+
+        $this->inventoryLotService->recordMovement(
+            $movement,
+            $product,
+            $variant,
+            ['meta' => $movement->meta ?? []]
+        );
 
         $this->activityLogService->log(
             'inventory',

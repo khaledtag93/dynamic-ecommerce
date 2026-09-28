@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Livewire\Admin\Product\Index;
 use App\Http\Livewire\Admin\Product\ProductForm;
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -37,9 +38,23 @@ class CatalogStockAuditTest extends TestCase
 
         $product = Product::where('name', 'Catalog stock example')->firstOrFail();
         $this->assertMovement($product->id, null, 5, 5, 'catalog_editor', $admin->id);
+        $this->assertSame(
+            5,
+            (int) InventoryLot::query()
+                ->where('product_id', $product->id)
+                ->whereNull('product_variant_id')
+                ->sum('quantity_on_hand')
+        );
 
         $form->set('quantity', 2)->call('save')->assertHasNoErrors();
         $this->assertSame(2, $product->fresh()->quantity);
+        $this->assertSame(
+            2,
+            (int) InventoryLot::query()
+                ->where('product_id', $product->id)
+                ->whereNull('product_variant_id')
+                ->sum('quantity_on_hand')
+        );
         $this->assertMovement($product->id, null, -3, 2, 'catalog_editor', $admin->id);
 
         $form->set('base_price', 30)->call('save')->assertHasNoErrors();
@@ -74,6 +89,12 @@ class CatalogStockAuditTest extends TestCase
         $form->set('variants.0.stock', 5)
             ->call('save')->assertHasNoErrors();
         $this->assertSame(5, (int) $variant->fresh()->stock);
+        $this->assertSame(
+            5,
+            (int) InventoryLot::query()
+                ->where('product_variant_id', $variant->id)
+                ->sum('quantity_on_hand')
+        );
         $this->assertMovement($product->id, $variant->id, 2, 5, 'catalog_editor', $admin->id);
 
         $current = $form->get('variants')[0];
@@ -89,6 +110,12 @@ class CatalogStockAuditTest extends TestCase
         ]])->call('save')->assertHasNoErrors();
 
         $second = ProductVariant::where('sku', 'STOCK-SECOND')->firstOrFail();
+        $this->assertSame(
+            2,
+            (int) InventoryLot::query()
+                ->where('product_variant_id', $second->id)
+                ->sum('quantity_on_hand')
+        );
         $this->assertMovement($product->id, $second->id, 2, 2, 'catalog_editor', $admin->id);
         $form->call('save')->assertHasNoErrors();
         $this->assertDatabaseCount('product_variants', 2);
@@ -107,6 +134,13 @@ class CatalogStockAuditTest extends TestCase
             ->call('saveInlineQty', $product->id)->assertHasNoErrors();
 
         $this->assertMovement($product->id, null, 3, 8, 'catalog_inline', $admin->id);
+        $this->assertSame(
+            8,
+            (int) InventoryLot::query()
+                ->where('product_id', $product->id)
+                ->whereNull('product_variant_id')
+                ->sum('quantity_on_hand')
+        );
 
         $editor = Livewire::test(Index::class)->call('startEditQty', $product->id, 8);
         $product->update(['quantity' => 7]);
