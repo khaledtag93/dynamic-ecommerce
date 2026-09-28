@@ -16,6 +16,7 @@ use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\StockReservationService;
 use App\Services\Frontend\CheckoutService;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -58,6 +59,40 @@ class OnlineStockReservationTest extends TestCase
             'order_id' => $order->id,
             'type' => InventoryMovement::TYPE_ORDER_OUT,
         ]);
+    }
+
+    public function test_order_reservation_rejects_cross_order_item_ownership_in_service_and_database(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $productA = $this->makeProduct(5, 100);
+        $productB = $this->makeProduct(5, 120);
+        $orderA = $this->placeOnlineOrder($userA, $productA, 1);
+        $orderB = $this->placeOnlineOrder($userB, $productB, 1);
+        $itemB = $orderB->items()->firstOrFail();
+        $stockBefore = (int) $productB->fresh()->quantity;
+
+        try {
+            app(StockReservationService::class)->reserveOrderItem($orderA, $itemB, $productB);
+            $this->fail('Stock reservation must reject an order item owned by another order.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('payment', $exception->errors());
+        }
+
+        $this->assertSame($stockBefore, (int) $productB->fresh()->quantity);
+
+        $reservationA = OrderStockReservation::query()
+            ->where('order_id', $orderA->id)
+            ->firstOrFail();
+
+        try {
+            $reservationA->forceFill(['order_id' => $orderB->id])->save();
+            $this->fail('Database must reject a reservation whose order item belongs to another order.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertSame($orderA->id, (int) $reservationA->fresh()->order_id);
     }
 
     public function test_successful_online_payment_commits_reservation_without_second_stock_decrease(): void

@@ -36,6 +36,12 @@ class StockReservationService
         ?Carbon $expiresAt = null,
     ): OrderStockReservation {
         return DB::transaction(function () use ($order, $orderItem, $product, $variant, $expiresAt) {
+            if ((int) $orderItem->order_id !== (int) $order->id) {
+                throw ValidationException::withMessages([
+                    'payment' => __('The order item does not belong to this order.'),
+                ]);
+            }
+
             $this->assertInventoryTarget($product, $variant, $orderItem, true);
             $expiresAt ??= now()->addMinutes($this->reservationMinutes());
 
