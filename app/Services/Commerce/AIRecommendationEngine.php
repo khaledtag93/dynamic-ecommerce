@@ -19,8 +19,10 @@ class AIRecommendationEngine
         'activeVariants',
     ];
 
-    public function __construct(protected BehaviorTrackingService $behaviorTrackingService)
-    {
+    public function __construct(
+        protected BehaviorTrackingService $behaviorTrackingService,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
+    ) {
     }
 
     public function forHome(int $limit = 8): array
@@ -198,6 +200,8 @@ class AIRecommendationEngine
 
     protected function scoreCandidates(Collection $products, array $context, int $limit): Collection
     {
+        $this->inventoryAvailabilityService->hydrateSellableQuantities($products);
+
         $popularSignals = $this->popularSignals($products->pluck('id')->all());
 
         return $products

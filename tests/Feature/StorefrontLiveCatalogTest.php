@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\InventoryLot;
 use App\Models\Product;
+use App\Services\Commerce\AIRecommendationEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -108,6 +109,44 @@ class StorefrontLiveCatalogTest extends TestCase
             ->assertOk()
             ->assertSee(__('Currently unavailable'))
             ->assertSee(__('Out of stock'));
+    }
+
+    public function test_ai_recommendation_stock_signal_uses_sellable_lot_quantity(): void
+    {
+        $category = $this->category('AI Availability');
+        $expired = $this->product($category, 'AI Expired Stock', 5, 20, null);
+        $sellable = $this->product($category, 'AI Sellable Stock', 1, 20, null);
+
+        InventoryLot::query()->create([
+            'product_id' => $expired->id,
+            'lot_code' => 'AI-EXP-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 5,
+            'quantity_on_hand' => 5,
+            'unit_cost' => 10,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(2),
+        ]);
+
+        InventoryLot::query()->create([
+            'product_id' => $sellable->id,
+            'lot_code' => 'AI-OK-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 10,
+            'expiration_date' => today()->addDays(30),
+            'received_at' => now(),
+        ]);
+
+        $products = app(AIRecommendationEngine::class)->forHome(8)['products']->keyBy('id');
+
+        $this->assertFalse($products->get($expired->id)->in_stock);
+        $this->assertTrue($products->get($sellable->id)->in_stock);
+        $this->assertGreaterThan(
+            (int) $products->get($expired->id)->ai_score,
+            (int) $products->get($sellable->id)->ai_score
+        );
     }
 
     public function test_storefront_search_treats_like_wildcards_as_literals_and_bounds_query_length(): void
