@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\InventoryMovement;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
@@ -987,7 +988,7 @@ class ReturnRequestWorkflowTest extends TestCase
 
     private function makeDeliveredPaidOrder(User $user, float $total): Order
     {
-        return Order::query()->create([
+        $order = Order::query()->create([
             'user_id' => $user->id,
             'order_number' => 'RMA-ORDER-'.Str::upper(Str::random(8)),
             'status' => Order::STATUS_COMPLETED,
@@ -1012,6 +1013,19 @@ class ReturnRequestWorkflowTest extends TestCase
             'placed_at' => now(),
             'delivered_at' => now(),
         ]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_COD,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'RMA-PAY-'.Str::upper(Str::random(10)),
+            'amount' => $total,
+            'currency' => 'EGP',
+            'paid_at' => now(),
+        ]);
+
+        return $order;
     }
 
     private function makeProduct(int $quantity): Product

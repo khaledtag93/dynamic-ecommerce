@@ -359,6 +359,7 @@ class BusinessIntegrityHardeningTest extends TestCase
     public function test_paid_order_cannot_be_cancelled_until_remaining_balance_is_refunded(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $this->makePayment($order, Payment::STATUS_PAID);
         $product = $this->makeProduct(0);
 
         $order->items()->create([
