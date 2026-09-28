@@ -70,6 +70,48 @@ class PurchaseSettlementIntegrityTest extends TestCase
         $this->assertDatabaseCount('purchase_settlements', 1);
     }
 
+    public function test_supplier_settlement_is_append_only_and_only_void_transition_is_allowed(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        app(PurchaseService::class)->receive($purchase);
+        $service = app(PurchaseSettlementService::class);
+
+        $this->assertTrue($service->record(
+            $purchase,
+            '5.00',
+            'cash',
+            'APPEND-ONLY',
+            (string) Str::uuid()
+        ));
+
+        $settlement = PurchaseSettlement::query()->where('purchase_id', $purchase->id)->firstOrFail();
+
+        try {
+            $settlement->update(['amount' => '6.00']);
+            $this->fail('Supplier payment amount must be immutable after recording.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
+
+        try {
+            $settlement->delete();
+            $this->fail('Supplier payment ledger rows must not be deleted.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('purchase_settlements', [
+            'id' => $settlement->id,
+            'amount' => '5.00',
+            'status' => PurchaseSettlement::STATUS_ACTIVE,
+        ]);
+
+        $this->assertTrue($service->void($purchase, $settlement, 'Void instead of mutating history.'));
+        $this->assertSame(PurchaseSettlement::STATUS_VOIDED, $settlement->fresh()->status);
+    }
+
     public function test_supplier_payment_service_rejects_non_decimal_or_over_precision_amounts(): void
     {
         $product = $this->product();
