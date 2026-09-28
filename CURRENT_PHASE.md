@@ -1,5 +1,20 @@
 # CURRENT PHASE
 
+## Payment disputes / chargebacks readiness — active source checkpoint — 2026-09-29
+
+- Active branch: `sec03-framework-upgrade`.
+- Latest application source HEAD: `b42e525b` — `fix: preserve provider reversal evidence`.
+- Provider refund/void evidence is preserved without downgrading paid payments or fabricating canonical `order_refunds` rows.
+- Replayed identical reversal evidence is idempotent; the related order retains the reconciliation evidence.
+- Current Paymob callback data does not provide a trusted dispute/chargeback lifecycle, so Flowra does not infer chargebacks from failures, declines, refunds, voids, or free-form provider statuses.
+- A future dispute module must be driven by a real provider/API/webhook source and model its own immutable lifecycle, amount/currency, evidence deadlines, outcomes, fees and reconciliation/accounting effects.
+- Full local PHPUnit is unavailable in the current checkout because `vendor/` is absent; syntax/JSON/diff checks passed before the application commit. Integrated CI remains the authoritative full-suite gate.
+- QAS and Production remain unchanged for this newer source.
+- Detailed checkpoint: `docs/PAYMENT_DISPUTE_READINESS_CHECKPOINT_2026-09-29.md`.
+
+**Immediate next action:** verify the latest-head CI evidence, then continue the Business Process & ERP Integrity Audit at the next unclosed financial/ERP boundary. Do not create a synthetic chargeback workflow without a trusted dispute source.
+
+
 ## Supplier obligations / Operational AP integrity — active source checkpoint — 2026-09-28
 
 - Active branch: `sec03-framework-upgrade`.
