@@ -3,9 +3,9 @@
 ## Supplier obligations / Operational AP integrity source checkpoint — 2026-09-28
 
 - Branch: `sec03-framework-upgrade`.
-- Latest application source HEAD: `73f5c6f7` — `fix: preserve supplier payment history on void`.
-- Hardening CI #2165 is Green on `cff67757`. Hardening CI #2166 is running on newest source `73f5c6f7`; keep that head IN REVIEW until the run completes.
-- Last explicitly verified QAS application remains `a91ff83e`; the newer Supplier/AP hardening chain is **not yet claimed as deployed to QAS**.
+- Latest application source HEAD: `523af8f8` — `fix: restore admin products index`.
+- Hardening CI #2177 is Green on `523af8f8`.
+- Latest verified QAS application: `523af8f8`. QAS deploy completed successfully on 2026-09-28 with application HTTP 200, static assets HTTP 200, maintenance OFF, and authenticated Admin → Products smoke passed.
 - Production is unchanged and remains behind OPS-01, PAY-01, OPS-02 and Production scheduler/queue gates.
 - The active ERP-integrity slice now protects Supplier Operational AP across received-value payable authority, payment/void idempotency, payment-vs-receipt reversal constraints, least-privilege settlement permissions, effective-date bounds, historical as-of payable calculations, historical treatment of later voids, strict money precision, currency-safe Purchase reporting/details, and active-Supplier enforcement when creating new POs.
 - Shipping/tax are intentionally not added to Operational AP payable yet; invoice matching / GL / landed-cost allocation require an explicit later accounting design rather than silently changing the current payable contract.

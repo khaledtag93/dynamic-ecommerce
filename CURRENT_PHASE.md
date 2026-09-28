@@ -3,9 +3,9 @@
 ## Supplier obligations / Operational AP integrity — active source checkpoint — 2026-09-28
 
 - Active branch: `sec03-framework-upgrade`.
-- **Latest application source HEAD:** `73f5c6f7` — `fix: preserve supplier payment history on void`.
-- Latest confirmed Green CI in this active chain: **Hardening CI #2165** on `cff67757` (`fix: require active supplier for purchases`). **Hardening CI #2166** is currently running on `73f5c6f7`; do not mark that newest head Green until the run completes.
-- **Last explicitly verified QAS application remains `a91ff83e`** from the supplier-settlement runtime smoke / Dashboard MySQL fix checkpoint. Do not imply that `73f5c6f7` is on QAS until it is deliberately deployed and verified.
+- **Latest application source HEAD:** `523af8f8` — `fix: restore admin products index`.
+- **Latest confirmed Green CI:** Hardening CI **#2177** on `523af8f8`.
+- **Latest verified QAS application is `523af8f8`** — `fix: restore admin products index`. Deploy completed successfully on 2026-09-28 with application HTTP 200, static assets HTTP 200, maintenance OFF, and an authenticated manual smoke confirming Admin → Products opens successfully on QAS.
 - **Production remains unchanged.** OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification remain independent release gates.
 
 Closed in the current Supplier Obligations / Operational AP source slice:
