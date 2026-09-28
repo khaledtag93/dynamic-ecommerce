@@ -150,6 +150,57 @@ class CustomerAccountStatementTest extends TestCase
         $this->assertStringContainsString('customer-statement-'.$customer->id, (string) $export->headers->get('content-disposition'));
     }
 
+    public function test_payment_movements_require_captured_status_even_when_paid_at_is_present(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $customer = User::factory()->create(['role_as' => 0]);
+        $order = $this->orderFor($customer, 'STAT-PAY-EVIDENCE', 200, 'EGP');
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'status' => Payment::STATUS_FAILED,
+            'transaction_reference' => 'FAILED-WITH-PAID-AT',
+            'amount' => 80,
+            'currency' => 'EGP',
+            'paid_at' => now()->subDay(),
+            'failed_at' => now()->subDay(),
+        ]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'status' => Payment::STATUS_REFUNDED,
+            'transaction_reference' => 'REFUNDED-CAPTURE',
+            'amount' => 120,
+            'currency' => 'EGP',
+            'paid_at' => now()->subDays(2),
+            'refunded_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.customers.statement', [
+                'user' => $customer,
+                'type' => 'payment',
+            ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('REFUNDED-CAPTURE')
+            ->assertDontSee('FAILED-WITH-PAID-AT');
+
+        $statement = app(\App\Services\Commerce\CustomerAccountStatementService::class)->build($customer, [
+            'type' => 'payment',
+            'date_from' => now()->subMonth()->toDateString(),
+            'date_to' => now()->toDateString(),
+        ]);
+
+        $egp = $statement['totals_by_currency']->firstWhere('currency', 'EGP');
+        $this->assertNotNull($egp);
+        $this->assertSame(120.0, $egp['payments_captured']);
+        $this->assertSame(1, $statement['counts']['payments']);
+    }
+
     public function test_return_movements_follow_order_owner_not_rma_user_field(): void
     {
         $admin = $this->createSuperAdmin();

@@ -216,6 +216,7 @@ class CustomerAccountStatementService
             $queries[] = DB::table('payments')
                 ->join('orders', 'orders.id', '=', 'payments.order_id')
                 ->where('orders.user_id', $customer->id)
+                ->whereIn('payments.status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
                 ->whereNotNull('payments.paid_at')
                 ->whereBetween('payments.paid_at', [$from, $to])
                 ->selectRaw("'payment' AS movement_type, payments.id AS movement_id, payments.paid_at AS occurred_at");
@@ -281,6 +282,7 @@ class CustomerAccountStatementService
         return DB::table('payments')
             ->join('orders', 'orders.id', '=', 'payments.order_id')
             ->where('orders.user_id', $customer->id)
+            ->whereIn('payments.status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
             ->whereNotNull('payments.paid_at')
             ->whereBetween('payments.paid_at', [$from, $to]);
     }
