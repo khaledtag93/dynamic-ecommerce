@@ -651,6 +651,47 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertNull($return->fresh()->exchange_order_id);
     }
 
+    public function test_database_preserves_completed_rma_exchange_order_link(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+        $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
+
+        try {
+            Order::query()->whereKey($exchangeOrder->id)->delete();
+            $this->fail('Database must preserve exchange orders linked to completed RMAs.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('orders', ['id' => $exchangeOrder->id]);
+        $this->assertSame($exchangeOrder->id, $return->fresh()->exchange_order_id);
+    }
+
     public function test_exchange_order_cannot_settle_multiple_return_requests(): void
     {
         $customer = User::factory()->create();
