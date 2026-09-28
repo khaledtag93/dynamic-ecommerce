@@ -217,6 +217,47 @@ class PurchaseSettlementIntegrityTest extends TestCase
         $this->assertSame('20.00', $settlements->summary($purchase)['balance']);
     }
 
+    public function test_backdated_supplier_payment_respects_settlements_that_were_active_on_that_date(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        $purchaseService = app(PurchaseService::class);
+        $settlements = app(PurchaseSettlementService::class);
+
+        Carbon::setTestNow('2026-09-10 09:00:00');
+        $purchaseService->receive($purchase);
+        $this->assertTrue($settlements->record(
+            $purchase,
+            '15.00',
+            'bank_transfer',
+            'HISTORICAL-ACTIVE',
+            (string) Str::uuid(),
+            '2026-09-10 10:00:00'
+        ));
+
+        $settlement = PurchaseSettlement::query()->firstOrFail();
+
+        Carbon::setTestNow('2026-09-20 10:00:00');
+        $this->assertTrue($settlements->void($purchase, $settlement, 'Correcting supplier payment history.'));
+
+        try {
+            $settlements->record(
+                $purchase,
+                '10.00',
+                'bank_transfer',
+                'BACKDATED-AFTER-VOID',
+                (string) Str::uuid(),
+                '2026-09-15 12:00:00'
+            );
+            $this->fail('Backdated supplier payment must count settlements that were still active on its effective date.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('amount', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('purchase_settlements', 1);
+    }
+
     public function test_supplier_payment_is_not_allowed_before_goods_are_received(): void
     {
         $purchase = $this->purchase();

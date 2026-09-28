@@ -240,8 +240,20 @@ class PurchaseSettlementService
     {
         $query = PurchaseSettlement::query()
             ->where('purchase_id', $purchase->id)
-            ->where('status', PurchaseSettlement::STATUS_ACTIVE)
-            ->when($asOf, fn ($q) => $q->where('paid_at', '<=', $asOf))
+            ->when(
+                $asOf,
+                fn ($q) => $q
+                    ->where('paid_at', '<=', $asOf)
+                    ->where(function ($state) use ($asOf) {
+                        $state->where('status', PurchaseSettlement::STATUS_ACTIVE)
+                            ->orWhere(function ($voided) use ($asOf) {
+                                $voided->where('status', PurchaseSettlement::STATUS_VOIDED)
+                                    ->whereNotNull('voided_at')
+                                    ->where('voided_at', '>', $asOf);
+                            });
+                    }),
+                fn ($q) => $q->where('status', PurchaseSettlement::STATUS_ACTIVE)
+            )
             ->orderBy('id');
         if ($lock) {
             $query->lockForUpdate();
