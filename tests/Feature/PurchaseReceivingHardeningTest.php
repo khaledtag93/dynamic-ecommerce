@@ -513,6 +513,43 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertSame(1, \App\Models\AdminActivityLog::where('action', 'purchase_cancelled')->count());
     }
 
+    public function test_database_preserves_inventory_lot_movement_history_from_direct_deletion(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 1, 10);
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 1],
+            (string) Str::uuid()
+        );
+
+        $lot = InventoryLot::query()
+            ->where('purchase_id', $purchase->id)
+            ->where('purchase_item_id', $item->id)
+            ->firstOrFail();
+        $movement = InventoryMovement::query()->findOrFail($lot->source_inventory_movement_id);
+        $lotMovementId = $lot->movements()->value('id');
+
+        try {
+            InventoryLot::query()->whereKey($lot->id)->delete();
+            $this->fail('Database must preserve lot allocation history when a lot has movements.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        try {
+            InventoryMovement::query()->whereKey($movement->id)->delete();
+            $this->fail('Database must preserve lot allocation history when an inventory movement has lot movements.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('inventory_lots', ['id' => $lot->id]);
+        $this->assertDatabaseHas('inventory_movements', ['id' => $movement->id]);
+        $this->assertDatabaseHas('inventory_lot_movements', ['id' => $lotMovementId]);
+    }
+
     public function test_database_rejects_purchase_lot_with_cross_purchase_receipt_or_item(): void
     {
         $product = $this->product(5);
