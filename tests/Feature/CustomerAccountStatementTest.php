@@ -150,6 +150,35 @@ class CustomerAccountStatementTest extends TestCase
         $this->assertStringContainsString('customer-statement-'.$customer->id, (string) $export->headers->get('content-disposition'));
     }
 
+    public function test_statement_csv_neutralizes_formula_capable_text_cells(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $customer = User::factory()->create(['role_as' => 0]);
+        $order = $this->orderFor($customer, '=1+1', 50, 'EGP');
+
+        OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 10,
+            'reason' => '@SUM(1,1)',
+            'processed_by' => $admin->id,
+            'processed_at' => now(),
+        ]);
+
+        $export = $this->actingAs($admin)
+            ->get(route('admin.customers.statement.export', [
+                'user' => $customer,
+                'date_from' => now()->subDay()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ]));
+
+        $export->assertOk();
+        $csv = $export->streamedContent();
+
+        $this->assertStringContainsString("'=1+1", $csv);
+        $this->assertStringContainsString("'@SUM(1,1)", $csv);
+        $this->assertStringNotContainsString("\n=1+1,", $csv);
+    }
+
     public function test_payment_movements_require_captured_status_even_when_paid_at_is_present(): void
     {
         $admin = $this->createSuperAdmin();

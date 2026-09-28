@@ -167,12 +167,12 @@ class CustomerController extends Controller
             foreach ($statement['movements'] as $movement) {
                 fputcsv($handle, [
                     $movement['occurred_at']->format('Y-m-d H:i:s'),
-                    $movement['type_label'],
-                    $movement['reference'],
-                    $movement['status_label'],
+                    $this->csvSafeText($movement['type_label']),
+                    $this->csvSafeText($movement['reference']),
+                    $this->csvSafeText($movement['status_label']),
                     $movement['amount'] === null ? '' : number_format((float) $movement['amount'], 2, '.', ''),
-                    $movement['currency'] ?? '',
-                    $movement['details'],
+                    $this->csvSafeText($movement['currency'] ?? ''),
+                    $this->csvSafeText($movement['details']),
                 ]);
             }
 
@@ -183,6 +183,15 @@ class CustomerController extends Controller
             'X-Statement-Matching-Rows' => (string) $statement['matching_count'],
             'X-Statement-Truncated' => $statement['truncated'] ? '1' : '0',
         ]);
+    }
+
+    private function csvSafeText(mixed $value): string
+    {
+        $text = (string) $value;
+
+        return preg_match('/^\s*[=+\-@]/u', $text) === 1
+            ? "'".$text
+            : $text;
     }
 
     private function statementFilters(Request $request): array
