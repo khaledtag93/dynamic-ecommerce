@@ -533,6 +533,30 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull($payment->fresh()->refunded_at);
     }
 
+    public function test_database_preserves_order_item_history_from_direct_order_deletion(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_UNPAID, 100);
+        $item = $order->items()->create([
+            'product_name' => 'Audit Line Item',
+            'sku' => 'AUDIT-LINE-ITEM',
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        try {
+            Order::query()->whereKey($order->id)->delete();
+            $this->fail('Database must preserve orders that own sales line history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id]);
+        $this->assertDatabaseHas('order_items', ['id' => $item->id]);
+    }
+
     public function test_database_preserves_order_payment_history_from_direct_order_deletion(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
