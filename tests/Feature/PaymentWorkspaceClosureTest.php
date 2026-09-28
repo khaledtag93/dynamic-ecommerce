@@ -99,6 +99,11 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString('does not prove that a gateway payout or bank settlement reached the merchant account.', $index);
         $this->assertStringContainsString('Gateway capture does not prove merchant payout or bank settlement.', $view);
         $this->assertStringNotContainsString("__('Paid amount')", $index);
+        $this->assertStringContainsString("selectRaw('currency, SUM(amount) AS captured_amount')", $controller);
+        $this->assertStringContainsString("->groupBy('currency')", $controller);
+        $this->assertStringContainsString("'captured_by_currency' => \$capturedByCurrency", $controller);
+        $this->assertStringContainsString("\$stats['captured_by_currency']", $index);
+        $this->assertStringNotContainsString("\$stats['paid_amount']", $index);
     }
 
     public function test_unconfigured_online_gateway_is_not_offered_to_checkout(): void

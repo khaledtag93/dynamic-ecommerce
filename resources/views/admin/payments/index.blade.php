@@ -10,12 +10,17 @@
 </x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>
+@php
+    $capturedAmountDisplay = $stats['captured_by_currency']
+        ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['amount'], 2))
+        ->implode(' · ');
+@endphp
 <div class="row g-3 mb-4">
     <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Total records')" :value="number_format($stats['total'])" icon="mdi-cash-multiple" class="h-100" /></div>
     <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Pending')" :value="number_format($stats['pending'])" icon="mdi-progress-clock" tone="warning" class="h-100" /></div>
     <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Paid')" :value="number_format($stats['paid'])" icon="mdi-check-decagram-outline" tone="success" class="h-100" /></div>
     <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Needs attention')" :value="number_format($stats['attention'])" icon="mdi-alert-circle-outline" tone="danger" class="h-100" /></div>
-    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Captured amount')" :value="'EGP ' . number_format($stats['paid_amount'], 2)" icon="mdi-cash-check" tone="success" class="h-100" /></div>
+    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Captured amount')" :value="$capturedAmountDisplay !== '' ? $capturedAmountDisplay : '—'" icon="mdi-cash-check" tone="success" class="h-100" /></div>
 </div>
 
 <div class="alert alert-info border-0 small mb-4">

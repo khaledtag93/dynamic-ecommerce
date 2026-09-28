@@ -59,11 +59,27 @@ class PaymentController extends Controller
             ]);
         }
 
+        $capturedByCurrency = Payment::query()
+            ->where('status', Payment::STATUS_PAID)
+            ->selectRaw('currency, SUM(amount) AS captured_amount')
+            ->groupBy('currency')
+            ->orderBy('currency')
+            ->get()
+            ->map(function ($row): array {
+                $currency = strtoupper(trim((string) ($row->currency ?: 'EGP')));
+
+                return [
+                    'currency' => $currency,
+                    'amount' => round((float) $row->captured_amount, 2),
+                ];
+            })
+            ->values();
+
         $stats = $queueStats + [
             'total' => Payment::count(),
             'pending' => Payment::where('status', Payment::STATUS_PENDING)->count(),
             'paid' => Payment::where('status', Payment::STATUS_PAID)->count(),
-            'paid_amount' => (float) Payment::where('status', Payment::STATUS_PAID)->sum('amount'),
+            'captured_by_currency' => $capturedByCurrency,
         ];
 
         return view('admin.payments.index', [
