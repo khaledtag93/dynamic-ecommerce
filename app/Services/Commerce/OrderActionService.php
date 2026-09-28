@@ -99,6 +99,7 @@ class OrderActionService
                         'expiration_date' => $item->expires_at,
                         'meta' => [
                             'order_number' => $lockedOrder->order_number,
+                            'order_item_id' => $item->id,
                             'cancelled_by' => $actorId,
                         ],
                     ]

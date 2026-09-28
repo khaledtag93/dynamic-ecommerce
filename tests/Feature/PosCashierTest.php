@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\OrderRefund;
@@ -1206,7 +1207,12 @@ class PosCashierTest extends TestCase
 
         $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
         $orderItem = $order->items()->firstOrFail();
+        $allocations = $orderItem->meta['inventory_lot_allocations'] ?? [];
+        $sourceLotId = (int) ($allocations[0]['lot_id'] ?? 0);
+
         $this->assertSame('150.00', $orderItem->line_total);
+        $this->assertNotSame(0, $sourceLotId);
+        $this->assertSame(3, (int) InventoryLot::query()->whereKey($sourceLotId)->value('quantity_on_hand'));
         $this->assertSame(3, (int) $product->fresh()->quantity);
 
         $this->post(route('admin.pos.sales.return', $order), [
@@ -1230,6 +1236,11 @@ class PosCashierTest extends TestCase
             'restocked' => 1,
         ]);
         $this->assertSame(4, (int) $product->fresh()->quantity);
+        $this->assertSame(4, (int) InventoryLot::query()->whereKey($sourceLotId)->value('quantity_on_hand'));
+        $this->assertSame(
+            4,
+            (int) InventoryLot::query()->where('product_id', $product->id)->sum('quantity_on_hand')
+        );
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
         $this->assertSame('75.00', $order->fresh()->refund_total);
         $this->assertDatabaseHas('inventory_movements', [

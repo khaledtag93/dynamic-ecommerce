@@ -5,10 +5,13 @@ namespace App\Services\Commerce;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class InventoryService
 {
+    public function __construct(protected InventoryLotService $inventoryLotService) {}
+
     public function increase(Product $product, ?ProductVariant $variant, int $quantity, string $type, array $context = []): InventoryMovement
     {
         return $this->apply($product, $variant, abs($quantity), $type, $context);
@@ -16,62 +19,69 @@ class InventoryService
 
     public function decrease(Product $product, ?ProductVariant $variant, int $quantity, string $type, array $context = []): InventoryMovement
     {
-        $quantity = abs($quantity);
+        return DB::transaction(function () use ($product, $variant, $quantity, $type, $context) {
+            $quantity = abs($quantity);
 
-        if ($quantity < 1) {
-            throw ValidationException::withMessages([
-                'cart' => 'Inventory quantity must be greater than zero.',
+            if ($quantity < 1) {
+                throw ValidationException::withMessages([
+                    'cart' => 'Inventory quantity must be greater than zero.',
+                ]);
+            }
+
+            if ($variant) {
+                $affected = ProductVariant::query()
+                    ->whereKey($variant->getKey())
+                    ->where('stock', '>=', $quantity)
+                    ->decrement('stock', $quantity);
+
+                if ($affected !== 1) {
+                    throw ValidationException::withMessages([
+                        'cart' => 'One of the selected product variants no longer has enough stock. Please review your cart.',
+                    ]);
+                }
+
+                $variant->refresh();
+                $balanceAfter = (int) $variant->stock;
+            } else {
+                $affected = Product::query()
+                    ->whereKey($product->getKey())
+                    ->where('quantity', '>=', $quantity)
+                    ->decrement('quantity', $quantity);
+
+                if ($affected !== 1) {
+                    throw ValidationException::withMessages([
+                        'cart' => 'One of the selected products no longer has enough stock. Please review your cart.',
+                    ]);
+                }
+
+                $product->refresh();
+                $balanceAfter = (int) $product->quantity;
+            }
+
+            $movement = InventoryMovement::create([
+                'product_id' => $product->id,
+                'product_variant_id' => $variant?->id,
+                'purchase_id' => $context['purchase_id'] ?? null,
+                'order_id' => $context['order_id'] ?? null,
+                'type' => $type,
+                'reason' => $context['reason'] ?? null,
+                'quantity_change' => -$quantity,
+                'balance_after' => $balanceAfter,
+                'unit_cost' => $context['movement_unit_cost'] ?? $context['unit_cost'] ?? 0,
+                'expiration_date' => $context['expiration_date'] ?? null,
+                'meta' => $context['meta'] ?? null,
             ]);
-        }
 
-        if ($variant) {
-            $affected = ProductVariant::query()
-                ->whereKey($variant->getKey())
-                ->where('stock', '>=', $quantity)
-                ->decrement('stock', $quantity);
+            $this->inventoryLotService->recordMovement($movement, $product, $variant, $context);
 
-            if ($affected !== 1) {
-                throw ValidationException::withMessages([
-                    'cart' => 'One of the selected product variants no longer has enough stock. Please review your cart.',
-                ]);
-            }
-
-            $variant->refresh();
-            $balanceAfter = (int) $variant->stock;
-        } else {
-            $affected = Product::query()
-                ->whereKey($product->getKey())
-                ->where('quantity', '>=', $quantity)
-                ->decrement('quantity', $quantity);
-
-            if ($affected !== 1) {
-                throw ValidationException::withMessages([
-                    'cart' => 'One of the selected products no longer has enough stock. Please review your cart.',
-                ]);
-            }
-
-            $product->refresh();
-            $balanceAfter = (int) $product->quantity;
-        }
-
-        return InventoryMovement::create([
-            'product_id' => $product->id,
-            'product_variant_id' => $variant?->id,
-            'purchase_id' => $context['purchase_id'] ?? null,
-            'order_id' => $context['order_id'] ?? null,
-            'type' => $type,
-            'reason' => $context['reason'] ?? null,
-            'quantity_change' => -$quantity,
-            'balance_after' => $balanceAfter,
-            'unit_cost' => $context['movement_unit_cost'] ?? $context['unit_cost'] ?? 0,
-            'expiration_date' => $context['expiration_date'] ?? null,
-            'meta' => $context['meta'] ?? null,
-        ]);
+            return $movement;
+        });
     }
 
     public function apply(Product $product, ?ProductVariant $variant, int $quantityChange, string $type, array $context = []): InventoryMovement
     {
-        $valuationUnitCost = null;
+        return DB::transaction(function () use ($product, $variant, $quantityChange, $type, $context) {
+            $valuationUnitCost = null;
 
         if ($quantityChange > 0) {
             if ($type === InventoryMovement::TYPE_PURCHASE_IN
@@ -143,7 +153,7 @@ class InventoryService
             ]);
         }
 
-        return InventoryMovement::create([
+        $movement = InventoryMovement::create([
             'product_id' => $product->id,
             'product_variant_id' => $variant?->id,
             'purchase_id' => $context['purchase_id'] ?? null,
@@ -156,6 +166,11 @@ class InventoryService
             'expiration_date' => $context['expiration_date'] ?? null,
             'meta' => $meta,
         ]);
+
+        $this->inventoryLotService->recordMovement($movement, $product, $variant, $context);
+
+            return $movement;
+        });
     }
 
     protected function movingAverageCost(int $stockBefore, float $costBefore, int $incomingQuantity, float $incomingCost): float

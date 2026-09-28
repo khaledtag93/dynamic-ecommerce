@@ -15,6 +15,7 @@ class PurchaseReceiptReversalService
 {
     public function __construct(
         protected AdminActivityLogService $activityLogService,
+        protected InventoryLotService $inventoryLotService,
     ) {}
 
     public function reverse(
@@ -278,7 +279,7 @@ class PurchaseReceiptReversalService
                         'expiration_date' => $restoredExpiration,
                     ])->save();
 
-                    InventoryMovement::query()->create([
+                    $reversalMovement = InventoryMovement::query()->create([
                         'product_id' => $movement->product_id,
                         'product_variant_id' => $movement->product_variant_id,
                         'purchase_id' => $lockedPurchase->id,
@@ -301,6 +302,13 @@ class PurchaseReceiptReversalService
                             'expiration_after_reversal' => $restoredExpiration,
                         ],
                     ]);
+
+                    $this->inventoryLotService->recordMovement(
+                        $reversalMovement,
+                        $plan['product'],
+                        $plan['variant'],
+                        ['meta' => $reversalMovement->meta ?? []]
+                    );
 
                     $target->refresh();
                 }

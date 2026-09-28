@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -450,6 +451,14 @@ class PurchaseReceivingHardeningTest extends TestCase
         );
 
         $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+        $purchaseLot = InventoryLot::query()
+            ->where('purchase_receipt_id', $receipt->id)
+            ->firstOrFail();
+
+        $this->assertSame(2, (int) $purchaseLot->quantity_on_hand);
+        $this->assertSame($item->id, (int) $purchaseLot->purchase_item_id);
+        $this->assertSame(10.0, (float) $purchaseLot->unit_cost);
+        $this->assertSame('2027-06-01', $purchaseLot->expiration_date->toDateString());
 
         $this->assertSame(7, (int) $product->fresh()->quantity);
         $this->assertSame(6.43, (float) $product->fresh()->inventory_cost_price);

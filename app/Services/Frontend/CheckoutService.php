@@ -193,7 +193,7 @@ class CheckoutService
                             'reason' => 'Customer order placed',
                             'unit_cost' => $unitCost,
                             'expiration_date' => $expiresAt,
-                            'meta' => ['order_number' => $order->order_number],
+                            'meta' => ['order_number' => $order->order_number, 'order_item_id' => $orderItem->id],
                         ]
                     );
                 }

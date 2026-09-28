@@ -5870,5 +5870,11 @@
     "Reversal is allowed only when these receipt movements are still the latest inventory activity for every affected item.": "يُسمح بالعكس فقط عندما تظل حركات هذا الاستلام أحدث نشاط مخزون لكل بند متأثر.",
     "Reverse receipt": "عكس الاستلام",
     "Reversal reason": "سبب العكس",
-    "Reversing...": "جارٍ العكس..."
+    "Reversing...": "جارٍ العكس...",
+    "Lot-tracked stock does not match the inventory balance before this movement.": "المخزون المتتبع بالدفعات لا يطابق رصيد المخزون قبل هذه الحركة.",
+    "Not enough non-expired lot-tracked stock is available for this item.": "لا توجد كمية كافية غير منتهية الصلاحية من المخزون المتتبع بالدفعات لهذا الصنف.",
+    "Not enough lot-tracked stock is available for this inventory movement.": "لا توجد كمية كافية من المخزون المتتبع بالدفعات لتنفيذ حركة المخزون هذه.",
+    "The purchase lot no longer matches the receipt being reversed.": "دفعة الشراء لم تعد تطابق الاستلام الجاري عكسه.",
+    "Lot-tracked stock no longer matches the aggregate inventory balance.": "المخزون المتتبع بالدفعات لم يعد يطابق إجمالي رصيد المخزون.",
+    "The order item for this lot allocation no longer exists.": "بند الطلب المرتبط بتخصيص الدفعة هذا لم يعد موجودًا."
 }

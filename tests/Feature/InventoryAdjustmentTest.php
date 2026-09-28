@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -46,7 +47,12 @@ class InventoryAdjustmentTest extends TestCase
         $this->assertSame(-6, $decrease->quantity_change);
         $this->assertSame(2, $decrease->balance_after);
         $this->assertSame(2, $product->fresh()->quantity);
+        $this->assertSame(
+            2,
+            (int) InventoryLot::query()->where('product_id', $product->id)->sum('quantity_on_hand')
+        );
         $this->assertDatabaseCount('inventory_movements', 2);
+        $this->assertDatabaseCount('inventory_lot_movements', 3);
     }
 
     public function test_stale_or_replayed_count_does_not_change_stock_twice(): void

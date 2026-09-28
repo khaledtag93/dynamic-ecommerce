@@ -393,6 +393,7 @@ class ReturnRequestService
                                 'return_request_id' => $locked->id,
                                 'return_reference' => $locked->reference,
                                 'return_request_item_id' => $item->id,
+                                'order_item_id' => $orderItem->id,
                                 'received_by' => $actor->id,
                             ],
                         ]

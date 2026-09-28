@@ -5180,5 +5180,11 @@
     "Reversal is allowed only when these receipt movements are still the latest inventory activity for every affected item.": "Reversal is allowed only when these receipt movements are still the latest inventory activity for every affected item.",
     "Reverse receipt": "Reverse receipt",
     "Reversal reason": "Reversal reason",
-    "Reversing...": "Reversing..."
+    "Reversing...": "Reversing...",
+    "Lot-tracked stock does not match the inventory balance before this movement.": "Lot-tracked stock does not match the inventory balance before this movement.",
+    "Not enough non-expired lot-tracked stock is available for this item.": "Not enough non-expired lot-tracked stock is available for this item.",
+    "Not enough lot-tracked stock is available for this inventory movement.": "Not enough lot-tracked stock is available for this inventory movement.",
+    "The purchase lot no longer matches the receipt being reversed.": "The purchase lot no longer matches the receipt being reversed.",
+    "Lot-tracked stock no longer matches the aggregate inventory balance.": "Lot-tracked stock no longer matches the aggregate inventory balance.",
+    "The order item for this lot allocation no longer exists.": "The order item for this lot allocation no longer exists."
 }

@@ -1117,7 +1117,7 @@ class PosService
                 /** @var ProductVariant|null $variant */
                 $variant = $line['variant'];
 
-                $order->items()->create([
+                $orderItem = $order->items()->create([
                     'product_id' => $product->id,
                     'product_variant_id' => $variant?->id,
                     'product_name' => $product->name,
@@ -1160,6 +1160,7 @@ class PosService
                         'expiration_date' => $variant?->expiration_date ?? $product->expiration_date,
                         'meta' => [
                             'order_number' => $order->order_number,
+                            'order_item_id' => $orderItem->id,
                             'sales_channel' => Order::SALES_CHANNEL_POS,
                             'cashier_user_id' => $cashierUserId,
                             'pos_cart_id' => $lockedCart->id,

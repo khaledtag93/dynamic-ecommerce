@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsEvent;
 use App\Models\Coupon;
+use App\Models\InventoryLot;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\OrderRefund;
@@ -427,6 +428,15 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(2, (int) $product->fresh()->quantity);
         $this->assertSame(35.0, (float) $product->fresh()->cost_price);
         $this->assertSame(20.0, (float) $product->fresh()->inventory_cost_price);
+        $this->assertSame(
+            2,
+            (int) InventoryLot::query()->where('product_id', $product->id)->sum('quantity_on_hand')
+        );
+        $this->assertDatabaseHas('inventory_lots', [
+            'product_id' => $product->id,
+            'source_type' => 'legacy_restock',
+            'quantity_on_hand' => 2,
+        ]);
         $this->assertDatabaseCount('inventory_movements', 1);
         $this->assertDatabaseHas('inventory_movements', [
             'order_id' => $order->id,
@@ -822,6 +832,75 @@ class BusinessIntegrityHardeningTest extends TestCase
         $fresh = $order->fresh();
         $this->assertSame(40.0, (float) $fresh->refund_total);
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $fresh->payment_status);
+    }
+
+    public function test_online_reservation_uses_fefo_and_release_restores_original_lots(): void
+    {
+        $product = $this->makeProduct(5);
+        $product->forceFill(['inventory_cost_price' => 20])->save();
+
+        $earlyLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'RES-EARLY-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 2,
+            'quantity_on_hand' => 2,
+            'unit_cost' => 20,
+            'expiration_date' => today()->addDays(4),
+            'received_at' => now()->subDay(),
+        ]);
+        $laterLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'RES-LATE-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 3,
+            'quantity_on_hand' => 3,
+            'unit_cost' => 20,
+            'expiration_date' => today()->addDays(25),
+            'received_at' => now(),
+        ]);
+
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 150);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_ONLINE]);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'unit_price' => 50,
+            'unit_cost' => 20,
+            'quantity' => 3,
+            'line_total' => 150,
+            'profit_amount' => 90,
+        ]);
+
+        $service = app(StockReservationService::class);
+        $reservation = $service->reserveOrderItem(
+            $order,
+            $item,
+            $product,
+            null,
+            now()->addMinutes(30)
+        );
+
+        $allocations = $item->fresh()->meta['inventory_lot_allocations'] ?? [];
+
+        $this->assertSame($earlyLot->id, (int) $allocations[0]['lot_id']);
+        $this->assertSame(2, (int) $allocations[0]['quantity']);
+        $this->assertSame($laterLot->id, (int) $allocations[1]['lot_id']);
+        $this->assertSame(1, (int) $allocations[1]['quantity']);
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+        $this->assertSame(0, (int) $earlyLot->fresh()->quantity_on_hand);
+        $this->assertSame(2, (int) $laterLot->fresh()->quantity_on_hand);
+
+        $this->assertSame(1, $service->releaseForOrder($order, 'Payment window expired.', true));
+
+        $this->assertSame(\App\Models\OrderStockReservation::STATUS_EXPIRED, $reservation->fresh()->status);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(2, (int) $earlyLot->fresh()->quantity_on_hand);
+        $this->assertSame(3, (int) $laterLot->fresh()->quantity_on_hand);
+        $this->assertSame(
+            5,
+            (int) InventoryLot::query()->where('product_id', $product->id)->sum('quantity_on_hand')
+        );
     }
 
     private function makeProduct(int $quantity): Product

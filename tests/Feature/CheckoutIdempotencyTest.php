@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\CartItem;
+use App\Models\InventoryLot;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Channels\WhatsApp\WhatsAppManager;
 use App\Services\Commerce\CouponService;
 use App\Services\Commerce\InventoryService;
+use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\ShippingService;
@@ -119,6 +121,130 @@ class CheckoutIdempotencyTest extends TestCase
         ]);
         $this->assertSame(20.0, (float) $product->fresh()->cost_price);
         $this->assertSame(32.0, (float) $product->fresh()->inventory_cost_price);
+    }
+
+    public function test_checkout_allocates_fefo_lots_and_cancellation_restores_the_same_lots(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5);
+        $product->forceFill(['inventory_cost_price' => 20])->save();
+
+        $earlyLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'TEST-EARLY-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 2,
+            'quantity_on_hand' => 2,
+            'unit_cost' => 20,
+            'expiration_date' => today()->addDays(5),
+            'received_at' => now()->subDay(),
+        ]);
+        $laterLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'TEST-LATE-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 3,
+            'quantity_on_hand' => 3,
+            'unit_cost' => 20,
+            'expiration_date' => today()->addDays(30),
+            'received_at' => now(),
+        ]);
+
+        $this->actingAs($user);
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 50,
+            'quantity' => 3,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $order = app(CheckoutService::class)->place([
+            'customer_name' => 'Lot Test',
+            'customer_email' => 'lots@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ], $user);
+
+        $item = $order->items()->firstOrFail();
+        $allocations = $item->meta['inventory_lot_allocations'] ?? [];
+
+        $this->assertSame(2, count($allocations));
+        $this->assertSame($earlyLot->id, (int) $allocations[0]['lot_id']);
+        $this->assertSame(2, (int) $allocations[0]['quantity']);
+        $this->assertSame($laterLot->id, (int) $allocations[1]['lot_id']);
+        $this->assertSame(1, (int) $allocations[1]['quantity']);
+        $this->assertSame(today()->addDays(5)->toDateString(), $item->fresh()->expires_at->toDateString());
+        $this->assertSame(0, (int) $earlyLot->fresh()->quantity_on_hand);
+        $this->assertSame(2, (int) $laterLot->fresh()->quantity_on_hand);
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+
+        app(OrderActionService::class)->cancel($order, 'Customer changed mind.');
+
+        $this->assertSame(2, (int) $earlyLot->fresh()->quantity_on_hand);
+        $this->assertSame(3, (int) $laterLot->fresh()->quantity_on_hand);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(
+            5,
+            (int) InventoryLot::query()->where('product_id', $product->id)->sum('quantity_on_hand')
+        );
+    }
+
+    public function test_checkout_rejects_expired_lot_stock_even_when_aggregate_quantity_is_available(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(2);
+
+        InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'TEST-EXPIRED-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 2,
+            'quantity_on_hand' => 2,
+            'unit_cost' => 20,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(2),
+        ]);
+
+        $this->actingAs($user);
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 50,
+            'quantity' => 1,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        try {
+            app(CheckoutService::class)->place([
+                'customer_name' => 'Expired Lot Test',
+                'customer_email' => 'expired-lot@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test Street',
+                'shipping_city' => 'Cairo',
+                'shipping_country' => 'Egypt',
+                'billing_same_as_shipping' => true,
+                'payment_method' => Order::PAYMENT_METHOD_COD,
+                'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+            ], $user);
+            $this->fail('Expired lot stock should not be sellable.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('cart', $exception->errors());
+        }
+
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+        $this->assertSame(2, (int) InventoryLot::query()->where('product_id', $product->id)->sum('quantity_on_hand'));
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
     }
 
     public function test_checkout_rolls_back_everything_when_a_late_business_step_fails(): void
