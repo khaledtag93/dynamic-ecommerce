@@ -12,6 +12,7 @@ class Purchase extends Model
 
     public const STATUS_DRAFT = 'draft';
     public const STATUS_ORDERED = 'ordered';
+    public const STATUS_PARTIALLY_RECEIVED = 'partially_received';
     public const STATUS_RECEIVED = 'received';
     public const STATUS_CANCELLED = 'cancelled';
 
@@ -39,10 +40,11 @@ class Purchase extends Model
 
     public static function statusOptions(): array
     {
-        return [self::STATUS_DRAFT => __('Draft'), self::STATUS_ORDERED => __('Ordered'), self::STATUS_RECEIVED => __('Received'), self::STATUS_CANCELLED => __('Cancelled')];
+        return [self::STATUS_DRAFT => __('Draft'), self::STATUS_ORDERED => __('Ordered'), self::STATUS_PARTIALLY_RECEIVED => __('Partially received'), self::STATUS_RECEIVED => __('Received'), self::STATUS_CANCELLED => __('Cancelled')];
     }
 
     public function supplier() { return $this->belongsTo(Supplier::class); }
     public function items() { return $this->hasMany(PurchaseItem::class); }
     public function receivingProgress() { return $this->hasMany(PurchaseReceivingProgress::class); }
+    public function receipts() { return $this->hasMany(PurchaseReceipt::class); }
 }

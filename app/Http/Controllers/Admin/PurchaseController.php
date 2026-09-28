@@ -12,6 +12,7 @@ use App\Services\Commerce\PurchaseReceivingService;
 use App\Services\Commerce\PurchaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PurchaseController extends Controller
@@ -54,7 +55,7 @@ class PurchaseController extends Controller
             ->withQueryString();
 
         $queueStats = [
-            'awaiting' => Purchase::where('status', Purchase::STATUS_ORDERED)->count(),
+            'awaiting' => Purchase::whereIn('status', [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED])->count(),
         ];
 
         if ($request->header('X-Live-List') === '1') {
@@ -83,7 +84,11 @@ class PurchaseController extends Controller
     public function show(Purchase $purchase)
     {
         $purchase->load(['supplier', 'items.product', 'items.variant', 'receivingProgress']);
-        return view('admin.purchases.show', compact('purchase'));
+        $receiptKey = in_array($purchase->status, [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED], true)
+            ? (string) Str::uuid()
+            : null;
+
+        return view('admin.purchases.show', compact('purchase', 'receiptKey'));
     }
 
     public function receiving(Purchase $purchase)
@@ -175,7 +180,7 @@ class PurchaseController extends Controller
 
     public function receiveVerified(Purchase $purchase)
     {
-        $receivedNow = $this->purchaseService->receiveVerified($purchase);
+        $receivedNow = $this->purchaseService->receiveVerified($purchase, (int) request()->user()->id);
 
         return redirect()
             ->route('admin.purchases.show', $purchase)
@@ -336,12 +341,33 @@ class PurchaseController extends Controller
         return intdiv($cents, 100) . '.' . str_pad((string) ($cents % 100), 2, '0', STR_PAD_LEFT);
     }
 
-    public function receive(Purchase $purchase)
+    public function receive(Request $request, Purchase $purchase)
     {
-        $receivedNow = $this->purchaseService->receive($purchase);
+        $receivedNow = $this->purchaseService->receive($purchase, (int) $request->user()->id);
 
         return back()->with($receivedNow ? 'success' : 'warning', $receivedNow
             ? __('Purchase received and stock updated successfully.')
             : __('This purchase was already received. No stock was added again.'));
+    }
+
+    public function receivePartial(Request $request, Purchase $purchase)
+    {
+        $data = $request->validate([
+            'receipt_key' => ['required', 'uuid'],
+            'items' => ['required', 'array'],
+            'items.*' => ['nullable', 'integer', 'min:0', 'max:'.self::PURCHASE_QUANTITY_MAX],
+        ]);
+
+        $receivedNow = $this->purchaseService->receivePartial(
+            $purchase,
+            $data['items'],
+            $data['receipt_key'],
+            (int) $request->user()->id,
+        );
+
+        return redirect()->route('admin.purchases.show', $purchase)
+            ->with($receivedNow ? 'success' : 'warning', $receivedNow
+                ? __('Partial purchase receipt recorded and inventory updated.')
+                : __('This receipt request was already processed. No stock was added again.'));
     }
 }

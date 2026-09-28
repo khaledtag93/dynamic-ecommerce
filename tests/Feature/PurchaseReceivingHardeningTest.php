@@ -215,7 +215,7 @@ class PurchaseReceivingHardeningTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.purchases.show', $purchase))
             ->assertOk()
-            ->assertSee(__('Confirm stock receipt'));
+            ->assertSee(__('Confirm remaining stock receipt'));
         $this->post(route('admin.purchases.receive', $purchase))->assertSessionHas('success');
         $this->post(route('admin.purchases.receive', $purchase))->assertSessionHas('warning');
         $this->assertSame(7, $product->fresh()->quantity);
@@ -226,6 +226,99 @@ class PurchaseReceivingHardeningTest extends TestCase
             ->assertOk()
             ->assertDontSee(__('Receive stock'));
         $this->post(route('admin.purchases.receive', $cancelled))->assertSessionHasErrors('purchase');
+    }
+
+    public function test_partial_receipt_tracks_progress_and_duplicate_request_is_idempotent(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 5, 11);
+        $receiptKey = (string) Str::uuid();
+        $service = app(PurchaseService::class);
+
+        $this->assertTrue($service->receivePartial($purchase, [$item->id => 2], $receiptKey, $admin->id));
+
+        $this->assertSame(7, $product->fresh()->quantity);
+        $this->assertSame(2, $item->fresh()->received_quantity);
+        $this->assertSame(Purchase::STATUS_PARTIALLY_RECEIVED, $purchase->fresh()->status);
+        $this->assertNull($purchase->fresh()->received_date);
+        $this->assertDatabaseHas('purchase_receipts', [
+            'purchase_id' => $purchase->id,
+            'idempotency_key' => $receiptKey,
+            'received_by' => $admin->id,
+        ]);
+        $this->assertDatabaseHas('purchase_receipt_items', [
+            'purchase_item_id' => $item->id,
+            'quantity' => 2,
+            'unit_cost' => '11.00',
+        ]);
+        $this->assertDatabaseHas('inventory_movements', [
+            'purchase_id' => $purchase->id,
+            'product_id' => $product->id,
+            'quantity_change' => 2,
+            'balance_after' => 7,
+        ]);
+
+        $this->assertFalse($service->receivePartial($purchase, [$item->id => 2], $receiptKey, $admin->id));
+
+        try {
+            $service->receivePartial($purchase, [$item->id => 1], $receiptKey, $admin->id);
+            $this->fail('A receipt key cannot be replayed with different quantities.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('receipt_key', $exception->errors());
+        }
+
+        $this->assertSame(7, $product->fresh()->quantity);
+        $this->assertSame(2, $item->fresh()->received_quantity);
+        $this->assertDatabaseCount('purchase_receipts', 1);
+        $this->assertDatabaseCount('purchase_receipt_items', 1);
+        $this->assertDatabaseCount('inventory_movements', 1);
+    }
+
+    public function test_partial_receipt_rejects_over_receipt_and_full_receive_only_adds_remaining_units(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(4);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 5, 9);
+        $service = app(PurchaseService::class);
+
+        $this->assertTrue($service->receivePartial(
+            $purchase,
+            [$item->id => 3],
+            (string) Str::uuid(),
+            $admin->id
+        ));
+
+        try {
+            $service->receivePartial(
+                $purchase,
+                [$item->id => 3],
+                (string) Str::uuid(),
+                $admin->id
+            );
+            $this->fail('Over-receiving a purchase line should be rejected.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey("items.{$item->id}", $exception->errors());
+        }
+
+        $this->assertSame(7, $product->fresh()->quantity);
+        $this->assertSame(3, $item->fresh()->received_quantity);
+        $this->assertDatabaseCount('purchase_receipts', 1);
+        $this->assertDatabaseCount('inventory_movements', 1);
+
+        $this->assertTrue($service->receive($purchase, $admin->id));
+
+        $this->assertSame(9, $product->fresh()->quantity);
+        $this->assertSame(5, $item->fresh()->received_quantity);
+        $this->assertSame(Purchase::STATUS_RECEIVED, $purchase->fresh()->status);
+        $this->assertNotNull($purchase->fresh()->received_date);
+        $this->assertSame([3, 2], InventoryMovement::where('purchase_id', $purchase->id)->orderBy('id')->pluck('quantity_change')->all());
+        $this->assertFalse($service->receive($purchase, $admin->id));
+        $this->assertSame(9, $product->fresh()->quantity);
+        $this->assertDatabaseCount('purchase_receipts', 2);
+        $this->assertDatabaseCount('inventory_movements', 2);
     }
 
     private function assertInvalidReceipt(Purchase $purchase): void
