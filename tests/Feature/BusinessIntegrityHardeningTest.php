@@ -775,6 +775,48 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(100.0, (float) $order->payments()->where('status', Payment::STATUS_PAID)->sum('amount'));
     }
 
+    public function test_full_refund_of_split_payments_marks_all_captures_refunded(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $first = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'REFUND-SPLIT-30',
+            'amount' => 30,
+            'currency' => $order->currency,
+            'paid_at' => now()->subMinute(),
+        ]);
+        $second = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'REFUND-SPLIT-70',
+            'amount' => 70,
+            'currency' => $order->currency,
+            'paid_at' => now(),
+        ]);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class)
+        );
+
+        $service->refund($order, 100, 'Full refund of split captures');
+
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_REFUNDED, $first->fresh()->status);
+        $this->assertSame(Payment::STATUS_REFUNDED, $second->fresh()->status);
+        $this->assertNotNull($first->fresh()->refunded_at);
+        $this->assertNotNull($second->fresh()->refunded_at);
+        $this->assertSame(0.0, $order->fresh()->refundable_balance);
+    }
+
     public function test_manual_payment_capture_cannot_overpay_order_total(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
