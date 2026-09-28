@@ -279,7 +279,7 @@ class PurchaseSettlementIntegrityTest extends TestCase
                 'cash',
                 'DATE-IDEM',
                 $key,
-                now()->subSecond()->toDateTimeString()
+                Carbon::parse($validPaidAt)->subSecond()->toDateTimeString()
             );
             $this->fail('The same supplier payment key cannot be replayed with a different effective date.');
         } catch (ValidationException $exception) {
