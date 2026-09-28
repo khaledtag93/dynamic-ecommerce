@@ -213,17 +213,30 @@ class OrderActionService
 
             $codPayment = null;
             if ($newStatus === Order::STATUS_COMPLETED && $lockedOrder->payment_method === Order::PAYMENT_METHOD_COD) {
-                $codPayment = $lockedOrder->payments()
+                $activeCodPayments = $lockedOrder->payments()
                     ->where('method', Order::PAYMENT_METHOD_COD)
-                    ->latest('id')
+                    ->whereIn('status', [
+                        Payment::STATUS_PENDING,
+                        Payment::STATUS_AUTHORIZED,
+                        Payment::STATUS_PAID,
+                    ])
+                    ->orderBy('id')
                     ->lockForUpdate()
-                    ->first();
+                    ->get();
 
-                if (! $codPayment) {
+                if ($activeCodPayments->isEmpty()) {
                     throw ValidationException::withMessages([
                         'status' => __('Cash on Delivery cannot be completed without its payment ledger record.'),
                     ]);
                 }
+
+                if ($activeCodPayments->count() !== 1) {
+                    throw ValidationException::withMessages([
+                        'status' => __('Cash on Delivery cannot be completed while multiple active payment ledger records exist.'),
+                    ]);
+                }
+
+                $codPayment = $activeCodPayments->first();
 
                 if (
                     round((float) $codPayment->amount, 2) !== round((float) $lockedOrder->grand_total, 2)

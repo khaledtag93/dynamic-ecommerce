@@ -214,6 +214,54 @@ class DeliveryHardeningTest extends TestCase
         $this->assertNull($payment->fresh()->paid_at);
     }
 
+    public function test_cod_delivery_completion_rejects_multiple_active_payment_ledgers(): void
+    {
+        $order = $this->createOrder([
+            'status' => Order::STATUS_PROCESSING,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ]);
+
+        $first = $order->payments()->create([
+            'method' => Order::PAYMENT_METHOD_COD,
+            'status' => \App\Models\Payment::STATUS_PENDING,
+            'transaction_reference' => 'COD-DUP-1',
+            'amount' => $order->grand_total,
+            'currency' => $order->currency,
+        ]);
+        $second = $order->payments()->create([
+            'method' => Order::PAYMENT_METHOD_COD,
+            'status' => \App\Models\Payment::STATUS_AUTHORIZED,
+            'transaction_reference' => 'COD-DUP-2',
+            'amount' => $order->grand_total,
+            'currency' => $order->currency,
+        ]);
+
+        $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldNotReceive('queueDeliveryUpdate');
+
+        try {
+            (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
+                'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            ]);
+            $this->fail('COD completion must reject ambiguous active payment ledgers.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $fresh = $order->fresh();
+        $this->assertSame(Order::STATUS_PROCESSING, $fresh->status);
+        $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $fresh->delivery_status);
+        $this->assertSame(Order::PAYMENT_STATUS_UNPAID, $fresh->payment_status);
+        $this->assertNull($fresh->delivered_at);
+        $this->assertSame(\App\Models\Payment::STATUS_PENDING, $first->fresh()->status);
+        $this->assertSame(\App\Models\Payment::STATUS_AUTHORIZED, $second->fresh()->status);
+        $this->assertNull($first->fresh()->paid_at);
+        $this->assertNull($second->fresh()->paid_at);
+    }
+
     public function test_out_for_delivery_requires_a_recorded_shipment_timestamp(): void
     {
         $order = $this->createOrder([
