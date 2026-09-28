@@ -533,6 +533,32 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull($payment->fresh()->refunded_at);
     }
 
+    public function test_database_preserves_inventory_movement_order_history_from_direct_order_deletion(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_UNPAID, 100);
+        $movement = InventoryMovement::query()->create([
+            'order_id' => $order->id,
+            'type' => InventoryMovement::TYPE_ADJUSTMENT,
+            'reason' => 'Audit provenance preservation',
+            'quantity_change' => 0,
+            'balance_after' => 0,
+            'unit_cost' => 0,
+        ]);
+
+        try {
+            Order::query()->whereKey($order->id)->delete();
+            $this->fail('Database must preserve orders referenced by inventory movement history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id]);
+        $this->assertDatabaseHas('inventory_movements', [
+            'id' => $movement->id,
+            'order_id' => $order->id,
+        ]);
+    }
+
     public function test_database_preserves_order_item_history_from_direct_order_deletion(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_UNPAID, 100);
