@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\Commerce\InventoryAdjustmentService;
 use App\Services\Commerce\PurchaseReceiptReversalService;
 use App\Services\Commerce\PurchaseService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -509,6 +510,41 @@ class PurchaseReceivingHardeningTest extends TestCase
 
         $this->assertSame('Supplier cannot fulfill the order.', $purchase->fresh()->cancellation_reason);
         $this->assertSame(1, \App\Models\AdminActivityLog::where('action', 'purchase_cancelled')->count());
+    }
+
+    public function test_database_preserves_purchase_and_receipt_ledger_from_direct_deletion(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 1],
+            (string) Str::uuid()
+        );
+
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+        $receiptItemId = $receipt->items()->value('id');
+
+        try {
+            PurchaseReceipt::query()->whereKey($receipt->id)->delete();
+            $this->fail('Database foreign keys must preserve purchase receipt history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        try {
+            Purchase::query()->whereKey($purchase->id)->delete();
+            $this->fail('Database foreign keys must preserve purchase history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('purchases', ['id' => $purchase->id]);
+        $this->assertDatabaseHas('purchase_items', ['id' => $item->id]);
+        $this->assertDatabaseHas('purchase_receipts', ['id' => $receipt->id]);
+        $this->assertDatabaseHas('purchase_receipt_items', ['id' => $receiptItemId]);
     }
 
     public function test_purchase_can_be_cancelled_after_all_receipts_are_reversed(): void
