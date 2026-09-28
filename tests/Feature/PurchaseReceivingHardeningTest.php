@@ -31,7 +31,8 @@ class PurchaseReceivingHardeningTest extends TestCase
         $receivedDate = $purchase->fresh()->received_date->toDateString();
 
         $this->assertSame(10, $product->fresh()->quantity);
-        $this->assertSame('12.00', $product->fresh()->cost_price);
+        $this->assertSame('5.00', $product->fresh()->cost_price);
+        $this->assertSame('8.10', $product->fresh()->inventory_cost_price);
         $this->assertSame(Purchase::STATUS_RECEIVED, $purchase->fresh()->status);
         $movements = InventoryMovement::where('purchase_id', $purchase->id)->orderBy('id')->get();
         $this->assertSame([2, 3], $movements->pluck('quantity_change')->all());
