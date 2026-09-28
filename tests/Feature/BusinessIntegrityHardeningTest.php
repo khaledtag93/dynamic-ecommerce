@@ -620,6 +620,37 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertDatabaseHas('order_refunds', ['id' => $refund->id]);
     }
 
+    public function test_order_refund_ledger_is_append_only(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $refund = OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 25,
+            'reason' => 'Append-only refund ledger test',
+            'processed_at' => now(),
+        ]);
+
+        try {
+            $refund->update(['amount' => 30]);
+            $this->fail('Order refund amount must be immutable after recording.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
+
+        try {
+            $refund->fresh()->delete();
+            $this->fail('Order refund ledger entries must not be deletable.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('order_refunds', [
+            'id' => $refund->id,
+            'order_id' => $order->id,
+            'amount' => 25,
+        ]);
+    }
+
     public function test_direct_refund_idempotency_prevents_replayed_financial_mutation(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);

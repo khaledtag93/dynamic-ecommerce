@@ -25,6 +25,17 @@ class OrderRefund extends Model
         'processed_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (): void {
+            throw new \LogicException('Order refund ledger entries are append-only and cannot be modified.');
+        });
+
+        static::deleting(function (): void {
+            throw new \LogicException('Order refund ledger entries cannot be deleted.');
+        });
+    }
+
     public function order()
     {
         return $this->belongsTo(Order::class);
