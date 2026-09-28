@@ -622,6 +622,32 @@ class PurchaseReceivingHardeningTest extends TestCase
         ]);
     }
 
+    public function test_database_preserves_inventory_movement_purchase_history_from_direct_purchase_deletion(): void
+    {
+        $purchase = $this->purchase();
+        $movement = InventoryMovement::query()->create([
+            'purchase_id' => $purchase->id,
+            'type' => InventoryMovement::TYPE_ADJUSTMENT,
+            'reason' => 'Purchase provenance preservation',
+            'quantity_change' => 0,
+            'balance_after' => 0,
+            'unit_cost' => 0,
+        ]);
+
+        try {
+            Purchase::query()->whereKey($purchase->id)->delete();
+            $this->fail('Database must preserve purchases referenced by inventory movement history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('purchases', ['id' => $purchase->id]);
+        $this->assertDatabaseHas('inventory_movements', [
+            'id' => $movement->id,
+            'purchase_id' => $purchase->id,
+        ]);
+    }
+
     public function test_database_preserves_purchase_and_receipt_ledger_from_direct_deletion(): void
     {
         $product = $this->product(5);
