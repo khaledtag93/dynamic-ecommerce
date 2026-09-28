@@ -247,6 +247,13 @@ class DeliveryHardeningTest extends TestCase
             'user_id' => $customer->id,
             'delivery_status' => Order::DELIVERY_STATUS_PENDING,
         ]);
+        $order->payments()->create([
+            'method' => Order::PAYMENT_METHOD_COD,
+            'status' => \App\Models\Payment::STATUS_PENDING,
+            'transaction_reference' => 'COD-LIFECYCLE',
+            'amount' => $order->grand_total,
+            'currency' => $order->currency,
+        ]);
 
         $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
         $whatsApp->shouldReceive('queueDeliveryUpdate')->times(4);
@@ -338,6 +345,13 @@ class DeliveryHardeningTest extends TestCase
         $order = $this->createOrder([
             'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
             'delivery_status' => Order::DELIVERY_STATUS_PENDING,
+        ]);
+        $order->payments()->create([
+            'method' => Order::PAYMENT_METHOD_COD,
+            'status' => \App\Models\Payment::STATUS_PENDING,
+            'transaction_reference' => 'COD-PICKUP',
+            'amount' => $order->grand_total,
+            'currency' => $order->currency,
         ]);
 
         $this->assertTrue($order->canTransitionDeliveryTo(Order::DELIVERY_STATUS_PREPARING));
