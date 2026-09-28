@@ -206,6 +206,19 @@ class OrderActionService
                 ]);
             }
 
+            if (
+                $newStatus === Order::STATUS_COMPLETED
+                && $lockedOrder->sales_channel !== Order::SALES_CHANNEL_POS
+                && $lockedOrder->delivery_method !== Order::DELIVERY_METHOD_PICKUP
+                && $lockedOrder->shipped_at
+                && $lockedOrder->delivered_at
+                && $lockedOrder->delivered_at->lt($lockedOrder->shipped_at)
+            ) {
+                throw ValidationException::withMessages([
+                    'status' => __('Delivery timeline is invalid because Delivered is recorded before Shipped.'),
+                ]);
+            }
+
             $updates = [
                 'status' => $newStatus,
             ];

@@ -797,6 +797,32 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::STATUS_COMPLETED, $order->fresh()->status);
     }
 
+    public function test_non_cod_completion_rejects_inverted_delivery_timeline(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $order->update([
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'status' => Order::STATUS_PROCESSING,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'shipped_at' => now(),
+            'delivered_at' => now()->subHour(),
+        ]);
+        $this->makePayment($order, Payment::STATUS_PAID);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
+
+        try {
+            $service->updateStatus($order, Order::STATUS_COMPLETED);
+            $this->fail('A delivery recorded before shipment must not complete the order.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
+    }
+
     public function test_cod_completion_marks_payment_ledger_paid(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
