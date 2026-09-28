@@ -160,6 +160,8 @@ class FrontendController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $this->inventoryAvailabilityService->hydrateSellableQuantities($products->getCollection());
+
         if ($request->header('X-Live-List') === '1') {
             return response()->view('frontend.products._search_results', [
                 'products' => $products,
@@ -204,6 +206,8 @@ class FrontendController extends Controller
         $products = $this->applyCategoryFilters(clone $baseQuery, $filters)
             ->paginate(12)
             ->withQueryString();
+
+        $this->inventoryAvailabilityService->hydrateSellableQuantities($products->getCollection());
 
         if ($request->header('X-Live-List') === '1') {
             return response()->view('frontend.products._category_results', [
