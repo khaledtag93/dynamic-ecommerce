@@ -729,8 +729,14 @@ class PaymentService
                 return;
             }
 
+            $paidTotal = round((float) $payments
+                ->where('status', Payment::STATUS_PAID)
+                ->sum(fn (Payment $payment) => (float) $payment->amount), 2);
+            $orderTotal = round((float) $lockedOrder->grand_total, 2);
+
             $status = match (true) {
-                $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_PAID) => Order::PAYMENT_STATUS_PAID,
+                $paidTotal === $orderTotal && $orderTotal > 0 => Order::PAYMENT_STATUS_PAID,
+                $paidTotal > 0 => Order::PAYMENT_STATUS_PENDING,
                 $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_REFUNDED) => Order::PAYMENT_STATUS_REFUNDED,
                 $payments->contains(fn (Payment $payment) => in_array($payment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) => Order::PAYMENT_STATUS_PENDING,
                 $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_FAILED) => Order::PAYMENT_STATUS_FAILED,

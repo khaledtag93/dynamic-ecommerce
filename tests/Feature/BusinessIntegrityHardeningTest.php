@@ -741,6 +741,39 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
     }
 
+    public function test_split_payments_only_mark_order_paid_when_total_is_fully_covered(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+
+        $first = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PENDING,
+            'transaction_reference' => 'SPLIT-30',
+            'amount' => 30,
+            'currency' => $order->currency,
+        ]);
+        $second = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PENDING,
+            'transaction_reference' => 'SPLIT-70',
+            'amount' => 70,
+            'currency' => $order->currency,
+        ]);
+
+        $service = app(PaymentService::class);
+        $service->updateStatus($first, Payment::STATUS_PAID);
+
+        $this->assertSame(Order::PAYMENT_STATUS_PENDING, $order->fresh()->payment_status);
+
+        $service->updateStatus($second, Payment::STATUS_PAID);
+
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(100.0, (float) $order->payments()->where('status', Payment::STATUS_PAID)->sum('amount'));
+    }
+
     public function test_manual_payment_capture_cannot_overpay_order_total(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
