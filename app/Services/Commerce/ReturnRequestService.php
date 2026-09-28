@@ -477,6 +477,12 @@ class ReturnRequestService
                         'exchange_order_id' => __('The exchange order must belong to the same customer.'),
                     ]);
                 }
+
+                if ($exchangeOrder->status === Order::STATUS_CANCELLED) {
+                    throw ValidationException::withMessages([
+                        'exchange_order_id' => __('A cancelled order cannot be used as an exchange order.'),
+                    ]);
+                }
             }
 
             $order = $locked->order()->firstOrFail();

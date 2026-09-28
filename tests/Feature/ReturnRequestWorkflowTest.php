@@ -570,6 +570,49 @@ class ReturnRequestWorkflowTest extends TestCase
 
 
 
+    public function test_cancelled_order_cannot_be_used_as_exchange_order(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $cancelledExchange = $this->makeDeliveredPaidOrder($customer, 100);
+        $cancelledExchange->update(['status' => Order::STATUS_CANCELLED]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+        try {
+            $service->complete($return->fresh(), 0, $cancelledExchange->id, null, $manager);
+            $this->fail('Cancelled orders must not be accepted as exchange orders.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('exchange_order_id', $exception->errors());
+        }
+
+        $this->assertSame(ReturnRequest::STATUS_RECEIVED, $return->fresh()->status);
+        $this->assertNull($return->fresh()->exchange_order_id);
+    }
+
     public function test_customer_can_create_return_through_live_endpoint(): void
     {
         $customer = User::factory()->create();
