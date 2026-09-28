@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Purchase;
 use App\Models\Supplier;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -72,6 +73,25 @@ class SupplierWorkspaceClosureTest extends TestCase
                 $view
             );
         }
+    }
+
+    public function test_database_restricts_supplier_deletion_when_purchase_history_exists(): void
+    {
+        $supplier = Supplier::create(['name' => 'Database protected supplier']);
+        $purchase = Purchase::create([
+            'supplier_id' => $supplier->id,
+            'status' => Purchase::STATUS_ORDERED,
+        ]);
+
+        try {
+            Supplier::query()->whereKey($supplier->id)->delete();
+            $this->fail('Database foreign key must preserve supplier purchase history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('suppliers', ['id' => $supplier->id]);
+        $this->assertDatabaseHas('purchases', ['id' => $purchase->id]);
     }
 
     public function test_supplier_delete_is_locked_and_preserves_purchase_history(): void
