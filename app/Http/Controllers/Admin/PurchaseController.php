@@ -253,7 +253,7 @@ class PurchaseController extends Controller
                 'required',
                 Rule::exists('suppliers', 'id')->where(fn ($query) => $query->where('is_active', true)),
             ],
-            'purchase_date' => ['nullable', 'date'],
+            'purchase_date' => ['nullable', 'date', 'before_or_equal:today'],
             'shipping_total' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'tax_total' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'notes' => ['nullable', 'string'],

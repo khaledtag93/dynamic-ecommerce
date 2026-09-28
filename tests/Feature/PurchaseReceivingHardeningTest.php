@@ -152,6 +152,32 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertDatabaseCount('purchases', 0);
     }
 
+    public function test_purchase_creation_rejects_future_purchase_date(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $supplier = $this->supplier();
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.store'), [
+                'supplier_id' => $supplier->id,
+                'purchase_date' => now()->addDay()->toDateString(),
+                'items' => [[
+                    'product_id' => $product->id,
+                    'quantity' => 1,
+                    'unit_cost' => '10.00',
+                ]],
+            ])
+            ->assertSessionHasErrors('purchase_date');
+
+        $this->assertDatabaseCount('purchases', 0);
+
+        $this->actingAs($admin)
+            ->get(route('admin.purchases.create'))
+            ->assertOk()
+            ->assertSee('max="'.now()->toDateString().'"', false);
+    }
+
     public function test_purchase_creation_rejects_inactive_supplier_even_if_id_is_submitted_directly(): void
     {
         $admin = $this->createSuperAdmin();

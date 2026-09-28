@@ -51,6 +51,7 @@
                             type="date"
                             name="purchase_date"
                             class="form-control"
+                            max="{{ now()->toDateString() }}"
                             value="{{ old('purchase_date', now()->toDateString()) }}"
                         >
                     </div>
