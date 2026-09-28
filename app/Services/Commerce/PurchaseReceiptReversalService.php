@@ -260,7 +260,9 @@ class PurchaseReceiptReversalService
                 foreach ($receiptItems as $receiptItem) {
                     $progress = $barcodeProgress->get($receiptItem->purchase_item_id);
 
-                    if (! $progress || (int) $progress->verified_quantity < (int) $receiptItem->quantity) {
+                    if (! $progress
+                        || (int) $progress->purchase_id !== (int) $lockedPurchase->id
+                        || (int) $progress->verified_quantity < (int) $receiptItem->quantity) {
                         throw ValidationException::withMessages([
                             'receipt' => __('Barcode verification history is inconsistent. Reversal was not applied.'),
                         ]);

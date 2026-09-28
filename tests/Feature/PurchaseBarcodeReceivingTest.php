@@ -8,11 +8,14 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
+use App\Models\PurchaseReceipt;
 use App\Models\PurchaseReceivingProgress;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Services\Commerce\PurchaseReceiptReversalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class PurchaseBarcodeReceivingTest extends TestCase
@@ -217,6 +220,45 @@ class PurchaseBarcodeReceivingTest extends TestCase
         $this->assertSame(4, (int) $product->fresh()->quantity);
         $this->assertSame(Purchase::STATUS_ORDERED, $purchase->fresh()->status);
         $this->assertDatabaseCount('inventory_movements', 0);
+    }
+
+    public function test_barcode_receipt_reversal_rejects_cross_purchase_progress_without_mutation(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('Reversal Ownership Product', '6223000000012', 1, false);
+        $purchase = $this->purchase();
+        $otherPurchase = $this->purchase();
+        $item = $this->item($purchase, $product, 1, 10);
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.receiving.scan', $purchase), [
+                'barcode' => $product->barcode,
+            ])->assertSessionHasNoErrors();
+
+        $this->post(route('admin.purchases.receiving.complete', $purchase))
+            ->assertSessionHas('success');
+
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+        $progress = PurchaseReceivingProgress::query()->where('purchase_item_id', $item->id)->firstOrFail();
+        $progress->forceFill(['purchase_id' => $otherPurchase->id])->save();
+        $stockBefore = (int) $product->fresh()->quantity;
+
+        try {
+            app(PurchaseReceiptReversalService::class)->reverse(
+                $purchase,
+                $receipt,
+                'Reject corrupted barcode progress ownership.',
+                $admin->id
+            );
+            $this->fail('Barcode receipt reversal must reject progress owned by another purchase.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('receipt', $exception->errors());
+        }
+
+        $this->assertSame($stockBefore, (int) $product->fresh()->quantity);
+        $this->assertNull($receipt->fresh()->reversed_at);
+        $this->assertSame($otherPurchase->id, (int) $progress->fresh()->purchase_id);
+        $this->assertSame(1, (int) $progress->fresh()->verified_quantity);
     }
 
     public function test_corrupt_barcode_progress_above_ordered_quantity_is_rejected_without_mutation(): void
