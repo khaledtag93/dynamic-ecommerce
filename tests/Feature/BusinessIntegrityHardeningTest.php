@@ -942,6 +942,12 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNotNull(data_get($fresh->meta, 'payment_overcapture.resolved_at'));
         $this->assertSame(0.0, $fresh->refundable_balance);
         $this->assertSame(2, $fresh->payments()->where('status', Payment::STATUS_REFUNDED)->count());
+
+        app(PaymentService::class)->syncOrderPaymentStatus($fresh);
+
+        $synced = $order->fresh();
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $synced->payment_status);
+        $this->assertSame(110.0, (float) $synced->refund_total);
     }
 
     public function test_non_cod_fulfillment_requires_paid_ledger_evidence(): void

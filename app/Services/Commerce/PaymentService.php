@@ -729,7 +729,10 @@ class PaymentService
             $refundTotal = round((float) $lockedOrder->refunds()->sum('amount'), 2);
 
             if ($refundTotal > 0) {
-                $status = $refundTotal >= (float) $lockedOrder->grand_total
+                $capturedTotal = round((float) $lockedOrder->payments()
+                    ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
+                    ->sum('amount'), 2);
+                $status = $capturedTotal > 0 && $refundTotal >= $capturedTotal
                     ? Order::PAYMENT_STATUS_REFUNDED
                     : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
 
