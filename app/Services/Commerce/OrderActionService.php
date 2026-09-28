@@ -310,6 +310,31 @@ class OrderActionService
             ]);
         }
 
+        $paidPayments = $order->payments()
+            ->where('method', $order->payment_method)
+            ->where('status', Payment::STATUS_PAID)
+            ->lockForUpdate()
+            ->get();
+
+        if ($paidPayments->isEmpty()) {
+            throw ValidationException::withMessages([
+                'status' => $order->payment_method === Order::PAYMENT_METHOD_BANK_TRANSFER
+                    ? __('Bank transfer fulfillment requires a paid payment ledger record.')
+                    : __('Online fulfillment requires a paid payment ledger record.'),
+            ]);
+        }
+
+        $paidTotal = round((float) $paidPayments->sum(fn (Payment $payment) => (float) $payment->amount), 2);
+        $currencyMismatch = $paidPayments->contains(
+            fn (Payment $payment) => strtoupper((string) $payment->currency) !== strtoupper((string) $order->currency)
+        );
+
+        if ($currencyMismatch || $paidTotal < round((float) $order->grand_total, 2)) {
+            throw ValidationException::withMessages([
+                'status' => __('Paid payment ledger does not fully cover this order total and currency.'),
+            ]);
+        }
+
         if (
             $order->payment_method === Order::PAYMENT_METHOD_ONLINE
             && data_get($order->meta, 'stock_reservation_exception')

@@ -710,6 +710,39 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
     }
 
+    public function test_non_cod_fulfillment_requires_paid_ledger_evidence(): void
+    {
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
+
+        $missingLedger = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $missingLedger->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+
+        try {
+            $service->updateStatus($missingLedger, Order::STATUS_PROCESSING);
+            $this->fail('Paid order status without a paid ledger must not enter fulfillment.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $missingLedger->fresh()->status);
+
+        $mismatchedLedger = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $mismatchedLedger->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+        $payment = $this->makePayment($mismatchedLedger, Payment::STATUS_PAID);
+        $payment->update(['amount' => 99]);
+
+        try {
+            $service->updateStatus($mismatchedLedger, Order::STATUS_PROCESSING);
+            $this->fail('A paid ledger that does not cover the order must not enter fulfillment.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $mismatchedLedger->fresh()->status);
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+    }
+
     public function test_non_cod_storefront_order_cannot_complete_before_delivery(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
@@ -718,6 +751,7 @@ class BusinessIntegrityHardeningTest extends TestCase
             'status' => Order::STATUS_PROCESSING,
             'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
         ]);
+        $this->makePayment($order, Payment::STATUS_PAID);
 
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
         $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
