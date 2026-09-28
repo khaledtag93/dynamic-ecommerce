@@ -236,6 +236,7 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         PosReturnItem::query()->create([
             'order_refund_id' => $refund->id,
+            'order_id' => $order->id,
             'order_item_id' => $item->id,
             'quantity' => 1,
             'amount' => 45,
