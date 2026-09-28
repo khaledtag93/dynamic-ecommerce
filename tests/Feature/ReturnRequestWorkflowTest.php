@@ -48,7 +48,7 @@ class ReturnRequestWorkflowTest extends TestCase
         $returnItemId = $return->items()->firstOrFail()->id;
 
         try {
-            $return->delete();
+            DB::table('return_requests')->where('id', $return->id)->delete();
             $this->fail('Database must preserve RMA item history from direct parent deletion.');
         } catch (QueryException) {
             $this->assertTrue(true);
