@@ -206,6 +206,14 @@ class WorkforceWorkspaceClosureTest extends TestCase
             'name="rate" class="form-control form-control-sm" step="0.0001" min="0.0001" max="9999999999.9999"',
             $runView
         );
+        $this->assertStringContainsString(
+            'This records an internal payroll workflow state and does not verify bank settlement.',
+            $runView
+        );
+        $this->assertStringContainsString(
+            'Paid is an internal payroll workflow status in V1; it does not verify bank settlement or payroll-file acceptance.',
+            $runView
+        );
 
         foreach ([
             [resource_path('views/admin/workforce/payroll/compensation/edit.blade.php'), 'compensationPayBasis'],

@@ -3157,6 +3157,8 @@
     "Salary per payroll period": "Salary per payroll period",
     "Hourly": "Hourly",
     "Payroll": "Payroll",
+    "Mark this approved payroll run as Paid? This records an internal payroll workflow state and does not verify bank settlement.": "Mark this approved payroll run as Paid? This records an internal payroll workflow state and does not verify bank settlement.",
+    "Paid is an internal payroll workflow status in V1; it does not verify bank settlement or payroll-file acceptance.": "Paid is an internal payroll workflow status in V1; it does not verify bank settlement or payroll-file acceptance.",
     "Create payroll periods, generate immutable attendance/leave snapshots, and move runs through Draft, Approved, and Paid states.": "Create payroll periods, generate immutable attendance/leave snapshots, and move runs through Draft, Approved, and Paid states.",
     "Compensation": "Compensation",
     "My payslips": "My payslips",

@@ -26,7 +26,7 @@
                 <button class="btn btn-primary btn-text-icon"><i class="mdi mdi-check-decagram-outline"></i><span>{{ __('Approve run') }}</span></button>
             </form>
         @elseif(auth()->user()?->hasPermission('workforce.payroll.manage') && $payrollRun->isApproved())
-            <form method="POST" action="{{ route('admin.workforce.payroll.runs.paid', $payrollRun) }}" data-confirm-message="{{ __('Mark this approved payroll run as Paid?') }}" data-submit-loading>
+            <form method="POST" action="{{ route('admin.workforce.payroll.runs.paid', $payrollRun) }}" data-confirm-message="{{ __('Mark this approved payroll run as Paid? This records an internal payroll workflow state and does not verify bank settlement.') }}" data-submit-loading>
                 @csrf
                 @method('PATCH')
                 <button class="btn btn-success btn-text-icon"><i class="mdi mdi-cash-check"></i><span>{{ __('Mark paid') }}</span></button>
@@ -68,6 +68,10 @@
                     @if($payrollRun->approved_at){{ __('Approved at :time', ['time' => $payrollRun->approved_at->format('d M Y H:i')]) }}@endif
                     @if($payrollRun->paid_at)<span class="ms-3">{{ __('Paid at :time', ['time' => $payrollRun->paid_at->format('d M Y H:i')]) }}</span>@endif
                 </div>
+            @endif
+
+            @if($payrollRun->isPaid())
+                <div class="text-muted small mt-2">{{ __('Paid is an internal payroll workflow status in V1; it does not verify bank settlement or payroll-file acceptance.') }}</div>
             @endif
         </div>
     </div>

@@ -2978,6 +2978,8 @@
     "Payments": "المدفوعات",
     "Paymob setup": "إعداد Paymob",
     "Payroll": "الرواتب",
+    "Mark this approved payroll run as Paid? This records an internal payroll workflow state and does not verify bank settlement.": "هل تريد تعليم تشغيل الرواتب المعتمد كمدفوع؟ يسجل هذا حالة داخل سير عمل الرواتب ولا يثبت حدوث تسوية بنكية.",
+    "Paid is an internal payroll workflow status in V1; it does not verify bank settlement or payroll-file acceptance.": "حالة مدفوع هي حالة داخلية في سير عمل الرواتب في V1؛ ولا تثبت حدوث تسوية بنكية أو قبول ملف الرواتب.",
     "Payroll adjustment added.": "تمت إضافة تعديل الرواتب.",
     "Payroll adjustment amount must be greater than zero.": "يجب أن يكون مبلغ تعديل الرواتب أكبر من صفر.",
     "Enter a payroll amount with up to two decimal places within the supported amount limit.": "أدخل مبلغ رواتب بحد أقصى منزلتين عشريتين وضمن الحد المالي المدعوم.",
