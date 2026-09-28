@@ -7,7 +7,7 @@
                 <p class="text-muted small mb-0">{{ __('Find purchase orders quickly and focus on stock that still needs to be received.') }}</p>
             </div>
             @if($queueStats['awaiting'] > 0)
-                <a href="{{ route('admin.purchases.index', ['status' => \App\Models\Purchase::STATUS_ORDERED]) }}" data-live-link class="btn {{ $filters['status'] === \App\Models\Purchase::STATUS_ORDERED ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Awaiting receipt') }} · {{ $queueStats['awaiting'] }}</a>
+                <a href="{{ route('admin.purchases.index', ['status' => 'awaiting']) }}" data-live-link class="btn {{ $filters['status'] === 'awaiting' ? 'btn-primary' : 'btn-light border' }} btn-sm">{{ __('Awaiting receipt') }} · {{ $queueStats['awaiting'] }}</a>
             @endif
         </div>
     </div>

@@ -400,6 +400,7 @@ Route::prefix('admin')
                 Route::post('/purchases/{purchase}/receiving/items/{purchaseItem}/undo', 'undoReceiving')->name('purchases.receiving.undo');
                 Route::post('/purchases/{purchase}/receive-verified', 'receiveVerified')->name('purchases.receive-verified');
                 Route::post('/purchases/{purchase}/receive-partial', 'receivePartial')->name('purchases.receive-partial');
+                Route::post('/purchases/{purchase}/cancel', 'cancel')->name('purchases.cancel');
                 Route::post('/purchases/{purchase}/receive', 'receive')->name('purchases.receive');
             });
 

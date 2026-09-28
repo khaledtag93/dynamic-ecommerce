@@ -14,7 +14,72 @@ use Illuminate\Validation\ValidationException;
 
 class PurchaseService
 {
-    public function __construct(protected InventoryService $inventoryService) {}
+    public function __construct(
+        protected InventoryService $inventoryService,
+        protected AdminActivityLogService $activityLogService,
+    ) {}
+
+    public function cancel(Purchase $purchase, string $reason, ?int $adminUserId = null): bool
+    {
+        $reason = trim($reason);
+
+        if ($reason === '') {
+            throw ValidationException::withMessages([
+                'cancellation_reason' => __('Enter a cancellation reason.'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($purchase, $reason, $adminUserId) {
+            $lockedPurchase = Purchase::query()
+                ->whereKey($purchase->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedPurchase->status === Purchase::STATUS_CANCELLED) {
+                return false;
+            }
+
+            if (! in_array($lockedPurchase->status, [
+                Purchase::STATUS_DRAFT,
+                Purchase::STATUS_ORDERED,
+            ], true)) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Purchases with received stock cannot be cancelled. Reverse the receipt first.'),
+                ]);
+            }
+
+            $lockedItems = $lockedPurchase->items()
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get(['id', 'received_quantity']);
+            $receivedUnits = (int) $lockedItems->sum('received_quantity');
+
+            if ($receivedUnits > 0 || $lockedPurchase->receipts()->exists()) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Purchases with received stock cannot be cancelled. Reverse the receipt first.'),
+                ]);
+            }
+
+            $lockedPurchase->update([
+                'status' => Purchase::STATUS_CANCELLED,
+                'cancelled_at' => now(),
+                'cancelled_by' => $adminUserId,
+                'cancellation_reason' => $reason,
+                'received_date' => null,
+            ]);
+
+            $this->activityLogService->log(
+                'purchasing',
+                'purchase_cancelled',
+                __('Purchase :reference cancelled.', ['reference' => $lockedPurchase->reference]),
+                $adminUserId,
+                $lockedPurchase,
+                ['reason' => $reason]
+            );
+
+            return true;
+        });
+    }
 
     public function receive(Purchase $purchase, ?int $adminUserId = null): bool
     {

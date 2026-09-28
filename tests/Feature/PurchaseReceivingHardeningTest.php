@@ -321,6 +321,92 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 2);
     }
 
+    public function test_ordered_purchase_can_be_cancelled_once_without_changing_inventory(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(6);
+        $purchase = $this->purchase();
+        $this->item($purchase, $product, 3, 14);
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.cancel', $purchase), [
+                'cancellation_reason' => 'Supplier cannot fulfill the order.',
+            ])
+            ->assertRedirect(route('admin.purchases.show', $purchase))
+            ->assertSessionHas('success');
+
+        $cancelled = $purchase->fresh();
+
+        $this->assertSame(Purchase::STATUS_CANCELLED, $cancelled->status);
+        $this->assertSame($admin->id, (int) $cancelled->cancelled_by);
+        $this->assertSame('Supplier cannot fulfill the order.', $cancelled->cancellation_reason);
+        $this->assertNotNull($cancelled->cancelled_at);
+        $this->assertSame(6, $product->fresh()->quantity);
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'purchase_cancelled',
+            'subject_id' => $purchase->id,
+        ]);
+
+        $this->post(route('admin.purchases.cancel', $purchase), [
+            'cancellation_reason' => 'Duplicate click.',
+        ])->assertSessionHas('warning');
+
+        $this->assertSame('Supplier cannot fulfill the order.', $purchase->fresh()->cancellation_reason);
+        $this->assertSame(1, \App\Models\AdminActivityLog::where('action', 'purchase_cancelled')->count());
+    }
+
+    public function test_purchase_with_any_received_stock_cannot_be_cancelled(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(4);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 5, 9);
+
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 2],
+            (string) Str::uuid(),
+            $admin->id
+        );
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.cancel', $purchase), [
+                'cancellation_reason' => 'Try to cancel after receipt.',
+            ])
+            ->assertSessionHasErrors('purchase');
+
+        $this->assertSame(Purchase::STATUS_PARTIALLY_RECEIVED, $purchase->fresh()->status);
+        $this->assertSame(6, $product->fresh()->quantity);
+        $this->assertSame(2, $item->fresh()->received_quantity);
+        $this->assertDatabaseCount('inventory_movements', 1);
+        $this->assertDatabaseMissing('admin_activity_logs', [
+            'action' => 'purchase_cancelled',
+            'subject_id' => $purchase->id,
+        ]);
+    }
+
+    public function test_awaiting_purchase_filter_includes_ordered_and_partially_received_only(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $ordered = $this->purchase(Purchase::STATUS_ORDERED);
+        $partial = $this->purchase(Purchase::STATUS_PARTIALLY_RECEIVED);
+        $received = $this->purchase(Purchase::STATUS_RECEIVED);
+        $cancelled = $this->purchase(Purchase::STATUS_CANCELLED);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.purchases.index', ['status' => 'awaiting']));
+
+        $response
+            ->assertOk()
+            ->assertSee($ordered->reference)
+            ->assertSee($partial->reference)
+            ->assertDontSee($received->reference)
+            ->assertDontSee($cancelled->reference);
+    }
+
     private function assertInvalidReceipt(Purchase $purchase): void
     {
         try {

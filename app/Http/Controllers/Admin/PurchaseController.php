@@ -48,7 +48,11 @@ class PurchaseController extends Controller
                             ->orWhere('company', 'like', $like));
                 });
             })
-            ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
+            ->when($filters['status'], function ($query, $status) {
+                $status === 'awaiting'
+                    ? $query->whereIn('status', [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED])
+                    : $query->where('status', $status);
+            })
             ->when($filters['supplier_id'], fn ($query, $supplierId) => $query->where('supplier_id', $supplierId))
             ->latest('id')
             ->paginate($filters['per_page'])
@@ -83,7 +87,7 @@ class PurchaseController extends Controller
 
     public function show(Purchase $purchase)
     {
-        $purchase->load(['supplier', 'items.product', 'items.variant', 'receivingProgress']);
+        $purchase->load(['supplier', 'items.product', 'items.variant', 'receivingProgress', 'cancelledBy']);
         $receiptKey = in_array($purchase->status, [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED], true)
             ? (string) Str::uuid()
             : null;
@@ -339,6 +343,24 @@ class PurchaseController extends Controller
     protected function centsToMoney(int $cents): string
     {
         return intdiv($cents, 100) . '.' . str_pad((string) ($cents % 100), 2, '0', STR_PAD_LEFT);
+    }
+
+    public function cancel(Request $request, Purchase $purchase)
+    {
+        $data = $request->validate([
+            'cancellation_reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $cancelledNow = $this->purchaseService->cancel(
+            $purchase,
+            $data['cancellation_reason'],
+            (int) $request->user()->id,
+        );
+
+        return redirect()->route('admin.purchases.show', $purchase)
+            ->with($cancelledNow ? 'success' : 'warning', $cancelledNow
+                ? __('Purchase cancelled. No inventory was changed.')
+                : __('This purchase was already cancelled.'));
     }
 
     public function receive(Request $request, Purchase $purchase)

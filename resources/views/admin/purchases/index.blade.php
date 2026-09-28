@@ -38,6 +38,7 @@
                     <label class="form-label fw-semibold" for="purchaseStatus">{{ __('Status') }}</label>
                     <select id="purchaseStatus" name="status" class="form-select" data-live-filter-control>
                         <option value="">{{ __('All statuses') }}</option>
+                        <option value="awaiting" @selected($filters['status'] === 'awaiting')>{{ __('Awaiting receipt') }}</option>
                         @foreach(\App\Models\Purchase::statusOptions() as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ __($label) }}</option>
                         @endforeach

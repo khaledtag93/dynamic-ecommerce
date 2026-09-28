@@ -17,12 +17,13 @@ class Purchase extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'supplier_id', 'reference', 'status', 'purchase_date', 'received_date', 'currency', 'subtotal', 'shipping_total', 'tax_total', 'grand_total', 'notes',
+        'supplier_id', 'reference', 'status', 'purchase_date', 'received_date', 'cancelled_at', 'cancelled_by', 'cancellation_reason', 'currency', 'subtotal', 'shipping_total', 'tax_total', 'grand_total', 'notes',
     ];
 
     protected $casts = [
         'purchase_date' => 'date',
         'received_date' => 'date',
+        'cancelled_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'shipping_total' => 'decimal:2',
         'tax_total' => 'decimal:2',
@@ -47,4 +48,5 @@ class Purchase extends Model
     public function items() { return $this->hasMany(PurchaseItem::class); }
     public function receivingProgress() { return $this->hasMany(PurchaseReceivingProgress::class); }
     public function receipts() { return $this->hasMany(PurchaseReceipt::class); }
+    public function cancelledBy() { return $this->belongsTo(User::class, 'cancelled_by'); }
 }

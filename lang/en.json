@@ -5134,5 +5134,17 @@
     "Partial receipt": "Partial receipt",
     "Record only the units physically received now. Repeated submission of the same receipt is protected from adding stock twice.": "Record only the units physically received now. Repeated submission of the same receipt is protected from adding stock twice.",
     "Receive now": "Receive now",
-    "Record partial receipt": "Record partial receipt"
+    "Record partial receipt": "Record partial receipt",
+    "Enter a cancellation reason.": "Enter a cancellation reason.",
+    "Purchases with received stock cannot be cancelled. Reverse the receipt first.": "Purchases with received stock cannot be cancelled. Reverse the receipt first.",
+    "Purchase :reference cancelled.": "Purchase :reference cancelled.",
+    "Purchase cancelled. No inventory was changed.": "Purchase cancelled. No inventory was changed.",
+    "This purchase was already cancelled.": "This purchase was already cancelled.",
+    "Cancel purchase": "Cancel purchase",
+    "Cancel only while no stock has been received. A reason is required for the audit trail.": "Cancel only while no stock has been received. A reason is required for the audit trail.",
+    "Confirm purchase cancellation": "Confirm purchase cancellation",
+    "Cancel this purchase order?": "Cancel this purchase order?",
+    "No stock will be changed. Purchases with received stock require receipt reversal instead.": "No stock will be changed. Purchases with received stock require receipt reversal instead.",
+    "Cancellation reason": "Cancellation reason",
+    "Purchase cancelled": "Purchase cancelled"
 }

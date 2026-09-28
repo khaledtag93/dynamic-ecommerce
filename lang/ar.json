@@ -5824,5 +5824,17 @@
     "Partial receipt": "استلام جزئي",
     "Record only the units physically received now. Repeated submission of the same receipt is protected from adding stock twice.": "سجّل فقط الوحدات المستلمة فعليًا الآن. إعادة إرسال نفس الاستلام محمية من إضافة المخزون مرتين.",
     "Receive now": "استلام الآن",
-    "Record partial receipt": "تسجيل الاستلام الجزئي"
+    "Record partial receipt": "تسجيل الاستلام الجزئي",
+    "Enter a cancellation reason.": "أدخل سبب إلغاء.",
+    "Purchases with received stock cannot be cancelled. Reverse the receipt first.": "لا يمكن إلغاء أمر شراء استُلم منه مخزون. اعكس الاستلام أولًا.",
+    "Purchase :reference cancelled.": "تم إلغاء أمر الشراء :reference.",
+    "Purchase cancelled. No inventory was changed.": "تم إلغاء أمر الشراء. لم يتم تغيير المخزون.",
+    "This purchase was already cancelled.": "تم إلغاء أمر الشراء هذا بالفعل.",
+    "Cancel purchase": "إلغاء أمر الشراء",
+    "Cancel only while no stock has been received. A reason is required for the audit trail.": "يمكن الإلغاء فقط قبل استلام أي مخزون. سبب الإلغاء مطلوب لسجل التدقيق.",
+    "Confirm purchase cancellation": "تأكيد إلغاء أمر الشراء",
+    "Cancel this purchase order?": "هل تريد إلغاء أمر الشراء هذا؟",
+    "No stock will be changed. Purchases with received stock require receipt reversal instead.": "لن يتم تغيير المخزون. أوامر الشراء التي استُلم منها مخزون تحتاج إلى عكس الاستلام بدلًا من الإلغاء.",
+    "Cancellation reason": "سبب الإلغاء",
+    "Purchase cancelled": "تم إلغاء أمر الشراء"
 }

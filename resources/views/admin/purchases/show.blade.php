@@ -38,6 +38,36 @@
         </div>
     </div>
 
+    @if(in_array($purchase->status, [\App\Models\Purchase::STATUS_DRAFT, \App\Models\Purchase::STATUS_ORDERED], true))
+        <div class="admin-card mb-4">
+            <div class="admin-card-body">
+                <div class="admin-table-toolbar">
+                    <div>
+                        <h4 class="mb-1">{{ __('Cancel purchase') }}</h4>
+                        <div class="text-muted small">{{ __('Cancel only while no stock has been received. A reason is required for the audit trail.') }}</div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('admin.purchases.cancel', $purchase) }}" data-submit-loading data-confirm-title="{{ __('Confirm purchase cancellation') }}" data-confirm-message="{{ __('Cancel this purchase order?') }}" data-confirm-subtitle="{{ __('No stock will be changed. Purchases with received stock require receipt reversal instead.') }}" data-confirm-ok="{{ __('Cancel purchase') }}">
+                    @csrf
+                    <label for="purchaseCancellationReason" class="form-label fw-semibold">{{ __('Cancellation reason') }}</label>
+                    <textarea id="purchaseCancellationReason" name="cancellation_reason" maxlength="1000" rows="3" class="form-control @error('cancellation_reason') is-invalid @enderror" required aria-required="true">{{ old('cancellation_reason') }}</textarea>
+                    @error('cancellation_reason')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                    @error('purchase')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                    <button class="btn btn-outline-danger btn-text-icon mt-3" data-loading-text="{{ __('Cancelling...') }}"><i class="mdi mdi-close-circle-outline"></i><span>{{ __('Cancel purchase') }}</span></button>
+                </form>
+            </div>
+        </div>
+    @elseif($purchase->status === \App\Models\Purchase::STATUS_CANCELLED)
+        <div class="alert alert-secondary mb-4">
+            <div class="fw-semibold">{{ __('Purchase cancelled') }}</div>
+            <div class="small">{{ $purchase->cancellation_reason ?: '—' }}</div>
+            @if($purchase->cancelled_at)
+                <div class="small text-muted mt-1">{{ $purchase->cancelled_at->format('d M Y, H:i') }} · {{ $purchase->cancelledBy?->name ?: '—' }}</div>
+            @endif
+        </div>
+    @endif
+
     @if(in_array($purchase->status, [\App\Models\Purchase::STATUS_ORDERED, \App\Models\Purchase::STATUS_PARTIALLY_RECEIVED], true))
         <div class="admin-card mb-4">
             <div class="admin-card-body">
