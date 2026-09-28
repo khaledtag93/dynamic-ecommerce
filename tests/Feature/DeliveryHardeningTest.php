@@ -154,6 +154,66 @@ class DeliveryHardeningTest extends TestCase
         $this->assertNotNull($payment->fresh()->paid_at);
     }
 
+    public function test_cod_delivery_completion_requires_matching_payment_ledger(): void
+    {
+        $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldNotReceive('queueDeliveryUpdate');
+        $service = new DeliveryService($whatsApp, app(OrderActionService::class));
+
+        $missingLedger = $this->createOrder([
+            'status' => Order::STATUS_PROCESSING,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ]);
+
+        try {
+            $service->update($missingLedger, [
+                'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            ]);
+            $this->fail('COD delivery completion must require a payment ledger record.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PROCESSING, $missingLedger->fresh()->status);
+        $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $missingLedger->fresh()->delivery_status);
+        $this->assertSame(Order::PAYMENT_STATUS_UNPAID, $missingLedger->fresh()->payment_status);
+        $this->assertNull($missingLedger->fresh()->delivered_at);
+
+        $mismatchedLedger = $this->createOrder([
+            'status' => Order::STATUS_PROCESSING,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_status' => Order::DELIVERY_STATUS_PREPARING,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ]);
+        $payment = $mismatchedLedger->payments()->create([
+            'method' => Order::PAYMENT_METHOD_COD,
+            'status' => \App\Models\Payment::STATUS_PENDING,
+            'transaction_reference' => 'COD-MISMATCH',
+            'amount' => 99,
+            'currency' => $mismatchedLedger->currency,
+        ]);
+
+        try {
+            $service->update($mismatchedLedger, [
+                'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            ]);
+            $this->fail('COD delivery completion must reject a mismatched payment ledger.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PROCESSING, $mismatchedLedger->fresh()->status);
+        $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $mismatchedLedger->fresh()->delivery_status);
+        $this->assertSame(Order::PAYMENT_STATUS_UNPAID, $mismatchedLedger->fresh()->payment_status);
+        $this->assertNull($mismatchedLedger->fresh()->delivered_at);
+        $this->assertSame(\App\Models\Payment::STATUS_PENDING, $payment->fresh()->status);
+        $this->assertNull($payment->fresh()->paid_at);
+    }
+
     public function test_out_for_delivery_requires_a_recorded_shipment_timestamp(): void
     {
         $order = $this->createOrder([

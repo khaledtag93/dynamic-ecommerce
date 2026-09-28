@@ -211,7 +211,39 @@ class OrderActionService
                 $updates['delivery_status'] = Order::DELIVERY_STATUS_PREPARING;
             }
 
+            $codPayment = null;
             if ($newStatus === Order::STATUS_COMPLETED && $lockedOrder->payment_method === Order::PAYMENT_METHOD_COD) {
+                $codPayment = $lockedOrder->payments()
+                    ->where('method', Order::PAYMENT_METHOD_COD)
+                    ->latest('id')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $codPayment) {
+                    throw ValidationException::withMessages([
+                        'status' => __('Cash on Delivery cannot be completed without its payment ledger record.'),
+                    ]);
+                }
+
+                if (
+                    round((float) $codPayment->amount, 2) !== round((float) $lockedOrder->grand_total, 2)
+                    || strtoupper((string) $codPayment->currency) !== strtoupper((string) $lockedOrder->currency)
+                ) {
+                    throw ValidationException::withMessages([
+                        'status' => __('Cash on Delivery payment details do not match the order total and currency.'),
+                    ]);
+                }
+
+                if (! in_array($codPayment->status, [
+                    Payment::STATUS_PENDING,
+                    Payment::STATUS_AUTHORIZED,
+                    Payment::STATUS_PAID,
+                ], true)) {
+                    throw ValidationException::withMessages([
+                        'status' => __('Cash on Delivery payment is not in a state that can be settled.'),
+                    ]);
+                }
+
                 $updates['payment_status'] = Order::PAYMENT_STATUS_PAID;
 
                 if ($lockedOrder->delivery_status !== Order::DELIVERY_STATUS_DELIVERED) {
@@ -222,14 +254,12 @@ class OrderActionService
 
             $oldDeliveryStatus = $lockedOrder->delivery_status;
 
-            if ($newStatus === Order::STATUS_COMPLETED && $lockedOrder->payment_method === Order::PAYMENT_METHOD_COD) {
-                $lockedOrder->payments()
-                    ->whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED])
-                    ->update([
-                        'status' => Payment::STATUS_PAID,
-                        'paid_at' => now(),
-                        'failed_at' => null,
-                    ]);
+            if ($codPayment && in_array($codPayment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) {
+                $codPayment->update([
+                    'status' => Payment::STATUS_PAID,
+                    'paid_at' => now(),
+                    'failed_at' => null,
+                ]);
             }
 
             $lockedOrder->update($updates);
