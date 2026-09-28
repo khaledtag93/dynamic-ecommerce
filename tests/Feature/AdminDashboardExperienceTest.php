@@ -244,4 +244,17 @@ class AdminDashboardExperienceTest extends TestCase
         $this->assertStringContainsString("window.history.replaceState", $view);
     }
 
+    public function test_dashboard_low_stock_query_avoids_mysql_having_alias_trap(): void
+    {
+        $source = file_get_contents(app_path('Services/Commerce/InventoryAvailabilityService.php'));
+        $start = strpos($source, 'public function lowStockItems');
+        $end = strpos($source, 'public function expiryRiskItems', $start);
+        $method = substr($source, $start, $end - $start);
+
+        $this->assertStringNotContainsString('havingRaw(', $method);
+        $this->assertStringContainsString('$productStockExpression', $method);
+        $this->assertStringContainsString('$variantStockExpression', $method);
+        $this->assertStringContainsString('->whereRaw(', $method);
+    }
+
 }

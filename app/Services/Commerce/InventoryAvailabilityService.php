@@ -135,17 +135,30 @@ class InventoryAvailabilityService
             ->whereColumn('inventory_lots.product_id', 'products.id')
             ->whereNull('inventory_lots.product_variant_id');
 
+        $productStockExpression = '(CASE WHEN EXISTS (
+                SELECT 1 FROM inventory_lots
+                WHERE inventory_lots.product_id = products.id
+                  AND inventory_lots.product_variant_id IS NULL
+            ) THEN (
+                SELECT COALESCE(SUM(CASE WHEN quantity_on_hand > 0 AND (expiration_date IS NULL OR expiration_date >= ?) THEN quantity_on_hand ELSE 0 END), 0)
+                FROM inventory_lots
+                WHERE inventory_lots.product_id = products.id
+                  AND inventory_lots.product_variant_id IS NULL
+            ) ELSE products.quantity END)';
+
         $products = Product::query()
             ->select('products.*')
             ->selectSub($productLotCount, 'tracked_lot_count')
             ->selectSub($productSellable, 'sellable_stock')
             ->with('category')
             ->where('has_variants', false)
-            ->havingRaw(
-                '(CASE WHEN tracked_lot_count > 0 THEN sellable_stock ELSE quantity END) <= GREATEST(COALESCE(reorder_point, 0), COALESCE(low_stock_threshold, 0))'
+            ->whereRaw(
+                $productStockExpression . ' <= GREATEST(COALESCE(products.reorder_point, 0), COALESCE(products.low_stock_threshold, 0))',
+                [$today]
             )
             ->orderByRaw(
-                '(CASE WHEN tracked_lot_count > 0 THEN sellable_stock ELSE quantity END) - GREATEST(COALESCE(reorder_point, 0), COALESCE(low_stock_threshold, 0))'
+                $productStockExpression . ' - GREATEST(COALESCE(products.reorder_point, 0), COALESCE(products.low_stock_threshold, 0))',
+                [$today]
             )
             ->take($limit)
             ->get();
@@ -160,6 +173,15 @@ class InventoryAvailabilityService
             )
             ->whereColumn('inventory_lots.product_variant_id', 'product_variants.id');
 
+        $variantStockExpression = '(CASE WHEN EXISTS (
+                SELECT 1 FROM inventory_lots
+                WHERE inventory_lots.product_variant_id = product_variants.id
+            ) THEN (
+                SELECT COALESCE(SUM(CASE WHEN quantity_on_hand > 0 AND (expiration_date IS NULL OR expiration_date >= ?) THEN quantity_on_hand ELSE 0 END), 0)
+                FROM inventory_lots
+                WHERE inventory_lots.product_variant_id = product_variants.id
+            ) ELSE product_variants.stock END)';
+
         $variants = ProductVariant::query()
             ->select('product_variants.*')
             ->selectSub($variantLotCount, 'tracked_lot_count')
@@ -167,11 +189,13 @@ class InventoryAvailabilityService
             ->with('product.category')
             ->where('status', true)
             ->whereHas('product', fn ($query) => $query->where('has_variants', true))
-            ->havingRaw(
-                '(CASE WHEN tracked_lot_count > 0 THEN sellable_stock ELSE stock END) <= COALESCE(reorder_point, 0)'
+            ->whereRaw(
+                $variantStockExpression . ' <= COALESCE(product_variants.reorder_point, 0)',
+                [$today]
             )
             ->orderByRaw(
-                '(CASE WHEN tracked_lot_count > 0 THEN sellable_stock ELSE stock END) - COALESCE(reorder_point, 0)'
+                $variantStockExpression . ' - COALESCE(product_variants.reorder_point, 0)',
+                [$today]
             )
             ->take($limit)
             ->get();
