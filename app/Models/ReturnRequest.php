@@ -49,6 +49,25 @@ class ReturnRequest extends Model
         'status_badge_class',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (ReturnRequest $returnRequest): void {
+            $originalStatus = (string) $returnRequest->getOriginal('status');
+
+            if (in_array($originalStatus, [
+                self::STATUS_COMPLETED,
+                self::STATUS_REJECTED,
+                self::STATUS_CANCELLED,
+            ], true)) {
+                throw new \LogicException('Terminal return request history is immutable.');
+            }
+        });
+
+        static::deleting(function (): void {
+            throw new \LogicException('Return request history cannot be deleted.');
+        });
+    }
+
     public static function statusOptions(): array
     {
         return [

@@ -744,6 +744,64 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame($exchangeOrder->id, $return->fresh()->exchange_order_id);
     }
 
+    public function test_completed_return_request_history_is_immutable(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+        $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
+
+        $completed = $return->fresh();
+
+        foreach ([
+            ['status' => ReturnRequest::STATUS_RECEIVED],
+            ['exchange_order_id' => null],
+            ['completed_at' => null],
+        ] as $mutation) {
+            try {
+                $completed->fresh()->update($mutation);
+                $this->fail('Completed return request history must be immutable.');
+            } catch (\LogicException) {
+                $this->assertTrue(true);
+            }
+        }
+
+        try {
+            $completed->fresh()->delete();
+            $this->fail('Completed return request history must not be deletable.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
+
+        $fresh = $return->fresh();
+        $this->assertSame(ReturnRequest::STATUS_COMPLETED, $fresh->status);
+        $this->assertSame($exchangeOrder->id, $fresh->exchange_order_id);
+        $this->assertNotNull($fresh->completed_at);
+    }
+
     public function test_exchange_order_cannot_settle_multiple_return_requests(): void
     {
         $customer = User::factory()->create();
