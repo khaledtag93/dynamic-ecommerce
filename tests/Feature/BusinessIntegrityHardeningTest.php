@@ -533,6 +533,22 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull($payment->fresh()->refunded_at);
     }
 
+    public function test_database_preserves_order_payment_history_from_direct_order_deletion(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PAID);
+
+        try {
+            Order::query()->whereKey($order->id)->delete();
+            $this->fail('Database must preserve orders that own payment ledger history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id]);
+        $this->assertDatabaseHas('payments', ['id' => $payment->id]);
+    }
+
     public function test_database_preserves_order_refund_history_from_direct_order_deletion(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
