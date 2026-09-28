@@ -39,6 +39,27 @@ class ReturnRequestItem extends Model
         'restock_quantity' => 'integer',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (ReturnRequestItem $item): void {
+            $returnRequest = $item->returnRequest()->firstOrFail();
+            $dirty = array_keys($item->getDirty());
+            $allowed = match ($returnRequest->status) {
+                ReturnRequest::STATUS_REQUESTED => ['approved_quantity', 'updated_at'],
+                ReturnRequest::STATUS_APPROVED => ['received_quantity', 'restock_quantity', 'updated_at'],
+                default => ['updated_at'],
+            };
+
+            if (array_diff($dirty, $allowed) !== []) {
+                throw new \LogicException('Return request item lifecycle history is immutable outside its allowed workflow transition.');
+            }
+        });
+
+        static::deleting(function (): void {
+            throw new \LogicException('Return request item history cannot be deleted.');
+        });
+    }
+
     public static function reasonOptions(): array
     {
         return [

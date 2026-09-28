@@ -61,6 +61,58 @@ class ReturnRequestWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_received_rma_item_lifecycle_history_is_immutable(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DEFECTIVE,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+        $receivedItem = $returnItem->fresh();
+
+        try {
+            $receivedItem->update(['received_quantity' => 0]);
+            $this->fail('Received RMA quantities must be immutable after physical receipt.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
+
+        try {
+            $receivedItem->fresh()->delete();
+            $this->fail('RMA item history must not be deletable after receipt.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('return_request_items', [
+            'id' => $returnItem->id,
+            'received_quantity' => 1,
+            'restock_quantity' => 0,
+        ]);
+        $this->assertSame(ReturnRequest::STATUS_RECEIVED, $return->fresh()->status);
+    }
+
     public function test_refund_requires_same_order_rma_and_idempotency_includes_rma_identity(): void
     {
         $customer = User::factory()->create();
