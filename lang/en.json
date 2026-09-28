@@ -5124,6 +5124,7 @@
     "One or more receipt lines do not belong to this purchase.": "One or more receipt lines do not belong to this purchase.",
     "Purchase receiving quantities are inconsistent. Stock was not changed.": "Purchase receiving quantities are inconsistent. Stock was not changed.",
     "Received quantity cannot exceed the remaining ordered quantity.": "Received quantity cannot exceed the remaining ordered quantity.",
+    "Received quantity must be a whole number within the supported limit.": "Received quantity must be a whole number within the supported limit.",
     "Enter at least one quantity to receive.": "Enter at least one quantity to receive.",
     "Partial purchase receipt recorded and inventory updated.": "Partial purchase receipt recorded and inventory updated.",
     "This receipt request was already processed. No stock was added again.": "This receipt request was already processed. No stock was added again.",

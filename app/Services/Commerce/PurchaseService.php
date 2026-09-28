@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class PurchaseService
 {
+    private const PURCHASE_QUANTITY_MAX = 4294967295;
+
     public function __construct(
         protected InventoryService $inventoryService,
         protected AdminActivityLogService $activityLogService,
@@ -126,6 +128,27 @@ class PurchaseService
             $adminUserId
         ) {
             $idempotencyKey = trim($idempotencyKey);
+
+            if ($quantities !== null) {
+                foreach ($quantities as $itemId => $quantity) {
+                    $isWholeNumber = is_int($quantity)
+                        || (is_string($quantity) && preg_match('/^\d+$/', $quantity));
+
+                    if (! $isWholeNumber) {
+                        throw ValidationException::withMessages([
+                            "items.{$itemId}" => __('Received quantity must be a whole number within the supported limit.'),
+                        ]);
+                    }
+
+                    $normalizedQuantity = (int) $quantity;
+                    if ($normalizedQuantity < 0 || $normalizedQuantity > self::PURCHASE_QUANTITY_MAX) {
+                        throw ValidationException::withMessages([
+                            "items.{$itemId}" => __('Received quantity must be a whole number within the supported limit.'),
+                        ]);
+                    }
+                }
+            }
+
             $canonicalQuantities = $quantities === null
                 ? null
                 : collect($quantities)->mapWithKeys(

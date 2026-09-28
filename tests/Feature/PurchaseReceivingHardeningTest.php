@@ -56,6 +56,40 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertSame(2, InventoryMovement::where('purchase_id', $purchase->id)->count());
     }
 
+    public function test_partial_receiving_service_rejects_fractional_scientific_and_overflow_quantities(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        $service = app(PurchaseService::class);
+
+        foreach (['1.9', '1e1', '4294967296'] as $invalidQuantity) {
+            try {
+                $service->receivePartial(
+                    $purchase,
+                    [$item->id => $invalidQuantity],
+                    (string) Str::uuid()
+                );
+                $this->fail('Invalid partial receipt quantity must not be coerced into an integer.');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey("items.{$item->id}", $exception->errors());
+            }
+        }
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(0, (int) $item->fresh()->received_quantity);
+        $this->assertDatabaseCount('purchase_receipts', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+
+        $this->assertTrue($service->receivePartial(
+            $purchase,
+            [$item->id => '1'],
+            (string) Str::uuid()
+        ));
+        $this->assertSame(6, (int) $product->fresh()->quantity);
+        $this->assertSame(1, (int) $item->fresh()->received_quantity);
+    }
+
     public function test_receiving_rejects_purchase_whose_order_date_is_still_in_the_future(): void
     {
         $product = $this->product(5);

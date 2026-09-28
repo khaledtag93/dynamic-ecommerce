@@ -5814,6 +5814,7 @@
     "One or more receipt lines do not belong to this purchase.": "بند استلام واحد أو أكثر لا ينتمي إلى أمر الشراء هذا.",
     "Purchase receiving quantities are inconsistent. Stock was not changed.": "كميات استلام أمر الشراء غير متسقة. لم يتم تغيير المخزون.",
     "Received quantity cannot exceed the remaining ordered quantity.": "لا يمكن أن تتجاوز الكمية المستلمة الكمية المتبقية من الطلب.",
+    "Received quantity must be a whole number within the supported limit.": "يجب أن تكون الكمية المستلمة رقمًا صحيحًا وضمن الحد المدعوم.",
     "Enter at least one quantity to receive.": "أدخل كمية واحدة على الأقل للاستلام.",
     "Partial purchase receipt recorded and inventory updated.": "تم تسجيل الاستلام الجزئي وتحديث المخزون.",
     "This receipt request was already processed. No stock was added again.": "تمت معالجة طلب الاستلام هذا بالفعل. لم تتم إضافة المخزون مرة أخرى.",
