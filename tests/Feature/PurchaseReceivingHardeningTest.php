@@ -453,7 +453,7 @@ class PurchaseReceivingHardeningTest extends TestCase
     public function test_purchase_details_preserve_purchase_currency_for_item_and_receipt_costs(): void
     {
         $admin = $this->createSuperAdmin();
-        $product = $this->product();
+        $product = $this->product(0);
         $purchase = $this->purchase(Purchase::STATUS_ORDERED);
         $purchase->update(['currency' => 'USD']);
         $item = $this->item($purchase, $product, 2, 10);
