@@ -2713,6 +2713,7 @@
     "Only open payroll periods can generate a payroll run.": "يمكن إنشاء تشغيل رواتب للفترات المفتوحة فقط.",
     "Only ordered purchases can be received.": "يمكن استلام أوامر الشراء التي حالتها مطلوب فقط.",
     "Only ordered purchases can be verified by barcode.": "يمكن التحقق بالباركود فقط لأوامر الشراء بحالة مطلوب.",
+    "Purchase items cannot be barcode-verified before the purchase order date.": "لا يمكن التحقق من بنود أمر الشراء بالباركود قبل تاريخ أمر الشراء نفسه.",
     "Only ordered purchases can change barcode verification counts.": "يمكن تعديل أعداد التحقق بالباركود فقط لأوامر الشراء بحالة مطلوب.",
     "Only pending correction requests can be reviewed.": "يمكن مراجعة طلبات التصحيح المعلقة فقط.",
     "Only pending leave requests can be approved.": "يمكن اعتماد طلبات الإجازة المعلقة فقط.",

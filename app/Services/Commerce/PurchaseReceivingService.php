@@ -78,6 +78,12 @@ class PurchaseReceivingService
                 ]);
             }
 
+            if ($lockedPurchase->purchase_date && $lockedPurchase->purchase_date->isAfter(today())) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Purchase items cannot be barcode-verified before the purchase order date.'),
+                ]);
+            }
+
             $matchingItems = PurchaseItem::query()
                 ->where('purchase_id', $lockedPurchase->id)
                 ->where('product_id', $product->id)

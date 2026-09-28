@@ -2615,6 +2615,7 @@
     "No catalog item uses this barcode. Nothing was verified.": "No catalog item uses this barcode. Nothing was verified.",
     "This barcode identifies a product with variants, not one exact variant. Scan the variant barcode instead.": "This barcode identifies a product with variants, not one exact variant. Scan the variant barcode instead.",
     "Only ordered purchases can be verified by barcode.": "Only ordered purchases can be verified by barcode.",
+    "Purchase items cannot be barcode-verified before the purchase order date.": "Purchase items cannot be barcode-verified before the purchase order date.",
     "The scanned item is not part of this purchase. Nothing was verified.": "The scanned item is not part of this purchase. Nothing was verified.",
     "The selected purchase line does not match the scanned barcode.": "The selected purchase line does not match the scanned barcode.",
     "Purchase items must have a positive ordered quantity before barcode verification.": "Purchase items must have a positive ordered quantity before barcode verification.",

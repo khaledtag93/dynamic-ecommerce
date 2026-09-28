@@ -219,6 +219,24 @@ class PurchaseBarcodeReceivingTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 0);
     }
 
+    public function test_scan_is_rejected_before_purchase_order_date_without_creating_progress(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('Future Purchase Product', '6223000000009', 1, false);
+        $purchase = $this->purchase();
+        $purchase->update(['purchase_date' => now()->addDay()->toDateString()]);
+        $this->item($purchase, $product, 1, 10);
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.receiving.scan', $purchase), [
+                'barcode' => $product->barcode,
+            ])->assertSessionHasErrors('purchase');
+
+        $this->assertDatabaseCount('purchase_receiving_progress', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+        $this->assertSame(1, (int) $product->fresh()->quantity);
+    }
+
     public function test_scan_is_rejected_after_purchase_is_received(): void
     {
         $admin = $this->createSuperAdmin();
