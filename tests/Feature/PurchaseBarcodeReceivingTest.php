@@ -235,7 +235,7 @@ class PurchaseBarcodeReceivingTest extends TestCase
                 'barcode' => $product->barcode,
             ])->assertSessionHasNoErrors();
 
-        $this->post(route('admin.purchases.receiving.complete', $purchase))
+        $this->post(route('admin.purchases.receive-verified', $purchase))
             ->assertSessionHas('success');
 
         $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
