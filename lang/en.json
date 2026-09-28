@@ -5146,5 +5146,6 @@
     "Cancel this purchase order?": "Cancel this purchase order?",
     "No stock will be changed. Purchases with received stock require receipt reversal instead.": "No stock will be changed. Purchases with received stock require receipt reversal instead.",
     "Cancellation reason": "Cancellation reason",
-    "Purchase cancelled": "Purchase cancelled"
+    "Purchase cancelled": "Purchase cancelled",
+    "Open and received purchase value; drafts and cancelled orders are excluded.": "Open and received purchase value; drafts and cancelled orders are excluded."
 }

@@ -5836,5 +5836,6 @@
     "Cancel this purchase order?": "هل تريد إلغاء أمر الشراء هذا؟",
     "No stock will be changed. Purchases with received stock require receipt reversal instead.": "لن يتم تغيير المخزون. أوامر الشراء التي استُلم منها مخزون تحتاج إلى عكس الاستلام بدلًا من الإلغاء.",
     "Cancellation reason": "سبب الإلغاء",
-    "Purchase cancelled": "تم إلغاء أمر الشراء"
+    "Purchase cancelled": "تم إلغاء أمر الشراء",
+    "Open and received purchase value; drafts and cancelled orders are excluded.": "قيمة أوامر الشراء المفتوحة والمستلمة؛ المسودات والأوامر الملغاة غير محسوبة."
 }

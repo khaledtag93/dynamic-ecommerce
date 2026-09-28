@@ -13,7 +13,7 @@
             ['label' => __('Purchase orders'), 'value' => $stats['total'], 'copy' => __('All procurement records.'), 'icon' => 'mdi-clipboard-text-outline'],
             ['label' => __('Awaiting receipt'), 'value' => $stats['awaiting'], 'copy' => __('Orders that still need stock receiving.'), 'icon' => 'mdi-truck-clock-outline'],
             ['label' => __('Received'), 'value' => $stats['received'], 'copy' => __('Purchases already added to inventory.'), 'icon' => 'mdi-package-check'],
-            ['label' => __('Procurement value'), 'value' => 'EGP ' . number_format($stats['value'], 2), 'copy' => __('Total recorded purchase value.'), 'icon' => 'mdi-cash-multiple'],
+            ['label' => __('Procurement value'), 'value' => 'EGP ' . number_format($stats['value'], 2), 'copy' => __('Open and received purchase value; drafts and cancelled orders are excluded.'), 'icon' => 'mdi-cash-multiple'],
         ] as $card)
             <div class="col-md-6 col-xl-3">
                 <x-admin.stat-card

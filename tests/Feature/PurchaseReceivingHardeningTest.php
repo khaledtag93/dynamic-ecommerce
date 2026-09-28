@@ -407,6 +407,23 @@ class PurchaseReceivingHardeningTest extends TestCase
             ->assertDontSee($cancelled->reference);
     }
 
+    public function test_procurement_value_excludes_drafts_and_cancelled_purchases(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $this->purchase(Purchase::STATUS_ORDERED)->update(['grand_total' => 100]);
+        $this->purchase(Purchase::STATUS_PARTIALLY_RECEIVED)->update(['grand_total' => 200]);
+        $this->purchase(Purchase::STATUS_RECEIVED)->update(['grand_total' => 300]);
+        $this->purchase(Purchase::STATUS_DRAFT)->update(['grand_total' => 400]);
+        $this->purchase(Purchase::STATUS_CANCELLED)->update(['grand_total' => 500]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.purchases.index'))
+            ->assertOk()
+            ->assertSee('EGP 600.00')
+            ->assertSee(__('Open and received purchase value; drafts and cancelled orders are excluded.'));
+    }
+
     private function assertInvalidReceipt(Purchase $purchase): void
     {
         try {

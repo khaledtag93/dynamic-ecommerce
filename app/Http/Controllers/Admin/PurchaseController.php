@@ -69,7 +69,7 @@ class PurchaseController extends Controller
         $stats = $queueStats + [
             'total' => Purchase::count(),
             'received' => Purchase::where('status', Purchase::STATUS_RECEIVED)->count(),
-            'value' => (float) Purchase::sum('grand_total'),
+            'value' => (float) Purchase::whereIn('status', [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED, Purchase::STATUS_RECEIVED])->sum('grand_total'),
         ];
 
         $suppliers = Supplier::orderBy('name')->get(['id', 'name', 'company']);
