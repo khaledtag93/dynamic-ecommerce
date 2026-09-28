@@ -156,6 +156,10 @@ class PaymentService
                 return $lockedPayment;
             }
 
+            if ($lockedOrder && $status === Payment::STATUS_PAID) {
+                $this->assertCaptureWithinOrderTotal($lockedOrder, $lockedPayment);
+            }
+
             $meta = array_merge($lockedPayment->meta ?? [], Arr::except($context, ['notes', 'provider_status']));
             $meta = $this->pushPaymentEvent($meta, 'manual_status_update', __('Payment status was updated manually from the admin panel.'));
 
@@ -301,6 +305,37 @@ class PaymentService
                 'provider_status' => $context['provider_status'] ?? null,
                 'at' => now()->toDateTimeString(),
             ];
+
+            if ($lockedOrder && $status === Payment::STATUS_PAID) {
+                $projectedPaidTotal = $this->projectedPaidTotal($lockedOrder, $lockedPayment);
+                $orderTotal = round((float) $lockedOrder->grand_total, 2);
+
+                if ($projectedPaidTotal > $orderTotal) {
+                    $exception = [
+                        'code' => 'payment_overcapture',
+                        'payment_id' => $lockedPayment->id,
+                        'transaction_id' => $incomingTransactionId,
+                        'projected_paid_total' => $projectedPaidTotal,
+                        'order_total' => $orderTotal,
+                        'at' => now()->toIso8601String(),
+                        'refund_required' => true,
+                    ];
+
+                    $meta['payment_overcapture'] = $exception;
+                    $orderMeta = $lockedOrder->meta ?? [];
+                    $orderMeta['payment_overcapture'] = $exception;
+                    $lockedOrder->update(['meta' => $orderMeta]);
+
+                    $this->activityLogService->log(
+                        'commerce',
+                        'payment_overcapture_detected',
+                        __('Captured payments exceeded the order total. Refund review is required before fulfillment.'),
+                        null,
+                        $lockedOrder,
+                        $exception
+                    );
+                }
+            }
 
             if ($lockedOrder && $lockedOrder->status === Order::STATUS_CANCELLED) {
                 if ($status !== Payment::STATUS_PAID) {
@@ -794,6 +829,30 @@ class PaymentService
             ->whereKey($orderId)
             ->lockForUpdate()
             ->first();
+    }
+
+    protected function projectedPaidTotal(Order $order, Payment $payment): float
+    {
+        $otherPaidTotal = $order->payments()
+            ->where('id', '!=', $payment->id)
+            ->where('status', Payment::STATUS_PAID)
+            ->lockForUpdate()
+            ->get(['id', 'amount'])
+            ->sum(fn (Payment $paidPayment) => (float) $paidPayment->amount);
+
+        return round((float) $otherPaidTotal + (float) $payment->amount, 2);
+    }
+
+    protected function assertCaptureWithinOrderTotal(Order $order, Payment $payment): void
+    {
+        $projectedPaidTotal = $this->projectedPaidTotal($order, $payment);
+        $orderTotal = round((float) $order->grand_total, 2);
+
+        if ($projectedPaidTotal > $orderTotal) {
+            throw ValidationException::withMessages([
+                'status' => __('Captured payments cannot exceed the order total. Review existing paid payments before recording another capture.'),
+            ]);
+        }
     }
 
     public function allowedManualStatuses(Payment $payment): array

@@ -741,6 +741,98 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
     }
 
+    public function test_manual_payment_capture_cannot_overpay_order_total(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'MANUAL-PAID-60',
+            'amount' => 60,
+            'currency' => $order->currency,
+            'paid_at' => now(),
+        ]);
+
+        $second = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PENDING,
+            'transaction_reference' => 'MANUAL-PENDING-50',
+            'amount' => 50,
+            'currency' => $order->currency,
+        ]);
+
+        try {
+            app(PaymentService::class)->updateStatus($second, Payment::STATUS_PAID);
+            $this->fail('Manual capture must not push paid payments above the order total.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Payment::STATUS_PENDING, $second->fresh()->status);
+        $this->assertNull($second->fresh()->paid_at);
+    }
+
+    public function test_gateway_overcapture_is_recorded_but_blocks_fulfillment(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_ONLINE]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'GATEWAY-PAID-70',
+            'amount' => 70,
+            'currency' => $order->currency,
+            'paid_at' => now()->subMinute(),
+        ]);
+
+        $second = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PENDING,
+            'transaction_reference' => 'GATEWAY-PENDING-40',
+            'amount' => 40,
+            'currency' => $order->currency,
+        ]);
+
+        app(PaymentService::class)->markAsPaid($second, [
+            'transaction_id' => 'GATEWAY-PAID-40',
+            'provider_status' => 'paid',
+            'hmac_valid' => true,
+        ]);
+
+        $this->assertSame(Payment::STATUS_PAID, $second->fresh()->status);
+        $this->assertSame('payment_overcapture', data_get($order->fresh()->meta, 'payment_overcapture.code'));
+        $this->assertTrue((bool) data_get($order->fresh()->meta, 'payment_overcapture.refund_required'));
+        $this->assertSame(110.0, (float) data_get($order->fresh()->meta, 'payment_overcapture.projected_paid_total'));
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class)
+        );
+
+        try {
+            $service->updateStatus($order->fresh(), Order::STATUS_PROCESSING);
+            $this->fail('Overcaptured orders must not enter fulfillment.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+    }
+
     public function test_non_cod_fulfillment_requires_paid_ledger_evidence(): void
     {
         $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();

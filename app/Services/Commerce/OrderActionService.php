@@ -345,9 +345,9 @@ class OrderActionService
             fn (Payment $payment) => strtoupper((string) $payment->currency) !== strtoupper((string) $order->currency)
         );
 
-        if ($currencyMismatch || $paidTotal < round((float) $order->grand_total, 2)) {
+        if ($currencyMismatch || $paidTotal !== round((float) $order->grand_total, 2)) {
             throw ValidationException::withMessages([
-                'status' => __('Paid payment ledger does not fully cover this order total and currency.'),
+                'status' => __('Paid payment ledger must exactly match this order total and currency before fulfillment can continue.'),
             ]);
         }
 
