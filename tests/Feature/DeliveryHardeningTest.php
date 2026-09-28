@@ -285,6 +285,32 @@ class DeliveryHardeningTest extends TestCase
         $this->assertSame(Order::DELIVERY_STATUS_SHIPPED, $order->fresh()->delivery_status);
     }
 
+    public function test_shipped_delivery_requires_shipment_timestamp_before_delivered(): void
+    {
+        $order = $this->createOrder([
+            'delivery_status' => Order::DELIVERY_STATUS_SHIPPED,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'shipped_at' => null,
+        ]);
+
+        $whatsApp = Mockery::mock(WhatsAppServiceInterface::class);
+        $whatsApp->shouldNotReceive('queueDeliveryUpdate');
+
+        try {
+            (new DeliveryService($whatsApp, app(OrderActionService::class)))->update($order, [
+                'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            ]);
+            $this->fail('A shipped delivery without shipped_at must not be marked Delivered.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('delivery_status', $exception->errors());
+        }
+
+        $fresh = $order->fresh();
+        $this->assertSame(Order::DELIVERY_STATUS_SHIPPED, $fresh->delivery_status);
+        $this->assertNull($fresh->shipped_at);
+        $this->assertNull($fresh->delivered_at);
+    }
+
     public function test_valid_status_changes_set_lifecycle_timestamps_and_notify_once_per_change(): void
     {
         Notification::fake();

@@ -68,6 +68,16 @@ class DeliveryService
                     ]);
                 }
 
+                if (
+                    $newStatus === Order::DELIVERY_STATUS_DELIVERED
+                    && $lockedOrder->delivery_method !== Order::DELIVERY_METHOD_PICKUP
+                    && ! $lockedOrder->shipped_at
+                ) {
+                    throw ValidationException::withMessages([
+                        'delivery_status' => __('A shipped delivery requires a shipment timestamp before it can be marked Delivered.'),
+                    ]);
+                }
+
                 if ($newStatus === Order::DELIVERY_STATUS_DELIVERED && ! $lockedOrder->delivered_at) {
                     $updates['delivered_at'] = now();
                 }
