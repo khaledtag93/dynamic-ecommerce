@@ -465,7 +465,10 @@ class ReturnRequestService
                     ]);
                 }
 
-                $exchangeOrder = Order::query()->find($exchangeOrderId);
+                $exchangeOrder = Order::query()
+                    ->whereKey($exchangeOrderId)
+                    ->lockForUpdate()
+                    ->first();
                 if (! $exchangeOrder) {
                     throw ValidationException::withMessages([
                         'exchange_order_id' => __('The selected exchange order does not exist.'),
@@ -481,6 +484,15 @@ class ReturnRequestService
                 if ($exchangeOrder->status === Order::STATUS_CANCELLED) {
                     throw ValidationException::withMessages([
                         'exchange_order_id' => __('A cancelled order cannot be used as an exchange order.'),
+                    ]);
+                }
+
+                if (ReturnRequest::query()
+                    ->where('exchange_order_id', $exchangeOrder->id)
+                    ->where('id', '!=', $locked->id)
+                    ->exists()) {
+                    throw ValidationException::withMessages([
+                        'exchange_order_id' => __('This exchange order is already linked to another return request.'),
                     ]);
                 }
             }

@@ -613,6 +613,71 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertNull($return->fresh()->exchange_order_id);
     }
 
+    public function test_exchange_order_cannot_settle_multiple_return_requests(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $firstOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $secondOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+
+        $makeItem = function (Order $order) use ($product) {
+            return $order->items()->create([
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'sku' => $product->sku,
+                'unit_price' => 100,
+                'unit_cost' => 40,
+                'quantity' => 1,
+                'line_total' => 100,
+                'profit_amount' => 60,
+            ]);
+        };
+
+        $service = app(ReturnRequestService::class);
+        $returns = collect([$firstOrder, $secondOrder])->map(function (Order $order) use ($service, $customer, $manager, $makeItem) {
+            $item = $makeItem($order);
+            $return = $service->createForCustomer($order, $customer, [[
+                'order_item_id' => $item->id,
+                'quantity' => 1,
+                'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+            ]]);
+            $returnItem = $return->items()->firstOrFail();
+            $service->approve($return, [$returnItem->id => 1], null, $manager);
+            $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+            return $return->fresh();
+        });
+
+        $firstReturn = $returns->get(0);
+        $secondReturn = $returns->get(1);
+        $service->complete($firstReturn, 0, $exchangeOrder->id, null, $manager);
+
+        try {
+            $service->complete($secondReturn, 0, $exchangeOrder->id, null, $manager);
+            $this->fail('An exchange order must not settle more than one return request.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('exchange_order_id', $exception->errors());
+        }
+
+        $this->assertSame($exchangeOrder->id, $firstReturn->fresh()->exchange_order_id);
+        $this->assertSame(ReturnRequest::STATUS_RECEIVED, $secondReturn->fresh()->status);
+        $this->assertNull($secondReturn->fresh()->exchange_order_id);
+
+        try {
+            ReturnRequest::query()
+                ->whereKey($secondReturn->id)
+                ->update(['exchange_order_id' => $exchangeOrder->id]);
+            $this->fail('Database uniqueness must prevent exchange order reuse.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertNull($secondReturn->fresh()->exchange_order_id);
+    }
+
     public function test_customer_can_create_return_through_live_endpoint(): void
     {
         $customer = User::factory()->create();
