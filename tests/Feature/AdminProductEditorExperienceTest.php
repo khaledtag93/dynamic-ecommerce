@@ -18,6 +18,16 @@ class AdminProductEditorExperienceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_product_index_route_renders_for_authenticated_admin(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $this->actingAs($owner)
+            ->get(route('admin.products.index'))
+            ->assertOk()
+            ->assertSeeLivewire(Index::class);
+    }
+
     public function test_product_editor_renders_publish_readiness_and_retail_identifiers(): void
     {
         $owner = $this->createSuperAdmin();

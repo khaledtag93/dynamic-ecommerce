@@ -9,14 +9,9 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $products = Product::query()
-            ->with(['translations', 'category.translations', 'brand', 'mainImage', 'defaultVariant'])
-            ->latest('id')
-            ->paginate(10);
-
-        return view('admin.products.index', compact('products'));
+        return view('admin.products.index');
     }
 
     public function create()
