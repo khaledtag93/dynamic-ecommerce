@@ -1,5 +1,16 @@
 # MASTER PROJECT STATUS
 
+## Supplier obligations / Operational AP integrity source checkpoint — 2026-09-28
+
+- Branch: `sec03-framework-upgrade`.
+- Latest application source HEAD: `73f5c6f7` — `fix: preserve supplier payment history on void`.
+- Hardening CI #2165 is Green on `cff67757`. Hardening CI #2166 is running on newest source `73f5c6f7`; keep that head IN REVIEW until the run completes.
+- Last explicitly verified QAS application remains `a91ff83e`; the newer Supplier/AP hardening chain is **not yet claimed as deployed to QAS**.
+- Production is unchanged and remains behind OPS-01, PAY-01, OPS-02 and Production scheduler/queue gates.
+- The active ERP-integrity slice now protects Supplier Operational AP across received-value payable authority, payment/void idempotency, payment-vs-receipt reversal constraints, least-privilege settlement permissions, effective-date bounds, historical as-of payable calculations, historical treatment of later voids, strict money precision, currency-safe Purchase reporting/details, and active-Supplier enforcement when creating new POs.
+- Shipping/tax are intentionally not added to Operational AP payable yet; invoice matching / GL / landed-cost allocation require an explicit later accounting design rather than silently changing the current payable contract.
+- Next: obtain Green CI for the newest source head, continue the next genuine accounting/business-integrity boundary, then deploy a stable checkpoint deliberately to QAS for controlled authenticated smoke before any QAS-closed claim.
+
 ## Roadmap refresh — external product review synthesis — 2026-09-28
 
 This refresh does **not** change the active execution order. Correctness, financial/business integrity and Production safety remain ahead of visual polish. The external review is treated as a checklist, not as an evidence-based score of Flowra.

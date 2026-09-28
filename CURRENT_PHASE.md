@@ -1,5 +1,30 @@
 # CURRENT PHASE
 
+## Supplier obligations / Operational AP integrity — active source checkpoint — 2026-09-28
+
+- Active branch: `sec03-framework-upgrade`.
+- **Latest application source HEAD:** `73f5c6f7` — `fix: preserve supplier payment history on void`.
+- Latest confirmed Green CI in this active chain: **Hardening CI #2165** on `cff67757` (`fix: require active supplier for purchases`). **Hardening CI #2166** is currently running on `73f5c6f7`; do not mark that newest head Green until the run completes.
+- **Last explicitly verified QAS application remains `a91ff83e`** from the supplier-settlement runtime smoke / Dashboard MySQL fix checkpoint. Do not imply that `73f5c6f7` is on QAS until it is deliberately deployed and verified.
+- **Production remains unchanged.** OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification remain independent release gates.
+
+Closed in the current Supplier Obligations / Operational AP source slice:
+- received-item-value supplier payable authority; shipping/tax remain outside Operational AP until a deliberate invoice/GL layer exists;
+- partial supplier settlement, overpayment prevention, idempotent recording and void ledger;
+- receipt reversal blocked when active supplier payments would exceed remaining received value;
+- finance vs inventory responsibility split, including dedicated `purchasing.settlements.manage` permission and role-aware UI actions;
+- supplier payment effective dates cannot predate the first active receipt or be future-dated;
+- backdated payments are bounded by received value available **as of the payment date**, not current receipts;
+- voiding a settlement does not erase it from historical as-of calculations before its `voided_at` timestamp;
+- supplier-payment service boundary enforces exact `DECIMAL(12,2)` money format and rejects over-precision/scientific notation instead of truncating silently;
+- Purchase currency display/aggregation is currency-safe and mixed currencies are never summed under one currency label;
+- new Purchase Orders require an active Supplier both at validation time and again under transaction lock to avoid inactive-supplier race conditions;
+- supplier deletion remains serialized and purchase history prevents deletion of a supplier already referenced by procurement history.
+
+**Immediate next action:** finish CI confirmation for the newest Supplier/AP commits, then continue the same Business Process & ERP Integrity Audit at the next accounting boundary. Do not start visual-polish or unrelated feature work while this integrity slice is active. After a stable source/CI checkpoint, deploy deliberately to QAS and run a controlled authenticated supplier-settlement smoke before calling the slice QAS-closed.
+
+### Earlier checkpoints below
+
 ## Purchasing + Inventory / Lot-Batch QAS checkpoint — 2026-09-28
 
 - Active branch: `sec03-framework-upgrade`.
