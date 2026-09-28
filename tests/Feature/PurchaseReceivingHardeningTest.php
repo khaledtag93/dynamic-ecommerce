@@ -622,6 +622,35 @@ class PurchaseReceivingHardeningTest extends TestCase
         ]);
     }
 
+    public function test_database_preserves_inventory_lot_purchase_history_from_direct_purchase_deletion(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $lot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'purchase_id' => $purchase->id,
+            'lot_code' => 'PURCHASE-AUDIT-'.Str::upper(Str::random(6)),
+            'source_type' => 'purchase_receipt',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 10,
+            'received_at' => now(),
+        ]);
+
+        try {
+            Purchase::query()->whereKey($purchase->id)->delete();
+            $this->fail('Database must preserve purchases referenced by inventory lot history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('purchases', ['id' => $purchase->id]);
+        $this->assertDatabaseHas('inventory_lots', [
+            'id' => $lot->id,
+            'purchase_id' => $purchase->id,
+        ]);
+    }
+
     public function test_database_preserves_inventory_movement_purchase_history_from_direct_purchase_deletion(): void
     {
         $purchase = $this->purchase();
