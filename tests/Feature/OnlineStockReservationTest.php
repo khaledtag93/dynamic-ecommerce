@@ -96,6 +96,28 @@ class OnlineStockReservationTest extends TestCase
         $this->assertSame($orderA->id, (int) $reservationA->fresh()->order_id);
     }
 
+    public function test_database_preserves_stock_reservation_history_from_direct_order_item_deletion(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5, 100);
+        $order = $this->placeOnlineOrder($user, $product, 1);
+        $item = $order->items()->firstOrFail();
+        $reservation = OrderStockReservation::query()
+            ->where('order_id', $order->id)
+            ->where('order_item_id', $item->id)
+            ->firstOrFail();
+
+        try {
+            $item->delete();
+            $this->fail('Database must preserve order items that own stock reservation history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('order_items', ['id' => $item->id]);
+        $this->assertDatabaseHas('order_stock_reservations', ['id' => $reservation->id]);
+    }
+
     public function test_database_rejects_cross_order_lot_movement_ownership(): void
     {
         $userA = User::factory()->create();
