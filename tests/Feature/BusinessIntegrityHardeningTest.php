@@ -25,6 +25,7 @@ use App\Services\Commerce\OrderNotificationService;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\StockReservationService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -530,6 +531,27 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
         $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
         $this->assertNull($payment->fresh()->refunded_at);
+    }
+
+    public function test_database_preserves_order_refund_history_from_direct_order_deletion(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $refund = OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 10,
+            'reason' => 'Audit history preservation',
+            'processed_at' => now(),
+        ]);
+
+        try {
+            Order::query()->whereKey($order->id)->delete();
+            $this->fail('Database must preserve orders that own refund ledger history.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id]);
+        $this->assertDatabaseHas('order_refunds', ['id' => $refund->id]);
     }
 
     public function test_direct_refund_idempotency_prevents_replayed_financial_mutation(): void
