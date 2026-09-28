@@ -13,6 +13,7 @@ use App\Models\PurchaseReceivingProgress;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Services\Commerce\PurchaseReceiptReversalService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -220,6 +221,29 @@ class PurchaseBarcodeReceivingTest extends TestCase
         $this->assertSame(4, (int) $product->fresh()->quantity);
         $this->assertSame(Purchase::STATUS_ORDERED, $purchase->fresh()->status);
         $this->assertDatabaseCount('inventory_movements', 0);
+    }
+
+    public function test_database_rejects_cross_purchase_receiving_progress_ownership(): void
+    {
+        $product = $this->product('Ownership Constraint Product', '6223000000013', 1, false);
+        $purchase = $this->purchase();
+        $otherPurchase = $this->purchase();
+        $item = $this->item($purchase, $product, 1, 10);
+
+        try {
+            PurchaseReceivingProgress::query()->create([
+                'purchase_id' => $otherPurchase->id,
+                'purchase_item_id' => $item->id,
+                'verified_quantity' => 1,
+            ]);
+            $this->fail('Database must reject receiving progress linked to an item from another purchase.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseMissing('purchase_receiving_progress', [
+            'purchase_item_id' => $item->id,
+        ]);
     }
 
     public function test_barcode_receipt_reversal_rejects_cross_purchase_progress_without_mutation(): void
