@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CartItem;
+use App\Models\InventoryLotMovement;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\OrderStockReservation;
@@ -93,6 +94,31 @@ class OnlineStockReservationTest extends TestCase
         }
 
         $this->assertSame($orderA->id, (int) $reservationA->fresh()->order_id);
+    }
+
+    public function test_database_rejects_cross_order_lot_movement_ownership(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $productA = $this->makeProduct(5, 100);
+        $productB = $this->makeProduct(5, 120);
+        $orderA = $this->placeOnlineOrder($userA, $productA, 1);
+        $orderB = $this->placeOnlineOrder($userB, $productB, 1);
+
+        $lotMovement = InventoryLotMovement::query()
+            ->where('order_id', $orderA->id)
+            ->whereNotNull('order_item_id')
+            ->whereNotNull('order_stock_reservation_id')
+            ->firstOrFail();
+
+        try {
+            $lotMovement->forceFill(['order_id' => $orderB->id])->save();
+            $this->fail('Database must reject lot movement ownership that crosses orders.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertSame($orderA->id, (int) $lotMovement->fresh()->order_id);
     }
 
     public function test_successful_online_payment_commits_reservation_without_second_stock_decrease(): void
