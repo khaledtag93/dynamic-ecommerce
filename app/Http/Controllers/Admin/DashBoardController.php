@@ -8,13 +8,13 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\User;
+use App\Services\Commerce\InventoryAvailabilityService;
 use Illuminate\Http\Request;
 
 class DashBoardController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, InventoryAvailabilityService $inventoryAvailabilityService)
     {
         $q = mb_substr(trim((string) $request->string('q')), 0, 80);
         $like = $this->likePattern($q);
@@ -100,22 +100,10 @@ class DashBoardController extends Controller
             ];
         }
 
-        $lowStockProductQuery = Product::query()
-            ->where('has_variants', false)
-            ->where(function ($query) {
-                $query->whereColumn('quantity', '<=', 'reorder_point')
-                    ->orWhereColumn('quantity', '<=', 'low_stock_threshold');
-            });
-
-        $lowStockVariantQuery = ProductVariant::query()
-            ->where('status', true)
-            ->whereHas('product', fn ($query) => $query->where('has_variants', true))
-            ->whereColumn('stock', '<=', 'reorder_point');
-
         $stats = [
             'orders_pending' => $can('orders.view') ? Order::where('status', Order::STATUS_PENDING)->count() : 0,
             'products_low_stock' => $can('catalog.manage')
-                ? (clone $lowStockProductQuery)->count() + (clone $lowStockVariantQuery)->count()
+                ? $inventoryAvailabilityService->lowStockItemCount()
                 : 0,
         ];
 
@@ -128,26 +116,7 @@ class DashBoardController extends Controller
             : collect();
 
         $lowStockItems = $can('catalog.manage')
-            ? (clone $lowStockProductQuery)
-                ->get()
-                ->map(fn (Product $product) => [
-                    'product' => $product,
-                    'variant' => null,
-                    'stock' => (int) $product->quantity,
-                    'threshold' => max((int) $product->reorder_point, (int) $product->low_stock_threshold),
-                ])
-                ->concat((clone $lowStockVariantQuery)
-                    ->with('product')
-                    ->get()
-                    ->map(fn (ProductVariant $variant) => [
-                        'product' => $variant->product,
-                        'variant' => $variant,
-                        'stock' => (int) $variant->stock,
-                        'threshold' => (int) $variant->reorder_point,
-                    ]))
-                ->sortBy(fn (array $item) => $item['stock'] - $item['threshold'])
-                ->take(6)
-                ->values()
+            ? $inventoryAvailabilityService->lowStockItems(6)
             : collect();
 
         $hasPriorities = $can('orders.view') || $can('catalog.manage') || $can('payments.view');

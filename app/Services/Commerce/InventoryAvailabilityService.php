@@ -284,6 +284,81 @@ class InventoryAvailabilityService
             ->values();
     }
 
+    public function applyLowStockProductFilter(Builder $query): Builder
+    {
+        $today = today()->toDateString();
+        $productSellable = $this->directSellableExpression();
+        $variantSellable = $this->variantSellableExpression();
+
+        return $query->where(function (Builder $builder) use ($today, $productSellable, $variantSellable) {
+            $builder
+                ->where(function (Builder $simple) use ($today, $productSellable) {
+                    $simple->where('products.has_variants', false)
+                        ->whereRaw($productSellable . ' > 0', [$today])
+                        ->whereRaw(
+                            $productSellable . ' <= GREATEST(COALESCE(products.reorder_point, 0), COALESCE(products.low_stock_threshold, 0))',
+                            [$today]
+                        );
+                })
+                ->orWhereExists(function ($variants) use ($today, $variantSellable) {
+                    $variants->selectRaw('1')
+                        ->from('product_variants')
+                        ->whereColumn('product_variants.product_id', 'products.id')
+                        ->where('product_variants.status', true)
+                        ->whereRaw($variantSellable . ' > 0', [$today])
+                        ->whereRaw($variantSellable . ' <= COALESCE(product_variants.reorder_point, 0)', [$today]);
+                });
+        });
+    }
+
+    public function applyUnsellableProductFilter(Builder $query): Builder
+    {
+        $today = today()->toDateString();
+        $productSellable = $this->directSellableExpression();
+        $variantSellable = $this->variantSellableExpression();
+
+        return $query->where(function (Builder $builder) use ($today, $productSellable, $variantSellable) {
+            $builder
+                ->where(function (Builder $simple) use ($today, $productSellable) {
+                    $simple->where('products.has_variants', false)
+                        ->whereRaw($productSellable . ' <= 0', [$today]);
+                })
+                ->orWhere(function (Builder $variantProduct) use ($today, $variantSellable) {
+                    $variantProduct->where('products.has_variants', true)
+                        ->whereNotExists(function ($variants) use ($today, $variantSellable) {
+                            $variants->selectRaw('1')
+                                ->from('product_variants')
+                                ->whereColumn('product_variants.product_id', 'products.id')
+                                ->where('product_variants.status', true)
+                                ->whereRaw($variantSellable . ' > 0', [$today]);
+                        });
+                });
+        });
+    }
+
+    public function lowStockItemCount(): int
+    {
+        $today = today()->toDateString();
+        $productSellable = $this->directSellableExpression();
+        $variantSellable = $this->variantSellableExpression();
+
+        $products = Product::query()
+            ->where('has_variants', false)
+            ->whereRaw(
+                $productSellable . ' <= GREATEST(COALESCE(products.reorder_point, 0), COALESCE(products.low_stock_threshold, 0))',
+                [$today]
+            )
+            ->count();
+
+        $variants = ProductVariant::query()
+            ->where('status', true)
+            ->whereHas('product', fn ($query) => $query->where('has_variants', true))
+            ->whereRaw($variantSellable . ' <= COALESCE(product_variants.reorder_point, 0)', [$today])
+            ->count();
+
+        return $products + $variants;
+    }
+
     public function applySellableProductFilter(Builder $query): Builder
     {
         return $query->where(function (Builder $builder) {
@@ -347,6 +422,16 @@ class InventoryAvailabilityService
                         });
                 });
         });
+    }
+
+    protected function directSellableExpression(): string
+    {
+        return "(CASE WHEN EXISTS (SELECT 1 FROM inventory_lots tracked_lots WHERE tracked_lots.product_id = products.id AND tracked_lots.product_variant_id IS NULL) THEN COALESCE((SELECT SUM(CASE WHEN sellable_lots.quantity_on_hand > 0 AND (sellable_lots.expiration_date IS NULL OR sellable_lots.expiration_date >= ?) THEN sellable_lots.quantity_on_hand ELSE 0 END) FROM inventory_lots sellable_lots WHERE sellable_lots.product_id = products.id AND sellable_lots.product_variant_id IS NULL), 0) ELSE GREATEST(COALESCE(products.quantity, 0), 0) END)";
+    }
+
+    protected function variantSellableExpression(): string
+    {
+        return "(CASE WHEN EXISTS (SELECT 1 FROM inventory_lots tracked_variant_lots WHERE tracked_variant_lots.product_variant_id = product_variants.id) THEN COALESCE((SELECT SUM(CASE WHEN sellable_variant_lots.quantity_on_hand > 0 AND (sellable_variant_lots.expiration_date IS NULL OR sellable_variant_lots.expiration_date >= ?) THEN sellable_variant_lots.quantity_on_hand ELSE 0 END) FROM inventory_lots sellable_variant_lots WHERE sellable_variant_lots.product_variant_id = product_variants.id), 0) ELSE GREATEST(COALESCE(product_variants.stock, 0), 0) END)";
     }
 
     protected function applyDirectProductAvailability(Builder $query): void

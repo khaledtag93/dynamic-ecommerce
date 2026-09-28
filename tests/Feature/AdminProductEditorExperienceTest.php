@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Http\Livewire\Admin\Product\Index;
 use App\Http\Livewire\Admin\Product\ProductForm;
+use App\Models\InventoryLot;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Category;
@@ -493,6 +494,81 @@ class AdminProductEditorExperienceTest extends TestCase
             ->assertSee('Variant Low Stock Product');
 
         $this->assertSame(1, $component->instance()->catalogHealth['low_stock']);
+    }
+
+    public function test_catalog_stock_filters_use_sellable_lot_quantity(): void
+    {
+        $category = $this->createCategory('Tracked Admin Stock', 'tracked-admin-stock');
+        $product = Product::create([
+            'name' => 'Expired Admin Stock Product',
+            'slug' => 'expired-admin-stock-product',
+            'category_id' => $category->id,
+            'base_price' => 25,
+            'quantity' => 5,
+            'low_stock_threshold' => 2,
+            'stock_status' => 'in_stock',
+            'has_variants' => false,
+            'status' => 1,
+        ]);
+
+        InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'ADMIN-EXP-001',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 5,
+            'quantity_on_hand' => 5,
+            'unit_cost' => 10,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(2),
+        ]);
+
+        $lowProduct = Product::create([
+            'name' => 'Low Sellable Admin Stock',
+            'slug' => 'low-sellable-admin-stock',
+            'category_id' => $category->id,
+            'base_price' => 30,
+            'quantity' => 10,
+            'low_stock_threshold' => 2,
+            'stock_status' => 'in_stock',
+            'has_variants' => false,
+            'status' => 1,
+        ]);
+
+        InventoryLot::query()->create([
+            'product_id' => $lowProduct->id,
+            'lot_code' => 'ADMIN-LOW-EXP',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 9,
+            'quantity_on_hand' => 9,
+            'unit_cost' => 10,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(3),
+        ]);
+        InventoryLot::query()->create([
+            'product_id' => $lowProduct->id,
+            'lot_code' => 'ADMIN-LOW-OK',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 10,
+            'expiration_date' => today()->addDays(30),
+            'received_at' => now(),
+        ]);
+
+        Livewire::test(Index::class)
+            ->set('stockFilter', 'in')
+            ->assertDontSee('Expired Admin Stock Product')
+            ->assertSee('Low Sellable Admin Stock')
+            ->set('stockFilter', 'low')
+            ->assertDontSee('Expired Admin Stock Product')
+            ->assertSee('Low Sellable Admin Stock')
+            ->set('stockFilter', 'out')
+            ->assertSee('Expired Admin Stock Product')
+            ->assertDontSee('Low Sellable Admin Stock');
+
+        $component = Livewire::test(Index::class);
+        $this->assertSame(1, $component->instance()->catalogHealth['low_stock']);
+        $this->assertSame(1, $component->instance()->catalogHealth['out_of_stock']);
     }
 
     public function test_product_sku_cannot_duplicate_another_product_sku(): void

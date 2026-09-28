@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\Order;
 use App\Models\Permission;
 use App\Models\Product;
@@ -82,6 +83,50 @@ class AdminDashboardExperienceTest extends TestCase
                 && $items->first()['stock'] === 1)
             ->assertSee('VAR-LOW-001')
             ->assertSee('1');
+    }
+
+    public function test_dashboard_low_stock_snapshot_uses_sellable_lot_quantity(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $category = Category::create([
+            'name' => 'Tracked dashboard stock',
+            'slug' => 'tracked-dashboard-stock',
+            'description' => 'Tracked dashboard stock test category',
+            'meta_title' => 'Tracked dashboard stock',
+            'meta_keyword' => 'tracked,dashboard,stock',
+            'meta_description' => 'Tracked dashboard stock test category',
+            'status' => false,
+        ]);
+        $product = Product::create([
+            'name' => 'Expired dashboard stock',
+            'slug' => 'expired-dashboard-stock',
+            'category_id' => $category->id,
+            'base_price' => 100,
+            'quantity' => 5,
+            'low_stock_threshold' => 2,
+            'has_variants' => false,
+            'status' => true,
+        ]);
+
+        InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'DASH-EXP-001',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 5,
+            'quantity_on_hand' => 5,
+            'unit_cost' => 40,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(3),
+        ]);
+
+        $this->actingAs($owner)->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertViewHas('stats', fn ($stats) => $stats['products_low_stock'] === 1)
+            ->assertViewHas('lowStockItems', fn ($items) => $items->count() === 1
+                && $items->first()['product']->is($product)
+                && $items->first()['stock'] === 0)
+            ->assertSee('Expired dashboard stock')
+            ->assertSee('0');
     }
 
     public function test_dashboard_search_and_navigation_respect_staff_permissions(): void

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Services\Admin\ProductService;
 use App\Services\Commerce\InventoryAdjustmentService;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Support\MediaPath;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -304,32 +305,14 @@ class Index extends Component
             })
             ->count();
 
-        $lowStock = Product::query()
-            ->where(function ($stockQuery) {
-                $stockQuery->where(function ($simpleQuery) {
-                    $simpleQuery->where('has_variants', false)
-                        ->whereNotNull('low_stock_threshold')
-                        ->where('quantity', '>', 0)
-                        ->whereColumn('quantity', '<=', 'low_stock_threshold');
-                })->orWhere(function ($variantQuery) {
-                    $variantQuery->where('has_variants', true)
-                        ->whereHas('activeVariants', fn ($activeQuery) => $activeQuery
-                            ->where('stock', '>', 0)
-                            ->whereColumn('stock', '<=', 'reorder_point'));
-                });
-            })
+        $inventoryAvailability = app(InventoryAvailabilityService::class);
+
+        $lowStock = $inventoryAvailability
+            ->applyLowStockProductFilter(Product::query())
             ->count();
 
-        $outOfStock = Product::query()
-            ->where(function ($stockQuery) {
-                $stockQuery->where(function ($simpleQuery) {
-                    $simpleQuery->where('has_variants', false)
-                        ->where('quantity', '<=', 0);
-                })->orWhere(function ($variantQuery) {
-                    $variantQuery->where('has_variants', true)
-                        ->whereDoesntHave('activeVariants', fn ($activeQuery) => $activeQuery->where('stock', '>', 0));
-                });
-            })
+        $outOfStock = $inventoryAvailability
+            ->applyUnsellableProductFilter(Product::query())
             ->count();
 
         return [
@@ -982,48 +965,22 @@ class Index extends Component
 
     protected function applyStockFilter($query): void
     {
+        $inventoryAvailability = app(InventoryAvailabilityService::class);
+
         if ($this->stockFilter === 'low') {
-            $query->where(function ($stockQuery) {
-                $stockQuery->where(function ($simpleQuery) {
-                    $simpleQuery->where('has_variants', false)
-                        ->whereNotNull('low_stock_threshold')
-                        ->where('quantity', '>', 0)
-                        ->whereColumn('quantity', '<=', 'low_stock_threshold');
-                })->orWhere(function ($variantQuery) {
-                    $variantQuery->where('has_variants', true)
-                        ->whereHas('activeVariants', fn ($activeQuery) => $activeQuery
-                            ->where('stock', '>', 0)
-                            ->whereColumn('stock', '<=', 'reorder_point'));
-                });
-            });
+            $inventoryAvailability->applyLowStockProductFilter($query);
 
             return;
         }
 
         if ($this->stockFilter === 'out') {
-            $query->where(function ($stockQuery) {
-                $stockQuery->where(function ($simpleQuery) {
-                    $simpleQuery->where('has_variants', false)
-                        ->where('quantity', '<=', 0);
-                })->orWhere(function ($variantQuery) {
-                    $variantQuery->where('has_variants', true)
-                        ->whereDoesntHave('activeVariants', fn ($activeQuery) => $activeQuery->where('stock', '>', 0));
-                });
-            });
+            $inventoryAvailability->applyUnsellableProductFilter($query);
 
             return;
         }
 
         if ($this->stockFilter === 'in') {
-            $query->where(function ($stockQuery) {
-                $stockQuery->where(function ($simpleQuery) {
-                    $simpleQuery->where('has_variants', false)
-                        ->where('quantity', '>', 0);
-                })->orWhere(function ($variantQuery) {
-                    $variantQuery->where('has_variants', true)
-                        ->whereHas('activeVariants', fn ($activeQuery) => $activeQuery->where('stock', '>', 0));
-                });
-            });
+            $inventoryAvailability->applySellableProductFilter($query);
         }
     }
 
