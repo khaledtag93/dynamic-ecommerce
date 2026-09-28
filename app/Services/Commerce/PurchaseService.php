@@ -167,6 +167,12 @@ class PurchaseService
                 return false;
             }
 
+            if ($lockedPurchase->purchase_date && $lockedPurchase->purchase_date->isAfter(today())) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Purchase stock cannot be received before the purchase order date.'),
+                ]);
+            }
+
             if (! in_array($lockedPurchase->status, [
                 Purchase::STATUS_ORDERED,
                 Purchase::STATUS_PARTIALLY_RECEIVED,

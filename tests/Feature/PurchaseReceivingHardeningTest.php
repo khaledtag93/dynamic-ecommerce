@@ -56,6 +56,26 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertSame(2, InventoryMovement::where('purchase_id', $purchase->id)->count());
     }
 
+    public function test_receiving_rejects_purchase_whose_order_date_is_still_in_the_future(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $purchase->update(['purchase_date' => now()->addDay()->toDateString()]);
+        $item = $this->item($purchase, $product, 2, 10);
+
+        try {
+            app(PurchaseService::class)->receive($purchase);
+            $this->fail('Stock cannot be received before the purchase order date.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('purchase', $exception->errors());
+        }
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(0, (int) $item->fresh()->received_quantity);
+        $this->assertDatabaseCount('purchase_receipts', 0);
+        $this->assertDatabaseCount('inventory_movements', 0);
+    }
+
     public function test_variant_receipt_changes_only_the_selected_variant(): void
     {
         $product = $this->product(4, true);

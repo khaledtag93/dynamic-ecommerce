@@ -5137,6 +5137,7 @@
     "Record partial receipt": "Record partial receipt",
     "Enter a cancellation reason.": "Enter a cancellation reason.",
     "Purchases with received stock cannot be cancelled. Reverse the receipt first.": "Purchases with received stock cannot be cancelled. Reverse the receipt first.",
+    "Purchase stock cannot be received before the purchase order date.": "Purchase stock cannot be received before the purchase order date.",
     "Purchase :reference cancelled.": "Purchase :reference cancelled.",
     "Purchase cancelled. No inventory was changed.": "Purchase cancelled. No inventory was changed.",
     "This purchase was already cancelled.": "This purchase was already cancelled.",
