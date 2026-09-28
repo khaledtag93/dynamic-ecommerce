@@ -7,7 +7,7 @@
     <x-admin.page-header
         :kicker="__('Payroll')"
         :title="__('Compensation')"
-        :description="__('Maintain the current compensation profile used when the next payroll snapshot is generated. Historical payroll keeps its own immutable rate snapshot.')"
+        :description="__('Maintain effective-dated compensation history used by payroll snapshots. Existing payroll entries keep their immutable rate and currency snapshots.')"
     >
         <a href="{{ route('admin.workforce.payroll.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to payroll') }}</span></a>
     </x-admin.page-header>

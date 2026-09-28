@@ -122,7 +122,36 @@ class PayrollService
                 ]);
             }
 
-            $employeeIds = $compensations->pluck('employee_profile_id')->unique()->values()->all();
+            $resolvedCompensations = collect();
+
+            foreach ($compensations->groupBy('employee_profile_id') as $employeeCompensations) {
+                $employee = $employeeCompensations->first()->employee;
+                $employmentStart = $lockedPeriod->starts_on->copy();
+                $employmentEnd = $lockedPeriod->ends_on->copy();
+
+                if ($employee->hire_date && $employee->hire_date->gt($employmentStart)) {
+                    $employmentStart = $employee->hire_date->copy();
+                }
+
+                if ($employee->termination_date && $employee->termination_date->lt($employmentEnd)) {
+                    $employmentEnd = $employee->termination_date->copy();
+                }
+
+                $coveringCompensations = $employeeCompensations->filter(
+                    fn (EmployeeCompensation $item) => $item->effective_from->lte($employmentStart)
+                        && (! $item->effective_to || $item->effective_to->gte($employmentEnd))
+                );
+
+                if ($coveringCompensations->count() !== 1) {
+                    throw ValidationException::withMessages([
+                        'payroll' => __('Each employee must have one compensation record covering their full employment span inside the payroll period. Split compensation periods require an explicit payroll proration policy before generation.'),
+                    ]);
+                }
+
+                $resolvedCompensations->push($coveringCompensations->first());
+            }
+
+            $employeeIds = $resolvedCompensations->pluck('employee_profile_id')->unique()->values()->all();
             $this->guardStableInputs($lockedPeriod, $employeeIds);
 
             $run = PayrollRun::query()->create([
@@ -132,7 +161,7 @@ class PayrollService
                 'notes' => null,
             ]);
 
-            foreach ($compensations as $compensation) {
+            foreach ($resolvedCompensations as $compensation) {
                 $this->createEntrySnapshot($run, $lockedPeriod, $compensation);
             }
 

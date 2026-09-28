@@ -7,7 +7,7 @@
     <x-admin.page-header
         :kicker="__('Payroll')"
         :title="__('Edit compensation')"
-        :description="__('Changes affect future payroll snapshots only. Existing payroll entries keep their historical rate and currency snapshots.')"
+        :description="__('Saving a new effective date preserves prior compensation history. Existing payroll entries remain immutable.')"
     >
         <a href="{{ route('admin.workforce.payroll.compensation.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to compensation') }}</span></a>
     </x-admin.page-header>

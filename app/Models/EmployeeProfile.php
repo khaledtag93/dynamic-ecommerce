@@ -100,7 +100,14 @@ class EmployeeProfile extends Model
 
     public function compensation()
     {
-        return $this->hasOne(EmployeeCompensation::class);
+        return $this->hasOne(EmployeeCompensation::class)
+            ->latestOfMany('effective_from');
+    }
+
+    public function compensations()
+    {
+        return $this->hasMany(EmployeeCompensation::class)
+            ->orderByDesc('effective_from');
     }
 
     public function payrollEntries()

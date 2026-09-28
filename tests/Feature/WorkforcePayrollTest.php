@@ -522,6 +522,110 @@ class WorkforcePayrollTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_compensation_changes_preserve_history_and_retroactive_payroll_uses_the_effective_rate(): void
+    {
+        Carbon::setTestNow('2026-09-29 12:00:00');
+        app(AuthorizationService::class)->syncDefaults();
+
+        $finance = $this->staffWithRole('finance_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-HISTORY-1');
+
+        $this->actingAs($finance)->put(
+            route('admin.workforce.payroll.compensation.update', $employee),
+            [
+                'pay_basis' => EmployeeCompensation::BASIS_SALARY,
+                'base_rate' => 3000,
+                'currency' => 'EGP',
+                'effective_from' => '2026-01-01',
+                'overtime_eligible' => 0,
+            ]
+        )->assertRedirect();
+
+        $this->put(
+            route('admin.workforce.payroll.compensation.update', $employee),
+            [
+                'pay_basis' => EmployeeCompensation::BASIS_SALARY,
+                'base_rate' => 4000,
+                'currency' => 'EGP',
+                'effective_from' => '2026-09-01',
+                'overtime_eligible' => 0,
+            ]
+        )->assertRedirect();
+
+        $history = EmployeeCompensation::query()
+            ->where('employee_profile_id', $employee->id)
+            ->orderBy('effective_from')
+            ->get();
+
+        $this->assertCount(2, $history);
+        $this->assertSame('3000.00', $history[0]->base_rate);
+        $this->assertSame('2026-08-31', $history[0]->effective_to?->toDateString());
+        $this->assertSame('4000.00', $history[1]->base_rate);
+        $this->assertNull($history[1]->effective_to);
+
+        $period = PayrollPeriod::query()->create([
+            'name' => 'August retro payroll',
+            'starts_on' => '2026-08-01',
+            'ends_on' => '2026-08-31',
+            'status' => PayrollPeriod::STATUS_OPEN,
+        ]);
+
+        $this->post(route('admin.workforce.payroll.periods.generate', $period))
+            ->assertRedirect();
+
+        $entry = PayrollEntry::query()->firstOrFail();
+
+        $this->assertSame('3000.00', $entry->base_rate_snapshot);
+        $this->assertSame('3000.00', $entry->base_pay);
+        $this->assertSame($history[0]->id, data_get($entry->calculation_snapshot, 'compensation.id'));
+    }
+
+    public function test_payroll_generation_blocks_mid_period_compensation_changes_until_proration_policy_exists(): void
+    {
+        Carbon::setTestNow('2026-09-29 12:00:00');
+        app(AuthorizationService::class)->syncDefaults();
+
+        $finance = $this->staffWithRole('finance_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-SPLIT-RATE-1');
+
+        $this->actingAs($finance)->put(
+            route('admin.workforce.payroll.compensation.update', $employee),
+            [
+                'pay_basis' => EmployeeCompensation::BASIS_HOURLY,
+                'base_rate' => 100,
+                'currency' => 'EGP',
+                'effective_from' => '2026-01-01',
+                'overtime_eligible' => 0,
+            ]
+        )->assertRedirect();
+
+        $this->put(
+            route('admin.workforce.payroll.compensation.update', $employee),
+            [
+                'pay_basis' => EmployeeCompensation::BASIS_HOURLY,
+                'base_rate' => 125,
+                'currency' => 'EGP',
+                'effective_from' => '2026-09-15',
+                'overtime_eligible' => 0,
+            ]
+        )->assertRedirect();
+
+        $period = PayrollPeriod::query()->create([
+            'name' => 'Split rate payroll',
+            'starts_on' => '2026-09-01',
+            'ends_on' => '2026-09-28',
+            'status' => PayrollPeriod::STATUS_OPEN,
+        ]);
+
+        $this->post(route('admin.workforce.payroll.periods.generate', $period))
+            ->assertSessionHasErrors('payroll');
+
+        $this->assertDatabaseCount('payroll_runs', 0);
+        $this->assertDatabaseCount('payroll_entries', 0);
+    }
+
     private function staffWithRole(string $slug): User
     {
         $user = User::factory()->create(['role_as' => 1]);
