@@ -56,7 +56,7 @@ class InventoryAdjustmentService
 
             $movement = $this->inventoryService->apply($product, $variant, $change, InventoryMovement::TYPE_ADJUSTMENT, [
                 'reason' => trim($reason),
-                'movement_unit_cost' => (float) ($variant?->cost_price ?? $product->cost_price ?? 0),
+                'movement_unit_cost' => (float) ($variant?->inventory_cost_price ?? $variant?->cost_price ?? $product->inventory_cost_price ?? $product->cost_price ?? 0),
                 'meta' => [
                     'source' => $source,
                     'stock_before' => $currentStock,

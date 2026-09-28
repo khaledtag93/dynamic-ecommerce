@@ -196,7 +196,7 @@ class GrowthValidationDemoService
             $shipping = (float) ($order['shipping_total'] ?? 0);
             $tax = (float) ($order['tax_total'] ?? 0);
             $grandTotal = round($subtotal - $discount + $shipping + $tax, 2);
-            $costTotal = round(((float) ($product->cost_price ?? 0)) * $quantity, 2);
+            $costTotal = round(((float) ($product->inventory_cost_price ?? $product->cost_price ?? 0)) * $quantity, 2);
             $profitTotal = round($grandTotal - $costTotal, 2);
             $placedAt = Carbon::now()->subDays((int) $order['days_ago'])->setTime(12, 0)->addMinutes($index * 7);
 
@@ -241,7 +241,7 @@ class GrowthValidationDemoService
                 'product_name' => $product->name,
                 'sku' => $product->sku,
                 'unit_price' => $unitPrice,
-                'unit_cost' => (float) ($product->cost_price ?? 0),
+                'unit_cost' => (float) ($product->inventory_cost_price ?? $product->cost_price ?? 0),
                 'quantity' => $quantity,
                 'line_total' => $subtotal,
                 'profit_amount' => $profitTotal,

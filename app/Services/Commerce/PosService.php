@@ -927,7 +927,7 @@ class PosService
                 }
 
                 $unitPrice = round((float) ($variant?->current_price ?? $product->current_price), 2);
-                $unitCost = round((float) ($variant?->cost_price ?? $product->cost_price ?? 0), 2);
+                $unitCost = round((float) ($variant?->inventory_cost_price ?? $variant?->cost_price ?? $product->inventory_cost_price ?? $product->cost_price ?? 0), 2);
                 $grossLineTotal = round($unitPrice * $quantity, 2);
                 $lineDiscount = $this->discountAmount(
                     $item->discount_type,

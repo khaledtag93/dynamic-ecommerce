@@ -644,6 +644,38 @@ class PosCashierTest extends TestCase
         ]);
     }
 
+    public function test_pos_checkout_snapshots_inventory_valuation_cost_for_cogs(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('POS Valuation Product', '6224000000099', 3, false, 50, 10);
+        $product->forceFill(['inventory_cost_price' => 27])->save();
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CARD,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()
+            ->where('sales_channel', Order::SALES_CHANNEL_POS)
+            ->firstOrFail();
+        $item = $order->items()->firstOrFail();
+
+        $this->assertSame(27.0, (float) $item->unit_cost);
+        $this->assertSame(27.0, (float) $order->cost_total);
+        $this->assertDatabaseHas('inventory_movements', [
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'quantity_change' => -1,
+            'unit_cost' => 27,
+        ]);
+        $this->assertSame(10.0, (float) $product->fresh()->cost_price);
+        $this->assertSame(27.0, (float) $product->fresh()->inventory_cost_price);
+    }
+
     public function test_pos_customer_search_attach_and_checkout_links_customer_account(): void
     {
         $admin = $this->createSuperAdmin();

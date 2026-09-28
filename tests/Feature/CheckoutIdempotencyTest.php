@@ -77,6 +77,50 @@ class CheckoutIdempotencyTest extends TestCase
         $this->assertSame(3, (int) $product->fresh()->quantity);
     }
 
+    public function test_checkout_snapshots_inventory_valuation_cost_for_cogs(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5);
+        $product->forceFill(['inventory_cost_price' => 32])->save();
+
+        $this->actingAs($user);
+
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 50,
+            'quantity' => 2,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $order = app(CheckoutService::class)->place([
+            'customer_name' => 'Valuation Test',
+            'customer_email' => 'valuation@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ], $user);
+
+        $item = $order->items()->firstOrFail();
+
+        $this->assertSame(32.0, (float) $item->unit_cost);
+        $this->assertSame(64.0, (float) $order->fresh()->cost_total);
+        $this->assertDatabaseHas('inventory_movements', [
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'quantity_change' => -2,
+            'unit_cost' => 32,
+        ]);
+        $this->assertSame(20.0, (float) $product->fresh()->cost_price);
+        $this->assertSame(32.0, (float) $product->fresh()->inventory_cost_price);
+    }
+
     public function test_checkout_rolls_back_everything_when_a_late_business_step_fails(): void
     {
         $user = User::factory()->create();

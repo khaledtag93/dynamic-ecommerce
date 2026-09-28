@@ -113,6 +113,7 @@ class ProductService
             $newProduct->sku = null;
             $newProduct->barcode = null;
             $newProduct->quantity = 0;
+            $newProduct->inventory_cost_price = null;
             $newProduct->save();
 
             if ($product->images->isNotEmpty()) {

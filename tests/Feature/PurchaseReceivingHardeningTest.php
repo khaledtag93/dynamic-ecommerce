@@ -37,11 +37,15 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertSame([2, 3], $movements->pluck('quantity_change')->all());
         $this->assertSame([7, 10], $movements->pluck('balance_after')->all());
         $this->assertSame([$first->id, $second->id], $movements->pluck('meta')->map(fn ($meta) => $meta['purchase_item_id'])->all());
+        $this->assertSame(['10.00', '12.00'], $movements->pluck('unit_cost')->all());
+        $this->assertSame([6.43, 8.10], $movements->pluck('meta')->map(fn ($meta) => (float) $meta['valuation_cost_after'])->all());
+        $this->assertTrue($movements->every(fn ($movement) => $movement->meta['valuation_method'] === 'moving_weighted_average'));
         $this->assertTrue($movements->every(fn ($movement) => $movement->type === InventoryMovement::TYPE_PURCHASE_IN));
 
         $this->assertFalse($service->receive($purchase));
         $this->assertSame(10, $product->fresh()->quantity);
-        $this->assertSame('12.00', $product->fresh()->cost_price);
+        $this->assertSame('5.00', $product->fresh()->cost_price);
+        $this->assertSame('8.10', $product->fresh()->inventory_cost_price);
         $this->assertSame($receivedDate, $purchase->fresh()->received_date->toDateString());
         $this->assertSame(2, InventoryMovement::where('purchase_id', $purchase->id)->count());
     }
@@ -59,7 +63,8 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertSame(5, (int) $variant->fresh()->stock);
         $this->assertSame(7, (int) $other->fresh()->stock);
         $this->assertSame(4, $product->fresh()->quantity);
-        $this->assertSame('18.00', $variant->fresh()->cost_price);
+        $this->assertSame('5.00', $variant->fresh()->cost_price);
+        $this->assertSame('10.20', $variant->fresh()->inventory_cost_price);
         $this->assertDatabaseHas('inventory_movements', [
             'purchase_id' => $purchase->id,
             'product_variant_id' => $variant->id,

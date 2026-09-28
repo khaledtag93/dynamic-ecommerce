@@ -155,7 +155,7 @@ class CheckoutService
             ]);
 
             foreach ($summary['items'] as $item) {
-                $unitCost = (float) ($item->variant?->cost_price ?? $item->product?->cost_price ?? 0);
+                $unitCost = (float) ($item->variant?->inventory_cost_price ?? $item->variant?->cost_price ?? $item->product?->inventory_cost_price ?? $item->product?->cost_price ?? 0);
                 $expiresAt = $item->variant?->expiration_date ?? $item->product?->expiration_date;
                 $lineProfit = ((float) $item->unit_price - $unitCost) * (int) $item->quantity;
 

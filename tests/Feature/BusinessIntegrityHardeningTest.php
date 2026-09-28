@@ -426,6 +426,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(0.0, (float) $cancelledOrder->profit_total);
         $this->assertSame(2, (int) $product->fresh()->quantity);
         $this->assertSame(35.0, (float) $product->fresh()->cost_price);
+        $this->assertSame(20.0, (float) $product->fresh()->inventory_cost_price);
         $this->assertDatabaseCount('inventory_movements', 1);
         $this->assertDatabaseHas('inventory_movements', [
             'order_id' => $order->id,

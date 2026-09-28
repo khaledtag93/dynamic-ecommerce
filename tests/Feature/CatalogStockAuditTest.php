@@ -207,10 +207,17 @@ class CatalogStockAuditTest extends TestCase
     public function test_product_duplication_starts_with_zero_independent_stock(): void
     {
         $original = $this->product(6);
+        $original->forceFill([
+            'cost_price' => 14,
+            'inventory_cost_price' => 18,
+        ])->save();
         $copy = app(ProductService::class)->duplicateProduct($original);
 
         $this->assertSame(6, $original->fresh()->quantity);
+        $this->assertSame(18.0, (float) $original->fresh()->inventory_cost_price);
         $this->assertSame(0, $copy->fresh()->quantity);
+        $this->assertSame(14.0, (float) $copy->fresh()->cost_price);
+        $this->assertNull($copy->fresh()->inventory_cost_price);
         $this->assertDatabaseCount('inventory_movements', 0);
     }
 

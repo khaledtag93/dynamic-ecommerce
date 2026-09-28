@@ -93,7 +93,7 @@ class CatalogStockAuditService
             'reason' => __('Product editor stock update'),
             'quantity_change' => $after - $before,
             'balance_after' => $after,
-            'unit_cost' => $variant?->cost_price ?? $product->cost_price ?? 0,
+            'unit_cost' => $variant?->inventory_cost_price ?? $variant?->cost_price ?? $product->inventory_cost_price ?? $product->cost_price ?? 0,
             'meta' => [
                 'source' => 'catalog_editor',
                 'stock_before' => $before,
