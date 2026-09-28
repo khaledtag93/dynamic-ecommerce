@@ -155,6 +155,12 @@ class PurchaseReceivingService
             $orderedQuantity = (int) $target->quantity;
             $verifiedQuantity = (int) $progress->verified_quantity;
 
+            if ($verifiedQuantity > $orderedQuantity) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Barcode verification progress exceeds the ordered quantity.'),
+                ]);
+            }
+
             if ($verifiedQuantity >= $orderedQuantity) {
                 return [
                     'status' => 'already_complete',
@@ -211,6 +217,12 @@ class PurchaseReceivingService
             if ($progress && (int) $progress->purchase_id !== (int) $lockedPurchase->id) {
                 throw ValidationException::withMessages([
                     'purchase' => __('Barcode verification progress does not belong to this purchase.'),
+                ]);
+            }
+
+            if ($progress && (int) $progress->verified_quantity > (int) $lockedItem->quantity) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Barcode verification progress exceeds the ordered quantity.'),
                 ]);
             }
 

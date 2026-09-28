@@ -219,6 +219,41 @@ class PurchaseBarcodeReceivingTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 0);
     }
 
+    public function test_corrupt_barcode_progress_above_ordered_quantity_is_rejected_without_mutation(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('Oververified Product', '6223000000011', 1, false);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+
+        PurchaseReceivingProgress::query()->create([
+            'purchase_id' => $purchase->id,
+            'purchase_item_id' => $item->id,
+            'verified_quantity' => 3,
+            'last_scanned_by' => $admin->id,
+            'last_scanned_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.receiving.scan', $purchase), [
+                'barcode' => $product->barcode,
+            ])->assertSessionHasErrors('purchase');
+
+        $this->assertSame(3, (int) PurchaseReceivingProgress::query()
+            ->where('purchase_item_id', $item->id)
+            ->value('verified_quantity'));
+
+        $this->post(route('admin.purchases.receiving.undo', [
+            'purchase' => $purchase->id,
+            'purchaseItem' => $item->id,
+        ]))->assertSessionHasErrors('purchase');
+
+        $this->assertSame(3, (int) PurchaseReceivingProgress::query()
+            ->where('purchase_item_id', $item->id)
+            ->value('verified_quantity'));
+        $this->assertDatabaseCount('inventory_movements', 0);
+    }
+
     public function test_barcode_progress_with_cross_purchase_ownership_is_rejected_without_mutation(): void
     {
         $admin = $this->createSuperAdmin();
