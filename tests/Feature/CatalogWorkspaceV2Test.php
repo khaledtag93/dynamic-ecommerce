@@ -138,7 +138,8 @@ class CatalogWorkspaceV2Test extends TestCase
     {
         $component = file_get_contents(app_path('Http/Livewire/Admin/Product/Index.php'));
 
-        $this->assertStringContainsString('$products->lazy(500)', $component);
+        $this->assertStringContainsString('$products->chunk(500, function ($batch)', $component);
+        $this->assertStringContainsString('$inventoryAvailability->hydrateSellableQuantities($batch);', $component);
         $this->assertStringContainsString('mb_substr(trim($search), 0, 100)', $component);
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $component);
         $this->assertStringContainsString('protected function selectedProductsQuery()', $component);
