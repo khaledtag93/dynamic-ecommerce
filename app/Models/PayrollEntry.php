@@ -45,6 +45,33 @@ class PayrollEntry extends Model
         'calculation_snapshot' => 'array',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (PayrollEntry $entry) {
+            $run = PayrollRun::query()->find($entry->payroll_run_id);
+
+            if ($run && ! $run->isDraft()) {
+                throw new \LogicException('Finalized payroll runs cannot receive new payroll entries.');
+            }
+        });
+
+        static::updating(function (PayrollEntry $entry) {
+            $run = $entry->payrollRun()->first();
+
+            if ($run && ! $run->isDraft()) {
+                throw new \LogicException('Finalized payroll entry history is immutable.');
+            }
+        });
+
+        static::deleting(function (PayrollEntry $entry) {
+            $run = $entry->payrollRun()->first();
+
+            if ($run && ! $run->isDraft()) {
+                throw new \LogicException('Finalized payroll entry history cannot be deleted.');
+            }
+        });
+    }
+
     public function payrollRun()
     {
         return $this->belongsTo(PayrollRun::class);

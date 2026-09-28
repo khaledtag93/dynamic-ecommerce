@@ -29,6 +29,32 @@ class PayrollRun extends Model
         'paid_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (PayrollRun $run) {
+            $originalStatus = (string) $run->getRawOriginal('status');
+
+            if ($originalStatus === self::STATUS_PAID) {
+                throw new \LogicException('Paid payroll runs are terminal and immutable.');
+            }
+
+            if ($originalStatus === self::STATUS_APPROVED) {
+                $dirty = array_keys($run->getDirty());
+                $allowed = ['status', 'paid_by_user_id', 'paid_at'];
+
+                if ($run->status !== self::STATUS_PAID || array_diff($dirty, $allowed) !== []) {
+                    throw new \LogicException('Approved payroll runs can only transition to Paid.');
+                }
+            }
+        });
+
+        static::deleting(function (PayrollRun $run) {
+            if (! $run->isDraft()) {
+                throw new \LogicException('Finalized payroll run history cannot be deleted.');
+            }
+        });
+    }
+
     public static function statusOptions(): array
     {
         return [

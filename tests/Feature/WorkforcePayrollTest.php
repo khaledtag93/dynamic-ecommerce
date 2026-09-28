@@ -629,6 +629,62 @@ class WorkforcePayrollTest extends TestCase
         $this->assertDatabaseCount('payroll_entries', 0);
     }
 
+    public function test_finalized_payroll_history_is_immutable_at_the_model_boundary(): void
+    {
+        Carbon::setTestNow('2026-09-29 12:00:00');
+        app(AuthorizationService::class)->syncDefaults();
+
+        $finance = $this->staffWithRole('finance_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-IMMUTABLE-1');
+        $this->compensation($employee, EmployeeCompensation::BASIS_SALARY, 1000, 'EGP');
+
+        $period = PayrollPeriod::query()->create([
+            'name' => 'Immutable payroll',
+            'starts_on' => '2026-09-01',
+            'ends_on' => '2026-09-28',
+            'status' => PayrollPeriod::STATUS_OPEN,
+        ]);
+
+        $service = app(PayrollService::class);
+        $run = $service->generateRun($period, $finance);
+        $entry = $run->entries()->firstOrFail();
+        $adjustment = $service->addAdjustment($entry, [
+            'type' => PayrollAdjustment::TYPE_ALLOWANCE,
+            'label' => 'Approved allowance',
+            'amount' => '25.00',
+            'reason' => 'Approved before finalization',
+        ], $finance);
+
+        $service->approveRun($run, $finance);
+
+        $this->assertLogicException(
+            fn () => $entry->fresh()->update(['net_pay' => '1.00'])
+        );
+        $this->assertLogicException(
+            fn () => $adjustment->fresh()->delete()
+        );
+        $this->assertLogicException(
+            fn () => $run->fresh()->update(['status' => PayrollRun::STATUS_DRAFT])
+        );
+        $this->assertLogicException(
+            fn () => $period->fresh()->update(['name' => 'Tampered period'])
+        );
+        $this->assertLogicException(
+            fn () => $run->fresh()->delete()
+        );
+
+        $paidRun = $service->markPaid($run->fresh(), $finance);
+        $this->assertSame(PayrollRun::STATUS_PAID, $paidRun->status);
+
+        $this->assertLogicException(
+            fn () => $paidRun->fresh()->update(['notes' => 'Tampered paid run'])
+        );
+        $this->assertLogicException(
+            fn () => $paidRun->fresh()->delete()
+        );
+    }
+
     public function test_payroll_money_boundaries_reject_overprecision_and_keep_exact_cent_totals(): void
     {
         Carbon::setTestNow('2026-09-29 12:00:00');
@@ -720,6 +776,16 @@ class WorkforcePayrollTest extends TestCase
         $this->assertSame('0.30', $entry->allowances_total);
         $this->assertSame('100.30', $entry->gross_pay);
         $this->assertSame('100.30', $entry->net_pay);
+    }
+
+    private function assertLogicException(callable $callback): void
+    {
+        try {
+            $callback();
+            $this->fail('Expected payroll history mutation to be blocked.');
+        } catch (\LogicException) {
+            $this->assertTrue(true);
+        }
     }
 
     private function staffWithRole(string $slug): User

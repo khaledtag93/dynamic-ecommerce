@@ -31,6 +31,31 @@ class PayrollAdjustment extends Model
         'rate' => 'decimal:4',
     ];
 
+    protected static function booted(): void
+    {
+        $guardFinalizedRun = function (PayrollAdjustment $adjustment, string $message): void {
+            $entry = PayrollEntry::query()->find($adjustment->payroll_entry_id);
+            $run = $entry?->payrollRun()->first();
+
+            if ($run && ! $run->isDraft()) {
+                throw new \LogicException($message);
+            }
+        };
+
+        static::creating(fn (PayrollAdjustment $adjustment) => $guardFinalizedRun(
+            $adjustment,
+            'Finalized payroll runs cannot receive new adjustments.'
+        ));
+        static::updating(fn (PayrollAdjustment $adjustment) => $guardFinalizedRun(
+            $adjustment,
+            'Finalized payroll adjustment history is immutable.'
+        ));
+        static::deleting(fn (PayrollAdjustment $adjustment) => $guardFinalizedRun(
+            $adjustment,
+            'Finalized payroll adjustment history cannot be deleted.'
+        ));
+    }
+
     public static function typeOptions(): array
     {
         return [

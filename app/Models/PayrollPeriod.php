@@ -27,6 +27,21 @@ class PayrollPeriod extends Model
         'pay_date' => 'date',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (PayrollPeriod $period) {
+            if ((string) $period->getRawOriginal('status') === self::STATUS_CLOSED) {
+                throw new \LogicException('Closed payroll periods are immutable.');
+            }
+        });
+
+        static::deleting(function (PayrollPeriod $period) {
+            if (! $period->isOpen()) {
+                throw new \LogicException('Closed payroll period history cannot be deleted.');
+            }
+        });
+    }
+
     public static function statusOptions(): array
     {
         return [
