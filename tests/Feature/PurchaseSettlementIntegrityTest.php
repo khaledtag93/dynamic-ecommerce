@@ -267,6 +267,7 @@ class PurchaseSettlementIntegrityTest extends TestCase
 
         Carbon::setTestNow('2026-09-10 09:00:00');
         $purchaseService->receive($purchase);
+        Carbon::setTestNow('2026-09-10 11:00:00');
         $this->assertTrue($settlements->record(
             $purchase,
             '15.00',

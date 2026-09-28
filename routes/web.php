@@ -383,7 +383,7 @@ Route::prefix('admin')
         Route::controller(PurchaseController::class)->group(function () {
             Route::middleware('permission:inventory.manage,purchasing.settlements.manage')->group(function () {
                 Route::get('/purchases', 'index')->name('purchases.index');
-                Route::get('/purchases/{purchase}', 'show')->name('purchases.show');
+                Route::get('/purchases/{purchase}', 'show')->whereNumber('purchase')->name('purchases.show');
             });
             Route::middleware('permission:purchasing.settlements.manage')->group(function () {
                 Route::post('/purchases/{purchase}/settlements', 'recordSettlement')->name('purchases.settlements.store');
