@@ -864,6 +864,25 @@ class BusinessIntegrityHardeningTest extends TestCase
         }
 
         $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(110.0, $order->fresh()->refundable_balance);
+
+        $service->refund($order->fresh(), 100, 'Refund order value after overcapture');
+
+        $this->assertSame(100.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
+        $this->assertTrue((bool) data_get($order->fresh()->meta, 'payment_overcapture.refund_required'));
+        $this->assertSame(10.0, $order->fresh()->refundable_balance);
+
+        $service->refund($order->fresh(), 10, 'Refund overcaptured remainder');
+
+        $fresh = $order->fresh();
+        $this->assertSame(110.0, (float) $fresh->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $fresh->payment_status);
+        $this->assertFalse((bool) data_get($fresh->meta, 'payment_overcapture.refund_required'));
+        $this->assertNotNull(data_get($fresh->meta, 'payment_overcapture.resolved_at'));
+        $this->assertSame(0.0, $fresh->refundable_balance);
+        $this->assertSame(2, $fresh->payments()->where('status', Payment::STATUS_REFUNDED)->count());
     }
 
     public function test_non_cod_fulfillment_requires_paid_ledger_evidence(): void

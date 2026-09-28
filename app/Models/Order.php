@@ -383,7 +383,10 @@ class Order extends Model
 
     public function getRefundableBalanceAttribute(): float
     {
-        return round(max(0, (float) $this->grand_total - (float) $this->refund_total), 2);
+        $capturedTotal = $this->payments()
+            ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
+            ->sum('amount');
+        return round(max(0, (float) $capturedTotal - (float) $this->refund_total), 2);
     }
 
     public function getCanUserCancelAttribute(): bool

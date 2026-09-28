@@ -420,7 +420,10 @@ class OrderActionService
             }
 
             $alreadyRefunded = round((float) $lockedOrder->refunds()->sum('amount'), 2);
-            $refundableBalance = round(max(0, (float) $lockedOrder->grand_total - $alreadyRefunded), 2);
+            $capturedTotal = round((float) $lockedOrder->payments()
+                ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
+                ->sum('amount'), 2);
+            $refundableBalance = round(max(0, $capturedTotal - $alreadyRefunded), 2);
 
             if (! in_array($lockedOrder->payment_status, [
                 Order::PAYMENT_STATUS_PAID,
@@ -448,7 +451,7 @@ class OrderActionService
             ]);
 
             $newRefundTotal = round($alreadyRefunded + $amount, 2);
-            $newPaymentStatus = $newRefundTotal >= (float) $lockedOrder->grand_total
+            $newPaymentStatus = $newRefundTotal >= $capturedTotal
                 ? Order::PAYMENT_STATUS_REFUNDED
                 : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
 
@@ -462,9 +465,21 @@ class OrderActionService
                 $refundedAt = now();
 
                 $orderMeta = $lockedOrder->meta ?? [];
+                $orderMetaChanged = false;
+
                 if (data_get($orderMeta, 'payment_exception.code') === 'paid_after_cancellation') {
                     data_set($orderMeta, 'payment_exception.refund_required', false);
                     data_set($orderMeta, 'payment_exception.resolved_at', $refundedAt->toIso8601String());
+                    $orderMetaChanged = true;
+                }
+
+                if (data_get($orderMeta, 'payment_overcapture.code') === 'payment_overcapture') {
+                    data_set($orderMeta, 'payment_overcapture.refund_required', false);
+                    data_set($orderMeta, 'payment_overcapture.resolved_at', $refundedAt->toIso8601String());
+                    $orderMetaChanged = true;
+                }
+
+                if ($orderMetaChanged) {
                     $lockedOrder->update(['meta' => $orderMeta]);
                 }
 
@@ -485,6 +500,11 @@ class OrderActionService
                         if (data_get($meta, 'payment_exception.code') === 'paid_after_cancellation') {
                             data_set($meta, 'payment_exception.refund_required', false);
                             data_set($meta, 'payment_exception.resolved_at', $refundedAt->toIso8601String());
+                        }
+
+                        if (data_get($meta, 'payment_overcapture.code') === 'payment_overcapture') {
+                            data_set($meta, 'payment_overcapture.refund_required', false);
+                            data_set($meta, 'payment_overcapture.resolved_at', $refundedAt->toIso8601String());
                         }
 
                         $payment->update([
