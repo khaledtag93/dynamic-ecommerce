@@ -273,10 +273,60 @@ class PaymentService
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            $providerReversalType = ! empty($context['provider_refunded'])
+                ? 'refunded'
+                : (! empty($context['provider_voided']) ? 'voided' : null);
+
+            if ($providerReversalType !== null) {
+                $meta = $lockedPayment->meta ?? [];
+                $existingEvidence = data_get($meta, 'provider_reversal_evidence');
+                $incomingTransactionId = ! empty($context['transaction_id'])
+                    ? (string) $context['transaction_id']
+                    : null;
+                $sameEvidence = is_array($existingEvidence)
+                    && (string) ($existingEvidence['type'] ?? '') === $providerReversalType
+                    && (string) ($existingEvidence['transaction_id'] ?? '') === (string) $incomingTransactionId;
+
+                if (! $sameEvidence) {
+                    $evidence = [
+                        'type' => $providerReversalType,
+                        'transaction_id' => $incomingTransactionId,
+                        'provider_status' => $context['provider_status'] ?? $providerReversalType,
+                        'response_code' => $context['response_code'] ?? null,
+                        'response_message' => $context['response_message'] ?? null,
+                        'observed_at' => now()->toIso8601String(),
+                        'canonical_refund_recorded' => false,
+                    ];
+
+                    $meta['provider_reversal_evidence'] = $evidence;
+                    $meta = $this->pushPaymentEvent(
+                        $meta,
+                        'provider_reversal_observed',
+                        __('Payment provider reported a refund or void. Review this evidence separately from the canonical order refund ledger.')
+                    );
+                    $lockedPayment->update(['meta' => $meta]);
+
+                    if ($lockedOrder) {
+                        $orderMeta = $lockedOrder->meta ?? [];
+                        $orderMeta['provider_reversal_evidence'] = $evidence;
+                        $lockedOrder->update(['meta' => $orderMeta]);
+
+                        $this->activityLogService->log(
+                            'commerce',
+                            'provider_payment_reversal_observed',
+                            __('Payment provider reported a refund or void that requires reconciliation review.'),
+                            null,
+                            $lockedOrder,
+                            $evidence
+                        );
+                    }
+                }
+            }
+
             // Paid/refunded are terminal. Replayed callbacks and stale gateway
             // downgrades must not mutate financial state or duplicate timeline events.
             if (in_array($lockedPayment->status, [Payment::STATUS_PAID, Payment::STATUS_REFUNDED], true)) {
-                return $lockedPayment;
+                return $lockedPayment->fresh();
             }
 
             $incomingTransactionId = ! empty($context['transaction_id'])

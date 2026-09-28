@@ -253,6 +253,8 @@ class PaymobController extends Controller
                         'hmac_valid' => $result['hmac_valid'] ?? null,
                     ],
                     'provider_status' => $result['provider_status'] ?? 'pending',
+                    'provider_refunded' => (bool) ($result['provider_refunded'] ?? false),
+                    'provider_voided' => (bool) ($result['provider_voided'] ?? false),
                     'hmac_valid' => $result['hmac_valid'] ?? null,
                     'paymob_order_id' => $result['paymob_order_id'] ?? null,
                     'response_code' => $result['response_code'] ?? null,

@@ -245,6 +245,8 @@
     "Captured amount": "Captured amount",
     "Captured or Paid status confirms the payment transaction in Flowra; it does not prove that a gateway payout or bank settlement reached the merchant account.": "Captured or Paid status confirms the payment transaction in Flowra; it does not prove that a gateway payout or bank settlement reached the merchant account.",
     "Technical transaction evidence for troubleshooting and payment verification. Gateway capture does not prove merchant payout or bank settlement.": "Technical transaction evidence for troubleshooting and payment verification. Gateway capture does not prove merchant payout or bank settlement.",
+    "Payment provider reported a refund or void. Review this evidence separately from the canonical order refund ledger.": "Payment provider reported a refund or void. Review this evidence separately from the canonical order refund ledger.",
+    "Payment provider reported a refund or void that requires reconciliation review.": "Payment provider reported a refund or void that requires reconciliation review.",
     "Barcode": "Barcode",
     "Base Price": "Base Price",
     "Basic Information": "Basic Information",

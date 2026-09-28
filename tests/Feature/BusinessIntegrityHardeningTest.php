@@ -1212,7 +1212,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Payment::STATUS_PENDING, $second->status);
     }
 
-    public function test_paid_gateway_confirmation_is_terminal_against_late_failure(): void
+    public function test_paid_gateway_confirmation_is_terminal_but_preserves_provider_reversal_evidence(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
         $payment = $this->makePayment($order, Payment::STATUS_PENDING);
@@ -1233,6 +1233,23 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
         $this->assertSame('PAYMOB-TXN-PAID', $payment->fresh()->transaction_reference);
+
+        $service->markAsFailed($payment->fresh(), [
+            'transaction_id' => 'PAYMOB-TXN-PROVIDER-REFUND',
+            'provider_status' => 'refunded',
+            'provider_refunded' => true,
+            'hmac_valid' => true,
+        ]);
+
+        $freshPayment = $payment->fresh();
+        $freshOrder = $order->fresh();
+        $this->assertSame(Payment::STATUS_PAID, $freshPayment->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $freshOrder->payment_status);
+        $this->assertSame('refunded', data_get($freshPayment->meta, 'provider_reversal_evidence.type'));
+        $this->assertSame('PAYMOB-TXN-PROVIDER-REFUND', data_get($freshPayment->meta, 'provider_reversal_evidence.transaction_id'));
+        $this->assertFalse((bool) data_get($freshPayment->meta, 'provider_reversal_evidence.canonical_refund_recorded'));
+        $this->assertSame('refunded', data_get($freshOrder->meta, 'provider_reversal_evidence.type'));
+        $this->assertDatabaseCount('order_refunds', 0);
     }
 
     public function test_refund_ledger_remains_authoritative_during_payment_sync(): void

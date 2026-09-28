@@ -1091,11 +1091,15 @@ class PaymobGatewayService
                 || ($pending === false && $responseCode !== null && ! in_array($responseCode, ['approved', 'success', '00'], true))
             );
 
-        $providerStatus = $success
-            ? 'paid'
-            : ($pending
-                ? 'pending'
-                : ($declined ? 'declined' : 'failed'));
+        $providerStatus = $isRefunded
+            ? 'refunded'
+            : ($isVoided
+                ? 'voided'
+                : ($success
+                    ? 'paid'
+                    : ($pending
+                        ? 'pending'
+                        : ($declined ? 'declined' : 'failed'))));
 
         $message = $success
             ? 'Callback processed successfully.'
@@ -1109,6 +1113,8 @@ class PaymobGatewayService
             'order' => $order,
             'payment' => $payment,
             'provider_status' => $providerStatus,
+            'provider_refunded' => $isRefunded,
+            'provider_voided' => $isVoided,
             'transaction_id' => $identifiers['transaction_id'],
             'paymob_order_id' => $identifiers['paymob_order_id'],
             'merchant_order_id' => $identifiers['merchant_order_id'],

@@ -559,6 +559,8 @@
     "Captured amount": "المبلغ المحصل",
     "Captured or Paid status confirms the payment transaction in Flowra; it does not prove that a gateway payout or bank settlement reached the merchant account.": "حالة التحصيل أو الدفع تؤكد معاملة الدفع داخل Flowra، لكنها لا تثبت أن دفعة من بوابة الدفع أو تسوية بنكية وصلت إلى حساب التاجر.",
     "Technical transaction evidence for troubleshooting and payment verification. Gateway capture does not prove merchant payout or bank settlement.": "أدلة فنية للمعاملة لاستخدامها في التحقق واستكشاف المشكلات. نجاح التحصيل عبر البوابة لا يثبت وصول دفعة للتاجر أو حدوث تسوية بنكية.",
+    "Payment provider reported a refund or void. Review this evidence separately from the canonical order refund ledger.": "أبلغ مزود الدفع عن استرداد أو إلغاء. راجع هذا الدليل بشكل منفصل عن سجل استردادات الطلب المعتمد.",
+    "Payment provider reported a refund or void that requires reconciliation review.": "أبلغ مزود الدفع عن استرداد أو إلغاء يحتاج إلى مراجعة تسوية.",
     "Barcode": "الباركود",
     "Barcode label needs attention": "ملصق الباركود يحتاج مراجعة",
     "Barcode labels": "ملصقات الباركود",
