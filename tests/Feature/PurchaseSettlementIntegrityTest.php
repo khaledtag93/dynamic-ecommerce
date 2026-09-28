@@ -58,6 +58,28 @@ class PurchaseSettlementIntegrityTest extends TestCase
         $this->assertDatabaseCount('purchase_settlements', 1);
     }
 
+    public function test_operational_supplier_payable_excludes_purchase_shipping_and_tax(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $purchase->update([
+            'shipping_total' => '8.00',
+            'tax_total' => '2.00',
+            'subtotal' => '20.00',
+            'grand_total' => '30.00',
+        ]);
+        $item = $this->item($purchase, $product, 2, 10);
+
+        app(PurchaseService::class)->receive($purchase);
+
+        $summary = app(PurchaseSettlementService::class)->summary($purchase);
+
+        $this->assertSame('20.00', $summary['payable']);
+        $this->assertSame('20.00', $summary['balance']);
+        $this->assertSame('unpaid', $summary['status']);
+        $this->assertNotSame($purchase->grand_total, $summary['payable']);
+    }
+
     public function test_supplier_payment_is_not_allowed_before_goods_are_received(): void
     {
         $purchase = $this->purchase();
