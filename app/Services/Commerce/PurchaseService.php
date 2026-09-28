@@ -61,7 +61,11 @@ class PurchaseService
                 ->get(['id', 'received_quantity']);
             $receivedUnits = (int) $lockedItems->sum('received_quantity');
 
-            if ($receivedUnits > 0 || $lockedPurchase->receipts()->exists()) {
+            $hasActiveReceipts = $lockedPurchase->receipts()
+                ->whereNull('reversed_at')
+                ->exists();
+
+            if ($receivedUnits > 0 || $hasActiveReceipts) {
                 throw ValidationException::withMessages([
                     'purchase' => __('Purchases with received stock cannot be cancelled. Reverse the receipt first.'),
                 ]);

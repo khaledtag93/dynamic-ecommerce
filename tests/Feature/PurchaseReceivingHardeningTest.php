@@ -511,6 +511,49 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertSame(1, \App\Models\AdminActivityLog::where('action', 'purchase_cancelled')->count());
     }
 
+    public function test_purchase_can_be_cancelled_after_all_receipts_are_reversed(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 2],
+            (string) Str::uuid(),
+            $admin->id
+        );
+
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+        $this->assertTrue(app(PurchaseReceiptReversalService::class)->reverse(
+            $purchase,
+            $receipt,
+            'Supplier delivery fully rejected.',
+            $admin->id
+        ));
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(0, (int) $item->fresh()->received_quantity);
+        $this->assertNotNull($receipt->fresh()->reversed_at);
+        $this->assertSame(Purchase::STATUS_ORDERED, $purchase->fresh()->status);
+
+        $this->assertTrue(app(PurchaseService::class)->cancel(
+            $purchase,
+            'Cancel order after all received stock was reversed.',
+            $admin->id
+        ));
+
+        $this->assertSame(Purchase::STATUS_CANCELLED, $purchase->fresh()->status);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertNotNull($receipt->fresh()->reversed_at);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'purchase_cancelled',
+            'subject_id' => $purchase->id,
+        ]);
+    }
+
     public function test_purchase_with_any_received_stock_cannot_be_cancelled(): void
     {
         $admin = $this->createSuperAdmin();
