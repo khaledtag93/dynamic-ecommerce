@@ -5900,6 +5900,7 @@
     "Enter a supplier payment with up to two decimal places within the supported amount limit.": "أدخل دفعة للمورد بحد أقصى منزلتين عشريتين وضمن الحد المالي المدعوم.",
     "The supplier payment request key is invalid. Refresh and try again.": "مفتاح طلب دفعة المورد غير صالح. حدّث الصفحة وحاول مرة أخرى.",
     "Choose a valid supplier payment method.": "اختر طريقة دفع صالحة للمورد.",
+    "Choose an active supplier before creating the purchase order.": "اختر موردًا نشطًا قبل إنشاء أمر الشراء.",
     "This supplier payment request key was already used with different details. Refresh and try again.": "تم استخدام مفتاح طلب دفعة المورد هذا مسبقًا ببيانات مختلفة. حدّث الصفحة وحاول مرة أخرى.",
     "No received supplier value is available to settle yet.": "لا توجد بعد قيمة مستلمة من المورد متاحة للتسوية.",
     "Supplier payment cannot exceed the current received-value balance.": "لا يمكن أن تتجاوز دفعة المورد رصيد قيمة الأصناف المستلمة الحالي.",

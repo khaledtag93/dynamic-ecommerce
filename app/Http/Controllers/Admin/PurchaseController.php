@@ -249,7 +249,10 @@ class PurchaseController extends Controller
         $request->merge(['items' => $items]);
 
         $data = $request->validate([
-            'supplier_id' => ['required', 'exists:suppliers,id'],
+            'supplier_id' => [
+                'required',
+                Rule::exists('suppliers', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
             'purchase_date' => ['nullable', 'date'],
             'shipping_total' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'tax_total' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
@@ -312,6 +315,17 @@ class PurchaseController extends Controller
         $grandTotal = $this->centsToMoney($grandTotalCents);
 
         $createdPurchase = DB::transaction(function () use ($data, $subtotal, $grandTotal) {
+            $supplier = Supplier::query()
+                ->whereKey($data['supplier_id'])
+                ->lockForUpdate()
+                ->first();
+
+            if (! $supplier || ! $supplier->is_active) {
+                throw ValidationException::withMessages([
+                    'supplier_id' => __('Choose an active supplier before creating the purchase order.'),
+                ]);
+            }
+
             $products = Product::query()->whereIn('id', collect($data['items'])->pluck('product_id')->unique())
                 ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $variants = ProductVariant::query()->whereIn('id', collect($data['items'])->pluck('product_variant_id')->filter()->unique())

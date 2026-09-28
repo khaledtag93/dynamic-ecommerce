@@ -152,6 +152,29 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertDatabaseCount('purchases', 0);
     }
 
+    public function test_purchase_creation_rejects_inactive_supplier_even_if_id_is_submitted_directly(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $supplier = Supplier::create([
+            'name' => 'Inactive Purchase Supplier',
+            'is_active' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.purchases.store'), [
+                'supplier_id' => $supplier->id,
+                'items' => [[
+                    'product_id' => $product->id,
+                    'quantity' => 1,
+                    'unit_cost' => '10.00',
+                ]],
+            ])
+            ->assertSessionHasErrors('supplier_id');
+
+        $this->assertDatabaseCount('purchases', 0);
+    }
+
     public function test_purchase_creation_preserves_exact_cents_and_rejects_storage_overflow(): void
     {
         $admin = $this->createSuperAdmin();
