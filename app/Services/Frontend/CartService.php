@@ -6,14 +6,18 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\Commerce\CouponService;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\PromotionEngine;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class CartService
 {
-    public function __construct(protected CouponService $couponService, protected PromotionEngine $promotionEngine)
-    {
+    public function __construct(
+        protected CouponService $couponService,
+        protected PromotionEngine $promotionEngine,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
+    ) {
     }
 
     public function currentSessionId(): string
@@ -110,20 +114,19 @@ class CartService
             ]);
         }
     } elseif ($product->has_variants) {
-        $variant = ProductVariant::query()
+        $variantQuery = ProductVariant::query()
             ->with('attributes.attribute')
             ->where('product_id', $product->id)
-            ->where('status', true)
-            ->where('stock', '>', 0)
+            ->where('status', true);
+        $this->inventoryAvailabilityService->applySellableVariantFilter($variantQuery);
+        $variant = $variantQuery
             ->orderByDesc('is_default')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->first();
     }
 
-    $availableStock = $variant
-        ? (int) ($variant->stock ?? 0)
-        : (int) $product->quantity_value;
+    $availableStock = $this->inventoryAvailabilityService->sellableQuantity($product, $variant);
 
     $price = $variant
         ? (float) $variant->current_price
@@ -196,9 +199,10 @@ class CartService
             ]);
         }
 
-        $availableStock = $item->variant
-            ? (int) ($item->variant->stock ?? 0)
-            : (int) $item->product->quantity_value;
+        $availableStock = $this->inventoryAvailabilityService->sellableQuantity(
+            $item->product,
+            $item->variant
+        );
 
         if ($availableStock < 1) {
             throw ValidationException::withMessages([
@@ -243,9 +247,18 @@ class CartService
                 ->where('product_variant_id', $guestItem->product_variant_id)
                 ->first();
 
-            $availableStock = $guestItem->variant
-                ? (int) ($guestItem->variant->stock ?? 0)
-                : (int) optional($guestItem->product)->quantity_value;
+            $availableStock = $guestItem->product
+                ? $this->inventoryAvailabilityService->sellableQuantity(
+                    $guestItem->product,
+                    $guestItem->variant
+                )
+                : 0;
+
+            if ($availableStock < 1) {
+                $guestItem->delete();
+
+                continue;
+            }
 
             if ($existing) {
                 $existing->update([

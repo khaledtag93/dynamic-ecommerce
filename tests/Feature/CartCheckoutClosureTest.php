@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -106,6 +107,40 @@ class CartCheckoutClosureTest extends TestCase
         $this->assertDatabaseHas('cart_items', [
             'id' => $cartItem->id,
             'quantity' => 1,
+        ]);
+    }
+
+    public function test_cart_rejects_expired_tracked_stock_before_checkout(): void
+    {
+        $category = $this->createCategory('Expired Cart', 'expired-cart');
+
+        $product = Product::create([
+            'name' => 'Expired Cart Product',
+            'slug' => 'expired-cart-product',
+            'category_id' => $category->id,
+            'base_price' => 80,
+            'quantity' => 2,
+            'stock_status' => 'in_stock',
+            'status' => 1,
+            'has_variants' => false,
+        ]);
+
+        InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'CART-EXP-001',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 2,
+            'quantity_on_hand' => 2,
+            'unit_cost' => 20,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(2),
+        ]);
+
+        $this->post(route('cart.store', $product), ['quantity' => 1])
+            ->assertSessionHasErrors(['cart']);
+
+        $this->assertDatabaseMissing('cart_items', [
+            'product_id' => $product->id,
         ]);
     }
 

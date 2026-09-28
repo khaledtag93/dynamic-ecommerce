@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Services\Commerce\StoreSettingsService;
 use App\Support\HomepageSectionBuilder;
 use App\Services\Commerce\AIRecommendationEngine;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\SmartMerchandisingService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class FrontendController extends Controller
         protected StoreSettingsService $settingsService,
         protected SmartMerchandisingService $smartMerchandisingService,
         protected AIRecommendationEngine $aiRecommendationEngine,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
     ) {
     }
 
@@ -90,6 +92,18 @@ class FrontendController extends Controller
 
         $merchandisingCollections = $this->smartMerchandisingService->homeCollections(8, 8);
         $aiRecommendations = $this->aiRecommendationEngine->forHome(8);
+
+        $this->inventoryAvailabilityService->hydrateSellableQuantities(
+            collect()
+                ->concat($featuredProducts)
+                ->concat($manualFeaturedProducts)
+                ->concat($latestProducts)
+                ->concat($bestSellers)
+                ->concat($onSaleProducts)
+                ->concat($merchandisingCollections['continueShopping'])
+                ->concat($merchandisingCollections['recommendedForYou'])
+                ->concat($aiRecommendations['products'])
+        );
 
         $homeSections = HomepageSectionBuilder::build(
             $storeSettings,
@@ -201,13 +215,9 @@ class FrontendController extends Controller
 
         $categoryStats = [
             'total' => (clone $baseQuery)->count(),
-            'in_stock' => (clone $baseQuery)->where(function (Builder $query) {
-                $query->where(function (Builder $simple) {
-                    $simple->where('has_variants', false)->where('quantity', '>', 0);
-                })->orWhereHas('activeVariants', function (Builder $variantQuery) {
-                    $variantQuery->where('stock', '>', 0);
-                });
-            })->count(),
+            'in_stock' => $this->inventoryAvailabilityService
+                ->applySellableProductFilter(clone $baseQuery)
+                ->count(),
             'on_sale' => (clone $baseQuery)->where(function (Builder $query) {
                 $query->where(function (Builder $simple) {
                     $simple->whereNotNull('sale_price')
@@ -248,13 +258,7 @@ class FrontendController extends Controller
         }
 
         if ($filters['availability'] === 'in_stock') {
-            $query->where(function (Builder $builder) {
-                $builder->where(function (Builder $simple) {
-                    $simple->where('has_variants', false)->where('quantity', '>', 0);
-                })->orWhereHas('activeVariants', function (Builder $variantQuery) {
-                    $variantQuery->where('stock', '>', 0);
-                });
-            });
+            $this->inventoryAvailabilityService->applySellableProductFilter($query);
         }
 
         if ($filters['offer'] === 'on_sale') {

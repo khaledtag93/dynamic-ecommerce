@@ -10,6 +10,7 @@ use App\Models\PosCart;
 use App\Models\PosCartItem;
 use App\Models\PosCashShift;
 use App\Models\User;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\PosService;
 use App\Services\Commerce\PosReturnService;
 use App\Services\Commerce\PosCashShiftService;
@@ -21,6 +22,7 @@ class PosController extends Controller
 {
     public function __construct(
         protected PosService $posService,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
         protected PosReturnService $posReturnService,
         protected PosCashShiftService $posCashShiftService,
         protected StoreSettingsService $storeSettingsService,
@@ -82,7 +84,9 @@ class PosController extends Controller
         $escapedTerm = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $term);
         $like = '%' . $escapedTerm . '%';
 
-        $products = Product::query()->where('status', true)
+        $products = Product::query()
+            ->with('activeVariants')
+            ->where('status', true)
             ->where(function ($query) use ($like) {
                 $query->where('name', 'like', $like)
                     ->orWhere('sku', 'like', $like)
@@ -96,12 +100,14 @@ class PosController extends Controller
 
         $results = $products->map(fn ($product) => [
             'product_id' => $product->id, 'variant_id' => null, 'label' => $product->name,
-            'sku' => $product->sku, 'barcode' => $product->barcode, 'stock' => (int) $product->quantity_value,
+            'sku' => $product->sku, 'barcode' => $product->barcode,
+            'stock' => $this->inventoryAvailabilityService->sellableProductQuantity($product),
             'price' => (float) $product->current_price, 'selectable' => ! $product->has_variants,
         ])->concat($variants->map(fn ($variant) => [
             'product_id' => $variant->product_id, 'variant_id' => $variant->id,
             'label' => $variant->product->name . ' · ' . $variant->variant_name,
-            'sku' => $variant->sku, 'barcode' => $variant->barcode, 'stock' => (int) $variant->stock,
+            'sku' => $variant->sku, 'barcode' => $variant->barcode,
+            'stock' => $this->inventoryAvailabilityService->sellableQuantity($variant->product, $variant),
             'price' => (float) $variant->current_price, 'selectable' => true,
         ]))->take(10)->values();
 

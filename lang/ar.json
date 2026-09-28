@@ -5876,5 +5876,7 @@
     "Not enough lot-tracked stock is available for this inventory movement.": "لا توجد كمية كافية من المخزون المتتبع بالدفعات لتنفيذ حركة المخزون هذه.",
     "The purchase lot no longer matches the receipt being reversed.": "دفعة الشراء لم تعد تطابق الاستلام الجاري عكسه.",
     "Lot-tracked stock no longer matches the aggregate inventory balance.": "المخزون المتتبع بالدفعات لم يعد يطابق إجمالي رصيد المخزون.",
-    "The order item for this lot allocation no longer exists.": "بند الطلب المرتبط بتخصيص الدفعة هذا لم يعد موجودًا."
+    "The order item for this lot allocation no longer exists.": "بند الطلب المرتبط بتخصيص الدفعة هذا لم يعد موجودًا.",
+    "Batch": "دفعة",
+    "Legacy stock record": "سجل مخزون قديم"
 }

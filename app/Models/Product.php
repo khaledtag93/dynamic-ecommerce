@@ -205,6 +205,10 @@ class Product extends Model
 
   public function getQuantityValueAttribute(): int
 {
+    if (array_key_exists('sellable_quantity', $this->attributes)) {
+        return max(0, (int) $this->attributes['sellable_quantity']);
+    }
+
     if ($this->has_variants) {
         if ($this->relationLoaded('variants')) {
             return (int) $this->variants

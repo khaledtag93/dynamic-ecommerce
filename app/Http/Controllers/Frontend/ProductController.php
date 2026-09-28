@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use App\Services\Commerce\AIRecommendationEngine;
 use App\Services\Commerce\BehaviorTrackingService;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\OfferAutomationService;
 use App\Services\Commerce\ProductRecommendationService;
 use App\Services\Commerce\ProductReviewService;
@@ -20,6 +21,7 @@ class ProductController extends Controller
         protected BehaviorTrackingService $behaviorTrackingService,
         protected OfferAutomationService $offerAutomationService,
         protected AIRecommendationEngine $aiRecommendationEngine,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
     ) {
     }
 
@@ -47,6 +49,16 @@ class ProductController extends Controller
         $merchandising = $this->smartMerchandisingService->forProduct($product, 4);
         $behavioralOffers = $this->offerAutomationService->forProduct($product);
         $aiRecommendations = $this->aiRecommendationEngine->forProduct($product, 4);
+
+        $this->inventoryAvailabilityService->hydrateSellableQuantities(
+            collect([$product])
+                ->concat($recommendations['bundleProducts'])
+                ->concat($recommendations['addonProducts'])
+                ->concat($recommendations['relatedProducts'])
+                ->concat($merchandising['recentlyViewed'])
+                ->concat($merchandising['recommendedForYou'])
+                ->concat($aiRecommendations['products'])
+        );
 
         $approvedReviews = ProductReview::query()
             ->approved()

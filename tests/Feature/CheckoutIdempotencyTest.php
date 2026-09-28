@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Channels\WhatsApp\WhatsAppManager;
 use App\Services\Commerce\CouponService;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\InventoryService;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\PaymentService;
@@ -279,10 +280,11 @@ class CheckoutIdempotencyTest extends TestCase
                 'coupon' => 'Simulated late checkout failure.',
             ]));
 
-        $cartService = new CartService($couponService, app(PromotionEngine::class));
+        $cartService = new CartService($couponService, app(PromotionEngine::class), app(InventoryAvailabilityService::class));
         $service = new CheckoutService(
             $cartService,
             $couponService,
+            app(InventoryAvailabilityService::class),
             app(InventoryService::class),
             app(PaymentService::class),
             app(ProfitService::class),

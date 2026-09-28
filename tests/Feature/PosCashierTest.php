@@ -1177,6 +1177,32 @@ class PosCashierTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_pos_rejects_expired_tracked_stock_before_cart_add(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('POS Expired Product', '6224000000098', 2, false, 50, 20);
+
+        InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'POS-EXP-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 2,
+            'quantity_on_hand' => 2,
+            'unit_cost' => 20,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(2),
+        ]);
+
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHasErrors('barcode');
+
+        $this->assertDatabaseCount('pos_cart_items', 0);
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+    }
+
     public function test_pos_item_return_uses_discounted_snapshot_and_restocks_once(): void
     {
         $admin = $this->createSuperAdmin();

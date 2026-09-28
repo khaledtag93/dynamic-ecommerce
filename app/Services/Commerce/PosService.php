@@ -24,6 +24,7 @@ class PosService
 
     public function __construct(
         protected ProductIdentifierService $identifierService,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
         protected InventoryService $inventoryService,
         protected AdminActivityLogService $activityLogService,
         protected AnalyticsTracker $analyticsTracker,
@@ -422,7 +423,7 @@ class PosService
                 }
             }
 
-            $availableStock = (int) ($variant?->stock ?? $product->quantity);
+            $availableStock = $this->inventoryAvailabilityService->sellableQuantity($product, $variant);
 
             if ($availableStock < 1) {
                 throw ValidationException::withMessages([
@@ -492,7 +493,7 @@ class PosService
 
             $this->validateSaleTarget($lockedProduct, $lockedVariant, $variant?->id);
 
-            $availableStock = (int) ($lockedVariant?->stock ?? $lockedProduct->quantity);
+            $availableStock = $this->inventoryAvailabilityService->sellableQuantity($lockedProduct, $lockedVariant);
             if ($availableStock < 1) {
                 throw ValidationException::withMessages([
                     'product' => __('This item is out of stock and cannot be added to the POS cart.'),
@@ -579,7 +580,7 @@ class PosService
                 : null;
 
             $this->validateSaleTarget($product, $variant, $lockedItem->product_variant_id);
-            $availableStock = (int) ($variant?->stock ?? $product->quantity);
+            $availableStock = $this->inventoryAvailabilityService->sellableQuantity($product, $variant);
 
             if ($newQuantity > $availableStock) {
                 throw ValidationException::withMessages([
@@ -918,7 +919,7 @@ class PosService
                 $this->validateSaleTarget($product, $variant, $item->product_variant_id);
 
                 $quantity = (int) $item->quantity;
-                $availableStock = (int) ($variant?->stock ?? $product->quantity);
+                $availableStock = $this->inventoryAvailabilityService->sellableQuantity($product, $variant);
 
                 if ($quantity < 1 || $availableStock < $quantity) {
                     throw ValidationException::withMessages([

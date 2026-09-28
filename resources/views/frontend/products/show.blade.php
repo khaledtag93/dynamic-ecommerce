@@ -17,7 +17,7 @@
     $defaultImage = optional($galleryImages->first())->image_url ?: asset('images/storefront-placeholder.svg');
     $activeVariants = ($product->activeVariants ?? collect())->values();
     $defaultVariant = $activeVariants->firstWhere('is_default', true) ?: $activeVariants->first();
-    $selectedVariantStock = (int) ($defaultVariant->stock ?? $stockQty);
+    $selectedVariantStock = (int) ($defaultVariant?->sellable_quantity ?? $defaultVariant?->stock ?? $stockQty);
     $displayStock = $activeVariants->isNotEmpty() ? $selectedVariantStock : $stockQty;
     $selectedAvailable = $product->in_stock && $displayStock > 0;
     $lowStockThreshold = max(5, (int) ($product->low_stock_threshold ?? 3));
@@ -132,13 +132,14 @@
 
                                 <select name="variant_id" class="form-select lc-form-select d-none" id="productVariantSelect" required aria-required="true">
                                     @foreach($activeVariants as $variant)
+                                        @php($variantStock = (int) ($variant->sellable_quantity ?? $variant->stock ?? 0))
                                         <option
                                             value="{{ $variant->id }}"
                                             data-price="{{ number_format((float) $variant->current_price, 2, '.', '') }}"
-                                            data-stock="{{ (int) ($variant->stock ?? 0) }}"
+                                            data-stock="{{ $variantStock }}"
                                             data-label="{{ e(trim((string) $variant->variant_name) ?: __('Standard option')) }}"
                                             {{ $defaultVariant && $defaultVariant->id === $variant->id ? 'selected' : '' }}
-                                            @disabled((int) $variant->stock < 1)
+                                            @disabled($variantStock < 1)
                                         >
                                             {{ trim((string) $variant->variant_name) ?: __('Standard option') }}
                                         </option>
@@ -148,22 +149,23 @@
                                 <div class="variant-pills-grid" id="variantPillsGrid">
                                     @foreach($activeVariants as $variant)
                                         @php($variantLabel = trim((string) $variant->variant_name) ?: __('Standard option'))
+                                        @php($variantStock = (int) ($variant->sellable_quantity ?? $variant->stock ?? 0))
                                         <button
                                             type="button"
-                                            class="variant-pill {{ $defaultVariant && $defaultVariant->id === $variant->id ? 'is-active' : '' }} {{ (int) ($variant->stock ?? 0) < 1 ? 'is-disabled' : '' }}"
+                                            class="variant-pill {{ $defaultVariant && $defaultVariant->id === $variant->id ? 'is-active' : '' }} {{ $variantStock < 1 ? 'is-disabled' : '' }}"
                                             data-variant-button
                                             data-variant-id="{{ $variant->id }}"
                                             data-price="{{ number_format((float) $variant->current_price, 2, '.', '') }}"
-                                            data-stock="{{ (int) ($variant->stock ?? 0) }}"
+                                            data-stock="{{ $variantStock }}"
                                             data-label="{{ e($variantLabel) }}"
                                             aria-pressed="{{ $defaultVariant && $defaultVariant->id === $variant->id ? 'true' : 'false' }}"
-                                            @disabled((int) ($variant->stock ?? 0) < 1)
+                                            @disabled($variantStock < 1)
                                         >
                                             <span class="variant-pill__title">{{ $variantLabel }}</span>
                                             <span class="variant-pill__meta">
                                                 EGP {{ number_format((float) $variant->current_price, 2) }}
-                                                @if((int) ($variant->stock ?? 0) > 0)
-                                                    · {{ __(':count left', ['count' => (int) ($variant->stock ?? 0)]) }}
+                                                @if($variantStock > 0)
+                                                    · {{ __(':count left', ['count' => $variantStock]) }}
                                                 @else
                                                     · {{ __('Out of stock') }}
                                                 @endif

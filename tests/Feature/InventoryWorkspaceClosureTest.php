@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -53,13 +54,34 @@ class InventoryWorkspaceClosureTest extends TestCase
             'slug' => 'simple-low-stock-'.Str::lower(Str::random(8)),
             'category_id' => $category->id,
             'base_price' => 20,
-            'quantity' => 1,
+            'quantity' => 10,
             'low_stock_threshold' => 2,
             'expiration_date' => today()->addDays(10),
             'has_variants' => false,
             'status' => true,
         ]);
         $simple->forceFill(['reorder_point' => 0])->save();
+
+        InventoryLot::query()->create([
+            'product_id' => $simple->id,
+            'lot_code' => 'INV-SIMPLE-EXPIRED',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 9,
+            'quantity_on_hand' => 9,
+            'unit_cost' => 10,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(5),
+        ]);
+        InventoryLot::query()->create([
+            'product_id' => $simple->id,
+            'lot_code' => 'INV-SIMPLE-UPCOMING',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 10,
+            'expiration_date' => today()->addDays(10),
+            'received_at' => now()->subDay(),
+        ]);
 
         $variantParent = Product::create([
             'name' => 'Variant inventory product',
@@ -72,7 +94,7 @@ class InventoryWorkspaceClosureTest extends TestCase
             'status' => true,
         ]);
 
-        ProductVariant::create([
+        $expiredVariant = ProductVariant::create([
             'product_id' => $variantParent->id,
             'sku' => 'LOW-EXPIRED-VARIANT',
             'price' => 20,
@@ -82,7 +104,7 @@ class InventoryWorkspaceClosureTest extends TestCase
             'status' => true,
         ]);
 
-        ProductVariant::create([
+        $healthyVariant = ProductVariant::create([
             'product_id' => $variantParent->id,
             'sku' => 'HEALTHY-FUTURE-VARIANT',
             'price' => 20,
@@ -92,11 +114,38 @@ class InventoryWorkspaceClosureTest extends TestCase
             'status' => true,
         ]);
 
+        InventoryLot::query()->create([
+            'product_id' => $variantParent->id,
+            'product_variant_id' => $expiredVariant->id,
+            'lot_code' => 'INV-VAR-EXPIRED',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 10,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(3),
+        ]);
+        InventoryLot::query()->create([
+            'product_id' => $variantParent->id,
+            'product_variant_id' => $healthyVariant->id,
+            'lot_code' => 'INV-VAR-HEALTHY',
+            'source_type' => 'test_seed',
+            'initial_quantity' => 10,
+            'quantity_on_hand' => 10,
+            'unit_cost' => 10,
+            'expiration_date' => today()->addDays(90),
+            'received_at' => now(),
+        ]);
+
         $this->actingAs($admin)
             ->get(route('admin.inventory.index'))
             ->assertOk()
             ->assertSee('Simple low stock')
             ->assertSee('LOW-EXPIRED-VARIANT')
+            ->assertSee('INV-SIMPLE-EXPIRED')
+            ->assertSee('INV-SIMPLE-UPCOMING')
+            ->assertSee(__('Quantity') . ': 9')
+            ->assertSee(__('Quantity') . ': 1')
             ->assertSee(__('Expired'))
             ->assertSee(__('Upcoming'))
             ->assertDontSee('HEALTHY-FUTURE-VARIANT');

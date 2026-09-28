@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\InventoryLot;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -72,6 +73,41 @@ class StorefrontLiveCatalogTest extends TestCase
             ->assertDontSee('Out Of Stock Match')
             ->assertDontSee('Wrong Category Product')
             ->assertDontSee('<html', false);
+    }
+
+    public function test_in_stock_filter_and_product_card_exclude_expired_tracked_stock(): void
+    {
+        $category = $this->category('Tracked Availability');
+        $expired = $this->product($category, 'Expired Aggregate Stock', 5, 20, null);
+
+        InventoryLot::query()->create([
+            'product_id' => $expired->id,
+            'lot_code' => 'CAT-EXP-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 5,
+            'quantity_on_hand' => 5,
+            'unit_cost' => 10,
+            'expiration_date' => today()->subDay(),
+            'received_at' => now()->subDays(2),
+        ]);
+
+        $this->get(route('frontend.search', [
+            'q' => 'Expired Aggregate',
+            'availability' => 'in_stock',
+        ]))
+            ->assertOk()
+            ->assertDontSee('Expired Aggregate Stock');
+
+        $this->get(route('category.products', $category->id))
+            ->assertOk()
+            ->assertViewHas('categoryStats', fn (array $stats) => (int) $stats['in_stock'] === 0)
+            ->assertSee('Expired Aggregate Stock')
+            ->assertSee('data-product-in-stock="0"', false);
+
+        $this->get(route('frontend.products.show', $expired))
+            ->assertOk()
+            ->assertSee(__('Currently unavailable'))
+            ->assertSee(__('Out of stock'));
     }
 
     public function test_storefront_search_treats_like_wildcards_as_literals_and_bounds_query_length(): void

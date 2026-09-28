@@ -5186,5 +5186,7 @@
     "Not enough lot-tracked stock is available for this inventory movement.": "Not enough lot-tracked stock is available for this inventory movement.",
     "The purchase lot no longer matches the receipt being reversed.": "The purchase lot no longer matches the receipt being reversed.",
     "Lot-tracked stock no longer matches the aggregate inventory balance.": "Lot-tracked stock no longer matches the aggregate inventory balance.",
-    "The order item for this lot allocation no longer exists.": "The order item for this lot allocation no longer exists."
+    "The order item for this lot allocation no longer exists.": "The order item for this lot allocation no longer exists.",
+    "Batch": "Batch",
+    "Legacy stock record": "Legacy stock record"
 }

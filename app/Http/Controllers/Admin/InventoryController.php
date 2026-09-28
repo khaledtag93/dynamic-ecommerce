@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\Commerce\Code128BarcodeService;
 use App\Services\Commerce\InventoryAdjustmentService;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\ProductIdentifierService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +18,7 @@ class InventoryController extends Controller
 {
     public function __construct(
         protected InventoryAdjustmentService $adjustmentService,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
         protected ProductIdentifierService $identifierService,
         protected Code128BarcodeService $barcodeService,
     ) {}
@@ -56,78 +58,8 @@ class InventoryController extends Controller
             return response()->view('admin.inventory._results', compact('movements', 'filters'));
         }
 
-        $lowStockProducts = Product::query()
-            ->with('category')
-            ->where('has_variants', false)
-            ->where(function ($query) {
-                $query->whereColumn('quantity', '<=', 'reorder_point')
-                    ->orWhereColumn('quantity', '<=', 'low_stock_threshold');
-            })
-            ->latest('id')
-            ->take(12)
-            ->get();
-
-        $lowStockVariants = ProductVariant::query()
-            ->with('product.category')
-            ->where('status', true)
-            ->whereHas('product', fn ($query) => $query->where('has_variants', true))
-            ->whereColumn('stock', '<=', 'reorder_point')
-            ->orderBy('stock')
-            ->latest('id')
-            ->take(12)
-            ->get();
-
-        $lowStockItems = $lowStockProducts
-            ->map(fn (Product $product) => [
-                'product' => $product,
-                'variant' => null,
-                'stock' => (int) $product->quantity,
-                'threshold' => max((int) $product->reorder_point, (int) $product->low_stock_threshold),
-            ])
-            ->concat($lowStockVariants->map(fn (ProductVariant $variant) => [
-                'product' => $variant->product,
-                'variant' => $variant,
-                'stock' => (int) $variant->stock,
-                'threshold' => (int) $variant->reorder_point,
-            ]))
-            ->sortBy(fn (array $item) => $item['stock'] - $item['threshold'])
-            ->take(12)
-            ->values();
-
-        $expiryCutoff = today()->addDays(30);
-
-        $expiryRiskProducts = Product::query()
-            ->with('category')
-            ->where('has_variants', false)
-            ->whereNotNull('expiration_date')
-            ->whereDate('expiration_date', '<=', $expiryCutoff)
-            ->orderBy('expiration_date')
-            ->take(12)
-            ->get();
-
-        $expiryRiskVariants = ProductVariant::query()
-            ->with('product.category')
-            ->whereHas('product', fn ($query) => $query->where('has_variants', true))
-            ->whereNotNull('expiration_date')
-            ->whereDate('expiration_date', '<=', $expiryCutoff)
-            ->orderBy('expiration_date')
-            ->take(12)
-            ->get();
-
-        $expiryRiskItems = $expiryRiskProducts
-            ->map(fn (Product $product) => [
-                'product' => $product,
-                'variant' => null,
-                'expiration_date' => $product->expiration_date,
-            ])
-            ->concat($expiryRiskVariants->map(fn (ProductVariant $variant) => [
-                'product' => $variant->product,
-                'variant' => $variant,
-                'expiration_date' => $variant->expiration_date,
-            ]))
-            ->sortBy('expiration_date')
-            ->take(12)
-            ->values();
+        $lowStockItems = $this->inventoryAvailabilityService->lowStockItems(12);
+        $expiryRiskItems = $this->inventoryAvailabilityService->expiryRiskItems(30, 12);
 
         $movementTypes = InventoryMovement::query()
             ->whereNotNull('type')

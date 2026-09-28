@@ -109,6 +109,12 @@
                                 <div class="text-muted small font-monospace">{{ $variant->sku ?: ('#' . $variant->id) }}</div>
                             @endif
                             <div class="text-muted small">{{ $product?->category?->name ?? __('No category') }}</div>
+                            @if(!empty($item['lot_code']))
+                                <div class="text-muted small font-monospace">{{ __('Batch') }}: {{ $item['lot_code'] }}</div>
+                            @elseif(!empty($item['legacy']))
+                                <div class="text-muted small">{{ __('Legacy stock record') }}</div>
+                            @endif
+                            <div class="text-muted small">{{ __('Quantity') }}: {{ (int) ($item['quantity'] ?? 0) }}</div>
                             @if($product)
                                 <a href="{{ route('admin.products.edit', $product) }}" class="small text-decoration-none">{{ __('Open product') }} <i class="mdi mdi-arrow-top-right"></i></a>
                             @endif

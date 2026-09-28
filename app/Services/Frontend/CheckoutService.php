@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Notifications\OrderPlacedNotification;
 use App\Services\Commerce\CouponService;
+use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\InventoryService;
 use App\Services\Channels\WhatsApp\WhatsAppManager;
 use App\Services\Commerce\PaymentService;
@@ -22,6 +23,7 @@ class CheckoutService
     public function __construct(
         protected CartService $cartService,
         protected CouponService $couponService,
+        protected InventoryAvailabilityService $inventoryAvailabilityService,
         protected InventoryService $inventoryService,
         protected PaymentService $paymentService,
         protected ProfitService $profitService,
@@ -48,32 +50,24 @@ class CheckoutService
 
             $coupon = $summary['coupon'] ?? null;
             foreach ($summary['items'] as $item) {
-                if ($item->variant) {
-                    $currentStock = (int) ($item->variant->stock ?? 0);
-
-                    if ($currentStock < $item->quantity) {
-                        throw ValidationException::withMessages([
-                            'cart' => __('Not enough stock for :product. Available: :stock. Please update your cart.', [
-                                'product' => $item->product_name,
-                                'stock' => $currentStock,
-                            ]),
-                        ]);
-                    }
-                } elseif ($item->product) {
-                    $currentStock = (int) ($item->product->quantity ?? 0);
-
-                    if ($currentStock < $item->quantity) {
-                        throw ValidationException::withMessages([
-                            'cart' => __('Not enough stock for :product. Available: :stock. Please update your cart.', [
-                                'product' => $item->product_name,
-                                'stock' => $currentStock,
-                            ]),
-                        ]);
-                    }
-                } else {
+                if (! $item->product) {
                     throw ValidationException::withMessages([
                         'cart' => __('Product data is missing for :product. Please review your cart.', [
                             'product' => $item->product_name,
+                        ]),
+                    ]);
+                }
+
+                $currentStock = $this->inventoryAvailabilityService->sellableQuantity(
+                    $item->product,
+                    $item->variant
+                );
+
+                if ($currentStock < $item->quantity) {
+                    throw ValidationException::withMessages([
+                        'cart' => __('Not enough stock for :product. Available: :stock. Please update your cart.', [
+                            'product' => $item->product_name,
+                            'stock' => $currentStock,
                         ]),
                     ]);
                 }
