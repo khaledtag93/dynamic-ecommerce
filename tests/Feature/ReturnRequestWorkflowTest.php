@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
+use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\PosReturnService;
 use App\Services\Commerce\ReturnRequestService;
 use Illuminate\Database\QueryException;
@@ -21,6 +22,64 @@ use Tests\TestCase;
 class ReturnRequestWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_refund_requires_same_order_rma_and_idempotency_includes_rma_identity(): void
+    {
+        $customer = User::factory()->create();
+        $order = $this->makeDeliveredPaidOrder($customer, 200);
+        $otherOrder = $this->makeDeliveredPaidOrder($customer, 200);
+
+        $rmaA = ReturnRequest::query()->create([
+            'reference' => 'RMA-OWN-A-'.Str::upper(Str::random(6)),
+            'order_id' => $order->id,
+            'user_id' => $customer->id,
+            'status' => ReturnRequest::STATUS_RECEIVED,
+            'requested_at' => now(),
+            'received_at' => now(),
+        ]);
+        $rmaB = ReturnRequest::query()->create([
+            'reference' => 'RMA-OWN-B-'.Str::upper(Str::random(6)),
+            'order_id' => $order->id,
+            'user_id' => $customer->id,
+            'status' => ReturnRequest::STATUS_RECEIVED,
+            'requested_at' => now(),
+            'received_at' => now(),
+        ]);
+        $foreignRma = ReturnRequest::query()->create([
+            'reference' => 'RMA-FOREIGN-'.Str::upper(Str::random(6)),
+            'order_id' => $otherOrder->id,
+            'user_id' => $customer->id,
+            'status' => ReturnRequest::STATUS_RECEIVED,
+            'requested_at' => now(),
+            'received_at' => now(),
+        ]);
+
+        $service = app(OrderActionService::class);
+
+        try {
+            $service->refund($order, 10, 'Cross-order RMA', null, null, $foreignRma->id, (string) Str::uuid());
+            $this->fail('Refund must reject an RMA owned by another order.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund', $exception->errors());
+        }
+
+        $key = (string) Str::uuid();
+        $first = $service->refund($order, 10, 'RMA refund', null, null, $rmaA->id, $key);
+        $this->assertTrue($first['created']);
+
+        try {
+            $service->refund($order->fresh(), 10, 'RMA refund', null, null, $rmaB->id, $key);
+            $this->fail('Refund idempotency must include the linked RMA identity.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('order_refunds', 1);
+        $this->assertDatabaseHas('order_refunds', [
+            'order_id' => $order->id,
+            'return_request_id' => $rmaA->id,
+        ]);
+    }
 
     public function test_database_rejects_return_item_owned_by_another_order(): void
     {

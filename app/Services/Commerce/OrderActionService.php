@@ -295,6 +295,20 @@ class OrderActionService
             $reason = trim($reason);
             $notes = filled($notes) ? trim((string) $notes) : null;
 
+            if ($returnRequestId !== null) {
+                $returnBelongsToOrder = \App\Models\ReturnRequest::query()
+                    ->whereKey($returnRequestId)
+                    ->where('order_id', $lockedOrder->id)
+                    ->lockForUpdate()
+                    ->exists();
+
+                if (! $returnBelongsToOrder) {
+                    throw ValidationException::withMessages([
+                        'refund' => __('The return request does not belong to this order.'),
+                    ]);
+                }
+            }
+
             if ($idempotencyKey) {
                 $existingRefund = $lockedOrder->refunds()
                     ->where('idempotency_key', $idempotencyKey)
@@ -304,7 +318,8 @@ class OrderActionService
                     $samePayload = round((float) $existingRefund->amount, 2) === round($amount, 2)
                         && (string) $existingRefund->reason === $reason
                         && (string) ($existingRefund->notes ?? '') === (string) ($notes ?? '')
-                        && (int) ($existingRefund->processed_by ?? 0) === (int) ($processedBy ?? 0);
+                        && (int) ($existingRefund->processed_by ?? 0) === (int) ($processedBy ?? 0)
+                        && (int) ($existingRefund->return_request_id ?? 0) === (int) ($returnRequestId ?? 0);
 
                     if (! $samePayload) {
                         throw ValidationException::withMessages([
