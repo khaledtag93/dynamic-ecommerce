@@ -1,5 +1,21 @@
 # MASTER PROJECT STATUS
 
+## Roadmap refresh — external product review synthesis — 2026-09-28
+
+This refresh does **not** change the active execution order. Correctness, financial/business integrity and Production safety remain ahead of visual polish. The external review is treated as a checklist, not as an evidence-based score of Flowra.
+
+Add/retain these future closure tracks after the current ERP-integrity work reaches the appropriate checkpoint:
+
+- **UI Design System Closure:** normalize design tokens, palette semantics, typography scale, spacing rhythm, buttons, forms, cards, tables, modals, empty/loading/error states, product-image ratios and responsive behavior across Admin and Storefront.
+- **UX Friction Audit:** measure real task completion by role, including unnecessary clicks/reloads, unclear decisions, dead ends, error recovery, action feedback, scroll stability, mobile handling and accessibility. Cover Customer, Cashier, Warehouse, Purchasing, Manager and Admin workflows rather than checkout alone.
+- **Consistency & Terminology Audit:** enforce shared visual/action patterns plus one canonical business vocabulary across Order, Purchase, Sale, Receipt, Payment, Refund, Return, Reversal, Settlement and Payable. Continue the existing EN/AR and RTL/LTR integrity rules.
+- **Security Closure Audit before Production:** re-verify authorization matrices, horizontal/vertical privilege boundaries, CSRF/XSS, upload handling, rate limits, session/auth/reset abuse, webhook/payment replay, IDOR-style access, mass assignment, audit logging, secrets/config exposure, security headers and dependency audits. Existing hardening evidence is preserved; this is a release-quality closure pass, not a restart.
+- **Business Validation Standard:** syntactic validation is insufficient for critical domains. Keep server-authoritative checks for stock availability/reservations/lots/expiry, money/currency limits, settlement/payable bounds, refund/return limits, reversal/idempotency/concurrency and lifecycle state transitions.
+- **Role-based Business Journey Acceptance:** test the product as a real operating system, not only page-by-page: Supplier -> PO -> Receive -> Inventory -> Sale -> Payment -> Return/Refund -> Accounting, plus Customer and POS journeys. A role should be able to complete a day-to-day task without unexplained state, hidden dependency or inconsistent terminology.
+- **Real-user usability review:** before commercial/Production readiness, run small observed acceptance sessions with representative users/roles and record concrete friction as backlog defects rather than relying on developer intuition alone.
+
+These are additive roadmap items only. Do not interrupt an active integrity/domain slice unless a real blocking defect is discovered.
+
 ## Purchasing + Inventory / Lot-Batch closure checkpoint — 2026-09-28
 
 - Active branch: `sec03-framework-upgrade`.

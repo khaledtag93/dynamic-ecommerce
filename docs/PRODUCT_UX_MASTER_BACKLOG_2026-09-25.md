@@ -32,6 +32,17 @@ Shared Navigation Shell + Global Feedback/Toast source hardening is complete and
 
 ## Cross-cutting product standards
 
+### 0. Design-system, friction and terminology closure — planned cross-cutting audit
+
+Do not interrupt the current business-integrity work for cosmetic cleanup. When the roadmap reaches the product-polish checkpoint, run one coordinated closure across Admin, Storefront, POS and Workforce:
+- canonical design tokens, typography, spacing, buttons, inputs, cards, tables, modals and feedback states;
+- consistent image ratios and responsive/mobile behavior;
+- role/task friction review: clicks, reloads, confusing decisions, dead ends, error recovery and scroll/context preservation;
+- canonical business terminology and status wording across sales, purchasing, inventory, payments, returns, settlements and accounting-facing surfaces;
+- observed real-user/role usability sessions, with concrete findings recorded as defects/backlog items.
+
+Visual consistency must not mask business inconsistency: terminology and lifecycle semantics are part of UX.
+
 ### 1. Bilingual integrity — high priority
 
 Arabic inside an English interface, or English inside an Arabic interface, must be treated as a product-quality defect unless the text is intentionally language-neutral (for example a SKU, email, URL, brand name, or technical identifier).
