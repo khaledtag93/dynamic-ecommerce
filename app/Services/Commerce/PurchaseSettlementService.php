@@ -114,7 +114,11 @@ class PurchaseSettlementService
             $effectivePaidAt = $requestedPaidAt ?: now()->setMicrosecond(0);
             $firstActiveReceiptAt = PurchaseReceipt::query()
                 ->where('purchase_id', $lockedPurchase->id)
-                ->whereNull('reversed_at')
+                ->where('received_at', '<=', $effectivePaidAt)
+                ->where(function ($state) use ($effectivePaidAt) {
+                    $state->whereNull('reversed_at')
+                        ->orWhere('reversed_at', '>', $effectivePaidAt);
+                })
                 ->orderBy('received_at')
                 ->orderBy('id')
                 ->lockForUpdate()
@@ -225,9 +229,17 @@ class PurchaseSettlementService
     ): int {
         $receipts = PurchaseReceipt::query()
             ->where('purchase_id', $purchase->id)
-            ->whereNull('reversed_at')
+            ->when(
+                $asOf,
+                fn ($q) => $q
+                    ->where('received_at', '<=', $asOf)
+                    ->where(function ($state) use ($asOf) {
+                        $state->whereNull('reversed_at')
+                            ->orWhere('reversed_at', '>', $asOf);
+                    }),
+                fn ($q) => $q->whereNull('reversed_at')
+            )
             ->when($excludeReceiptId, fn ($q) => $q->where('id', '!=', $excludeReceiptId))
-            ->when($asOf, fn ($q) => $q->where('received_at', '<=', $asOf))
             ->orderBy('id');
         if ($lock) {
             $receipts->lockForUpdate();

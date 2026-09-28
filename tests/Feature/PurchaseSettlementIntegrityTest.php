@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Purchase;
+use App\Models\PurchaseReceipt;
 use App\Models\PurchaseSettlement;
 use App\Models\Role;
 use App\Models\Supplier;
@@ -297,6 +298,45 @@ class PurchaseSettlementIntegrityTest extends TestCase
         }
 
         $this->assertDatabaseCount('purchase_settlements', 1);
+    }
+
+    public function test_backdated_supplier_payment_uses_receipts_that_were_active_on_that_date_even_if_reversed_later(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 3, 10);
+        $purchaseService = app(PurchaseService::class);
+        $reversalService = app(PurchaseReceiptReversalService::class);
+        $settlements = app(PurchaseSettlementService::class);
+
+        Carbon::setTestNow('2026-09-10 10:00:00');
+        $purchaseService->receivePartial($purchase, [$item->id => 1], (string) Str::uuid());
+        $firstReceipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->latest('id')->firstOrFail();
+
+        Carbon::setTestNow('2026-09-20 10:00:00');
+        $this->assertTrue($reversalService->reverse(
+            $purchase,
+            $firstReceipt,
+            'Reverse first delivery before replacement receipt.'
+        ));
+
+        Carbon::setTestNow('2026-09-25 10:00:00');
+        $purchaseService->receivePartial($purchase, [$item->id => 2], (string) Str::uuid());
+
+        Carbon::setTestNow('2026-09-30 10:00:00');
+        $this->assertTrue($settlements->record(
+            $purchase,
+            '10.00',
+            'bank_transfer',
+            'HISTORICAL-RECEIPT',
+            (string) Str::uuid(),
+            '2026-09-15 12:00:00'
+        ));
+
+        $summary = $settlements->summary($purchase);
+        $this->assertSame('20.00', $summary['payable']);
+        $this->assertSame('10.00', $summary['paid']);
+        $this->assertSame('10.00', $summary['balance']);
     }
 
     public function test_supplier_payment_is_not_allowed_before_goods_are_received(): void
