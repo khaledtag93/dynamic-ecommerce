@@ -196,10 +196,13 @@ class OrderActionService
                 $newStatus === Order::STATUS_COMPLETED
                 && $lockedOrder->sales_channel !== Order::SALES_CHANNEL_POS
                 && $lockedOrder->payment_method !== Order::PAYMENT_METHOD_COD
-                && $lockedOrder->delivery_status !== Order::DELIVERY_STATUS_DELIVERED
+                && (
+                    $lockedOrder->delivery_status !== Order::DELIVERY_STATUS_DELIVERED
+                    || ! $lockedOrder->delivered_at
+                )
             ) {
                 throw ValidationException::withMessages([
-                    'status' => __('Storefront orders cannot be completed before delivery is marked Delivered.'),
+                    'status' => __('Storefront orders cannot be completed before delivery is marked Delivered with a delivery timestamp.'),
                 ]);
             }
 

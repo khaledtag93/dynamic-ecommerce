@@ -767,6 +767,36 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $order->fresh()->delivery_status);
     }
 
+    public function test_non_cod_completion_requires_delivery_timestamp(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $order->update([
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'status' => Order::STATUS_PROCESSING,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivered_at' => null,
+        ]);
+        $this->makePayment($order, Payment::STATUS_PAID);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService($notifications, app(InventoryService::class), app(StockReservationService::class), app(CouponService::class), app(AnalyticsTracker::class), app(ProfitService::class));
+
+        try {
+            $service->updateStatus($order, Order::STATUS_COMPLETED);
+            $this->fail('Delivered storefront orders require a delivery timestamp before completion.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
+        $this->assertNull($order->fresh()->delivered_at);
+
+        $order->update(['delivered_at' => now()]);
+        $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
+
+        $this->assertSame(Order::STATUS_COMPLETED, $order->fresh()->status);
+    }
+
     public function test_cod_completion_marks_payment_ledger_paid(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
