@@ -15,7 +15,11 @@
     <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Pending')" :value="number_format($stats['pending'])" icon="mdi-progress-clock" tone="warning" class="h-100" /></div>
     <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Paid')" :value="number_format($stats['paid'])" icon="mdi-check-decagram-outline" tone="success" class="h-100" /></div>
     <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Needs attention')" :value="number_format($stats['attention'])" icon="mdi-alert-circle-outline" tone="danger" class="h-100" /></div>
-    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Paid amount')" :value="'EGP ' . number_format($stats['paid_amount'], 2)" icon="mdi-cash-check" tone="success" class="h-100" /></div>
+    <div class="col-md-6 col-xl"><x-admin.stat-card :label="__('Captured amount')" :value="'EGP ' . number_format($stats['paid_amount'], 2)" icon="mdi-cash-check" tone="success" class="h-100" /></div>
+</div>
+
+<div class="alert alert-info border-0 small mb-4">
+    {{ __('Captured or Paid status confirms the payment transaction in Flowra; it does not prove that a gateway payout or bank settlement reached the merchant account.') }}
 </div>
 
 <div class="admin-card mb-4">

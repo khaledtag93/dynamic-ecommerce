@@ -53,7 +53,7 @@
         @endif
 
         <div class="admin-card"><div class="admin-card-body">
-            <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><div><h4 class="mb-1">{{ __('Gateway logs') }}</h4><p class="text-muted small mb-0">{{ __('Technical payment evidence for troubleshooting and reconciliation.') }}</p></div><span class="badge {{ data_get($payment->meta,'paymob_hmac_valid') === true ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ data_get($payment->meta,'paymob_hmac_valid') === true ? __('Verified') : __('Verification unavailable') }}</span></div>
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><div><h4 class="mb-1">{{ __('Gateway logs') }}</h4><p class="text-muted small mb-0">{{ __('Technical transaction evidence for troubleshooting and payment verification. Gateway capture does not prove merchant payout or bank settlement.') }}</p></div><span class="badge {{ data_get($payment->meta,'paymob_hmac_valid') === true ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ data_get($payment->meta,'paymob_hmac_valid') === true ? __('Verified') : __('Verification unavailable') }}</span></div>
             <div class="row g-4 mb-4">
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Paymob order id') }}</div><div>{{ data_get($payment->meta, 'paymob_order_id') ?: '—' }}</div></div>
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Paymob transaction id') }}</div><div>{{ data_get($payment->meta, 'paymob_transaction_id') ?: '—' }}</div></div>

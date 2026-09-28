@@ -94,6 +94,11 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString("'bank_transfer_reference' => ['nullable', 'string', 'max:255']", $controller);
         $this->assertStringContainsString("Bank transfer reference is required before marking this payment as paid.", $controller);
         $this->assertStringContainsString("'notes' => ['nullable', 'string', 'max:1000']", $controller);
+        $index = file_get_contents(resource_path('views/admin/payments/index.blade.php'));
+        $this->assertStringContainsString("__('Captured amount')", $index);
+        $this->assertStringContainsString('does not prove that a gateway payout or bank settlement reached the merchant account.', $index);
+        $this->assertStringContainsString('Gateway capture does not prove merchant payout or bank settlement.', $view);
+        $this->assertStringNotContainsString("__('Paid amount')", $index);
     }
 
     public function test_unconfigured_online_gateway_is_not_offered_to_checkout(): void
