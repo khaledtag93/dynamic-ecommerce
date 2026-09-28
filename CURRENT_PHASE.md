@@ -1,5 +1,22 @@
 # CURRENT PHASE
 
+## Purchasing + Inventory / Lot-Batch QAS checkpoint — 2026-09-28
+
+- Active branch: `sec03-framework-upgrade`.
+- **Verified source / CI / QAS application:** `1c90222e4cedabe49ac9e704401e9890875095f1` (`1c90222e`) — `test: preserve bounded sellable stock export`.
+- **Hardening CI #2151: Green** on that exact SHA. The gate passed Composer validation/audit, PHP/Bash syntax, clean MySQL migration, Laravel boot/routes, config/Blade compilation, full PHPUnit, frontend dependency audit, shared browser interactions and production asset build.
+- **QAS is deployed on the exact same SHA.** Deployment completed successfully with application health HTTP 200, static asset health HTTP 200 and maintenance mode OFF.
+- Immutable repository checkpoint tag: `qas-lot-batch-integrity-2026-09-28`.
+- The deployment applied the Purchasing/Inventory schema through `2026_09_28_005000_create_inventory_lot_ledger`, including partial receiving, cancellation audit, inventory valuation cost, purchase receipt reversal audit and the inventory lot ledger.
+- **Lot/Batch Integrity V1 is CLOSED for the audited source/CI/QAS slice.** Physical lot availability is FEFO-aware; reservation release restores the original lot allocations; expired lots are excluded from sellable stock; cancellation/POS/RMA return flows preserve stock origin; legacy negative aggregate stock repair does not create fake lots; lot tracking represents physical on-hand only.
+- **Sellable Inventory alignment is CLOSED for the audited slice.** Storefront/catalog/admin stock availability now uses sellable lot-aware quantity instead of raw aggregate stock where appropriate, including catalog list hydration, recommendation ranking, Admin dashboard/product workspace stock views and bounded export behavior.
+- CI #2150 failure on `7e61ff07` was a regression-test expectation mismatch after the stock semantics changed, not a business-logic failure. `1c90222e` updates that bounded-export contract and #2151 is fully Green.
+- QAS was upgraded from `0054e7d1` to `1c90222e` using the versioned `deploy-qas.sh sec03-framework-upgrade` path with the dedicated SSH key; future QAS deploys can be executed directly from the connected personal device when it is online and the key remains valid.
+- **Production remains unchanged.** Do not infer Production readiness from this QAS closure. OPS-01 credential rotation evidence, PAY-01 real Paymob E2E, OPS-02 isolated database restore rehearsal and Production scheduler/queue setup/verification remain release gates.
+- **Immediate next action:** run a short authenticated QAS smoke/acceptance pass for the new Purchasing + Inventory / lot-batch journeys using controlled test records, fix only reproduced defects, then continue the Business Process & ERP Integrity Audit with the next unclosed domain. Do not reopen Commerce Financial Integrity or Lot/Batch Integrity V1 without a reproduced defect.
+
+### Earlier checkpoints below
+
 ## Financial Integrity QAS checkpoint — 2026-09-27
 
 - Active branch: `sec03-framework-upgrade`.

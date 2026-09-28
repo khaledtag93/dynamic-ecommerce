@@ -1,5 +1,22 @@
 # MASTER PROJECT STATUS
 
+## Purchasing + Inventory / Lot-Batch closure checkpoint — 2026-09-28
+
+- Active branch: `sec03-framework-upgrade`.
+- **Current verified application SHA:** `1c90222e4cedabe49ac9e704401e9890875095f1` (`1c90222e`).
+- **Hardening CI #2151: Green** on the exact application SHA, including full PHPUnit, clean MySQL, Laravel boot/routes, Blade/config compile, dependency audits, shared browser interactions and frontend build.
+- **QAS:** deployed on the exact same SHA; application health HTTP 200, static-asset health HTTP 200, maintenance OFF.
+- Immutable repository checkpoint tag: `qas-lot-batch-integrity-2026-09-28`.
+- QAS migrations now include the 2026-09-28 Purchasing/Inventory chain through `005000_create_inventory_lot_ledger`.
+- **Commerce Financial Integrity remains CLOSED** from the prior checkpoint.
+- **Purchasing/Inventory hardening now closes the audited Lot/Batch Integrity V1 + Sellable Inventory slice on source/CI/QAS.** Covered contracts include FEFO lot consumption, exact lot allocation release, expired-lot exclusion, physical-on-hand handling across legacy negative stock correction, POS/RMA/cancellation return origin integrity, inventory valuation/cost separation, partial receiving and safe purchase receipt reversal auditing, plus sellable-stock alignment across commerce/catalog/Admin surfaces.
+- The final stock-view/export follow-up is `1c90222e`; CI #2150's PHPUnit failure on the previous SHA was an outdated test expectation, and CI #2151 passed after the regression contract was corrected.
+- QAS deployment can now be operated directly from the connected personal Windows device through the existing dedicated SSH key and `deploy-qas.sh`; still verify exact target SHA and CI before every deploy.
+- **Production is unchanged.** OPS-01, PAY-01, OPS-02 and Production scheduler/queue setup remain independent release gates.
+- **Next major work:** controlled authenticated QAS acceptance of the new Purchasing/Inventory/lot-batch journeys, then continue the broader Business Process & ERP Integrity Audit with the next unresolved business domain instead of adding unrelated features.
+
+### Earlier checkpoints below
+
 ## Financial Integrity closure checkpoint — 2026-09-27
 
 - Active branch: `sec03-framework-upgrade`.

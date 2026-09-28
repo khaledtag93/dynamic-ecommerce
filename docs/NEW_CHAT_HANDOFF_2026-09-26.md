@@ -1,4 +1,22 @@
-# New Chat Handoff — Dynamic — 2026-09-27
+# New Chat Handoff — Flowra / Dynamic — 2026-09-28
+
+## Current checkpoint — Purchasing + Inventory / Lot-Batch Integrity V1 on QAS
+
+Continue on `sec03-framework-upgrade`. The exact verified source/CI/QAS application is `1c90222e4cedabe49ac9e704401e9890875095f1` (`1c90222e`), and Hardening CI **#2151 is Green** on that SHA.
+
+Commerce Financial Integrity remains CLOSED from the prior checkpoint. The new audited Purchasing/Inventory slice also closes **Lot/Batch Integrity V1 + Sellable Inventory alignment** on source/CI/QAS: FEFO lot consumption, exact reservation-release allocations, expired-lot exclusion, legacy negative-stock repair without fake lots, POS/RMA/cancellation return origin integrity, inventory valuation/cost separation, partial receiving, safe purchase receipt reversal auditing, and sellable-stock propagation through commerce/catalog/Admin product/dashboard surfaces.
+
+QAS is deployed on the same `1c90222e` revision. Deployment applied migrations through `2026_09_28_005000_create_inventory_lot_ledger`, completed with application HTTP 200 + static asset HTTP 200, and maintenance mode is OFF. Immutable checkpoint tag: `qas-lot-batch-integrity-2026-09-28`. The dedicated SSH key on the connected personal Windows device is verified; future QAS deployments can be executed directly with `deploy-qas.sh sec03-framework-upgrade` after confirming the exact green target SHA.
+
+Production remains unchanged. Separate release gates remain **OPS-01 credential rotation evidence**, **PAY-01 real Paymob E2E**, **OPS-02 isolated database restore rehearsal**, plus Production scheduler/queue setup and verification.
+
+**Next:** run a short controlled authenticated QAS smoke/acceptance pass for the new Purchasing/Inventory/lot-batch journeys. Fix only reproduced defects. Then continue the Business Process & ERP Integrity Audit with the next unresolved domain; do not reopen Commerce Financial Integrity or Lot/Batch Integrity V1 without a reproduced defect.
+
+Paste-ready continuation:
+
+> نكمل Flowra على `sec03-framework-upgrade` من SHA `1c90222e4cedabe49ac9e704401e9890875095f1`. Hardening CI #2151 Green، ونفس الـSHA منشور على QAS مع HTTP 200 للـapp والـstatic assets وmaintenance OFF. Commerce Financial Integrity مقفول، وكمان Lot/Batch Integrity V1 + Sellable Inventory alignment مقفولين source/CI/QAS. migrations وصلت لحد `2026_09_28_005000_create_inventory_lot_ledger`. ابدأ بـQAS smoke قصير على Purchasing/Inventory/lot-batch ببيانات test controlled، اقفل أي defect حقيقي فقط، وبعدها كمل Business Process & ERP Integrity Audit في أول domain غير مقفول. Production unchanged؛ OPS-01 وPAY-01 وOPS-02 وProduction scheduler/queue ما زالوا release gates.
+
+### Earlier checkpoints below
 
 ## Current checkpoint — customer commerce hardening through Paymob retry serialization
 
