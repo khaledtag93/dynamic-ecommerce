@@ -239,13 +239,15 @@ class CustomerAccountStatementService
 
         if ($this->includesType($type, 'return')) {
             $queries[] = DB::table('return_requests')
-                ->where('return_requests.user_id', $customer->id)
+                ->join('orders', 'orders.id', '=', 'return_requests.order_id')
+                ->where('orders.user_id', $customer->id)
                 ->whereNotNull('return_requests.requested_at')
                 ->whereBetween('return_requests.requested_at', [$from, $to])
                 ->selectRaw("'return' AS movement_type, return_requests.id AS movement_id, return_requests.requested_at AS occurred_at");
 
             $queries[] = DB::table('return_requests')
-                ->where('return_requests.user_id', $customer->id)
+                ->join('orders', 'orders.id', '=', 'return_requests.order_id')
+                ->where('orders.user_id', $customer->id)
                 ->whereNull('return_requests.requested_at')
                 ->whereBetween('return_requests.created_at', [$from, $to])
                 ->selectRaw("'return' AS movement_type, return_requests.id AS movement_id, return_requests.created_at AS occurred_at");
@@ -300,7 +302,8 @@ class CustomerAccountStatementService
     private function returnScope(User $customer, CarbonImmutable $from, CarbonImmutable $to): QueryBuilder
     {
         return DB::table('return_requests')
-            ->where('return_requests.user_id', $customer->id)
+            ->join('orders', 'orders.id', '=', 'return_requests.order_id')
+            ->where('orders.user_id', $customer->id)
             ->where(function (QueryBuilder $query) use ($from, $to) {
                 $query->whereBetween('return_requests.requested_at', [$from, $to])
                     ->orWhere(function (QueryBuilder $fallback) use ($from, $to) {

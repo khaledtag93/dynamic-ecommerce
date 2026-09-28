@@ -150,6 +150,37 @@ class CustomerAccountStatementTest extends TestCase
         $this->assertStringContainsString('customer-statement-'.$customer->id, (string) $export->headers->get('content-disposition'));
     }
 
+    public function test_return_movements_follow_order_owner_not_rma_user_field(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $customer = User::factory()->create(['role_as' => 0]);
+        $otherCustomer = User::factory()->create(['role_as' => 0]);
+        $order = $this->orderFor($customer, 'STAT-OWNER', 90, 'EGP');
+
+        ReturnRequest::query()->create([
+            'reference' => 'RMA-OWNER-001',
+            'order_id' => $order->id,
+            'user_id' => $otherCustomer->id,
+            'status' => ReturnRequest::STATUS_REQUESTED,
+            'requested_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.customers.statement', [
+                'user' => $customer,
+                'type' => 'return',
+            ]))
+            ->assertOk()
+            ->assertSee('RMA-OWNER-001');
+
+        $this->get(route('admin.customers.statement', [
+            'user' => $otherCustomer,
+            'type' => 'return',
+        ]))
+            ->assertOk()
+            ->assertDontSee('RMA-OWNER-001');
+    }
+
     public function test_statement_routes_require_customer_management_permission(): void
     {
         $customer = User::factory()->create(['role_as' => 0]);
