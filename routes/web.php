@@ -381,11 +381,11 @@ Route::prefix('admin')
         });
 
         Route::controller(PurchaseController::class)->group(function () {
-            Route::middleware('permission:inventory.manage,payments.manage')->group(function () {
+            Route::middleware('permission:inventory.manage,purchasing.settlements.manage')->group(function () {
                 Route::get('/purchases', 'index')->name('purchases.index');
                 Route::get('/purchases/{purchase}', 'show')->name('purchases.show');
             });
-            Route::middleware('permission:payments.manage')->group(function () {
+            Route::middleware('permission:purchasing.settlements.manage')->group(function () {
                 Route::post('/purchases/{purchase}/settlements', 'recordSettlement')->name('purchases.settlements.store');
                 Route::post('/purchases/{purchase}/settlements/{purchaseSettlement}/void', 'voidSettlement')->name('purchases.settlements.void');
             });

@@ -123,7 +123,7 @@ class PurchaseController extends Controller
         $settlementKey = (string) Str::uuid();
         $settlementSummary = $this->purchaseSettlementService->summary($purchase);
         $canManageInventory = (bool) request()->user()?->hasPermission('inventory.manage');
-        $canManageSupplierSettlement = (bool) request()->user()?->hasPermission('payments.manage');
+        $canManageSupplierSettlement = (bool) request()->user()?->hasPermission('purchasing.settlements.manage');
 
         return view('admin.purchases.show', compact(
             'purchase',

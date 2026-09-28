@@ -170,6 +170,9 @@ class PurchaseSettlementIntegrityTest extends TestCase
 
         $operations = $this->staffWithRole('operations_manager');
         $finance = $this->staffWithRole('finance_manager');
+
+        $this->assertFalse($operations->hasPermission('purchasing.settlements.manage'));
+        $this->assertTrue($finance->hasPermission('purchasing.settlements.manage'));
         $purchase = $this->purchase();
         $product = $this->product();
         $item = $this->item($purchase, $product, 2, 10);
