@@ -95,6 +95,46 @@ class PurchaseSettlementIntegrityTest extends TestCase
         $this->assertDatabaseCount('purchase_settlements', 0);
     }
 
+    public function test_supplier_settlement_service_enforces_reference_and_void_reason_storage_bounds(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        app(PurchaseService::class)->receive($purchase);
+        $service = app(PurchaseSettlementService::class);
+
+        try {
+            $service->record(
+                $purchase,
+                '5.00',
+                'cash',
+                str_repeat('R', 101),
+                (string) Str::uuid()
+            );
+            $this->fail('Supplier payment reference must respect the database length boundary.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('reference', $exception->errors());
+        }
+
+        $this->assertTrue($service->record(
+            $purchase,
+            '5.00',
+            'cash',
+            'REF-OK',
+            (string) Str::uuid()
+        ));
+        $settlement = PurchaseSettlement::query()->firstOrFail();
+
+        try {
+            $service->void($purchase, $settlement, str_repeat('V', 1001));
+            $this->fail('Supplier payment void reason must respect the database length boundary.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('void_reason', $exception->errors());
+        }
+
+        $this->assertSame(PurchaseSettlement::STATUS_ACTIVE, $settlement->fresh()->status);
+    }
+
     public function test_operational_supplier_payable_excludes_purchase_shipping_and_tax(): void
     {
         $product = $this->product();

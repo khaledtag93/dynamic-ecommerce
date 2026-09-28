@@ -5211,6 +5211,8 @@
     "Enter a supplier payment with up to two decimal places within the supported amount limit.": "Enter a supplier payment with up to two decimal places within the supported amount limit.",
     "The supplier payment request key is invalid. Refresh and try again.": "The supplier payment request key is invalid. Refresh and try again.",
     "Choose a valid supplier payment method.": "Choose a valid supplier payment method.",
+    "Supplier payment reference cannot exceed 100 characters.": "Supplier payment reference cannot exceed 100 characters.",
+    "Supplier payment void reason cannot exceed 1000 characters.": "Supplier payment void reason cannot exceed 1000 characters.",
     "Choose an active supplier before creating the purchase order.": "Choose an active supplier before creating the purchase order.",
     "This supplier payment request key was already used with different details. Refresh and try again.": "This supplier payment request key was already used with different details. Refresh and try again.",
     "No received supplier value is available to settle yet.": "No received supplier value is available to settle yet.",

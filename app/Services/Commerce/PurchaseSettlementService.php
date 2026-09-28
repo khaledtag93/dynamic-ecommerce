@@ -52,6 +52,11 @@ class PurchaseSettlementService
 
         $idempotencyKey = trim($idempotencyKey);
         $normalizedReference = filled($reference) ? trim((string) $reference) : null;
+        if ($normalizedReference !== null && mb_strlen($normalizedReference) > 100) {
+            throw ValidationException::withMessages([
+                'reference' => __('Supplier payment reference cannot exceed 100 characters.'),
+            ]);
+        }
         $requestedPaidAt = null;
 
         if (filled($paidAt)) {
@@ -161,6 +166,11 @@ class PurchaseSettlementService
         $reason = trim($reason);
         if ($reason === '') {
             throw ValidationException::withMessages(['void_reason' => __('Enter a reason for voiding this supplier payment.')]);
+        }
+        if (mb_strlen($reason) > 1000) {
+            throw ValidationException::withMessages([
+                'void_reason' => __('Supplier payment void reason cannot exceed 1000 characters.'),
+            ]);
         }
 
         return DB::transaction(function () use ($purchase, $settlement, $reason, $adminUserId) {
