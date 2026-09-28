@@ -14,6 +14,7 @@ use App\Services\Auth\AuthorizationService;
 use App\Services\Commerce\PurchaseReceiptReversalService;
 use App\Services\Commerce\PurchaseService;
 use App\Services\Commerce\PurchaseSettlementService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -68,6 +69,34 @@ class PurchaseSettlementIntegrityTest extends TestCase
         }
 
         $this->assertDatabaseCount('purchase_settlements', 1);
+    }
+
+    public function test_database_rejects_supplier_settlement_attributed_to_another_supplier(): void
+    {
+        $purchase = $this->purchase();
+        $otherSupplier = Supplier::create([
+            'name' => 'Other settlement supplier',
+            'slug' => 'other-settlement-supplier',
+        ]);
+
+        try {
+            PurchaseSettlement::query()->create([
+                'purchase_id' => $purchase->id,
+                'supplier_id' => $otherSupplier->id,
+                'amount' => '5.00',
+                'currency' => $purchase->currency,
+                'payment_method' => 'cash',
+                'reference' => 'CROSS-SUPPLIER',
+                'idempotency_key' => (string) Str::uuid(),
+                'paid_at' => now(),
+                'status' => PurchaseSettlement::STATUS_ACTIVE,
+            ]);
+            $this->fail('Database must reject a supplier payment attributed to a supplier other than the purchase supplier.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseCount('purchase_settlements', 0);
     }
 
     public function test_supplier_settlement_is_append_only_and_only_void_transition_is_allowed(): void
