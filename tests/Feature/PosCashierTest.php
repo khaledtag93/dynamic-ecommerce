@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\PosCart;
 use App\Models\PosCartItem;
 use App\Models\PosCashShift;
+use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Role;
@@ -18,6 +19,7 @@ use App\Models\User;
 use App\Services\Auth\AuthorizationService;
 use App\Services\Commerce\PosService;
 use App\Services\Commerce\PosCashShiftService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -1256,11 +1258,53 @@ class PosCashierTest extends TestCase
         $refundId = $order->refunds()->value('id');
         $this->assertDatabaseHas('pos_return_items', [
             'order_refund_id' => $refundId,
+            'order_id' => $order->id,
             'order_item_id' => $orderItem->id,
             'quantity' => 1,
             'amount' => 75,
             'restocked' => 1,
         ]);
+
+        $otherOrder = Order::query()->create([
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'order_number' => 'POS-RETURN-OWN-'.Str::upper(Str::random(6)),
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+            'grand_total' => 50,
+            'customer_name' => 'Ownership Customer',
+            'customer_email' => 'ownership@example.test',
+            'customer_phone' => '01000000001',
+            'shipping_address_line_1' => 'POS counter',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+        $otherItem = $otherOrder->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 50,
+            'unit_cost' => 20,
+            'quantity' => 1,
+            'line_total' => 50,
+            'profit_amount' => 30,
+        ]);
+        $posReturnItem = PosReturnItem::query()->where('order_refund_id', $refundId)->firstOrFail();
+
+        try {
+            $posReturnItem->forceFill([
+                'order_id' => $otherOrder->id,
+                'order_item_id' => $otherItem->id,
+            ])->save();
+            $this->fail('Database must reject POS return provenance that crosses orders.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertSame($order->id, (int) $posReturnItem->fresh()->order_id);
+        $this->assertSame($orderItem->id, (int) $posReturnItem->fresh()->order_item_id);
         $this->assertSame(4, (int) $product->fresh()->quantity);
         $this->assertSame(4, (int) InventoryLot::query()->whereKey($sourceLotId)->value('quantity_on_hand'));
         $this->assertSame(

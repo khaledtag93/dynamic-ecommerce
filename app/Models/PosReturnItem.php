@@ -11,6 +11,7 @@ class PosReturnItem extends Model
 
     protected $fillable = [
         'order_refund_id',
+        'order_id',
         'order_item_id',
         'quantity',
         'amount',

@@ -151,6 +151,7 @@ class PosReturnService
 
                 PosReturnItem::query()->create([
                     'order_refund_id' => $refund->id,
+                    'order_id' => $lockedOrder->id,
                     'order_item_id' => $item->id,
                     'quantity' => $line['quantity'],
                     'amount' => $line['amount'],
