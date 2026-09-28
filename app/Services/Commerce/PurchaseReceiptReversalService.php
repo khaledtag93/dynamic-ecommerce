@@ -32,6 +32,11 @@ class PurchaseReceiptReversalService
                 'reversal_reason' => __('Enter a receipt reversal reason.'),
             ]);
         }
+        if (mb_strlen($reason) > 1000) {
+            throw ValidationException::withMessages([
+                'reversal_reason' => __('Purchase receipt reversal reason cannot exceed 1000 characters.'),
+            ]);
+        }
 
         return DB::transaction(function () use ($purchase, $receipt, $reason, $adminUserId) {
             $lockedPurchase = Purchase::query()

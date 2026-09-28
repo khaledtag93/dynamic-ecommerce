@@ -401,6 +401,46 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertDatabaseCount('inventory_movements', 2);
     }
 
+    public function test_purchase_service_enforces_cancellation_and_reversal_reason_bounds(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+
+        try {
+            app(PurchaseService::class)->cancel($purchase, str_repeat('C', 1001));
+            $this->fail('Purchase cancellation reason must respect the service contract boundary.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('cancellation_reason', $exception->errors());
+        }
+
+        $this->assertSame(Purchase::STATUS_ORDERED, $purchase->fresh()->status);
+        $this->assertNull($purchase->fresh()->cancelled_at);
+
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 1],
+            (string) Str::uuid()
+        );
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+        $stockBefore = (int) $product->fresh()->quantity;
+
+        try {
+            app(PurchaseReceiptReversalService::class)->reverse(
+                $purchase,
+                $receipt,
+                str_repeat('R', 1001)
+            );
+            $this->fail('Purchase receipt reversal reason must respect the service contract boundary.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('reversal_reason', $exception->errors());
+        }
+
+        $this->assertSame($stockBefore, (int) $product->fresh()->quantity);
+        $this->assertNull($receipt->fresh()->reversed_at);
+        $this->assertDatabaseCount('inventory_movements', 1);
+    }
+
     public function test_ordered_purchase_can_be_cancelled_once_without_changing_inventory(): void
     {
         $admin = $this->createSuperAdmin();

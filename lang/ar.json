@@ -5827,6 +5827,8 @@
     "Record partial receipt": "تسجيل الاستلام الجزئي",
     "Enter a cancellation reason.": "أدخل سبب إلغاء.",
     "Purchases with received stock cannot be cancelled. Reverse the receipt first.": "لا يمكن إلغاء أمر شراء استُلم منه مخزون. اعكس الاستلام أولًا.",
+    "Purchase cancellation reason cannot exceed 1000 characters.": "لا يمكن أن يتجاوز سبب إلغاء أمر الشراء 1000 حرف.",
+    "Purchase receipt reversal reason cannot exceed 1000 characters.": "لا يمكن أن يتجاوز سبب عكس استلام أمر الشراء 1000 حرف.",
     "Purchase stock cannot be received before the purchase order date.": "لا يمكن استلام مخزون أمر الشراء قبل تاريخ أمر الشراء نفسه.",
     "Purchase :reference cancelled.": "تم إلغاء أمر الشراء :reference.",
     "Purchase cancelled. No inventory was changed.": "تم إلغاء أمر الشراء. لم يتم تغيير المخزون.",

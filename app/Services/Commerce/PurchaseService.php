@@ -28,6 +28,11 @@ class PurchaseService
                 'cancellation_reason' => __('Enter a cancellation reason.'),
             ]);
         }
+        if (mb_strlen($reason) > 1000) {
+            throw ValidationException::withMessages([
+                'cancellation_reason' => __('Purchase cancellation reason cannot exceed 1000 characters.'),
+            ]);
+        }
 
         return DB::transaction(function () use ($purchase, $reason, $adminUserId) {
             $lockedPurchase = Purchase::query()
