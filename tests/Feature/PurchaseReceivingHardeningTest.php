@@ -513,6 +513,44 @@ class PurchaseReceivingHardeningTest extends TestCase
         $this->assertSame(1, \App\Models\AdminActivityLog::where('action', 'purchase_cancelled')->count());
     }
 
+    public function test_database_rejects_purchase_lot_with_cross_purchase_receipt_or_item(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 1, 10);
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 1],
+            (string) Str::uuid()
+        );
+
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+        $otherPurchase = $this->purchase();
+        $otherItem = $this->item($otherPurchase, $product, 1, 10);
+
+        try {
+            InventoryLot::query()->create([
+                'product_id' => $product->id,
+                'purchase_id' => $purchase->id,
+                'purchase_receipt_id' => $receipt->id,
+                'purchase_item_id' => $otherItem->id,
+                'lot_code' => 'CROSS-PURCHASE-LOT',
+                'source_type' => 'purchase_receipt',
+                'initial_quantity' => 1,
+                'quantity_on_hand' => 1,
+                'unit_cost' => '10.00',
+                'received_at' => now(),
+            ]);
+            $this->fail('Database must reject a purchase lot linked to an item from another purchase.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseMissing('inventory_lots', [
+            'lot_code' => 'CROSS-PURCHASE-LOT',
+        ]);
+    }
+
     public function test_database_rejects_receipt_item_from_another_purchase(): void
     {
         $product = $this->product(5);
