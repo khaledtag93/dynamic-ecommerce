@@ -42,7 +42,7 @@
                     </div>
                     <div class="col-md-6 col-xl-3">
                         <label class="form-label fw-semibold" for="compensationBaseRate">{{ __('Base rate') }}</label>
-                        <input id="compensationBaseRate" type="number" name="base_rate" aria-required="true" step="0.01" min="0.01" class="form-control @error('base_rate') is-invalid @enderror" value="{{ old('base_rate', $compensation->base_rate) }}" required>
+                        <input id="compensationBaseRate" type="number" name="base_rate" aria-required="true" step="0.01" min="0.01" max="999999999999.99" class="form-control @error('base_rate') is-invalid @enderror" value="{{ old('base_rate', $compensation->base_rate) }}" required>
                         @error('base_rate')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6 col-xl-2">

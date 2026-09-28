@@ -16,8 +16,11 @@ use App\Models\PayrollRun;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
+use App\Services\Workforce\CompensationService;
+use App\Services\Workforce\PayrollService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class WorkforcePayrollTest extends TestCase
@@ -624,6 +627,99 @@ class WorkforcePayrollTest extends TestCase
 
         $this->assertDatabaseCount('payroll_runs', 0);
         $this->assertDatabaseCount('payroll_entries', 0);
+    }
+
+    public function test_payroll_money_boundaries_reject_overprecision_and_keep_exact_cent_totals(): void
+    {
+        Carbon::setTestNow('2026-09-29 12:00:00');
+        app(AuthorizationService::class)->syncDefaults();
+
+        $finance = $this->staffWithRole('finance_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-MONEY-1');
+
+        $this->actingAs($finance)->put(
+            route('admin.workforce.payroll.compensation.update', $employee),
+            [
+                'pay_basis' => EmployeeCompensation::BASIS_SALARY,
+                'base_rate' => '100.999',
+                'currency' => 'EGP',
+                'effective_from' => '2026-01-01',
+                'overtime_eligible' => 0,
+            ]
+        )->assertSessionHasErrors('base_rate');
+
+        $this->assertDatabaseCount('employee_compensations', 0);
+
+        try {
+            app(CompensationService::class)->save($employee, [
+                'pay_basis' => EmployeeCompensation::BASIS_SALARY,
+                'base_rate' => '1e3',
+                'currency' => 'EGP',
+                'effective_from' => '2026-01-01',
+                'overtime_eligible' => false,
+            ], $finance);
+            $this->fail('Scientific notation must not bypass the payroll base-rate storage contract.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('base_rate', $exception->errors());
+        }
+
+        app(CompensationService::class)->save($employee, [
+            'pay_basis' => EmployeeCompensation::BASIS_SALARY,
+            'base_rate' => '100.00',
+            'currency' => 'EGP',
+            'effective_from' => '2026-01-01',
+            'overtime_eligible' => false,
+        ], $finance);
+
+        $period = PayrollPeriod::query()->create([
+            'name' => 'Money boundary payroll',
+            'starts_on' => '2026-09-01',
+            'ends_on' => '2026-09-28',
+            'status' => PayrollPeriod::STATUS_OPEN,
+        ]);
+
+        $run = app(PayrollService::class)->generateRun($period, $finance);
+        $entry = $run->entries()->firstOrFail();
+
+        $this->actingAs($finance)->post(
+            route('admin.workforce.payroll.adjustments.store', $entry),
+            [
+                'type' => PayrollAdjustment::TYPE_ALLOWANCE,
+                'label' => 'Over precision',
+                'amount' => '10.999',
+                'reason' => 'Must fail',
+            ]
+        )->assertSessionHasErrors('amount');
+
+        try {
+            app(PayrollService::class)->addAdjustment($entry, [
+                'type' => PayrollAdjustment::TYPE_ALLOWANCE,
+                'label' => 'Scientific notation',
+                'amount' => '1e3',
+                'reason' => 'Must fail',
+            ], $finance);
+            $this->fail('Scientific notation must not bypass the payroll adjustment storage contract.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('amount', $exception->errors());
+        }
+
+        $service = app(PayrollService::class);
+        foreach (['0.10', '0.20'] as $amount) {
+            $service->addAdjustment($entry, [
+                'type' => PayrollAdjustment::TYPE_ALLOWANCE,
+                'label' => 'Exact cents',
+                'amount' => $amount,
+                'reason' => 'Exact cent arithmetic',
+            ], $finance);
+        }
+
+        $entry->refresh();
+
+        $this->assertDatabaseCount('payroll_adjustments', 2);
+        $this->assertSame('0.30', $entry->allowances_total);
+        $this->assertSame('100.30', $entry->gross_pay);
+        $this->assertSame('100.30', $entry->net_pay);
     }
 
     private function staffWithRole(string $slug): User

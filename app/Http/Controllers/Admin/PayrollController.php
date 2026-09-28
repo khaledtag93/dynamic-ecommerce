@@ -96,9 +96,9 @@ class PayrollController extends Controller
         $data = $request->validate([
             'type' => ['required', Rule::in(array_keys(PayrollAdjustment::typeOptions()))],
             'label' => ['required', 'string', 'max:160'],
-            'amount' => ['required', 'numeric', 'gt:0', 'max:999999999999.99'],
-            'quantity' => ['nullable', 'numeric', 'gt:0', 'max:999999999'],
-            'rate' => ['nullable', 'numeric', 'gt:0', 'max:999999999999.9999'],
+            'amount' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:999999999999.99'],
+            'quantity' => ['nullable', 'numeric', 'decimal:0,3', 'gt:0', 'max:999999999'],
+            'rate' => ['nullable', 'numeric', 'decimal:0,4', 'gt:0', 'max:9999999999.9999'],
             'reason' => ['required', 'string', 'max:2000'],
         ]);
 

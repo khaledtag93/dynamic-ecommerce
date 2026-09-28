@@ -202,12 +202,21 @@ class PayrollService
                 ]);
             }
 
-            $amount = round((float) $data['amount'], 2);
-            if ($amount <= 0) {
+            $amountText = trim((string) $data['amount']);
+            if (! preg_match('/^\d{1,12}(?:\.\d{1,2})?$/', $amountText)) {
+                throw ValidationException::withMessages([
+                    'amount' => __('Enter a payroll amount with up to two decimal places within the supported amount limit.'),
+                ]);
+            }
+
+            $amountCents = $this->moneyToCents($amountText);
+            if ($amountCents < 1) {
                 throw ValidationException::withMessages([
                     'amount' => __('Payroll adjustment amount must be greater than zero.'),
                 ]);
             }
+
+            $amount = $this->centsToMoney($amountCents);
 
             $adjustment = PayrollAdjustment::query()->create([
                 'payroll_entry_id' => $lockedEntry->id,
@@ -583,30 +592,50 @@ class PayrollService
             ->where('payroll_entry_id', $entry->id)
             ->get();
 
-        $overtime = (float) $adjustments->where('type', PayrollAdjustment::TYPE_OVERTIME)->sum('amount');
-        $allowances = (float) $adjustments->where('type', PayrollAdjustment::TYPE_ALLOWANCE)->sum('amount');
-        $bonuses = (float) $adjustments->where('type', PayrollAdjustment::TYPE_BONUS)->sum('amount');
-        $deductions = (float) $adjustments->where('type', PayrollAdjustment::TYPE_DEDUCTION)->sum('amount');
+        $sumCents = fn (string $type): int => $adjustments
+            ->where('type', $type)
+            ->sum(fn (PayrollAdjustment $adjustment) => $this->moneyToCents($adjustment->amount));
 
-        $gross = round((float) $entry->base_pay + $overtime + $allowances + $bonuses, 2);
-        $net = round($gross - $deductions, 2);
+        $overtimeCents = $sumCents(PayrollAdjustment::TYPE_OVERTIME);
+        $allowancesCents = $sumCents(PayrollAdjustment::TYPE_ALLOWANCE);
+        $bonusesCents = $sumCents(PayrollAdjustment::TYPE_BONUS);
+        $deductionsCents = $sumCents(PayrollAdjustment::TYPE_DEDUCTION);
+        $grossCents = $this->moneyToCents($entry->base_pay)
+            + $overtimeCents
+            + $allowancesCents
+            + $bonusesCents;
+        $netCents = $grossCents - $deductionsCents;
 
-        if ($net < 0) {
+        if ($netCents < 0) {
             throw ValidationException::withMessages([
                 'amount' => __('Payroll deductions cannot make net pay negative.'),
             ]);
         }
 
         $entry->update([
-            'overtime_pay' => round($overtime, 2),
-            'allowances_total' => round($allowances, 2),
-            'bonuses_total' => round($bonuses, 2),
-            'deductions_total' => round($deductions, 2),
-            'gross_pay' => $gross,
-            'net_pay' => $net,
+            'overtime_pay' => $this->centsToMoney($overtimeCents),
+            'allowances_total' => $this->centsToMoney($allowancesCents),
+            'bonuses_total' => $this->centsToMoney($bonusesCents),
+            'deductions_total' => $this->centsToMoney($deductionsCents),
+            'gross_pay' => $this->centsToMoney($grossCents),
+            'net_pay' => $this->centsToMoney($netCents),
         ]);
 
         return $entry->fresh();
+    }
+
+    private function moneyToCents(mixed $value): int
+    {
+        $money = trim((string) ($value ?? '0'));
+        [$whole, $fraction] = array_pad(explode('.', $money, 2), 2, '');
+        $fraction = str_pad(substr($fraction, 0, 2), 2, '0');
+
+        return ((int) $whole * 100) + (int) $fraction;
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        return intdiv($cents, 100) . '.' . str_pad((string) ($cents % 100), 2, '0', STR_PAD_LEFT);
     }
 
     private function nullableTrim(?string $value): ?string

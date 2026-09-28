@@ -3286,6 +3286,8 @@
     "Payroll adjustments can only be changed while the run is Draft.": "Payroll adjustments can only be changed while the run is Draft.",
     "This employee is not marked as overtime eligible in the payroll snapshot.": "This employee is not marked as overtime eligible in the payroll snapshot.",
     "Payroll adjustment amount must be greater than zero.": "Payroll adjustment amount must be greater than zero.",
+    "Enter a payroll amount with up to two decimal places within the supported amount limit.": "Enter a payroll amount with up to two decimal places within the supported amount limit.",
+    "Enter a base rate with up to two decimal places within the supported amount limit.": "Enter a base rate with up to two decimal places within the supported amount limit.",
     "Only Draft payroll runs can be approved.": "Only Draft payroll runs can be approved.",
     "Only Approved payroll runs can be marked Paid.": "Only Approved payroll runs can be marked Paid.",
     "Close all attendance sessions touching this payroll period before generating payroll.": "Close all attendance sessions touching this payroll period before generating payroll.",

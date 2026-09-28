@@ -117,6 +117,24 @@ class WorkforceWorkspaceClosureTest extends TestCase
         );
         $this->assertStringContainsString("str_replace(['\\\\', '%', '_']", $controller);
         $this->assertStringNotContainsString('"%{$value}%"', $controller);
+        $this->assertStringContainsString(
+            "'base_rate' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:999999999999.99']",
+            $controller
+        );
+
+        $payrollController = file_get_contents(app_path('Http/Controllers/Admin/PayrollController.php'));
+        $this->assertStringContainsString(
+            "'amount' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:999999999999.99']",
+            $payrollController
+        );
+        $this->assertStringContainsString(
+            "'quantity' => ['nullable', 'numeric', 'decimal:0,3', 'gt:0', 'max:999999999']",
+            $payrollController
+        );
+        $this->assertStringContainsString(
+            "'rate' => ['nullable', 'numeric', 'decimal:0,4', 'gt:0', 'max:9999999999.9999']",
+            $payrollController
+        );
 
         $views = [
             resource_path('views/admin/workforce/payroll/compensation/index.blade.php') => [
@@ -166,6 +184,28 @@ class WorkforceWorkspaceClosureTest extends TestCase
                 $this->assertStringContainsString('id="' . $controlId . '"', $source);
             }
         }
+
+        $compensationView = file_get_contents(
+            resource_path('views/admin/workforce/payroll/compensation/edit.blade.php')
+        );
+        $runView = file_get_contents(resource_path('views/admin/workforce/payroll/run.blade.php'));
+
+        $this->assertStringContainsString(
+            'name="base_rate" aria-required="true" step="0.01" min="0.01" max="999999999999.99"',
+            $compensationView
+        );
+        $this->assertStringContainsString(
+            'name="amount" aria-required="true" class="form-control form-control-sm" step="0.01" min="0.01" max="999999999999.99"',
+            $runView
+        );
+        $this->assertStringContainsString(
+            'name="quantity" class="form-control form-control-sm" step="0.001" min="0.001" max="999999999"',
+            $runView
+        );
+        $this->assertStringContainsString(
+            'name="rate" class="form-control form-control-sm" step="0.0001" min="0.0001" max="9999999999.9999"',
+            $runView
+        );
 
         foreach ([
             [resource_path('views/admin/workforce/payroll/compensation/edit.blade.php'), 'compensationPayBasis'],

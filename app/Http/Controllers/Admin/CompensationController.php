@@ -69,12 +69,12 @@ class CompensationController extends Controller
 
         $data = $request->validate([
             'pay_basis' => ['required', Rule::in(array_keys(EmployeeCompensation::payBasisOptions()))],
-            'base_rate' => ['required', 'numeric', 'gt:0', 'max:999999999999.99'],
+            'base_rate' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:999999999999.99'],
             'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'],
             'effective_from' => ['required', 'date'],
             'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
             'overtime_eligible' => ['required', 'boolean'],
-            'overtime_rate_multiplier' => ['nullable', 'numeric', 'gt:0', 'max:10'],
+            'overtime_rate_multiplier' => ['nullable', 'numeric', 'decimal:0,3', 'gt:0', 'max:10'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
