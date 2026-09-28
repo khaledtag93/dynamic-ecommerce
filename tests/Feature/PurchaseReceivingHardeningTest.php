@@ -450,6 +450,30 @@ class PurchaseReceivingHardeningTest extends TestCase
             ->assertDontSee('EGP 125.00');
     }
 
+    public function test_purchase_details_preserve_purchase_currency_for_item_and_receipt_costs(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product();
+        $purchase = $this->purchase(Purchase::STATUS_ORDERED);
+        $purchase->update(['currency' => 'USD']);
+        $item = $this->item($purchase, $product, 2, 10);
+
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 1],
+            (string) Str::uuid(),
+            $admin->id
+        );
+
+        $this->actingAs($admin)
+            ->get(route('admin.purchases.show', $purchase))
+            ->assertOk()
+            ->assertSee('USD 10.00')
+            ->assertSee('USD 20.00')
+            ->assertDontSee('EGP 10.00')
+            ->assertDontSee('EGP 20.00');
+    }
+
     public function test_latest_partial_receipt_can_be_reversed_exactly_and_replay_is_safe(): void
     {
         $admin = $this->createSuperAdmin();

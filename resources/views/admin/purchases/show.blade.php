@@ -145,7 +145,7 @@
                                 <div class="col-md-6">
                                     <div class="admin-section-card h-100">
                                         <div class="fw-semibold">{{ $receiptItem->purchaseItem?->product_name ?: __('Purchase item') }}</div>
-                                        <div class="text-muted small">{{ __('Quantity') }}: {{ $receiptItem->quantity }} · {{ __('Unit cost') }}: EGP {{ number_format($receiptItem->unit_cost, 2) }}</div>
+                                        <div class="text-muted small">{{ __('Quantity') }}: {{ $receiptItem->quantity }} · {{ __('Unit cost') }}: {{ $purchase->currency ?: 'EGP' }} {{ number_format($receiptItem->unit_cost, 2) }}</div>
                                     </div>
                                 </div>
                             @endforeach
@@ -209,8 +209,8 @@
                                 <td>{{ $item->quantity }}</td>
                                 <td>{{ $item->received_quantity }}</td>
                                 <td>{{ max(0, (int) $item->quantity - (int) $item->received_quantity) }}</td>
-                                <td>EGP {{ number_format($item->unit_cost, 2) }}</td>
-                                <td class="fw-semibold">EGP {{ number_format($item->line_total, 2) }}</td>
+                                <td>{{ $purchase->currency ?: 'EGP' }} {{ number_format($item->unit_cost, 2) }}</td>
+                                <td class="fw-semibold">{{ $purchase->currency ?: 'EGP' }} {{ number_format($item->line_total, 2) }}</td>
                                 <td>{{ $item->expiration_date ? \Illuminate\Support\Carbon::parse($item->expiration_date)->format('d M Y') : '—' }}</td>
                             </tr>
                         @endforeach
