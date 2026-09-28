@@ -14,6 +14,7 @@ use App\Services\Commerce\PurchaseReceiptReversalService;
 use App\Services\Commerce\PurchaseService;
 use App\Services\Commerce\PurchaseSettlementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -21,6 +22,13 @@ use Tests\TestCase;
 class PurchaseSettlementIntegrityTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
 
     public function test_received_value_drives_payable_and_payments_are_idempotent_and_bounded(): void
     {
@@ -139,6 +147,48 @@ class PurchaseSettlementIntegrityTest extends TestCase
         } catch (ValidationException $exception) {
             $this->assertArrayHasKey('settlement_key', $exception->errors());
         }
+    }
+
+    public function test_backdated_supplier_payment_is_bounded_by_received_value_available_on_that_date(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 3, 10);
+        $service = app(PurchaseService::class);
+
+        Carbon::setTestNow('2026-09-10 10:00:00');
+        $service->receivePartial($purchase, [$item->id => 1], (string) Str::uuid());
+
+        Carbon::setTestNow('2026-09-20 10:00:00');
+        $service->receivePartial($purchase, [$item->id => 2], (string) Str::uuid());
+
+        $settlements = app(PurchaseSettlementService::class);
+
+        try {
+            $settlements->record(
+                $purchase,
+                '25.00',
+                'bank_transfer',
+                'BACKDATED-OVER',
+                (string) Str::uuid(),
+                '2026-09-15 12:00:00'
+            );
+            $this->fail('Backdated payment must not use receipts that happened after its effective date.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('amount', $exception->errors());
+        }
+
+        $this->assertTrue($settlements->record(
+            $purchase,
+            '10.00',
+            'bank_transfer',
+            'BACKDATED-OK',
+            (string) Str::uuid(),
+            '2026-09-15 12:00:00'
+        ));
+
+        $this->assertSame('30.00', $settlements->summary($purchase)['payable']);
+        $this->assertSame('20.00', $settlements->summary($purchase)['balance']);
     }
 
     public function test_supplier_payment_is_not_allowed_before_goods_are_received(): void

@@ -5215,6 +5215,7 @@
     "Enter a valid supplier payment date.": "Enter a valid supplier payment date.",
     "Supplier payment date cannot be in the future.": "Supplier payment date cannot be in the future.",
     "Supplier payment date cannot be before the first active goods receipt.": "Supplier payment date cannot be before the first active goods receipt.",
+    "Supplier payment cannot exceed the received-value balance available on its payment date.": "Supplier payment cannot exceed the received-value balance available on its payment date.",
     "Enter a reason for voiding this supplier payment.": "Enter a reason for voiding this supplier payment.",
     "The supplier payment does not belong to this purchase.": "The supplier payment does not belong to this purchase.",
     "Void or reduce supplier payments before reversing this receipt; the remaining received value would be lower than the amount already paid.": "Void or reduce supplier payments before reversing this receipt; the remaining received value would be lower than the amount already paid.",

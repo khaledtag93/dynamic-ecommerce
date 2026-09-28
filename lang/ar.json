@@ -5905,6 +5905,7 @@
     "Enter a valid supplier payment date.": "أدخل تاريخًا صالحًا لدفعة المورد.",
     "Supplier payment date cannot be in the future.": "لا يمكن أن يكون تاريخ دفعة المورد في المستقبل.",
     "Supplier payment date cannot be before the first active goods receipt.": "لا يمكن أن يكون تاريخ دفعة المورد قبل أول استلام فعّال للبضاعة.",
+    "Supplier payment cannot exceed the received-value balance available on its payment date.": "لا يمكن أن تتجاوز دفعة المورد رصيد قيمة البضاعة المستلمة المتاح في تاريخ الدفع نفسه.",
     "Enter a reason for voiding this supplier payment.": "أدخل سبب إلغاء قيد دفعة المورد.",
     "The supplier payment does not belong to this purchase.": "دفعة المورد لا تخص أمر الشراء هذا.",
     "Void or reduce supplier payments before reversing this receipt; the remaining received value would be lower than the amount already paid.": "ألغِ قيد دفعات المورد أو خفّضها قبل عكس هذا الاستلام؛ لأن قيمة المستلم المتبقية ستصبح أقل من المبلغ المدفوع بالفعل.",

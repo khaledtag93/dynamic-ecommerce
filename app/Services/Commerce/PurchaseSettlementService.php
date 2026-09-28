@@ -108,6 +108,16 @@ class PurchaseSettlementService
                 ]);
             }
 
+            $historicalPayableCents = $this->receivedValueCents($lockedPurchase, true, null, $effectivePaidAt);
+            $historicalPaidCents = $this->activeSettlementCents($lockedPurchase, true, $effectivePaidAt);
+            $historicalBalanceCents = max(0, $historicalPayableCents - $historicalPaidCents);
+
+            if ($amountCents > $historicalBalanceCents) {
+                throw ValidationException::withMessages([
+                    'amount' => __('Supplier payment cannot exceed the received-value balance available on its payment date.'),
+                ]);
+            }
+
             $settlement = PurchaseSettlement::query()->create([
                 'purchase_id' => $lockedPurchase->id,
                 'supplier_id' => $lockedPurchase->supplier_id,
@@ -184,12 +194,17 @@ class PurchaseSettlementService
             ]);
         }
     }
-    protected function receivedValueCents(Purchase $purchase, bool $lock = false, ?int $excludeReceiptId = null): int
-    {
+    protected function receivedValueCents(
+        Purchase $purchase,
+        bool $lock = false,
+        ?int $excludeReceiptId = null,
+        ?Carbon $asOf = null
+    ): int {
         $receipts = PurchaseReceipt::query()
             ->where('purchase_id', $purchase->id)
             ->whereNull('reversed_at')
             ->when($excludeReceiptId, fn ($q) => $q->where('id', '!=', $excludeReceiptId))
+            ->when($asOf, fn ($q) => $q->where('received_at', '<=', $asOf))
             ->orderBy('id');
         if ($lock) {
             $receipts->lockForUpdate();
@@ -208,11 +223,12 @@ class PurchaseSettlementService
             fn (PurchaseReceiptItem $item) => ((int) $item->quantity) * $this->moneyToCents($item->unit_cost)
         );
     }
-    protected function activeSettlementCents(Purchase $purchase, bool $lock = false): int
+    protected function activeSettlementCents(Purchase $purchase, bool $lock = false, ?Carbon $asOf = null): int
     {
         $query = PurchaseSettlement::query()
             ->where('purchase_id', $purchase->id)
             ->where('status', PurchaseSettlement::STATUS_ACTIVE)
+            ->when($asOf, fn ($q) => $q->where('paid_at', '<=', $asOf))
             ->orderBy('id');
         if ($lock) {
             $query->lockForUpdate();
