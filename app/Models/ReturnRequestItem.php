@@ -21,6 +21,7 @@ class ReturnRequestItem extends Model
 
     protected $fillable = [
         'return_request_id',
+        'order_id',
         'order_item_id',
         'requested_quantity',
         'approved_quantity',

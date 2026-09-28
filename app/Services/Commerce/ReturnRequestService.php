@@ -164,6 +164,7 @@ class ReturnRequestService
 
                 ReturnRequestItem::query()->create([
                     'return_request_id' => $returnRequest->id,
+                    'order_id' => $lockedOrder->id,
                     'order_item_id' => $orderItem->id,
                     'requested_quantity' => $quantity,
                     'approved_quantity' => null,

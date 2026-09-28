@@ -11,6 +11,7 @@ use App\Models\ReturnRequestItem;
 use App\Models\User;
 use App\Services\Commerce\PosReturnService;
 use App\Services\Commerce\ReturnRequestService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -20,6 +21,61 @@ use Tests\TestCase;
 class ReturnRequestWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_database_rejects_return_item_owned_by_another_order(): void
+    {
+        $customer = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $return = app(ReturnRequestService::class)->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DEFECTIVE,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+
+        $otherOrder = $this->makeDeliveredPaidOrder($customer, 120);
+        $otherItem = $otherOrder->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 120,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 120,
+            'profit_amount' => 80,
+        ]);
+
+        try {
+            ReturnRequestItem::query()->create([
+                'return_request_id' => $return->id,
+                'order_id' => $order->id,
+                'order_item_id' => $otherItem->id,
+                'requested_quantity' => 1,
+                'approved_quantity' => null,
+                'received_quantity' => 0,
+                'restock_quantity' => 0,
+                'reason_code' => ReturnRequestItem::REASON_DEFECTIVE,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+            ]);
+            $this->fail('Database must reject an RMA item owned by another order.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseCount('return_request_items', 1);
+    }
 
     public function test_customer_return_lifecycle_restock_and_refund_are_linked_to_the_rma(): void
     {
