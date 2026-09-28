@@ -95,7 +95,22 @@ class PaymentController extends Controller
             'status' => ['required', Rule::in(array_keys(Payment::statusOptions()))],
             'notes' => ['nullable', 'string', 'max:1000'],
             'provider_status' => ['nullable', 'string', 'max:255'],
+            'bank_transfer_reference' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $validated['bank_transfer_reference'] = filled($validated['bank_transfer_reference'] ?? null)
+            ? trim((string) $validated['bank_transfer_reference'])
+            : null;
+
+        if (
+            $payment->method === \App\Models\Order::PAYMENT_METHOD_BANK_TRANSFER
+            && $validated['status'] === Payment::STATUS_PAID
+            && blank($validated['bank_transfer_reference'])
+        ) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'bank_transfer_reference' => __('Bank transfer reference is required before marking this payment as paid.'),
+            ]);
+        }
 
         $context = $validated + [
             'updated_by' => optional($request->user())->id,

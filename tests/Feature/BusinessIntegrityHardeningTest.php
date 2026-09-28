@@ -735,11 +735,21 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertSame(Order::STATUS_PENDING, $order->fresh()->status);
 
-        app(PaymentService::class)->updateStatus($payment, Payment::STATUS_PAID);
+        try {
+            app(PaymentService::class)->updateStatus($payment, Payment::STATUS_PAID);
+            $this->fail('Bank transfer payments require transfer evidence before manual capture.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('bank_transfer_reference', $exception->errors());
+        }
+
+        app(PaymentService::class)->updateStatus($payment, Payment::STATUS_PAID, [
+            'bank_transfer_reference' => 'BANK-REF-100',
+        ]);
         $service->updateStatus($order->fresh(), Order::STATUS_PROCESSING);
 
         $this->assertSame(Order::STATUS_PROCESSING, $order->fresh()->status);
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame('BANK-REF-100', data_get($payment->fresh()->meta, 'bank_transfer_reference'));
     }
 
     public function test_split_payments_only_mark_order_paid_when_total_is_fully_covered(): void
@@ -765,11 +775,15 @@ class BusinessIntegrityHardeningTest extends TestCase
         ]);
 
         $service = app(PaymentService::class);
-        $service->updateStatus($first, Payment::STATUS_PAID);
+        $service->updateStatus($first, Payment::STATUS_PAID, [
+            'bank_transfer_reference' => 'BANK-SPLIT-30',
+        ]);
 
         $this->assertSame(Order::PAYMENT_STATUS_PENDING, $order->fresh()->payment_status);
 
-        $service->updateStatus($second, Payment::STATUS_PAID);
+        $service->updateStatus($second, Payment::STATUS_PAID, [
+            'bank_transfer_reference' => 'BANK-SPLIT-70',
+        ]);
 
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
         $this->assertSame(100.0, (float) $order->payments()->where('status', Payment::STATUS_PAID)->sum('amount'));
@@ -842,7 +856,9 @@ class BusinessIntegrityHardeningTest extends TestCase
         ]);
 
         try {
-            app(PaymentService::class)->updateStatus($second, Payment::STATUS_PAID);
+            app(PaymentService::class)->updateStatus($second, Payment::STATUS_PAID, [
+                'bank_transfer_reference' => 'BANK-OVER-50',
+            ]);
             $this->fail('Manual capture must not push paid payments above the order total.');
         } catch (ValidationException $exception) {
             $this->assertArrayHasKey('status', $exception->errors());

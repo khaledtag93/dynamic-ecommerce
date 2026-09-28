@@ -156,6 +156,24 @@ class PaymentService
                 return $lockedPayment;
             }
 
+            $bankTransferReference = filled($context['bank_transfer_reference'] ?? null)
+                ? trim((string) $context['bank_transfer_reference'])
+                : null;
+
+            if (
+                $lockedPayment->method === Order::PAYMENT_METHOD_BANK_TRANSFER
+                && $status === Payment::STATUS_PAID
+                && blank($bankTransferReference)
+            ) {
+                throw ValidationException::withMessages([
+                    'bank_transfer_reference' => __('Bank transfer reference is required before marking this payment as paid.'),
+                ]);
+            }
+
+            if ($bankTransferReference !== null) {
+                $context['bank_transfer_reference'] = $bankTransferReference;
+            }
+
             if ($lockedOrder && $status === Payment::STATUS_PAID) {
                 $this->assertCaptureWithinOrderTotal($lockedOrder, $lockedPayment);
             }

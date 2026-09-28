@@ -61,6 +61,7 @@ class PaymentWorkspaceClosureTest extends TestCase
         foreach ([
             'paymentDetailStatus',
             'paymentDetailProviderStatus',
+            'paymentDetailBankTransferReference',
             'paymentDetailNotes',
         ] as $controlId) {
             $this->assertStringContainsString('for="' . $controlId . '"', $view);
@@ -80,6 +81,7 @@ class PaymentWorkspaceClosureTest extends TestCase
 
         $this->assertStringContainsString('id="paymentDetailStatus" class="form-select" name="status" required aria-required="true"', $view);
         $this->assertStringContainsString('id="paymentDetailProviderStatus" type="text" name="provider_status" maxlength="255"', $view);
+        $this->assertStringContainsString('id="paymentDetailBankTransferReference" type="text" name="bank_transfer_reference" maxlength="255"', $view);
         $this->assertStringContainsString('id="paymentDetailNotes" name="notes" rows="4" maxlength="1000"', $view);
 
         $this->assertStringContainsString("form.setAttribute('data-confirm-message', message);", $view);
@@ -89,6 +91,8 @@ class PaymentWorkspaceClosureTest extends TestCase
 
         $this->assertStringContainsString("'status' => ['required', Rule::in(array_keys(Payment::statusOptions()))]", $controller);
         $this->assertStringContainsString("'provider_status' => ['nullable', 'string', 'max:255']", $controller);
+        $this->assertStringContainsString("'bank_transfer_reference' => ['nullable', 'string', 'max:255']", $controller);
+        $this->assertStringContainsString("Bank transfer reference is required before marking this payment as paid.", $controller);
         $this->assertStringContainsString("'notes' => ['nullable', 'string', 'max:1000']", $controller);
     }
 

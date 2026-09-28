@@ -29,6 +29,9 @@
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Created') }}</div><div>{{ optional($payment->created_at)->format('d M Y, h:i A') ?: '—' }}</div></div>
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Paid at') }}</div><div>{{ optional($payment->paid_at)->format('d M Y, h:i A') ?: '—' }}</div></div>
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Reference') }}</div><div>{{ $payment->transaction_reference ?: '—' }}</div></div>
+                @if($payment->method === \App\Models\Order::PAYMENT_METHOD_BANK_TRANSFER)
+                    <div class="col-md-6"><div class="admin-inline-label">{{ __('Bank transfer reference') }}</div><div>{{ data_get($payment->meta, 'bank_transfer_reference') ?: '—' }}</div></div>
+                @endif
             </div>
             @if($payment->notes)
                 <hr>
@@ -108,6 +111,13 @@
                     <label class="form-label fw-semibold" for="paymentDetailProviderStatus">{{ __('Provider status') }}</label>
                     <input id="paymentDetailProviderStatus" type="text" name="provider_status" maxlength="255" class="form-control" @disabled($paymentLocked) value="{{ old('provider_status', $payment->provider_status) }}" placeholder="{{ __('Optional gateway status') }}">
                 </div>
+                @if($payment->method === \App\Models\Order::PAYMENT_METHOD_BANK_TRANSFER)
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="paymentDetailBankTransferReference">{{ __('Bank transfer reference') }}</label>
+                        <input id="paymentDetailBankTransferReference" type="text" name="bank_transfer_reference" maxlength="255" class="form-control" @disabled($paymentLocked) value="{{ old('bank_transfer_reference', data_get($payment->meta, 'bank_transfer_reference')) }}" placeholder="{{ __('Bank transaction or transfer reference') }}">
+                        <div class="form-text">{{ __('Required before a bank transfer can be marked Paid manually.') }}</div>
+                    </div>
+                @endif
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="paymentDetailNotes">{{ __('Notes') }}</label>
                     <textarea id="paymentDetailNotes" name="notes" rows="4" maxlength="1000" class="form-control" @disabled($paymentLocked) placeholder="{{ __('Optional internal payment notes') }}">{{ old('notes', $payment->notes) }}</textarea>
