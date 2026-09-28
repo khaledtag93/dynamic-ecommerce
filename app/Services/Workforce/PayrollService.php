@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\Commerce\AdminActivityLogService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -348,6 +349,41 @@ class PayrollService
 
             return $lockedRun->fresh();
         });
+    }
+
+    public function totalsByCurrency(PayrollRun $run): Collection
+    {
+        $run->loadMissing('entries');
+
+        return $run->entries
+            ->groupBy('currency_snapshot')
+            ->map(function (Collection $entries, string $currency): array {
+                $sumCents = fn (string $field): int => $entries->sum(
+                    fn (PayrollEntry $entry) => $this->moneyToCents($entry->{$field})
+                );
+
+                $baseCents = $sumCents('base_pay');
+                $overtimeCents = $sumCents('overtime_pay');
+                $allowancesCents = $sumCents('allowances_total');
+                $bonusesCents = $sumCents('bonuses_total');
+                $deductionsCents = $sumCents('deductions_total');
+                $grossCents = $sumCents('gross_pay');
+                $netCents = $sumCents('net_pay');
+
+                return [
+                    'currency' => $currency,
+                    'employees' => $entries->count(),
+                    'base' => $this->centsToMoney($baseCents),
+                    'overtime' => $this->centsToMoney($overtimeCents),
+                    'allowances' => $this->centsToMoney($allowancesCents),
+                    'bonuses' => $this->centsToMoney($bonusesCents),
+                    'credits' => $this->centsToMoney($overtimeCents + $allowancesCents + $bonusesCents),
+                    'deductions' => $this->centsToMoney($deductionsCents),
+                    'gross' => $this->centsToMoney($grossCents),
+                    'net' => $this->centsToMoney($netCents),
+                ];
+            })
+            ->values();
     }
 
     private function guardStableInputs(PayrollPeriod $period, array $employeeIds): void

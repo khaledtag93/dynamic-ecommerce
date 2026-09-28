@@ -778,6 +778,117 @@ class WorkforcePayrollTest extends TestCase
         $this->assertSame('100.30', $entry->net_pay);
     }
 
+    public function test_payroll_summary_keeps_exact_cent_totals_separated_by_currency(): void
+    {
+        $firstUser = User::factory()->create();
+        $secondUser = User::factory()->create();
+        $thirdUser = User::factory()->create();
+
+        $firstEmployee = $this->employeeFor($firstUser, 'EMP-SUM-1');
+        $secondEmployee = $this->employeeFor($secondUser, 'EMP-SUM-2');
+        $thirdEmployee = $this->employeeFor($thirdUser, 'EMP-SUM-3');
+
+        $period = PayrollPeriod::query()->create([
+            'name' => 'Exact summary',
+            'starts_on' => '2026-09-01',
+            'ends_on' => '2026-09-28',
+            'status' => PayrollPeriod::STATUS_OPEN,
+        ]);
+
+        $run = PayrollRun::query()->create([
+            'payroll_period_id' => $period->id,
+            'status' => PayrollRun::STATUS_DRAFT,
+        ]);
+
+        foreach ([
+            [$firstEmployee, 'EGP', '0.10', '0.10', '0.20', '0.30', '0.05', '0.70', '0.65'],
+            [$secondEmployee, 'EGP', '0.20', '0.20', '0.10', '0.10', '0.05', '0.60', '0.55'],
+            [$thirdEmployee, 'USD', '0.40', '0.00', '0.00', '0.00', '0.00', '0.40', '0.40'],
+        ] as [$employee, $currency, $base, $overtime, $allowance, $bonus, $deduction, $gross, $net]) {
+            PayrollEntry::query()->create([
+                'payroll_run_id' => $run->id,
+                'employee_profile_id' => $employee->id,
+                'employee_code_snapshot' => $employee->employee_code,
+                'employee_name_snapshot' => $employee->employee_code,
+                'pay_basis_snapshot' => EmployeeCompensation::BASIS_SALARY,
+                'base_rate_snapshot' => $base,
+                'currency_snapshot' => $currency,
+                'base_pay' => $base,
+                'overtime_pay' => $overtime,
+                'allowances_total' => $allowance,
+                'bonuses_total' => $bonus,
+                'deductions_total' => $deduction,
+                'gross_pay' => $gross,
+                'net_pay' => $net,
+            ]);
+        }
+
+        $totals = app(PayrollService::class)
+            ->totalsByCurrency($run)
+            ->keyBy('currency');
+
+        $this->assertSame(2, $totals['EGP']['employees']);
+        $this->assertSame('0.30', $totals['EGP']['base']);
+        $this->assertSame('0.30', $totals['EGP']['overtime']);
+        $this->assertSame('0.30', $totals['EGP']['allowances']);
+        $this->assertSame('0.40', $totals['EGP']['bonuses']);
+        $this->assertSame('1.00', $totals['EGP']['credits']);
+        $this->assertSame('0.10', $totals['EGP']['deductions']);
+        $this->assertSame('1.30', $totals['EGP']['gross']);
+        $this->assertSame('1.20', $totals['EGP']['net']);
+
+        $this->assertSame(1, $totals['USD']['employees']);
+        $this->assertSame('0.40', $totals['USD']['base']);
+        $this->assertSame('0.40', $totals['USD']['gross']);
+        $this->assertSame('0.40', $totals['USD']['net']);
+    }
+
+    public function test_compensation_service_enforces_domain_boundaries_without_http_validation(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $finance = $this->staffWithRole('finance_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-COMP-BOUNDARY-1');
+        $service = app(CompensationService::class);
+
+        $valid = [
+            'pay_basis' => EmployeeCompensation::BASIS_SALARY,
+            'base_rate' => '1000.00',
+            'currency' => 'EGP',
+            'effective_from' => '2026-01-01',
+            'overtime_eligible' => true,
+            'overtime_rate_multiplier' => '1.500',
+        ];
+
+        foreach ([
+            ['pay_basis', ['pay_basis' => 'commission']],
+            ['currency', ['currency' => 'EGPX']],
+            ['effective_from', ['effective_from' => '']],
+            ['effective_from', ['effective_from' => 'not-a-date']],
+            ['effective_to', ['effective_to' => 'not-a-date']],
+            ['overtime_rate_multiplier', ['overtime_rate_multiplier' => '10.0001']],
+            ['overtime_rate_multiplier', ['overtime_rate_multiplier' => '11']],
+        ] as [$field, $override]) {
+            $this->assertValidationError(
+                fn () => $service->save($employee, array_replace($valid, $override), $finance),
+                $field
+            );
+        }
+
+        $this->assertDatabaseCount('employee_compensations', 0);
+    }
+
+    private function assertValidationError(callable $callback, string $field): void
+    {
+        try {
+            $callback();
+            $this->fail('Expected payroll domain validation to reject invalid input.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey($field, $exception->errors());
+        }
+    }
+
     private function assertLogicException(callable $callback): void
     {
         try {

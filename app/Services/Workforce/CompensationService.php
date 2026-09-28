@@ -21,25 +21,74 @@ class CompensationService
         return DB::transaction(function () use ($employee, $data, $actor) {
             $lockedEmployee = EmployeeProfile::query()->whereKey($employee->id)->lockForUpdate()->firstOrFail();
 
-            if (! empty($data['effective_to'])
-                && Carbon::parse($data['effective_to'])->lt(Carbon::parse($data['effective_from']))) {
+            $payBasis = (string) ($data['pay_basis'] ?? '');
+            if (! array_key_exists($payBasis, EmployeeCompensation::payBasisOptions())) {
+                throw ValidationException::withMessages([
+                    'pay_basis' => __('Choose a valid payroll pay basis.'),
+                ]);
+            }
+
+            $currency = strtoupper(trim((string) ($data['currency'] ?? '')));
+            if (! preg_match('/^[A-Z]{3}$/', $currency)) {
+                throw ValidationException::withMessages([
+                    'currency' => __('Enter a valid three-letter ISO currency code.'),
+                ]);
+            }
+
+            if (blank($data['effective_from'] ?? null)) {
+                throw ValidationException::withMessages([
+                    'effective_from' => __('Enter a valid compensation effective date.'),
+                ]);
+            }
+
+            try {
+                $start = Carbon::parse((string) $data['effective_from'])->startOfDay();
+            } catch (\Throwable) {
+                throw ValidationException::withMessages([
+                    'effective_from' => __('Enter a valid compensation effective date.'),
+                ]);
+            }
+
+            $end = null;
+            if (! empty($data['effective_to'])) {
+                try {
+                    $end = Carbon::parse((string) $data['effective_to'])->startOfDay();
+                } catch (\Throwable) {
+                    throw ValidationException::withMessages([
+                        'effective_to' => __('Enter a valid compensation end date.'),
+                    ]);
+                }
+            }
+
+            if ($end && $end->lt($start)) {
                 throw ValidationException::withMessages([
                     'effective_to' => __('Compensation end date must be on or after the effective start date.'),
                 ]);
             }
 
-            $baseRateText = trim((string) $data['base_rate']);
+            $overtimeEligible = (bool) ($data['overtime_eligible'] ?? false);
+            $multiplier = $data['overtime_rate_multiplier'] ?? null;
+            if ($overtimeEligible && filled($multiplier)) {
+                $multiplierText = trim((string) $multiplier);
+
+                if (! preg_match('/^\d{1,2}(?:\.\d{1,3})?$/', $multiplierText)
+                    || (float) $multiplierText <= 0
+                    || (float) $multiplierText > 10) {
+                    throw ValidationException::withMessages([
+                        'overtime_rate_multiplier' => __('Enter an overtime multiplier up to 10 with at most three decimal places.'),
+                    ]);
+                }
+
+                $multiplier = $multiplierText;
+            }
+
+            $baseRateText = trim((string) ($data['base_rate'] ?? ''));
             if (! preg_match('/^\d{1,12}(?:\.\d{1,2})?$/', $baseRateText)
                 || $this->moneyToCents($baseRateText) < 1) {
                 throw ValidationException::withMessages([
                     'base_rate' => __('Enter a base rate with up to two decimal places within the supported amount limit.'),
                 ]);
             }
-
-            $start = Carbon::parse($data['effective_from'])->startOfDay();
-            $end = ! empty($data['effective_to'])
-                ? Carbon::parse($data['effective_to'])->startOfDay()
-                : null;
 
             $history = EmployeeCompensation::query()
                 ->where('employee_profile_id', $lockedEmployee->id)
@@ -66,13 +115,13 @@ class CompensationService
 
             $payload = [
                 'employee_profile_id' => $lockedEmployee->id,
-                'pay_basis' => $data['pay_basis'],
+                'pay_basis' => $payBasis,
                 'base_rate' => $this->centsToMoney($this->moneyToCents($baseRateText)),
-                'currency' => $data['currency'],
+                'currency' => $currency,
                 'effective_from' => $start->toDateString(),
                 'effective_to' => $end?->toDateString(),
-                'overtime_eligible' => (bool) ($data['overtime_eligible'] ?? false),
-                'overtime_rate_multiplier' => $data['overtime_rate_multiplier'] ?? null,
+                'overtime_eligible' => $overtimeEligible,
+                'overtime_rate_multiplier' => $multiplier,
                 'notes' => $data['notes'] ?? null,
             ];
 

@@ -87,7 +87,7 @@
                         <div class="row g-3 mt-1">
                             <div class="col-6"><div class="text-muted small">{{ __('Base pay') }}</div><div class="fw-semibold">{{ number_format($summary['base'], 2) }}</div></div>
                             <div class="col-6"><div class="text-muted small">{{ __('Overtime') }}</div><div class="fw-semibold">{{ number_format($summary['overtime'], 2) }}</div></div>
-                            <div class="col-6"><div class="text-muted small">{{ __('Allowances + bonuses') }}</div><div class="fw-semibold">{{ number_format($summary['allowances'] + $summary['bonuses'], 2) }}</div></div>
+                            <div class="col-6"><div class="text-muted small">{{ __('Allowances + bonuses') }}</div><div class="fw-semibold">{{ number_format($summary['credits'], 2) }}</div></div>
                             <div class="col-6"><div class="text-muted small">{{ __('Deductions') }}</div><div class="fw-semibold">{{ number_format($summary['deductions'], 2) }}</div></div>
                             <div class="col-6"><div class="text-muted small">{{ __('Gross pay') }}</div><div class="h5 mb-0">{{ number_format($summary['gross'], 2) }}</div></div>
                             <div class="col-6"><div class="text-muted small">{{ __('Net pay') }}</div><div class="h5 mb-0">{{ number_format($summary['net'], 2) }}</div></div>

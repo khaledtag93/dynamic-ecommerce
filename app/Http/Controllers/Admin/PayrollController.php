@@ -71,22 +71,7 @@ class PayrollController extends Controller
             'entries.adjustments.createdBy',
         ]);
 
-        $totalsByCurrency = $payrollRun->entries
-            ->groupBy('currency_snapshot')
-            ->map(function ($entries, $currency) {
-                return [
-                    'currency' => $currency,
-                    'employees' => $entries->count(),
-                    'base' => (float) $entries->sum('base_pay'),
-                    'overtime' => (float) $entries->sum('overtime_pay'),
-                    'allowances' => (float) $entries->sum('allowances_total'),
-                    'bonuses' => (float) $entries->sum('bonuses_total'),
-                    'deductions' => (float) $entries->sum('deductions_total'),
-                    'gross' => (float) $entries->sum('gross_pay'),
-                    'net' => (float) $entries->sum('net_pay'),
-                ];
-            })
-            ->values();
+        $totalsByCurrency = $this->payrollService->totalsByCurrency($payrollRun);
 
         return view('admin.workforce.payroll.run', compact('payrollRun', 'totalsByCurrency'));
     }
