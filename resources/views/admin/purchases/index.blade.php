@@ -8,12 +8,18 @@
 </x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>
+    @php
+        $procurementValue = collect($stats['value_by_currency'])
+            ->map(fn ($value, $currency) => $currency . ' ' . number_format($value, 2))
+            ->implode(' · ');
+        $procurementValue = $procurementValue !== '' ? $procurementValue : '—';
+    @endphp
     <div class="row g-3 mb-4">
         @foreach([
             ['label' => __('Purchase orders'), 'value' => $stats['total'], 'copy' => __('All procurement records.'), 'icon' => 'mdi-clipboard-text-outline'],
             ['label' => __('Awaiting receipt'), 'value' => $stats['awaiting'], 'copy' => __('Orders that still need stock receiving.'), 'icon' => 'mdi-truck-clock-outline'],
             ['label' => __('Received'), 'value' => $stats['received'], 'copy' => __('Purchases already added to inventory.'), 'icon' => 'mdi-package-check'],
-            ['label' => __('Procurement value'), 'value' => 'EGP ' . number_format($stats['value'], 2), 'copy' => __('Open and received purchase value; drafts and cancelled orders are excluded.'), 'icon' => 'mdi-cash-multiple'],
+            ['label' => __('Procurement value'), 'value' => $procurementValue, 'copy' => __('Open and received purchase value by currency; drafts and cancelled orders are excluded.'), 'icon' => 'mdi-cash-multiple'],
         ] as $card)
             <div class="col-md-6 col-xl-3">
                 <x-admin.stat-card

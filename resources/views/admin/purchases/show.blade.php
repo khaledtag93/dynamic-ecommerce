@@ -24,7 +24,7 @@
     <div class="row g-4">
         <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Supplier') }}</div><div class="admin-stat-value">{{ $purchase->supplier?->name ?: '—' }}</div></div></div>
         <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Status') }}</div><div class="admin-stat-value">{{ \App\Models\Purchase::statusOptions()[$purchase->status] ?? ucfirst($purchase->status) }}</div></div></div>
-        <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Grand total') }}</div><div class="admin-stat-value">EGP {{ number_format($purchase->grand_total, 2) }}</div><div class="text-muted small mt-2">{{ __('Including shipping and tax.') }}</div></div></div>
+        <div class="col-md-4"><div class="admin-card admin-stat-card h-100"><div class="admin-stat-label">{{ __('Grand total') }}</div><div class="admin-stat-value">{{ $purchase->currency ?: 'EGP' }} {{ number_format($purchase->grand_total, 2) }}</div><div class="text-muted small mt-2">{{ __('Including shipping and tax.') }}</div></div></div>
     </div>
 
     <div class="admin-card mb-4">

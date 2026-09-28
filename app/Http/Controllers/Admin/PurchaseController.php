@@ -73,10 +73,19 @@ class PurchaseController extends Controller
             return response()->view('admin.purchases._results', compact('purchases', 'filters', 'queueStats'));
         }
 
+        $procurementValueByCurrency = Purchase::query()
+            ->whereIn('status', [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED, Purchase::STATUS_RECEIVED])
+            ->selectRaw("COALESCE(NULLIF(currency, ''), 'EGP') as currency_code, SUM(grand_total) as total_value")
+            ->groupBy('currency_code')
+            ->orderBy('currency_code')
+            ->get()
+            ->mapWithKeys(fn ($row) => [(string) $row->currency_code => (float) $row->total_value])
+            ->all();
+
         $stats = $queueStats + [
             'total' => Purchase::count(),
             'received' => Purchase::where('status', Purchase::STATUS_RECEIVED)->count(),
-            'value' => (float) Purchase::whereIn('status', [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED, Purchase::STATUS_RECEIVED])->sum('grand_total'),
+            'value_by_currency' => $procurementValueByCurrency,
         ];
 
         $suppliers = Supplier::orderBy('name')->get(['id', 'name', 'company']);

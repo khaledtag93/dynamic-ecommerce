@@ -5216,5 +5216,6 @@
     "The supplier payment does not belong to this purchase.": "The supplier payment does not belong to this purchase.",
     "Void or reduce supplier payments before reversing this receipt; the remaining received value would be lower than the amount already paid.": "Void or reduce supplier payments before reversing this receipt; the remaining received value would be lower than the amount already paid.",
     "Supplier payment recorded for :reference.": "Supplier payment recorded for :reference.",
-    "Supplier payment voided for :reference.": "Supplier payment voided for :reference."
+    "Supplier payment voided for :reference.": "Supplier payment voided for :reference.",
+    "Open and received purchase value by currency; drafts and cancelled orders are excluded.": "Open and received purchase value by currency; drafts and cancelled orders are excluded."
 }

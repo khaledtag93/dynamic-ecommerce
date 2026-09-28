@@ -5906,5 +5906,6 @@
     "The supplier payment does not belong to this purchase.": "دفعة المورد لا تخص أمر الشراء هذا.",
     "Void or reduce supplier payments before reversing this receipt; the remaining received value would be lower than the amount already paid.": "ألغِ قيد دفعات المورد أو خفّضها قبل عكس هذا الاستلام؛ لأن قيمة المستلم المتبقية ستصبح أقل من المبلغ المدفوع بالفعل.",
     "Supplier payment recorded for :reference.": "تم تسجيل دفعة للمورد لأمر الشراء :reference.",
-    "Supplier payment voided for :reference.": "تم إلغاء قيد دفعة المورد لأمر الشراء :reference."
+    "Supplier payment voided for :reference.": "تم إلغاء قيد دفعة المورد لأمر الشراء :reference.",
+    "Open and received purchase value by currency; drafts and cancelled orders are excluded.": "قيمة أوامر الشراء المفتوحة والمستلمة حسب العملة؛ لا تشمل المسودات أو الطلبات الملغاة."
 }

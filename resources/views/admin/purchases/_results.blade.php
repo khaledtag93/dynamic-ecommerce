@@ -50,7 +50,7 @@
                             </td>
                             <td><span class="badge admin-status-badge badge-soft-info">{{ \App\Models\Purchase::statusOptions()[$purchase->status] ?? ucfirst($purchase->status) }}</span></td>
                             <td>{{ optional($purchase->purchase_date)->format('d M Y') }}</td>
-                            <td class="fw-bold">EGP {{ number_format($purchase->grand_total, 2) }}</td>
+                            <td class="fw-bold">{{ $purchase->currency ?: 'EGP' }} {{ number_format($purchase->grand_total, 2) }}</td>
                             <td class="text-end">
                                 <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                     <a href="{{ route('admin.purchases.show', $purchase) }}" class="btn-table-icon btn-edit" title="{{ __('View purchase') }}"><i class="mdi mdi-eye-outline"></i></a>

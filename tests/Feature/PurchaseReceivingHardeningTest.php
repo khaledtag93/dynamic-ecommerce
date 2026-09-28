@@ -432,7 +432,22 @@ class PurchaseReceivingHardeningTest extends TestCase
             ->get(route('admin.purchases.index'))
             ->assertOk()
             ->assertSee('EGP 600.00')
-            ->assertSee(__('Open and received purchase value; drafts and cancelled orders are excluded.'));
+            ->assertSee(__('Open and received purchase value by currency; drafts and cancelled orders are excluded.'));
+    }
+
+    public function test_procurement_value_never_sums_different_currencies_together(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $this->purchase(Purchase::STATUS_ORDERED)->update(['currency' => 'EGP', 'grand_total' => 100]);
+        $this->purchase(Purchase::STATUS_RECEIVED)->update(['currency' => 'USD', 'grand_total' => 25]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.purchases.index'))
+            ->assertOk()
+            ->assertSee('EGP 100.00')
+            ->assertSee('USD 25.00')
+            ->assertDontSee('EGP 125.00');
     }
 
     public function test_latest_partial_receipt_can_be_reversed_exactly_and_replay_is_safe(): void
