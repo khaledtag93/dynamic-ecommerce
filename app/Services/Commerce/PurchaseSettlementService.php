@@ -58,8 +58,9 @@ class PurchaseSettlementService
             ]);
         }
         $requestedPaidAt = null;
+        $paidAtWasExplicit = filled($paidAt);
 
-        if (filled($paidAt)) {
+        if ($paidAtWasExplicit) {
             try {
                 $requestedPaidAt = Carbon::parse((string) $paidAt)->setMicrosecond(0);
             } catch (\Throwable) {
@@ -81,15 +82,27 @@ class PurchaseSettlementService
             throw ValidationException::withMessages(['payment_method' => __('Choose a valid supplier payment method.')]);
         }
 
-        return DB::transaction(function () use ($purchase, $amountCents, $paymentMethod, $normalizedReference, $idempotencyKey, $requestedPaidAt, $adminUserId) {
+        $requestHash = hash('sha256', json_encode([
+            'purchase_id' => (int) $purchase->id,
+            'amount_cents' => $amountCents,
+            'payment_method' => $paymentMethod,
+            'reference' => $normalizedReference,
+            'paid_at_explicit' => $paidAtWasExplicit,
+            'paid_at' => $requestedPaidAt?->toIso8601String(),
+        ], JSON_THROW_ON_ERROR));
+
+        return DB::transaction(function () use ($purchase, $amountCents, $paymentMethod, $normalizedReference, $idempotencyKey, $requestHash, $requestedPaidAt, $adminUserId) {
             $lockedPurchase = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->firstOrFail();
             $existing = PurchaseSettlement::query()->where('idempotency_key', $idempotencyKey)->lockForUpdate()->first();
             if ($existing) {
-                $sameRequest = (int) $existing->purchase_id === (int) $lockedPurchase->id
-                    && $this->moneyToCents($existing->amount) === $amountCents
-                    && $existing->payment_method === $paymentMethod
-                    && (string) ($existing->reference ?? '') === (string) ($normalizedReference ?? '')
-                    && ($requestedPaidAt === null || $existing->paid_at?->equalTo($requestedPaidAt));
+                $sameRequest = filled($existing->request_hash)
+                    ? hash_equals((string) $existing->request_hash, $requestHash)
+                    : ($requestedPaidAt !== null
+                        && (int) $existing->purchase_id === (int) $lockedPurchase->id
+                        && $this->moneyToCents($existing->amount) === $amountCents
+                        && $existing->payment_method === $paymentMethod
+                        && (string) ($existing->reference ?? '') === (string) ($normalizedReference ?? '')
+                        && $existing->paid_at?->equalTo($requestedPaidAt));
 
                 if (! $sameRequest) {
                     throw ValidationException::withMessages([
@@ -148,6 +161,7 @@ class PurchaseSettlementService
                 'payment_method' => $paymentMethod,
                 'reference' => $normalizedReference,
                 'idempotency_key' => $idempotencyKey,
+                'request_hash' => $requestHash,
                 'paid_at' => $effectivePaidAt,
                 'recorded_by' => $adminUserId,
                 'status' => PurchaseSettlement::STATUS_ACTIVE,

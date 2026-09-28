@@ -20,6 +20,7 @@ class PurchaseSettlement extends Model
         'payment_method',
         'reference',
         'idempotency_key',
+        'request_hash',
         'paid_at',
         'recorded_by',
         'status',

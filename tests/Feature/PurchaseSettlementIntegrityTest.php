@@ -214,6 +214,17 @@ class PurchaseSettlementIntegrityTest extends TestCase
         } catch (ValidationException $exception) {
             $this->assertArrayHasKey('settlement_key', $exception->errors());
         }
+
+        try {
+            $service->record($purchase, '5.00', 'cash', 'DATE-IDEM', $key);
+            $this->fail('Omitting an originally explicit payment date must not be treated as the same idempotent request.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('settlement_key', $exception->errors());
+        }
+
+        $implicitKey = (string) Str::uuid();
+        $this->assertTrue($service->record($purchase, '5.00', 'cash', 'IMPLICIT-DATE-IDEM', $implicitKey));
+        $this->assertFalse($service->record($purchase, '5.00', 'cash', 'IMPLICIT-DATE-IDEM', $implicitKey));
     }
 
     public function test_backdated_supplier_payment_is_bounded_by_received_value_available_on_that_date(): void
