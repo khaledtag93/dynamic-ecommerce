@@ -6,7 +6,10 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseSettlement;
+use App\Models\Role;
 use App\Models\Supplier;
+use App\Models\User;
+use App\Services\Auth\AuthorizationService;
 use App\Services\Commerce\PurchaseReceiptReversalService;
 use App\Services\Commerce\PurchaseService;
 use App\Services\Commerce\PurchaseSettlementService;
@@ -161,6 +164,53 @@ class PurchaseSettlementIntegrityTest extends TestCase
         $this->assertSame('20.00', $settlements->summary($purchase)['payable']);
     }
 
+    public function test_supplier_settlement_permissions_separate_finance_from_inventory_operations(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $operations = $this->staffWithRole('operations_manager');
+        $finance = $this->staffWithRole('finance_manager');
+        $purchase = $this->purchase();
+        $product = $this->product();
+        $item = $this->item($purchase, $product, 2, 10);
+        app(PurchaseService::class)->receive($purchase);
+
+        $this->actingAs($operations)
+            ->get(route('admin.purchases.show', $purchase))
+            ->assertOk()
+            ->assertDontSee(__('Record supplier payment'));
+
+        $this->post(route('admin.purchases.settlements.store', $purchase), [
+            'amount' => '5.00',
+            'payment_method' => 'cash',
+            'settlement_key' => (string) Str::uuid(),
+        ])->assertForbidden();
+
+        $this->actingAs($finance)
+            ->get(route('admin.purchases.index'))
+            ->assertOk()
+            ->assertDontSee(__('New purchase'));
+
+        $this->get(route('admin.purchases.show', $purchase))
+            ->assertOk()
+            ->assertSee(__('Record supplier payment'))
+            ->assertDontSee(__('Receive all remaining'));
+
+        $this->post(route('admin.purchases.receive', $purchase))->assertForbidden();
+
+        $this->post(route('admin.purchases.settlements.store', $purchase), [
+            'amount' => '5.00',
+            'payment_method' => 'cash',
+            'settlement_key' => (string) Str::uuid(),
+        ])->assertRedirect(route('admin.purchases.show', $purchase));
+
+        $this->assertDatabaseHas('purchase_settlements', [
+            'purchase_id' => $purchase->id,
+            'amount' => '5.00',
+            'recorded_by' => $finance->id,
+        ]);
+    }
+
     public function test_admin_purchase_page_can_record_and_void_supplier_payment(): void
     {
         $admin = $this->createSuperAdmin();
@@ -194,6 +244,15 @@ class PurchaseSettlementIntegrityTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertSame(PurchaseSettlement::STATUS_VOIDED, $settlement->fresh()->status);
+    }
+
+    private function staffWithRole(string $slug): User
+    {
+        $user = User::factory()->create(['role_as' => 1]);
+        $role = Role::query()->where('slug', $slug)->firstOrFail();
+        $user->roles()->sync([$role->id]);
+
+        return $user->fresh();
     }
 
     private function supplier(): Supplier

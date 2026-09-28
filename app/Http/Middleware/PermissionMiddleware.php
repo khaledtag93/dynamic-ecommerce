@@ -8,12 +8,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PermissionMiddleware
 {
-    public function handle(Request $request, Closure $next, string $permission): Response
+    public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
         $user = $request->user();
 
         abort_unless($user, 403);
-        abort_unless($user->hasPermission($permission), 403);
+        abort_unless(
+            collect($permissions)->contains(fn (string $permission) => $user->hasPermission($permission)),
+            403
+        );
 
         return $next($request);
     }

@@ -6,7 +6,7 @@
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Purchase Details')" :description="__('Reference') . ': ' . $purchase->reference">
     <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('admin.purchases.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-arrow-left"></i><span>{{ __('Back to purchases') }}</span></a>
-        @if(in_array($purchase->status, [\App\Models\Purchase::STATUS_ORDERED, \App\Models\Purchase::STATUS_PARTIALLY_RECEIVED], true))
+        @if($canManageInventory && in_array($purchase->status, [\App\Models\Purchase::STATUS_ORDERED, \App\Models\Purchase::STATUS_PARTIALLY_RECEIVED], true))
             @if($purchase->status === \App\Models\Purchase::STATUS_ORDERED)
                 <a href="{{ route('admin.purchases.receiving', $purchase) }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-barcode-scan"></i><span>{{ __('Receive by barcode') }}</span></a>
             @endif
@@ -14,7 +14,7 @@
                 @csrf
                 <button class="btn btn-light border btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive all remaining') }}</span></button>
             </form>
-        @elseif($purchase->status === \App\Models\Purchase::STATUS_RECEIVED && $purchase->receivingProgress->isNotEmpty())
+        @elseif($canManageInventory && $purchase->status === \App\Models\Purchase::STATUS_RECEIVED && $purchase->receivingProgress->isNotEmpty())
             <a href="{{ route('admin.purchases.receiving', $purchase) }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-barcode-scan"></i><span>{{ __('View barcode receiving') }}</span></a>
         @endif
     </div>
@@ -40,7 +40,7 @@
 
     @include('admin.purchases._settlement')
 
-    @if(in_array($purchase->status, [\App\Models\Purchase::STATUS_DRAFT, \App\Models\Purchase::STATUS_ORDERED], true))
+    @if($canManageInventory && in_array($purchase->status, [\App\Models\Purchase::STATUS_DRAFT, \App\Models\Purchase::STATUS_ORDERED], true))
         <div class="admin-card mb-4">
             <div class="admin-card-body">
                 <div class="admin-table-toolbar">
@@ -70,7 +70,7 @@
         </div>
     @endif
 
-    @if(in_array($purchase->status, [\App\Models\Purchase::STATUS_ORDERED, \App\Models\Purchase::STATUS_PARTIALLY_RECEIVED], true))
+    @if($canManageInventory && in_array($purchase->status, [\App\Models\Purchase::STATUS_ORDERED, \App\Models\Purchase::STATUS_PARTIALLY_RECEIVED], true))
         <div class="admin-card mb-4">
             <div class="admin-card-body">
                 <div class="admin-table-toolbar">
@@ -157,7 +157,7 @@
                                 <div class="small">{{ $receipt->reversal_reason }}</div>
                                 <div class="text-muted small">{{ $receipt->reversedBy?->name ?: '—' }}</div>
                             </div>
-                        @elseif($receipt->receipt_method !== 'legacy_unknown')
+                        @elseif($canManageInventory && $receipt->receipt_method !== 'legacy_unknown')
                             <form method="POST" action="{{ route('admin.purchases.receipts.reverse', ['purchase' => $purchase->id, 'purchaseReceipt' => $receipt->id]) }}" class="mt-3" data-submit-loading data-confirm-title="{{ __('Confirm receipt reversal') }}" data-confirm-message="{{ __('Reverse this stock receipt?') }}" data-confirm-subtitle="{{ __('Reversal is allowed only when these receipt movements are still the latest inventory activity for every affected item.') }}" data-confirm-ok="{{ __('Reverse receipt') }}">
                                 @csrf
                                 <input type="hidden" name="reversal_receipt_id" value="{{ $receipt->id }}">
@@ -168,7 +168,7 @@
                                 @endif
                                 <button class="btn btn-outline-danger btn-sm mt-2" data-loading-text="{{ __('Reversing...') }}">{{ __('Reverse receipt') }}</button>
                             </form>
-                        @else
+                        @elseif($canManageInventory)
                             <div class="text-muted small mt-3">{{ __('This legacy receipt cannot be reversed automatically because its receiving method is unknown.') }}</div>
                         @endif
                     </div>

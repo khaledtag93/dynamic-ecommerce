@@ -380,6 +380,17 @@ Route::prefix('admin')
             });
         });
 
+        Route::controller(PurchaseController::class)->group(function () {
+            Route::middleware('permission:inventory.manage,payments.manage')->group(function () {
+                Route::get('/purchases', 'index')->name('purchases.index');
+                Route::get('/purchases/{purchase}', 'show')->name('purchases.show');
+            });
+            Route::middleware('permission:payments.manage')->group(function () {
+                Route::post('/purchases/{purchase}/settlements', 'recordSettlement')->name('purchases.settlements.store');
+                Route::post('/purchases/{purchase}/settlements/{purchaseSettlement}/void', 'voidSettlement')->name('purchases.settlements.void');
+            });
+        });
+
         Route::middleware('permission:inventory.manage')->group(function () {
             Route::controller(SupplierController::class)->group(function () {
                 Route::get('/suppliers', 'index')->name('suppliers.index');
@@ -391,18 +402,14 @@ Route::prefix('admin')
             });
 
             Route::controller(PurchaseController::class)->group(function () {
-                Route::get('/purchases', 'index')->name('purchases.index');
                 Route::get('/purchases/create', 'create')->name('purchases.create');
                 Route::post('/purchases', 'store')->name('purchases.store');
-                Route::get('/purchases/{purchase}', 'show')->name('purchases.show');
                 Route::get('/purchases/{purchase}/receiving', 'receiving')->name('purchases.receiving');
                 Route::post('/purchases/{purchase}/receiving/scan', 'scanReceiving')->name('purchases.receiving.scan');
                 Route::post('/purchases/{purchase}/receiving/items/{purchaseItem}/undo', 'undoReceiving')->name('purchases.receiving.undo');
                 Route::post('/purchases/{purchase}/receive-verified', 'receiveVerified')->name('purchases.receive-verified');
                 Route::post('/purchases/{purchase}/receive-partial', 'receivePartial')->name('purchases.receive-partial');
                 Route::post('/purchases/{purchase}/receipts/{purchaseReceipt}/reverse', 'reverseReceipt')->name('purchases.receipts.reverse');
-                Route::post('/purchases/{purchase}/settlements', 'recordSettlement')->name('purchases.settlements.store');
-                Route::post('/purchases/{purchase}/settlements/{purchaseSettlement}/void', 'voidSettlement')->name('purchases.settlements.void');
                 Route::post('/purchases/{purchase}/cancel', 'cancel')->name('purchases.cancel');
                 Route::post('/purchases/{purchase}/receive', 'receive')->name('purchases.receive');
             });

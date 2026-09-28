@@ -24,7 +24,9 @@
                 @if($filters['search'] || $filters['status'] || $filters['supplier_id'])
                     <span class="admin-chip">{{ __('Filtered results') }}</span>
                 @endif
-                <a href="{{ route('admin.suppliers.index') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-truck-delivery-outline"></i><span>{{ __('Suppliers') }}</span></a>
+                @if(request()->user()?->hasPermission('inventory.manage'))
+                    <a href="{{ route('admin.suppliers.index') }}" class="btn btn-light border btn-sm btn-text-icon"><i class="mdi mdi-truck-delivery-outline"></i><span>{{ __('Suppliers') }}</span></a>
+                @endif
             </div>
         </div>
 
@@ -54,7 +56,7 @@
                             <td class="text-end">
                                 <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                     <a href="{{ route('admin.purchases.show', $purchase) }}" class="btn-table-icon btn-edit" title="{{ __('View purchase') }}"><i class="mdi mdi-eye-outline"></i></a>
-                                    @if($purchase->status === \App\Models\Purchase::STATUS_ORDERED)
+                                    @if(request()->user()?->hasPermission('inventory.manage') && $purchase->status === \App\Models\Purchase::STATUS_ORDERED)
                                         <form method="POST" action="{{ route('admin.purchases.receive', $purchase) }}" data-submit-loading data-confirm-title="{{ __('Confirm stock receipt') }}" data-confirm-message="{{ __('Receive this purchase and add its quantities to inventory?') }}" data-confirm-subtitle="{{ __('Receiving will update stock and cost for each line once.') }}" data-confirm-ok="{{ __('Confirm receipt') }}">
                                             @csrf
                                             <button class="btn btn-sm btn-primary btn-text-icon" data-loading-text="{{ __('Receiving...') }}"><i class="mdi mdi-package-down"></i><span>{{ __('Receive stock') }}</span></button>

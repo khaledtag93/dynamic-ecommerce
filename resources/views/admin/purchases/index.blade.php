@@ -4,7 +4,9 @@
 
 @section('content')
 <x-admin.page-header :kicker="__('Procurement')" :title="__('Purchases')" :description="__('Track procurement activity, receive stock safely, and keep supplier purchasing history clear.')">
-    <a href="{{ route('admin.purchases.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-plus-circle-outline"></i><span>{{ __('New purchase') }}</span></a>
+    @if(request()->user()?->hasPermission('inventory.manage'))
+        <a href="{{ route('admin.purchases.create') }}" class="btn btn-primary btn-text-icon"><i class="mdi mdi-plus-circle-outline"></i><span>{{ __('New purchase') }}</span></a>
+    @endif
 </x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>

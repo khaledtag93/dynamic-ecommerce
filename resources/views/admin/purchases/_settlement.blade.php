@@ -43,7 +43,7 @@
             </div>
         </div>
 
-        @if((float) $settlementSummary['balance'] > 0)
+        @if($canManageSupplierSettlement && (float) $settlementSummary['balance'] > 0)
             <form method="POST" action="{{ route('admin.purchases.settlements.store', $purchase) }}" class="row g-3 align-items-end" data-submit-loading>
                 @csrf
                 <input type="hidden" name="settlement_key" value="{{ $settlementKey }}">
@@ -92,7 +92,7 @@
                             <td>{{ $settlement->reference ?: '—' }}</td>
                             <td>{{ $settlement->status === \App\Models\PurchaseSettlement::STATUS_VOIDED ? __('Voided') : __('Active') }}</td>
                             <td>
-                                @if($settlement->status === \App\Models\PurchaseSettlement::STATUS_ACTIVE)
+                                @if($canManageSupplierSettlement && $settlement->status === \App\Models\PurchaseSettlement::STATUS_ACTIVE)
                                     <form method="POST" action="{{ route('admin.purchases.settlements.void', [$purchase, $settlement]) }}" data-submit-loading class="d-flex gap-2">
                                         @csrf
                                         <input type="text" maxlength="1000" name="void_reason" class="form-control form-control-sm" placeholder="{{ __('Void reason') }}" required>
