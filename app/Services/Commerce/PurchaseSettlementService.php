@@ -6,6 +6,7 @@ use App\Models\Purchase;
 use App\Models\PurchaseReceipt;
 use App\Models\PurchaseReceiptItem;
 use App\Models\PurchaseSettlement;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -37,6 +38,20 @@ class PurchaseSettlementService
     ): bool {
         $amountCents = $this->moneyToCents($amount);
         $idempotencyKey = trim($idempotencyKey);
+        $normalizedReference = filled($reference) ? trim((string) $reference) : null;
+        $requestedPaidAt = null;
+
+        if (filled($paidAt)) {
+            try {
+                $requestedPaidAt = Carbon::parse((string) $paidAt)->setMicrosecond(0);
+            } catch (\Throwable) {
+                throw ValidationException::withMessages(['paid_at' => __('Enter a valid supplier payment date.')]);
+            }
+
+            if ($requestedPaidAt->isAfter(now()->setMicrosecond(0))) {
+                throw ValidationException::withMessages(['paid_at' => __('Supplier payment date cannot be in the future.')]);
+            }
+        }
 
         if ($amountCents < 1) {
             throw ValidationException::withMessages(['amount' => __('Enter a supplier payment greater than zero.')]);
@@ -48,14 +63,15 @@ class PurchaseSettlementService
             throw ValidationException::withMessages(['payment_method' => __('Choose a valid supplier payment method.')]);
         }
 
-        return DB::transaction(function () use ($purchase, $amountCents, $paymentMethod, $reference, $idempotencyKey, $paidAt, $adminUserId) {
+        return DB::transaction(function () use ($purchase, $amountCents, $paymentMethod, $normalizedReference, $idempotencyKey, $requestedPaidAt, $adminUserId) {
             $lockedPurchase = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->firstOrFail();
             $existing = PurchaseSettlement::query()->where('idempotency_key', $idempotencyKey)->lockForUpdate()->first();
             if ($existing) {
                 $sameRequest = (int) $existing->purchase_id === (int) $lockedPurchase->id
                     && $this->moneyToCents($existing->amount) === $amountCents
                     && $existing->payment_method === $paymentMethod
-                    && (string) ($existing->reference ?? '') === (string) ($reference ?? '');
+                    && (string) ($existing->reference ?? '') === (string) ($normalizedReference ?? '')
+                    && ($requestedPaidAt === null || $existing->paid_at?->equalTo($requestedPaidAt));
 
                 if (! $sameRequest) {
                     throw ValidationException::withMessages([
@@ -76,15 +92,31 @@ class PurchaseSettlementService
             if ($amountCents > $balanceCents) {
                 throw ValidationException::withMessages(['amount' => __('Supplier payment cannot exceed the current received-value balance.')]);
             }
+
+            $effectivePaidAt = $requestedPaidAt ?: now()->setMicrosecond(0);
+            $firstActiveReceiptAt = PurchaseReceipt::query()
+                ->where('purchase_id', $lockedPurchase->id)
+                ->whereNull('reversed_at')
+                ->orderBy('received_at')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->value('received_at');
+
+            if (! $firstActiveReceiptAt || $effectivePaidAt->lt(Carbon::parse($firstActiveReceiptAt)->setMicrosecond(0))) {
+                throw ValidationException::withMessages([
+                    'paid_at' => __('Supplier payment date cannot be before the first active goods receipt.'),
+                ]);
+            }
+
             $settlement = PurchaseSettlement::query()->create([
                 'purchase_id' => $lockedPurchase->id,
                 'supplier_id' => $lockedPurchase->supplier_id,
                 'amount' => $this->centsToMoney($amountCents),
                 'currency' => $lockedPurchase->currency,
                 'payment_method' => $paymentMethod,
-                'reference' => filled($reference) ? trim((string) $reference) : null,
+                'reference' => $normalizedReference,
                 'idempotency_key' => $idempotencyKey,
-                'paid_at' => $paidAt ?: now(),
+                'paid_at' => $effectivePaidAt,
                 'recorded_by' => $adminUserId,
                 'status' => PurchaseSettlement::STATUS_ACTIVE,
             ]);

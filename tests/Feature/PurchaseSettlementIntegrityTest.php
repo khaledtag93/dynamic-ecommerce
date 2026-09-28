@@ -83,6 +83,64 @@ class PurchaseSettlementIntegrityTest extends TestCase
         $this->assertNotSame($purchase->grand_total, $summary['payable']);
     }
 
+    public function test_supplier_payment_effective_date_cannot_precede_receipt_or_be_in_future_and_idempotency_includes_date(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        app(PurchaseService::class)->receive($purchase);
+
+        $receiptAt = $purchase->receipts()->latest('id')->value('received_at');
+        $service = app(PurchaseSettlementService::class);
+
+        try {
+            $service->record(
+                $purchase,
+                '5.00',
+                'cash',
+                'PAST-DATE',
+                (string) Str::uuid(),
+                \Illuminate\Support\Carbon::parse($receiptAt)->subSecond()->toDateTimeString()
+            );
+            $this->fail('Supplier payment cannot predate the first active receipt.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('paid_at', $exception->errors());
+        }
+
+        try {
+            $service->record(
+                $purchase,
+                '5.00',
+                'cash',
+                'FUTURE-DATE',
+                (string) Str::uuid(),
+                now()->addDay()->toDateTimeString()
+            );
+            $this->fail('Supplier payment cannot be dated in the future.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('paid_at', $exception->errors());
+        }
+
+        $key = (string) Str::uuid();
+        $validPaidAt = now()->toDateTimeString();
+        $this->assertTrue($service->record($purchase, '5.00', 'cash', 'DATE-IDEM', $key, $validPaidAt));
+        $this->assertFalse($service->record($purchase, '5.00', 'cash', 'DATE-IDEM', $key, $validPaidAt));
+
+        try {
+            $service->record(
+                $purchase,
+                '5.00',
+                'cash',
+                'DATE-IDEM',
+                $key,
+                now()->subSecond()->toDateTimeString()
+            );
+            $this->fail('The same supplier payment key cannot be replayed with a different effective date.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('settlement_key', $exception->errors());
+        }
+    }
+
     public function test_supplier_payment_is_not_allowed_before_goods_are_received(): void
     {
         $purchase = $this->purchase();

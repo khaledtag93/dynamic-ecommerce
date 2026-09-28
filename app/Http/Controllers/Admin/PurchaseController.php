@@ -431,7 +431,7 @@ class PurchaseController extends Controller
             'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:9999999999.99'],
             'payment_method' => ['required', 'string', Rule::in(array_keys(PurchaseSettlement::paymentMethodOptions()))],
             'reference' => ['nullable', 'string', 'max:100'],
-            'paid_at' => ['nullable', 'date'],
+            'paid_at' => ['nullable', 'date', 'before_or_equal:now'],
             'settlement_key' => ['required', 'uuid'],
         ]);
 
