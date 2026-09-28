@@ -2621,6 +2621,7 @@
     "Purchase items must have a positive ordered quantity before barcode verification.": "Purchase items must have a positive ordered quantity before barcode verification.",
     "Only ordered purchases can change barcode verification counts.": "Only ordered purchases can change barcode verification counts.",
     "The purchase line does not belong to this purchase.": "The purchase line does not belong to this purchase.",
+    "Barcode verification progress does not belong to this purchase.": "Barcode verification progress does not belong to this purchase.",
     "Scan and verify every ordered unit before completing barcode receiving.": "Scan and verify every ordered unit before completing barcode receiving.",
     "This barcode matches more than one purchase line. Choose the exact line before counting the scan.": "This barcode matches more than one purchase line. Choose the exact line before counting the scan.",
     "That purchase line is already fully verified. No extra unit was counted.": "That purchase line is already fully verified. No extra unit was counted.",

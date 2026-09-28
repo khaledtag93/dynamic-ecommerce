@@ -4390,6 +4390,7 @@
     "The provider email must match the signed-in account before linking.": "يجب أن يطابق بريد موفر تسجيل الدخول بريد الحساب المسجل دخوله قبل الربط.",
     "The provider must return a verified email before sign-in can continue.": "يجب أن يعيد موفر تسجيل الدخول بريدًا إلكترونيًا موثّقًا قبل متابعة تسجيل الدخول.",
     "The purchase line does not belong to this purchase.": "بند أمر الشراء لا يتبع أمر الشراء هذا.",
+    "Barcode verification progress does not belong to this purchase.": "سجل تقدم التحقق بالباركود لا ينتمي إلى أمر الشراء هذا.",
     "The recent sales window is still quiet.": "فترة المبيعات الأخيرة ما زالت هادئة.",
     "The revenue slowdown is closely linked to weaker conversion quality.": "تباطؤ الإيراد مرتبط بشكل واضح بضعف جودة التحويل.",
     "The revenue slowdown is more about softer demand than basket value.": "تباطؤ الإيراد يبدو مرتبطًا أكثر بضعف الطلب وليس بقيمة السلة.",

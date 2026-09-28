@@ -138,6 +138,12 @@ class PurchaseReceivingService
                 ->lockForUpdate()
                 ->first();
 
+            if ($progress && (int) $progress->purchase_id !== (int) $lockedPurchase->id) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Barcode verification progress does not belong to this purchase.'),
+                ]);
+            }
+
             if (! $progress) {
                 $progress = PurchaseReceivingProgress::create([
                     'purchase_id' => $lockedPurchase->id,
@@ -201,6 +207,12 @@ class PurchaseReceivingService
                 ->where('purchase_item_id', $lockedItem->id)
                 ->lockForUpdate()
                 ->first();
+
+            if ($progress && (int) $progress->purchase_id !== (int) $lockedPurchase->id) {
+                throw ValidationException::withMessages([
+                    'purchase' => __('Barcode verification progress does not belong to this purchase.'),
+                ]);
+            }
 
             if (! $progress || (int) $progress->verified_quantity < 1) {
                 return false;
