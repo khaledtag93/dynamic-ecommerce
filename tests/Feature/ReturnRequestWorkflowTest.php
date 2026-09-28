@@ -23,6 +23,44 @@ class ReturnRequestWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_database_preserves_return_request_item_history_from_direct_parent_deletion(): void
+    {
+        $customer = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $return = app(ReturnRequestService::class)->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DEFECTIVE,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+        $returnItemId = $return->items()->firstOrFail()->id;
+
+        try {
+            $return->delete();
+            $this->fail('Database must preserve RMA item history from direct parent deletion.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseHas('return_requests', ['id' => $return->id]);
+        $this->assertDatabaseHas('return_request_items', [
+            'id' => $returnItemId,
+            'return_request_id' => $return->id,
+        ]);
+    }
+
     public function test_refund_requires_same_order_rma_and_idempotency_includes_rma_identity(): void
     {
         $customer = User::factory()->create();
