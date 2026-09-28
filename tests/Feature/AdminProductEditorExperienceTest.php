@@ -559,16 +559,24 @@ class AdminProductEditorExperienceTest extends TestCase
             ->set('stockFilter', 'in')
             ->assertDontSee('Expired Admin Stock Product')
             ->assertSee('Low Sellable Admin Stock')
+            ->assertSeeHtml('<div class="fw-bold qty-text">1</div>')
             ->set('stockFilter', 'low')
             ->assertDontSee('Expired Admin Stock Product')
             ->assertSee('Low Sellable Admin Stock')
+            ->assertSeeHtml('<div class="fw-bold qty-text">1</div>')
             ->set('stockFilter', 'out')
             ->assertSee('Expired Admin Stock Product')
-            ->assertDontSee('Low Sellable Admin Stock');
+            ->assertDontSee('Low Sellable Admin Stock')
+            ->assertSeeHtml('<div class="fw-bold qty-text">0</div>');
 
         $component = Livewire::test(Index::class);
         $this->assertSame(1, $component->instance()->catalogHealth['low_stock']);
         $this->assertSame(1, $component->instance()->catalogHealth['out_of_stock']);
+
+        $source = file_get_contents(app_path('Http/Livewire/Admin/Product/Index.php'));
+        $this->assertStringContainsString('$products->chunk(500, function ($batch)', $source);
+        $this->assertStringContainsString('$inventoryAvailability->hydrateSellableQuantities($batch);', $source);
+        $this->assertStringContainsString('->hydrateSellableQuantities($products->getCollection());', $source);
     }
 
     public function test_product_sku_cannot_duplicate_another_product_sku(): void

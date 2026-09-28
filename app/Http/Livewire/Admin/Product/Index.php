@@ -845,8 +845,9 @@ class Index extends Component
 
         $products = $this->productsQuery()
             ->orderBy($sortField, $sortDirection);
+        $inventoryAvailability = app(InventoryAvailabilityService::class);
 
-        return response()->streamDownload(function () use ($products) {
+        return response()->streamDownload(function () use ($products, $inventoryAvailability) {
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
@@ -868,26 +869,30 @@ class Index extends Component
                 'Updated At',
             ]);
 
-            foreach ($products->lazy(500) as $product) {
-                fputcsv($handle, [
-                    $product->id,
-                    $product->name,
-                    $product->slug,
-                    $product->sku,
-                    $product->barcode,
-                    optional($product->category)->name,
-                    optional($product->brand)->name,
-                    $product->base_price,
-                    $product->sale_price,
-                    $product->current_price,
-                    $product->quantity_value,
-                    $product->stock_status,
-                    $product->status ? 'Active' : 'Inactive',
-                    $product->is_featured ? 'Yes' : 'No',
-                    $product->has_variants ? 'Yes' : 'No',
-                    optional($product->updated_at)?->format('Y-m-d H:i:s'),
-                ]);
-            }
+            $products->chunk(500, function ($batch) use ($handle, $inventoryAvailability) {
+                $inventoryAvailability->hydrateSellableQuantities($batch);
+
+                foreach ($batch as $product) {
+                    fputcsv($handle, [
+                        $product->id,
+                        $product->name,
+                        $product->slug,
+                        $product->sku,
+                        $product->barcode,
+                        optional($product->category)->name,
+                        optional($product->brand)->name,
+                        $product->base_price,
+                        $product->sale_price,
+                        $product->current_price,
+                        $product->quantity_value,
+                        $product->stock_status,
+                        $product->status ? 'Active' : 'Inactive',
+                        $product->is_featured ? 'Yes' : 'No',
+                        $product->has_variants ? 'Yes' : 'No',
+                        optional($product->updated_at)?->format('Y-m-d H:i:s'),
+                    ]);
+                }
+            });
 
             fclose($handle);
         }, $fileName, [
@@ -1052,6 +1057,9 @@ class Index extends Component
         $products = $this->productsQuery()
             ->orderBy($sortField, $sortDirection)
             ->paginate($this->perPage);
+
+        app(InventoryAvailabilityService::class)
+            ->hydrateSellableQuantities($products->getCollection());
 
         $categories = Category::orderBy('name')->get();
         $brands = Brand::orderBy('name')->get();
