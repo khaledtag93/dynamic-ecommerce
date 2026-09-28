@@ -16,6 +16,7 @@ class PurchaseReceiptReversalService
     public function __construct(
         protected AdminActivityLogService $activityLogService,
         protected InventoryLotService $inventoryLotService,
+        protected PurchaseSettlementService $purchaseSettlementService,
     ) {}
 
     public function reverse(
@@ -63,6 +64,8 @@ class PurchaseReceiptReversalService
                     'receipt' => __('This receipt has no item ledger to reverse safely.'),
                 ]);
             }
+
+            $this->purchaseSettlementService->assertReceiptReversalAllowed($lockedPurchase, $lockedReceipt);
 
             $purchaseItems = $lockedPurchase->items()
                 ->whereIn('id', $receiptItems->pluck('purchase_item_id'))

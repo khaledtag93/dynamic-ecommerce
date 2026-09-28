@@ -401,6 +401,8 @@ Route::prefix('admin')
                 Route::post('/purchases/{purchase}/receive-verified', 'receiveVerified')->name('purchases.receive-verified');
                 Route::post('/purchases/{purchase}/receive-partial', 'receivePartial')->name('purchases.receive-partial');
                 Route::post('/purchases/{purchase}/receipts/{purchaseReceipt}/reverse', 'reverseReceipt')->name('purchases.receipts.reverse');
+                Route::post('/purchases/{purchase}/settlements', 'recordSettlement')->name('purchases.settlements.store');
+                Route::post('/purchases/{purchase}/settlements/{purchaseSettlement}/void', 'voidSettlement')->name('purchases.settlements.void');
                 Route::post('/purchases/{purchase}/cancel', 'cancel')->name('purchases.cancel');
                 Route::post('/purchases/{purchase}/receive', 'receive')->name('purchases.receive');
             });

@@ -38,6 +38,8 @@
         </div>
     </div>
 
+    @include('admin.purchases._settlement')
+
     @if(in_array($purchase->status, [\App\Models\Purchase::STATUS_DRAFT, \App\Models\Purchase::STATUS_ORDERED], true))
         <div class="admin-card mb-4">
             <div class="admin-card-body">

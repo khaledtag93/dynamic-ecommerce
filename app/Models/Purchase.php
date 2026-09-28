@@ -48,5 +48,6 @@ class Purchase extends Model
     public function items() { return $this->hasMany(PurchaseItem::class); }
     public function receivingProgress() { return $this->hasMany(PurchaseReceivingProgress::class); }
     public function receipts() { return $this->hasMany(PurchaseReceipt::class); }
+    public function settlements() { return $this->hasMany(PurchaseSettlement::class); }
     public function cancelledBy() { return $this->belongsTo(User::class, 'cancelled_by'); }
 }

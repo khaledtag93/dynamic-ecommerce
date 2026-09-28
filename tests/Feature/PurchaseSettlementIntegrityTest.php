@@ -1,0 +1,224 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\PurchaseSettlement;
+use App\Models\Supplier;
+use App\Services\Commerce\PurchaseReceiptReversalService;
+use App\Services\Commerce\PurchaseService;
+use App\Services\Commerce\PurchaseSettlementService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Tests\TestCase;
+
+class PurchaseSettlementIntegrityTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_received_value_drives_payable_and_payments_are_idempotent_and_bounded(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 5, 10);
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 2],
+            (string) Str::uuid()
+        );
+
+        $service = app(PurchaseSettlementService::class);
+        $this->assertSame([
+            'payable' => '20.00',
+            'paid' => '0.00',
+            'balance' => '20.00',
+            'status' => 'unpaid',
+        ], $service->summary($purchase));
+
+        $key = (string) Str::uuid();
+        $this->assertTrue($service->record($purchase, '7.50', 'bank_transfer', 'BANK-1', $key));
+        $this->assertFalse($service->record($purchase, '7.50', 'bank_transfer', 'BANK-1', $key));
+
+        $this->assertSame([
+            'payable' => '20.00',
+            'paid' => '7.50',
+            'balance' => '12.50',
+            'status' => 'partially_paid',
+        ], $service->summary($purchase));
+        try {
+            $service->record($purchase, '12.51', 'cash', null, (string) Str::uuid());
+            $this->fail('Supplier overpayment should be rejected.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('amount', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('purchase_settlements', 1);
+    }
+
+    public function test_supplier_payment_is_not_allowed_before_goods_are_received(): void
+    {
+        $purchase = $this->purchase();
+        $product = $this->product();
+        $this->item($purchase, $product, 2, 10);
+
+        try {
+            app(PurchaseSettlementService::class)->record(
+                $purchase,
+                '5.00',
+                'cash',
+                null,
+                (string) Str::uuid()
+            );
+            $this->fail('A purchase without received value must not be payable.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('amount', $exception->errors());
+        }
+    }
+    public function test_voided_payment_reopens_balance_without_deleting_ledger(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        app(PurchaseService::class)->receive($purchase);
+
+        $service = app(PurchaseSettlementService::class);
+        $service->record($purchase, '20.00', 'cash', 'CASH-1', (string) Str::uuid());
+        $settlement = PurchaseSettlement::query()->firstOrFail();
+
+        $this->assertSame('paid', $service->summary($purchase)['status']);
+        $this->assertTrue($service->void($purchase, $settlement, 'Entry recorded against the wrong cash drawer.'));
+        $this->assertFalse($service->void($purchase, $settlement, 'Duplicate void.'));
+
+        $fresh = $settlement->fresh();
+        $this->assertSame(PurchaseSettlement::STATUS_VOIDED, $fresh->status);
+        $this->assertNotNull($fresh->voided_at);
+        $this->assertSame('unpaid', $service->summary($purchase)['status']);
+        $this->assertDatabaseCount('purchase_settlements', 1);
+    }
+    public function test_receipt_reversal_is_blocked_when_it_would_make_supplier_payments_exceed_received_value(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 3, 10);
+        $purchaseService = app(PurchaseService::class);
+
+        $purchaseService->receivePartial($purchase, [$item->id => 2], (string) Str::uuid());
+        $purchaseService->receivePartial($purchase, [$item->id => 1], (string) Str::uuid());
+
+        $receipts = $purchase->receipts()->orderBy('id')->get();
+        $latestReceipt = $receipts->last();
+
+        $settlements = app(PurchaseSettlementService::class);
+        $settlements->record($purchase, '25.00', 'bank_transfer', 'BANK-25', (string) Str::uuid());
+        $payment = PurchaseSettlement::query()->firstOrFail();
+
+        try {
+            app(PurchaseReceiptReversalService::class)->reverse(
+                $purchase,
+                $latestReceipt,
+                'Latest delivery was incorrect.'
+            );
+            $this->fail('Receipt reversal should be blocked while active supplier payments exceed remaining received value.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('receipt', $exception->errors());
+        }
+        $this->assertNull($latestReceipt->fresh()->reversed_at);
+        $this->assertSame(3, (int) $item->fresh()->received_quantity);
+
+        $settlements->void($purchase, $payment, 'Supplier payment must be corrected before receipt reversal.');
+
+        $this->assertTrue(app(PurchaseReceiptReversalService::class)->reverse(
+            $purchase,
+            $latestReceipt,
+            'Latest delivery was incorrect.'
+        ));
+        $this->assertSame(2, (int) $item->fresh()->received_quantity);
+        $this->assertSame('20.00', $settlements->summary($purchase)['payable']);
+    }
+
+    public function test_admin_purchase_page_can_record_and_void_supplier_payment(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        app(PurchaseService::class)->receive($purchase, $admin->id);
+
+        $this->actingAs($admin)
+            ->get(route('admin.purchases.show', $purchase))
+            ->assertOk()
+            ->assertSee(__('Supplier settlement'))
+            ->assertSee(__('Received value'))
+            ->assertSee('20.00');
+
+        $key = (string) Str::uuid();
+        $this->post(route('admin.purchases.settlements.store', $purchase), [
+            'amount' => '8.00',
+            'payment_method' => 'cash',
+            'reference' => 'CASH-HTTP-1',
+            'settlement_key' => $key,
+        ])->assertRedirect(route('admin.purchases.show', $purchase))
+            ->assertSessionHas('success');
+
+        $settlement = PurchaseSettlement::query()->firstOrFail();
+        $this->assertSame('8.00', $settlement->amount);
+
+        $this->post(route('admin.purchases.settlements.void', [$purchase, $settlement]), [
+            'void_reason' => 'Correcting the supplier payment entry.',
+        ])->assertRedirect(route('admin.purchases.show', $purchase))
+            ->assertSessionHas('success');
+
+        $this->assertSame(PurchaseSettlement::STATUS_VOIDED, $settlement->fresh()->status);
+    }
+
+    private function supplier(): Supplier
+    {
+        return Supplier::create(['name' => 'Settlement Supplier '.Str::lower(Str::random(8))]);
+    }
+
+    private function purchase(): Purchase
+    {
+        return Purchase::create([
+            'supplier_id' => $this->supplier()->id,
+            'status' => Purchase::STATUS_ORDERED,
+            'currency' => 'EGP',
+        ]);
+    }
+    private function product(): Product
+    {
+        $token = Str::lower(Str::random(8));
+        $category = Category::create([
+            'name' => 'Settlement Category '.$token,
+            'slug' => 'settlement-category-'.$token,
+            'description' => 'Settlement test category',
+            'meta_title' => 'Settlement test',
+            'meta_keyword' => 'settlement',
+            'meta_description' => 'Settlement test category',
+            'status' => false,
+        ]);
+
+        return Product::create([
+            'name' => 'Settlement Product '.$token,
+            'slug' => 'settlement-product-'.$token,
+            'category_id' => $category->id,
+            'base_price' => 30,
+            'cost_price' => 5,
+            'quantity' => 0,
+            'has_variants' => false,
+            'status' => true,
+        ]);
+    }
+    private function item(Purchase $purchase, Product $product, int $quantity, int $unitCost)
+    {
+        return $purchase->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'quantity' => $quantity,
+            'unit_cost' => $unitCost,
+            'line_total' => $quantity * $unitCost,
+        ]);
+    }
+}

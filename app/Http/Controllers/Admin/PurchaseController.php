@@ -8,13 +8,16 @@ use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\PurchaseReceipt;
+use App\Models\PurchaseSettlement;
 use App\Models\Supplier;
 use App\Services\Commerce\PurchaseReceivingService;
 use App\Services\Commerce\PurchaseReceiptReversalService;
 use App\Services\Commerce\PurchaseService;
+use App\Services\Commerce\PurchaseSettlementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class PurchaseController extends Controller
@@ -26,6 +29,7 @@ class PurchaseController extends Controller
         protected PurchaseService $purchaseService,
         protected PurchaseReceivingService $purchaseReceivingService,
         protected PurchaseReceiptReversalService $purchaseReceiptReversalService,
+        protected PurchaseSettlementService $purchaseSettlementService,
     ) {}
 
     public function index(Request $request)
@@ -99,12 +103,18 @@ class PurchaseController extends Controller
             'receipts' => fn ($query) => $query
                 ->with(['items.purchaseItem', 'receivedBy', 'reversedBy'])
                 ->latest('id'),
+            'settlements' => fn ($query) => $query
+                ->with(['recordedBy', 'voidedBy'])
+                ->latest('paid_at')
+                ->latest('id'),
         ]);
         $receiptKey = in_array($purchase->status, [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED], true)
             ? (string) Str::uuid()
             : null;
+        $settlementKey = (string) Str::uuid();
+        $settlementSummary = $this->purchaseSettlementService->summary($purchase);
 
-        return view('admin.purchases.show', compact('purchase', 'receiptKey'));
+        return view('admin.purchases.show', compact('purchase', 'receiptKey', 'settlementKey', 'settlementSummary'));
     }
 
     public function receiving(Purchase $purchase)
@@ -395,6 +405,51 @@ class PurchaseController extends Controller
             ->with($reversedNow ? 'success' : 'warning', $reversedNow
                 ? __('Purchase receipt reversed and inventory restored to its prior state.')
                 : __('This purchase receipt was already reversed.'));
+    }
+
+    public function recordSettlement(Request $request, Purchase $purchase)
+    {
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:9999999999.99'],
+            'payment_method' => ['required', 'string', Rule::in(array_keys(PurchaseSettlement::paymentMethodOptions()))],
+            'reference' => ['nullable', 'string', 'max:100'],
+            'paid_at' => ['nullable', 'date'],
+            'settlement_key' => ['required', 'uuid'],
+        ]);
+
+        $recorded = $this->purchaseSettlementService->record(
+            $purchase,
+            $data['amount'],
+            $data['payment_method'],
+            $data['reference'] ?? null,
+            $data['settlement_key'],
+            $data['paid_at'] ?? null,
+            (int) $request->user()->id,
+        );
+
+        return redirect()->route('admin.purchases.show', $purchase)
+            ->with($recorded ? 'success' : 'warning', $recorded
+                ? __('Supplier payment recorded successfully.')
+                : __('This supplier payment request was already processed.'));
+    }
+
+    public function voidSettlement(Request $request, Purchase $purchase, PurchaseSettlement $purchaseSettlement)
+    {
+        $data = $request->validate([
+            'void_reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $voided = $this->purchaseSettlementService->void(
+            $purchase,
+            $purchaseSettlement,
+            $data['void_reason'],
+            (int) $request->user()->id,
+        );
+
+        return redirect()->route('admin.purchases.show', $purchase)
+            ->with($voided ? 'success' : 'warning', $voided
+                ? __('Supplier payment voided successfully.')
+                : __('This supplier payment was already voided.'));
     }
 
     public function receive(Request $request, Purchase $purchase)
