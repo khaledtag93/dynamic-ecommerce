@@ -78,7 +78,12 @@ class InventoryService
                 && array_key_exists('unit_cost', $context)
                 && $context['unit_cost'] !== null) {
                 $valuationUnitCost = (float) $context['unit_cost'];
-            } elseif (array_key_exists('movement_unit_cost', $context)
+            } elseif (in_array($type, [
+                InventoryMovement::TYPE_REFUND_RESTOCK,
+                InventoryMovement::TYPE_RETURN_RESTOCK,
+                InventoryMovement::TYPE_RESERVATION_RELEASE,
+            ], true)
+                && array_key_exists('movement_unit_cost', $context)
                 && $context['movement_unit_cost'] !== null) {
                 $valuationUnitCost = (float) $context['movement_unit_cost'];
             }
