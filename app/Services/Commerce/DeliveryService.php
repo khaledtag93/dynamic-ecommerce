@@ -96,6 +96,8 @@ class DeliveryService
                 ) {
                     $updates['shipped_at'] = null;
                     $updates['delivered_at'] = null;
+                    $updates['shipping_provider'] = null;
+                    $updates['tracking_number'] = null;
                 }
 
                 if ($newStatus === Order::DELIVERY_STATUS_CANCELLED) {

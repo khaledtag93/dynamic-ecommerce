@@ -366,6 +366,10 @@ class DeliveryHardeningTest extends TestCase
         $this->assertSame(Order::DELIVERY_STATUS_PREPARING, $retried->delivery_status);
         $this->assertNull($retried->shipped_at);
         $this->assertNull($retried->delivered_at);
+        $this->assertNull($retried->shipping_provider);
+        $this->assertNull($retried->tracking_number);
+        $this->assertSame('Courier A', data_get($retried->meta, 'delivery_return_history.0.shipping_provider'));
+        $this->assertSame('RTS-100', data_get($retried->meta, 'delivery_return_history.0.tracking_number'));
         $this->assertTrue($retried->canTransitionDeliveryTo(Order::DELIVERY_STATUS_SHIPPED));
     }
 
