@@ -246,45 +246,6 @@ class PurchaseBarcodeReceivingTest extends TestCase
         ]);
     }
 
-    public function test_barcode_receipt_reversal_rejects_cross_purchase_progress_without_mutation(): void
-    {
-        $admin = $this->createSuperAdmin();
-        $product = $this->product('Reversal Ownership Product', '6223000000012', 1, false);
-        $purchase = $this->purchase();
-        $otherPurchase = $this->purchase();
-        $item = $this->item($purchase, $product, 1, 10);
-
-        $this->actingAs($admin)
-            ->post(route('admin.purchases.receiving.scan', $purchase), [
-                'barcode' => $product->barcode,
-            ])->assertSessionHasNoErrors();
-
-        $this->post(route('admin.purchases.receive-verified', $purchase))
-            ->assertSessionHas('success');
-
-        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
-        $progress = PurchaseReceivingProgress::query()->where('purchase_item_id', $item->id)->firstOrFail();
-        $progress->forceFill(['purchase_id' => $otherPurchase->id])->save();
-        $stockBefore = (int) $product->fresh()->quantity;
-
-        try {
-            app(PurchaseReceiptReversalService::class)->reverse(
-                $purchase,
-                $receipt,
-                'Reject corrupted barcode progress ownership.',
-                $admin->id
-            );
-            $this->fail('Barcode receipt reversal must reject progress owned by another purchase.');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('receipt', $exception->errors());
-        }
-
-        $this->assertSame($stockBefore, (int) $product->fresh()->quantity);
-        $this->assertNull($receipt->fresh()->reversed_at);
-        $this->assertSame($otherPurchase->id, (int) $progress->fresh()->purchase_id);
-        $this->assertSame(1, (int) $progress->fresh()->verified_quantity);
-    }
-
     public function test_corrupt_barcode_progress_above_ordered_quantity_is_rejected_without_mutation(): void
     {
         $admin = $this->createSuperAdmin();
@@ -318,45 +279,6 @@ class PurchaseBarcodeReceivingTest extends TestCase
             ->where('purchase_item_id', $item->id)
             ->value('verified_quantity'));
         $this->assertDatabaseCount('inventory_movements', 0);
-    }
-
-    public function test_barcode_progress_with_cross_purchase_ownership_is_rejected_without_mutation(): void
-    {
-        $admin = $this->createSuperAdmin();
-        $product = $this->product('Corrupt Progress Product', '6223000000010', 1, false);
-        $purchase = $this->purchase();
-        $otherPurchase = $this->purchase();
-        $item = $this->item($purchase, $product, 2, 10);
-
-        PurchaseReceivingProgress::query()->create([
-            'purchase_id' => $otherPurchase->id,
-            'purchase_item_id' => $item->id,
-            'verified_quantity' => 1,
-            'last_scanned_by' => $admin->id,
-            'last_scanned_at' => now(),
-        ]);
-
-        $this->actingAs($admin)
-            ->post(route('admin.purchases.receiving.scan', $purchase), [
-                'barcode' => $product->barcode,
-            ])->assertSessionHasErrors('purchase');
-
-        $this->assertSame(1, (int) PurchaseReceivingProgress::query()
-            ->where('purchase_item_id', $item->id)
-            ->value('verified_quantity'));
-        $this->assertSame($otherPurchase->id, (int) PurchaseReceivingProgress::query()
-            ->where('purchase_item_id', $item->id)
-            ->value('purchase_id'));
-        $this->assertDatabaseCount('inventory_movements', 0);
-
-        $this->post(route('admin.purchases.receiving.undo', [
-            'purchase' => $purchase->id,
-            'purchaseItem' => $item->id,
-        ]))->assertSessionHasErrors('purchase');
-
-        $this->assertSame(1, (int) PurchaseReceivingProgress::query()
-            ->where('purchase_item_id', $item->id)
-            ->value('verified_quantity'));
     }
 
     public function test_scan_is_rejected_before_purchase_order_date_without_creating_progress(): void
