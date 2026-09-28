@@ -36,7 +36,20 @@ class PurchaseSettlementService
         ?string $paidAt = null,
         ?int $adminUserId = null
     ): bool {
-        $amountCents = $this->moneyToCents($amount);
+        $amountText = trim((string) $amount);
+        if (! preg_match('/^\d{1,10}(?:\.\d{1,2})?$/', $amountText)) {
+            throw ValidationException::withMessages([
+                'amount' => __('Enter a supplier payment with up to two decimal places within the supported amount limit.'),
+            ]);
+        }
+
+        $amountCents = $this->moneyToCents($amountText);
+        if ($amountCents > 999999999999) {
+            throw ValidationException::withMessages([
+                'amount' => __('Enter a supplier payment with up to two decimal places within the supported amount limit.'),
+            ]);
+        }
+
         $idempotencyKey = trim($idempotencyKey);
         $normalizedReference = filled($reference) ? trim((string) $reference) : null;
         $requestedPaidAt = null;

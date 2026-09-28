@@ -69,6 +69,32 @@ class PurchaseSettlementIntegrityTest extends TestCase
         $this->assertDatabaseCount('purchase_settlements', 1);
     }
 
+    public function test_supplier_payment_service_rejects_non_decimal_or_over_precision_amounts(): void
+    {
+        $product = $this->product();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 10);
+        app(PurchaseService::class)->receive($purchase);
+        $service = app(PurchaseSettlementService::class);
+
+        foreach (['5.009', '1e1', '10000000000.00'] as $invalidAmount) {
+            try {
+                $service->record(
+                    $purchase,
+                    $invalidAmount,
+                    'cash',
+                    null,
+                    (string) Str::uuid()
+                );
+                $this->fail('Invalid supplier payment precision or format should be rejected.');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('amount', $exception->errors());
+            }
+        }
+
+        $this->assertDatabaseCount('purchase_settlements', 0);
+    }
+
     public function test_operational_supplier_payable_excludes_purchase_shipping_and_tax(): void
     {
         $product = $this->product();

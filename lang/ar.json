@@ -5897,6 +5897,7 @@
     "Supplier payment voided successfully.": "تم إلغاء قيد دفعة المورد بنجاح.",
     "This supplier payment was already voided.": "تم إلغاء قيد دفعة المورد هذه مسبقًا.",
     "Enter a supplier payment greater than zero.": "أدخل دفعة للمورد أكبر من صفر.",
+    "Enter a supplier payment with up to two decimal places within the supported amount limit.": "أدخل دفعة للمورد بحد أقصى منزلتين عشريتين وضمن الحد المالي المدعوم.",
     "The supplier payment request key is invalid. Refresh and try again.": "مفتاح طلب دفعة المورد غير صالح. حدّث الصفحة وحاول مرة أخرى.",
     "Choose a valid supplier payment method.": "اختر طريقة دفع صالحة للمورد.",
     "This supplier payment request key was already used with different details. Refresh and try again.": "تم استخدام مفتاح طلب دفعة المورد هذا مسبقًا ببيانات مختلفة. حدّث الصفحة وحاول مرة أخرى.",

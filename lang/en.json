@@ -5207,6 +5207,7 @@
     "Supplier payment voided successfully.": "Supplier payment voided successfully.",
     "This supplier payment was already voided.": "This supplier payment was already voided.",
     "Enter a supplier payment greater than zero.": "Enter a supplier payment greater than zero.",
+    "Enter a supplier payment with up to two decimal places within the supported amount limit.": "Enter a supplier payment with up to two decimal places within the supported amount limit.",
     "The supplier payment request key is invalid. Refresh and try again.": "The supplier payment request key is invalid. Refresh and try again.",
     "Choose a valid supplier payment method.": "Choose a valid supplier payment method.",
     "This supplier payment request key was already used with different details. Refresh and try again.": "This supplier payment request key was already used with different details. Refresh and try again.",
