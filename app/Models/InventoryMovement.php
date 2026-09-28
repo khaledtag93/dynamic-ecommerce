@@ -10,6 +10,7 @@ class InventoryMovement extends Model
     use HasFactory;
 
     public const TYPE_PURCHASE_IN = 'purchase_in';
+    public const TYPE_PURCHASE_REVERSAL = 'purchase_reversal';
     public const TYPE_ORDER_OUT = 'order_out';
     public const TYPE_ORDER_RESERVATION = 'order_reservation';
     public const TYPE_RESERVATION_RELEASE = 'reservation_release';
@@ -35,6 +36,7 @@ class InventoryMovement extends Model
     {
         return [
             self::TYPE_PURCHASE_IN => __('Purchase receipt'),
+            self::TYPE_PURCHASE_REVERSAL => __('Purchase receipt reversal'),
             self::TYPE_ORDER_OUT => __('Order sale'),
             self::TYPE_ORDER_RESERVATION => __('Online payment reservation'),
             self::TYPE_RESERVATION_RELEASE => __('Reservation release'),

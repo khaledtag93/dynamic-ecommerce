@@ -289,6 +289,11 @@ class PurchaseService
                 'purchase_id' => $lockedPurchase->id,
                 'idempotency_key' => $idempotencyKey,
                 'request_hash' => $requestHash,
+                'receipt_method' => $requireBarcodeVerification
+                    ? PurchaseReceipt::METHOD_BARCODE_VERIFIED
+                    : ($quantities !== null
+                        ? PurchaseReceipt::METHOD_MANUAL_PARTIAL
+                        : PurchaseReceipt::METHOD_MANUAL_REMAINING),
                 'received_by' => $adminUserId,
                 'received_at' => now(),
             ]);

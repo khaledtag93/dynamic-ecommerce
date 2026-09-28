@@ -7,8 +7,10 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
+use App\Models\PurchaseReceipt;
 use App\Models\Supplier;
 use App\Services\Commerce\PurchaseReceivingService;
+use App\Services\Commerce\PurchaseReceiptReversalService;
 use App\Services\Commerce\PurchaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +25,7 @@ class PurchaseController extends Controller
     public function __construct(
         protected PurchaseService $purchaseService,
         protected PurchaseReceivingService $purchaseReceivingService,
+        protected PurchaseReceiptReversalService $purchaseReceiptReversalService,
     ) {}
 
     public function index(Request $request)
@@ -87,7 +90,16 @@ class PurchaseController extends Controller
 
     public function show(Purchase $purchase)
     {
-        $purchase->load(['supplier', 'items.product', 'items.variant', 'receivingProgress', 'cancelledBy']);
+        $purchase->load([
+            'supplier',
+            'items.product',
+            'items.variant',
+            'receivingProgress',
+            'cancelledBy',
+            'receipts' => fn ($query) => $query
+                ->with(['items.purchaseItem', 'receivedBy', 'reversedBy'])
+                ->latest('id'),
+        ]);
         $receiptKey = in_array($purchase->status, [Purchase::STATUS_ORDERED, Purchase::STATUS_PARTIALLY_RECEIVED], true)
             ? (string) Str::uuid()
             : null;
@@ -361,6 +373,28 @@ class PurchaseController extends Controller
             ->with($cancelledNow ? 'success' : 'warning', $cancelledNow
                 ? __('Purchase cancelled. No inventory was changed.')
                 : __('This purchase was already cancelled.'));
+    }
+
+    public function reverseReceipt(
+        Request $request,
+        Purchase $purchase,
+        PurchaseReceipt $purchaseReceipt
+    ) {
+        $data = $request->validate([
+            'reversal_reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $reversedNow = $this->purchaseReceiptReversalService->reverse(
+            $purchase,
+            $purchaseReceipt,
+            $data['reversal_reason'],
+            (int) $request->user()->id,
+        );
+
+        return redirect()->route('admin.purchases.show', $purchase)
+            ->with($reversedNow ? 'success' : 'warning', $reversedNow
+                ? __('Purchase receipt reversed and inventory restored to its prior state.')
+                : __('This purchase receipt was already reversed.'));
     }
 
     public function receive(Request $request, Purchase $purchase)

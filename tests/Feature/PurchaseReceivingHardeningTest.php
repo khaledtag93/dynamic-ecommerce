@@ -7,8 +7,12 @@ use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
+use App\Models\PurchaseReceipt;
+use App\Models\PurchaseReceivingProgress;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Services\Commerce\InventoryAdjustmentService;
+use App\Services\Commerce\PurchaseReceiptReversalService;
 use App\Services\Commerce\PurchaseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -430,6 +434,227 @@ class PurchaseReceivingHardeningTest extends TestCase
             ->assertSee(__('Open and received purchase value; drafts and cancelled orders are excluded.'));
     }
 
+    public function test_latest_partial_receipt_can_be_reversed_exactly_and_replay_is_safe(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $product->forceFill(['expiration_date' => '2026-12-31'])->save();
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 5, 10, null, '2027-06-01');
+
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 2],
+            (string) Str::uuid(),
+            $admin->id
+        );
+
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+
+        $this->assertSame(7, (int) $product->fresh()->quantity);
+        $this->assertSame(6.43, (float) $product->fresh()->inventory_cost_price);
+        $this->assertSame('2027-06-01', $product->fresh()->expiration_date->toDateString());
+
+        $this->actingAs($admin)
+            ->get(route('admin.purchases.show', $purchase))
+            ->assertOk()
+            ->assertSee(__('Receiving history'))
+            ->assertSee(__('Manual partial receipt'));
+
+        $this->post(route('admin.purchases.receipts.reverse', [
+            'purchase' => $purchase->id,
+            'purchaseReceipt' => $receipt->id,
+        ]), [
+            'reversal_reason' => 'Supplier sent the wrong batch.',
+        ])->assertRedirect(route('admin.purchases.show', $purchase))
+            ->assertSessionHas('success');
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(5.0, (float) $product->fresh()->inventory_cost_price);
+        $this->assertSame('2026-12-31', $product->fresh()->expiration_date->toDateString());
+        $this->assertSame(0, (int) $item->fresh()->received_quantity);
+        $this->assertSame(Purchase::STATUS_ORDERED, $purchase->fresh()->status);
+        $this->assertNull($purchase->fresh()->received_date);
+
+        $reversedReceipt = $receipt->fresh();
+        $this->assertNotNull($reversedReceipt->reversed_at);
+        $this->assertSame($admin->id, (int) $reversedReceipt->reversed_by);
+        $this->assertSame('Supplier sent the wrong batch.', $reversedReceipt->reversal_reason);
+
+        $movements = InventoryMovement::query()
+            ->where('purchase_id', $purchase->id)
+            ->orderBy('id')
+            ->get();
+        $this->assertSame(
+            [InventoryMovement::TYPE_PURCHASE_IN, InventoryMovement::TYPE_PURCHASE_REVERSAL],
+            $movements->pluck('type')->all()
+        );
+        $this->assertSame([2, -2], $movements->pluck('quantity_change')->all());
+        $this->assertSame([7, 5], $movements->pluck('balance_after')->all());
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'admin_user_id' => $admin->id,
+            'action' => 'purchase_receipt_reversed',
+            'subject_id' => $receipt->id,
+        ]);
+
+        $this->post(route('admin.purchases.receipts.reverse', [
+            'purchase' => $purchase->id,
+            'purchaseReceipt' => $receipt->id,
+        ]), [
+            'reversal_reason' => 'Duplicate click.',
+        ])->assertSessionHas('warning');
+
+        $this->assertDatabaseCount('inventory_movements', 2);
+        $this->assertSame('Supplier sent the wrong batch.', $receipt->fresh()->reversal_reason);
+    }
+
+    public function test_receipt_reversal_is_blocked_after_newer_inventory_activity(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 4, 10);
+
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 2],
+            (string) Str::uuid(),
+            $admin->id
+        );
+
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+
+        app(InventoryAdjustmentService::class)->setStock(
+            $product->id,
+            null,
+            7,
+            8,
+            'Physical count after receipt',
+            $admin->id
+        );
+
+        try {
+            app(PurchaseReceiptReversalService::class)->reverse(
+                $purchase,
+                $receipt,
+                'Attempt retroactive reversal.',
+                $admin->id
+            );
+            $this->fail('A receipt with newer stock history should not be reversed.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('receipt', $exception->errors());
+        }
+
+        $this->assertSame(8, (int) $product->fresh()->quantity);
+        $this->assertSame(2, (int) $item->fresh()->received_quantity);
+        $this->assertSame(Purchase::STATUS_PARTIALLY_RECEIVED, $purchase->fresh()->status);
+        $this->assertNull($receipt->fresh()->reversed_at);
+        $this->assertDatabaseCount('inventory_movements', 2);
+    }
+
+    public function test_barcode_receipt_reversal_resets_verification_for_rescan(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(3);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 2, 9);
+
+        PurchaseReceivingProgress::query()->create([
+            'purchase_id' => $purchase->id,
+            'purchase_item_id' => $item->id,
+            'verified_quantity' => 2,
+            'last_scanned_by' => $admin->id,
+            'last_scanned_at' => now(),
+        ]);
+
+        app(PurchaseService::class)->receiveVerified($purchase, $admin->id);
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+
+        $this->assertSame(PurchaseReceipt::METHOD_BARCODE_VERIFIED, $receipt->receipt_method);
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+
+        $this->assertTrue(app(PurchaseReceiptReversalService::class)->reverse(
+            $purchase,
+            $receipt,
+            'Barcode receipt needs recount.',
+            $admin->id
+        ));
+
+        $this->assertSame(3, (int) $product->fresh()->quantity);
+        $this->assertSame(0, (int) $item->fresh()->received_quantity);
+        $this->assertSame(0, (int) PurchaseReceivingProgress::query()
+            ->where('purchase_item_id', $item->id)
+            ->value('verified_quantity'));
+        $this->assertSame(Purchase::STATUS_ORDERED, $purchase->fresh()->status);
+    }
+
+    public function test_multiple_receipts_can_be_reversed_safely_in_lifo_order(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 4, 10);
+        $purchaseService = app(PurchaseService::class);
+        $reversalService = app(PurchaseReceiptReversalService::class);
+
+        $purchaseService->receivePartial(
+            $purchase,
+            [$item->id => 2],
+            (string) Str::uuid(),
+            $admin->id
+        );
+        $firstReceipt = PurchaseReceipt::query()->latest('id')->firstOrFail();
+
+        $purchaseService->receivePartial(
+            $purchase,
+            [$item->id => 2],
+            (string) Str::uuid(),
+            $admin->id
+        );
+        $secondReceipt = PurchaseReceipt::query()->latest('id')->firstOrFail();
+
+        $this->assertSame(9, (int) $product->fresh()->quantity);
+        $this->assertSame(4, (int) $item->fresh()->received_quantity);
+        $this->assertSame(Purchase::STATUS_RECEIVED, $purchase->fresh()->status);
+
+        $this->assertTrue($reversalService->reverse(
+            $purchase,
+            $secondReceipt,
+            'Undo latest delivery.',
+            $admin->id
+        ));
+
+        $this->assertSame(7, (int) $product->fresh()->quantity);
+        $this->assertSame(6.43, (float) $product->fresh()->inventory_cost_price);
+        $this->assertSame(2, (int) $item->fresh()->received_quantity);
+        $this->assertSame(Purchase::STATUS_PARTIALLY_RECEIVED, $purchase->fresh()->status);
+
+        $this->assertTrue($reversalService->reverse(
+            $purchase,
+            $firstReceipt,
+            'Undo first delivery after latest was reversed.',
+            $admin->id
+        ));
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(5.0, (float) $product->fresh()->inventory_cost_price);
+        $this->assertSame(0, (int) $item->fresh()->received_quantity);
+        $this->assertSame(Purchase::STATUS_ORDERED, $purchase->fresh()->status);
+        $this->assertSame(
+            [
+                InventoryMovement::TYPE_PURCHASE_IN,
+                InventoryMovement::TYPE_PURCHASE_IN,
+                InventoryMovement::TYPE_PURCHASE_REVERSAL,
+                InventoryMovement::TYPE_PURCHASE_REVERSAL,
+            ],
+            InventoryMovement::query()
+                ->where('purchase_id', $purchase->id)
+                ->orderBy('id')
+                ->pluck('type')
+                ->all()
+        );
+    }
+
     private function assertInvalidReceipt(Purchase $purchase): void
     {
         try {
@@ -487,7 +712,7 @@ class PurchaseReceivingHardeningTest extends TestCase
         ]);
     }
 
-    private function item(Purchase $purchase, Product $product, int $quantity, int $unitCost, ?ProductVariant $variant = null)
+    private function item(Purchase $purchase, Product $product, int $quantity, int $unitCost, ?ProductVariant $variant = null, ?string $expirationDate = null)
     {
         return $purchase->items()->create([
             'product_id' => $product->id,
@@ -497,6 +722,7 @@ class PurchaseReceivingHardeningTest extends TestCase
             'quantity' => $quantity,
             'unit_cost' => $unitCost,
             'line_total' => $quantity * $unitCost,
+            'expiration_date' => $expirationDate,
         ]);
     }
 }

@@ -109,6 +109,7 @@ class InventoryService
 
         $target = $variant ?: $product;
         $stockColumn = $variant ? 'stock' : 'quantity';
+        $expirationBefore = $target->expiration_date?->toDateString();
         $target->increment($stockColumn, $quantityChange);
 
         if ($updatesValuation) {
@@ -121,7 +122,15 @@ class InventoryService
 
         $target->refresh();
         $balanceAfter = (int) $target->{$stockColumn};
+        $expirationAfter = $target->expiration_date?->toDateString();
         $meta = $context['meta'] ?? null;
+
+        if (! empty($context['expiration_date'])) {
+            $meta = array_merge($meta ?? [], [
+                'expiration_before' => $expirationBefore,
+                'expiration_after' => $expirationAfter,
+            ]);
+        }
 
         if ($updatesValuation) {
             $meta = array_merge($meta ?? [], [

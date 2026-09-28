@@ -111,6 +111,70 @@
         </div>
     @endif
 
+    @if($purchase->receipts->isNotEmpty())
+        <div class="admin-card mb-4">
+            <div class="admin-card-body">
+                <div class="admin-table-toolbar">
+                    <div>
+                        <h4 class="mb-1">{{ __('Receiving history') }}</h4>
+                        <div class="text-muted small">{{ __('Each stock receipt remains auditable. Safe reversals are allowed only while no newer inventory activity exists for the affected stock.') }}</div>
+                    </div>
+                </div>
+
+                @error('receipt')<div class="alert alert-danger">{{ $message }}</div>@enderror
+                @foreach($purchase->receipts as $receipt)
+                    <div class="border rounded-4 p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                            <div>
+                                <div class="fw-semibold">{{ __('Receipt') }} #{{ $receipt->id }}</div>
+                                <div class="text-muted small">
+                                    {{ \App\Models\PurchaseReceipt::methodOptions()[$receipt->receipt_method] ?? $receipt->receipt_method }}
+                                    · {{ $receipt->received_at?->format('d M Y, H:i') }}
+                                    · {{ $receipt->receivedBy?->name ?: '—' }}
+                                </div>
+                            </div>
+                            <span class="badge admin-status-badge {{ $receipt->reversed_at ? 'badge-soft-danger' : 'badge-soft-success' }}">
+                                {{ $receipt->reversed_at ? __('Reversed') : __('Active') }}
+                            </span>
+                        </div>
+
+                        <div class="row g-2 mt-2">
+                            @foreach($receipt->items as $receiptItem)
+                                <div class="col-md-6">
+                                    <div class="admin-section-card h-100">
+                                        <div class="fw-semibold">{{ $receiptItem->purchaseItem?->product_name ?: __('Purchase item') }}</div>
+                                        <div class="text-muted small">{{ __('Quantity') }}: {{ $receiptItem->quantity }} · {{ __('Unit cost') }}: EGP {{ number_format($receiptItem->unit_cost, 2) }}</div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if($receipt->reversed_at)
+                            <div class="alert alert-light border mt-3 mb-0">
+                                <div class="fw-semibold">{{ __('Reversal') }} · {{ $receipt->reversed_at->format('d M Y, H:i') }}</div>
+                                <div class="small">{{ $receipt->reversal_reason }}</div>
+                                <div class="text-muted small">{{ $receipt->reversedBy?->name ?: '—' }}</div>
+                            </div>
+                        @elseif($receipt->receipt_method !== 'legacy_unknown')
+                            <form method="POST" action="{{ route('admin.purchases.receipts.reverse', ['purchase' => $purchase->id, 'purchaseReceipt' => $receipt->id]) }}" class="mt-3" data-submit-loading data-confirm-title="{{ __('Confirm receipt reversal') }}" data-confirm-message="{{ __('Reverse this stock receipt?') }}" data-confirm-subtitle="{{ __('Reversal is allowed only when these receipt movements are still the latest inventory activity for every affected item.') }}" data-confirm-ok="{{ __('Reverse receipt') }}">
+                                @csrf
+                                <input type="hidden" name="reversal_receipt_id" value="{{ $receipt->id }}">
+                                <label for="receiptReversalReason{{ $receipt->id }}" class="form-label fw-semibold">{{ __('Reversal reason') }}</label>
+                                <textarea id="receiptReversalReason{{ $receipt->id }}" name="reversal_reason" maxlength="1000" rows="2" class="form-control" required aria-required="true"></textarea>
+                                @if((int) old('reversal_receipt_id') === (int) $receipt->id)
+                                    @error('reversal_reason')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+                                @endif
+                                <button class="btn btn-outline-danger btn-sm mt-2" data-loading-text="{{ __('Reversing...') }}">{{ __('Reverse receipt') }}</button>
+                            </form>
+                        @else
+                            <div class="text-muted small mt-3">{{ __('This legacy receipt cannot be reversed automatically because its receiving method is unknown.') }}</div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="admin-card">
         <div class="admin-card-body">
             <div class="admin-table-toolbar">
