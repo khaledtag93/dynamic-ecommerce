@@ -11,6 +11,7 @@ class PurchaseReceiptItem extends Model
 
     protected $fillable = [
         'purchase_receipt_id',
+        'purchase_id',
         'purchase_item_id',
         'quantity',
         'unit_cost',

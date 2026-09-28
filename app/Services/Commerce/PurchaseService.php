@@ -366,6 +366,7 @@ class PurchaseService
                 );
 
                 $receipt->items()->create([
+                    'purchase_id' => $lockedPurchase->id,
                     'purchase_item_id' => $item->id,
                     'quantity' => $quantity,
                     'unit_cost' => $item->unit_cost,

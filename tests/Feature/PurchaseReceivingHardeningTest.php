@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseReceipt;
+use App\Models\PurchaseReceiptItem;
 use App\Models\PurchaseReceivingProgress;
 use App\Models\Supplier;
 use App\Models\User;
@@ -510,6 +511,40 @@ class PurchaseReceivingHardeningTest extends TestCase
 
         $this->assertSame('Supplier cannot fulfill the order.', $purchase->fresh()->cancellation_reason);
         $this->assertSame(1, \App\Models\AdminActivityLog::where('action', 'purchase_cancelled')->count());
+    }
+
+    public function test_database_rejects_receipt_item_from_another_purchase(): void
+    {
+        $product = $this->product(5);
+        $purchase = $this->purchase();
+        $item = $this->item($purchase, $product, 1, 10);
+        app(PurchaseService::class)->receivePartial(
+            $purchase,
+            [$item->id => 1],
+            (string) Str::uuid()
+        );
+
+        $receipt = PurchaseReceipt::query()->where('purchase_id', $purchase->id)->firstOrFail();
+        $otherPurchase = $this->purchase();
+        $otherItem = $this->item($otherPurchase, $product, 1, 10);
+
+        try {
+            PurchaseReceiptItem::query()->create([
+                'purchase_receipt_id' => $receipt->id,
+                'purchase_id' => $purchase->id,
+                'purchase_item_id' => $otherItem->id,
+                'quantity' => 1,
+                'unit_cost' => '10.00',
+            ]);
+            $this->fail('Database must reject a receipt item owned by another purchase.');
+        } catch (QueryException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertDatabaseMissing('purchase_receipt_items', [
+            'purchase_receipt_id' => $receipt->id,
+            'purchase_item_id' => $otherItem->id,
+        ]);
     }
 
     public function test_database_preserves_purchase_and_receipt_ledger_from_direct_deletion(): void
