@@ -798,6 +798,8 @@ class PaymentService
                 return;
             }
 
+            $lockedOrder->update(['refund_total' => 0]);
+
             $payments = $lockedOrder->payments()->get();
 
             if ($payments->isEmpty()) {

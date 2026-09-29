@@ -1320,6 +1320,21 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $fresh->payment_status);
     }
 
+    public function test_payment_sync_clears_stale_refund_snapshot_when_ledger_is_empty(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 100);
+        $this->makePayment($order, Payment::STATUS_PAID);
+        $order->update(['refund_total' => 40]);
+
+        $this->assertDatabaseCount('order_refunds', 0);
+
+        app(PaymentService::class)->syncOrderPaymentStatus($order);
+
+        $fresh = $order->fresh();
+        $this->assertSame(0.0, (float) $fresh->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $fresh->payment_status);
+    }
+
     public function test_online_reservation_uses_fefo_and_release_restores_original_lots(): void
     {
         $product = $this->makeProduct(5);
