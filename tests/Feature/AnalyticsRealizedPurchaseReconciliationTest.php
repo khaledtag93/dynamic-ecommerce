@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsEvent;
+use App\Models\AnalyticsProductDailyStat;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -114,6 +115,11 @@ class AnalyticsRealizedPurchaseReconciliationTest extends TestCase
             75.0,
             (float) data_get($staleEvent->meta, 'line_items.0.realized_revenue')
         );
+        $this->assertSame(10.0, (float) data_get($staleEvent->meta, 'line_items.0.realized_cogs'));
+        $this->assertSame(65.0, (float) data_get($staleEvent->meta, 'line_items.0.profit_total'));
+        $this->assertSame(86.67, (float) data_get($staleEvent->meta, 'line_items.0.gross_margin_percent'));
+        $this->assertSame(10.0, (float) data_get($staleEvent->meta, 'realized_cogs'));
+        $this->assertSame(65.0, (float) data_get($staleEvent->meta, 'profit_total'));
 
         $this->assertTrue($staleEvent->occurred_at->equalTo($staleDate));
 
@@ -136,6 +142,21 @@ class AnalyticsRealizedPurchaseReconciliationTest extends TestCase
                 data_get($stat->meta, 'restatement_requested_at')
             );
         }
+
+        $this->assertSame(0, Artisan::call(
+            'analytics:restate-dirty',
+            ['--limit' => 20]
+        ));
+
+        $staleProductStat = AnalyticsProductDailyStat::query()
+            ->whereDate('stat_date', $staleDate->toDateString())
+            ->where('product_id', $product->id)
+            ->firstOrFail();
+
+        $this->assertSame(75.0, (float) $staleProductStat->revenue_gross);
+        $this->assertSame(10.0, (float) $staleProductStat->realized_cogs);
+        $this->assertSame(65.0, (float) $staleProductStat->profit_total);
+        $this->assertTrue((bool) data_get($staleProductStat->meta, 'profitability_complete'));
     }
 
     private function purchaseEvents(Order $order)

@@ -7,6 +7,7 @@ use App\Models\AnalyticsProductDailyStat;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\Analytics\AnalyticsDashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -279,6 +280,83 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertSee('Default / simple product')
             ->assertSee('EGP 75.00')
             ->assertDontSee('EGP 100.00');
+    }
+
+    public function test_product_and_category_profitability_use_weighted_realized_margin_and_preserve_unknown_history(): void
+    {
+        $first = $this->createAnalyticsProduct();
+        $second = Product::query()->create([
+            'name' => 'Analytics Product '.Str::random(6),
+            'slug' => 'analytics-product-'.Str::lower(Str::random(8)),
+            'sku' => 'AN-'.Str::upper(Str::random(8)),
+            'category_id' => $first->category_id,
+            'base_price' => 100,
+            'quantity' => 1,
+            'status' => true,
+            'has_variants' => false,
+        ]);
+
+        foreach ([
+            [$first, 10, 1, 9],
+            [$second, 90, 81, 9],
+        ] as [$product, $revenue, $cogs, $profit]) {
+            AnalyticsProductDailyStat::query()->create([
+                'stat_date' => now()->toDateString(),
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'product_slug' => $product->slug,
+                'category_id' => $product->category_id,
+                'views' => 10,
+                'add_to_cart_count' => 2,
+                'purchases' => 1,
+                'purchased_quantity' => 1,
+                'revenue_gross' => $revenue,
+                'realized_cogs' => $cogs,
+                'profit_total' => $profit,
+                'conversion_rate' => 0.1,
+                'aggregated_at' => now(),
+            ]);
+        }
+
+        $snapshot = app(AnalyticsDashboardService::class)
+            ->buildSnapshot(now()->startOfDay(), now()->endOfDay());
+
+        $products = collect($snapshot['current']['top_products']);
+        $firstRow = $products->firstWhere('product_id', $first->id);
+        $secondRow = $products->firstWhere('product_id', $second->id);
+        $category = collect($snapshot['current']['top_categories'])->sole();
+
+        $this->assertSame(90.0, (float) $firstRow->gross_margin_percent);
+        $this->assertSame(10.0, (float) $secondRow->gross_margin_percent);
+        $this->assertSame(100.0, (float) $category->revenue_gross);
+        $this->assertSame(18.0, (float) $category->profit_total);
+        $this->assertSame(18.0, (float) $category->gross_margin_percent);
+        $this->assertNotSame(50.0, (float) $category->gross_margin_percent);
+
+        $historical = $this->createAnalyticsProduct();
+        AnalyticsProductDailyStat::query()->create([
+            'stat_date' => now()->subDay()->toDateString(),
+            'product_id' => $historical->id,
+            'product_name' => $historical->name,
+            'product_slug' => $historical->slug,
+            'category_id' => $historical->category_id,
+            'views' => 5,
+            'add_to_cart_count' => 1,
+            'purchases' => 1,
+            'purchased_quantity' => 1,
+            'revenue_gross' => 75,
+            'conversion_rate' => 0.2,
+            'aggregated_at' => now(),
+        ]);
+
+        $historicalSnapshot = app(AnalyticsDashboardService::class)
+            ->buildSnapshot(now()->subDay()->startOfDay(), now()->subDay()->endOfDay());
+        $historicalRow = collect($historicalSnapshot['current']['top_products'])->sole();
+
+        $this->assertSame(75.0, (float) $historicalRow->revenue_gross);
+        $this->assertFalse((bool) $historicalRow->profitability_complete);
+        $this->assertNull($historicalRow->profit_total);
+        $this->assertNull($historicalRow->gross_margin_percent);
     }
 
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void

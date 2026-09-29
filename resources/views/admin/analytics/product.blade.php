@@ -118,7 +118,8 @@
         ['label' => __('Product views'), 'value' => number_format((int) ($totals['views'] ?? 0)), 'context' => __('Discovery volume inside the selected window.')],
         ['label' => __('Add-to-cart actions'), 'value' => number_format((int) ($totals['add_to_cart_count'] ?? 0)), 'context' => __('Intent captured before purchase.')],
         ['label' => __('Purchased orders'), 'value' => number_format((int) ($totals['purchases'] ?? 0)), 'context' => __('Completed purchases for this product.')],
-        ['label' => __('Gross product revenue'), 'value' => 'EGP ' . number_format((float) ($totals['revenue_gross'] ?? 0), 2), 'context' => __('Revenue attributed to this product.')],
+        ['label' => __('Realized revenue'), 'value' => 'EGP ' . number_format((float) ($totals['revenue_gross'] ?? 0), 2), 'context' => __('Revenue attributed to this product.')],
+        ['label' => __('Profit'), 'value' => ($totals['profit_total'] ?? null) === null ? __('N/A') : 'EGP ' . number_format((float) $totals['profit_total'], 2), 'context' => __('Gross margin') . ': ' . (($totals['gross_margin_percent'] ?? null) === null ? __('N/A') : number_format((float) $totals['gross_margin_percent'], 1) . '%')],
         ['label' => __('View-to-purchase rate'), 'value' => number_format(((float) ($totals['conversion_rate'] ?? 0)) * 100, 1) . '%', 'context' => __('End-to-end product conversion.')],
         ['label' => __('Average revenue per purchase'), 'value' => 'EGP ' . number_format((float) ($totals['average_revenue_per_purchase'] ?? 0), 2), 'context' => __('Revenue depth after conversion.')],
     ];
@@ -177,7 +178,9 @@
         <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Product views') }}</div><div class="fs-3 fw-bold">{{ number_format((int) ($totals['views'] ?? 0)) }}</div></div></div>
         <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Add-to-cart actions') }}</div><div class="fs-3 fw-bold">{{ number_format((int) ($totals['add_to_cart_count'] ?? 0)) }}</div></div></div>
         <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Purchased orders') }}</div><div class="fs-3 fw-bold">{{ number_format((int) ($totals['purchases'] ?? 0)) }}</div></div></div>
-        <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Gross product revenue') }}</div><div class="fs-3 fw-bold">EGP {{ number_format((float) ($totals['revenue_gross'] ?? 0), 2) }}</div></div></div>
+        <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Realized revenue') }}</div><div class="fs-3 fw-bold">EGP {{ number_format((float) ($totals['revenue_gross'] ?? 0), 2) }}</div></div></div>
+        <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Profit') }}</div><div class="fs-3 fw-bold">{{ ($totals['profit_total'] ?? null) === null ? __('N/A') : 'EGP '.number_format((float) $totals['profit_total'], 2) }}</div></div></div>
+        <div class="analytics-card"><div class="card-body"><div class="text-muted small">{{ __('Gross margin') }}</div><div class="fs-3 fw-bold">{{ ($totals['gross_margin_percent'] ?? null) === null ? __('N/A') : number_format((float) $totals['gross_margin_percent'], 1).'%' }}</div></div></div>
     </div>
 
     <div class="analytics-mini-grid">
@@ -195,7 +198,7 @@
             <div class="text-muted small mt-1 mb-3">{{ __('Track discovery, monetization, and purchase completion in one visual view.') }}</div>
             <div class="analytics-chart-legend">
                 <span><i class="views"></i>{{ __('Product views') }}</span>
-                <span><i class="rev"></i>{{ __('Gross product revenue') }}</span>
+                <span><i class="rev"></i>{{ __('Realized revenue') }}</span>
                 <span><i class="pur"></i>{{ __('Purchased orders') }}</span>
             </div>
             <div class="analytics-svg-wrap"><div class="analytics-svg-frame"><svg viewBox="0 0 520 180" class="analytics-svg" role="img" aria-label="{{ __('Product trend chart') }}">
@@ -283,7 +286,7 @@
             </div>
             <div class="table-responsive">
                 <table class="analytics-table">
-                    <thead><tr><th>{{ __('Variant') }}</th><th>{{ __('Qty') }}</th><th>{{ __('Gross product revenue') }}</th></tr></thead>
+                    <thead><tr><th>{{ __('Variant') }}</th><th>{{ __('Qty') }}</th><th>{{ __('Realized revenue') }}</th></tr></thead>
                     <tbody>
                         @forelse ($topVariants as $row)
                             <tr><td>{{ $row->variant_name ?: __('Default / simple product') }}</td><td>{{ number_format((int) $row->quantity) }}</td><td>EGP {{ number_format((float) $row->revenue_gross, 2) }}</td></tr>

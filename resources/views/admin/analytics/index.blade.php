@@ -659,6 +659,7 @@
                                 <div class="flex-fill">
                                     <div class="fw-bold"><a href="{{ route('admin.analytics.products.show', ['product' => $row->product_id, 'range' => $range, 'from_date' => request('from_date'), 'to_date' => request('to_date')]) }}" class="text-decoration-none">{{ $row->product_name ?? __('Product #:id', ['id' => $row->product_id]) }}</a></div>
                                     <div class="text-muted small">{{ number_format((int) data_get($row, 'purchases', 0)) }} {{ __('purchases') }} · {{ __('Qty') }} {{ number_format((int) data_get($row, 'purchased_quantity', 0)) }}</div>
+                                    <div class="text-muted small">{{ __('Profit') }} {{ data_get($row, 'profitability_complete') ? 'EGP '.number_format((float) data_get($row, 'profit_total', 0), 2) : __('N/A') }} · {{ __('Gross margin') }} {{ data_get($row, 'gross_margin_percent') === null ? __('N/A') : number_format((float) data_get($row, 'gross_margin_percent'), 1).'%' }}</div>
                                     <div class="analytics-bar-track mt-2"><div class="analytics-bar-fill" style="width: {{ min(100, (((float) data_get($row, 'revenue_gross', 0)) / $topProductRevenue) * 100) }}%"></div></div>
                                 </div>
                                 <div class="text-end fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div>
@@ -676,6 +677,7 @@
                             <div class="analytics-row">
                                 <div class="flex-fill">
                                     <div class="fw-bold">{{ $row->category_name ?? __('Uncategorized') }}</div>
+                                    <div class="text-muted small">{{ __('Profit') }} {{ data_get($row, 'profitability_complete') ? 'EGP '.number_format((float) data_get($row, 'profit_total', 0), 2) : __('N/A') }} · {{ __('Gross margin') }} {{ data_get($row, 'gross_margin_percent') === null ? __('N/A') : number_format((float) data_get($row, 'gross_margin_percent'), 1).'%' }}</div>
                                     <div class="analytics-bar-track mt-2"><div class="analytics-bar-fill soft" style="width: {{ min(100, (((float) data_get($row, 'revenue_gross', 0)) / $topCategoryRevenue) * 100) }}%"></div></div>
                                 </div>
                                 <div class="text-end fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div>
