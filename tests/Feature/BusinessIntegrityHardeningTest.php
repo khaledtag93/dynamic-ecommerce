@@ -342,6 +342,44 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame([3332, 3332, 3335], array_values($allocations));
     }
 
+    public function test_product_revenue_allocation_excludes_shipping_tax_and_allocates_order_discount(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 115);
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+            'subtotal' => 100,
+            'discount_total' => 10,
+            'shipping_total' => 20,
+            'tax_total' => 5,
+            'grand_total' => 115,
+            'refund_total' => 0,
+        ]);
+
+        foreach ([60, 40] as $index => $lineTotal) {
+            $order->items()->create([
+                'product_name' => 'Merchandise item '.($index + 1),
+                'sku' => 'MERCH-'.($index + 1),
+                'unit_price' => $lineTotal,
+                'unit_cost' => 10,
+                'quantity' => 1,
+                'line_total' => $lineTotal,
+                'profit_amount' => $lineTotal - 10,
+            ]);
+        }
+
+        $service = app(OrderRevenueAllocationService::class);
+        $allocations = $service->allocateCents($order->fresh(['items']));
+
+        $this->assertSame(9000, array_sum($allocations));
+        $this->assertSame([5400, 3600], array_values($allocations));
+
+        $order->update(['refund_total' => 30]);
+        $refundedAllocations = $service->allocateCents($order->fresh(['items']));
+
+        $this->assertSame(6000, array_sum($refundedAllocations));
+        $this->assertSame([3600, 2400], array_values($refundedAllocations));
+    }
+
     public function test_realized_revenue_allocation_uses_exact_pos_return_line_provenance(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 100);

@@ -22,8 +22,20 @@ class OrderRevenueAllocationService
             return [];
         }
 
-        $realizedRevenueCents = max(0, $this->moneyToCents($order->realized_revenue));
-        $proRataAllocations = $this->allocateTargetCents($items, $realizedRevenueCents);
+        $lineTotalCents = (int) $items->sum(
+            fn ($item) => max(0, $this->moneyToCents($item->line_total))
+        );
+        $nonMerchandiseCents = max(0, $this->moneyToCents($order->shipping_total))
+            + max(0, $this->moneyToCents($order->tax_total));
+        $grossMerchandiseCents = min(
+            $lineTotalCents,
+            max(0, $this->moneyToCents($order->grand_total) - $nonMerchandiseCents)
+        );
+        $realizedMerchandiseCents = min(
+            $grossMerchandiseCents,
+            max(0, $this->moneyToCents($order->realized_revenue) - $nonMerchandiseCents)
+        );
+        $proRataAllocations = $this->allocateTargetCents($items, $realizedMerchandiseCents);
 
         $posReturnItems = $order->refunds
             ->flatMap(fn ($refund) => $refund->posReturnItems)
@@ -35,17 +47,19 @@ class OrderRevenueAllocationService
             return $proRataAllocations;
         }
 
-        $grossRevenueCents = max(0, $this->moneyToCents($order->grand_total));
-        $refundBudgetCents = min(
-            $grossRevenueCents,
-            max(0, $this->moneyToCents($order->refund_total))
+        // Product analytics must never absorb shipping or tax as merchandise revenue.
+        // Generic refunds still fall back to pro-rata allocation within this bounded
+        // merchandise budget when no exact POS line provenance exists.
+        $refundBudgetCents = max(
+            0,
+            $grossMerchandiseCents - $realizedMerchandiseCents
         );
 
         if ($refundBudgetCents <= 0) {
             return $proRataAllocations;
         }
 
-        $grossAllocations = $this->allocateTargetCents($items, $grossRevenueCents);
+        $grossAllocations = $this->allocateTargetCents($items, $grossMerchandiseCents);
         $deductions = array_fill_keys(array_keys($grossAllocations), 0);
         $remainingRefundCents = $refundBudgetCents;
 
