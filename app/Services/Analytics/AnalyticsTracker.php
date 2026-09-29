@@ -104,53 +104,29 @@ class AnalyticsTracker
     {
         $order->loadMissing('items');
 
-        $eventQuery = AnalyticsEvent::query()
-            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
-            ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
-            ->where('entity_id', (string) $order->id);
-
-        $isRealized = $order->status === Order::STATUS_COMPLETED
-            && in_array($order->payment_status, [
-                Order::PAYMENT_STATUS_PAID,
-                Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
-            ], true);
+        $events = $this->realizedPurchaseEventQuery($order)
+            ->orderBy('id')
+            ->get();
+        $event = $events->first();
+        $duplicates = $events->skip(1);
+        $isRealized = $this->isRealizedPurchase($order);
 
         if (! $isRealized) {
-            $event = $eventQuery->first();
-            $restatementDate = $event?->occurred_at?->toDateString();
-
-            if ($event) {
-                $event->delete();
+            foreach ($events as $staleEvent) {
+                $restatementDate = $staleEvent->occurred_at?->toDateString();
+                $staleEvent->delete();
                 $this->markDailyStatForRestatement($restatementDate);
             }
 
             return;
         }
 
-        $payload = [
-            'order_id' => (int) $order->id,
-            'order_number' => (string) $order->order_number,
-            'grand_total' => (float) $order->realized_revenue,
-            'original_grand_total' => (float) $order->grand_total,
-            'refund_total' => (float) $order->refund_total,
-            'subtotal' => (float) $order->subtotal,
-            'discount_total' => (float) $order->discount_total,
-            'shipping_total' => (float) $order->shipping_total,
-            'payment_method' => (string) $order->payment_method,
-            'delivery_method' => (string) $order->delivery_method,
-            'coupon_code' => $order->coupon_code,
-            'items_count' => (int) $order->items->sum('quantity'),
-            'product_ids' => $order->items->pluck('product_id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all(),
-            'line_items' => $this->buildRealizedLineItems($order),
-        ];
-
-        $event = $eventQuery->first();
-        $attributes = [
-            'user_id' => $order->user_id,
-            'session_id' => null,
-            'occurred_at' => $event?->occurred_at ?: ($order->delivered_at ?: now()),
-            'meta' => $payload,
-        ];
+        foreach ($duplicates as $duplicate) {
+            $restatementDate = $duplicate->occurred_at?->toDateString();
+            $duplicate->delete();
+            $this->markDailyStatForRestatement($restatementDate);
+        }
+        $attributes = $this->realizedPurchaseAttributes($order, $event);
 
         if ($event) {
             $event->fill($attributes);
@@ -170,6 +146,91 @@ class AnalyticsTracker
         ]));
 
         $this->markDailyStatForRestatement($event->occurred_at?->toDateString());
+    }
+
+    public function inspectRealizedPurchaseSync(Order $order): array
+    {
+        $order->loadMissing('items');
+        $events = $this->realizedPurchaseEventQuery($order)
+            ->orderBy('id')
+            ->get();
+        $event = $events->first();
+        $duplicateCount = max(0, $events->count() - 1);
+
+        if (! $this->isRealizedPurchase($order)) {
+            return [
+                'action' => $events->isNotEmpty() ? 'delete' : 'none',
+                'event_id' => $event?->id,
+                'duplicates' => $duplicateCount,
+            ];
+        }
+
+        if (! $event) {
+            return [
+                'action' => 'create',
+                'event_id' => null,
+                'duplicates' => 0,
+            ];
+        }
+
+        $event->fill($this->realizedPurchaseAttributes($order, $event));
+
+        return [
+            'action' => ($event->isDirty() || $duplicateCount > 0) ? 'update' : 'none',
+            'event_id' => $event->id,
+            'duplicates' => $duplicateCount,
+        ];
+    }
+
+    protected function realizedPurchaseEventQuery(Order $order): Builder
+    {
+        return AnalyticsEvent::query()
+            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+            ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
+            ->where('entity_id', (string) $order->id);
+    }
+
+    protected function isRealizedPurchase(Order $order): bool
+    {
+        return $order->status === Order::STATUS_COMPLETED
+            && in_array($order->payment_status, [
+                Order::PAYMENT_STATUS_PAID,
+                Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            ], true);
+    }
+
+    protected function realizedPurchaseAttributes(Order $order, ?AnalyticsEvent $event = null): array
+    {
+        return [
+            'user_id' => $order->user_id,
+            'session_id' => null,
+            'occurred_at' => $event?->occurred_at
+                ?: $order->delivered_at
+                ?: $order->placed_at
+                ?: $order->created_at
+                ?: now(),
+            'meta' => $this->buildRealizedPurchasePayload($order),
+        ];
+    }
+
+    protected function buildRealizedPurchasePayload(Order $order): array
+    {
+        return [
+            'order_id' => (int) $order->id,
+            'order_number' => (string) $order->order_number,
+            'grand_total' => (float) $order->realized_revenue,
+            'original_grand_total' => (float) $order->grand_total,
+            'refund_total' => (float) $order->refund_total,
+            'subtotal' => (float) $order->subtotal,
+            'discount_total' => (float) $order->discount_total,
+            'shipping_total' => (float) $order->shipping_total,
+            'payment_method' => (string) $order->payment_method,
+            'delivery_method' => (string) $order->delivery_method,
+            'coupon_code' => $order->coupon_code,
+            'items_count' => (int) $order->items->sum('quantity'),
+            'product_ids' => $order->items->pluck('product_id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all(),
+            'line_items' => $this->buildRealizedLineItems($order),
+        ];
     }
 
     protected function buildRealizedLineItems(Order $order): array
