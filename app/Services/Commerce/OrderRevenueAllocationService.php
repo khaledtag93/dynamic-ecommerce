@@ -3,6 +3,7 @@
 namespace App\Services\Commerce;
 
 use App\Models\Order;
+use App\Models\ReturnRequestItem;
 
 class OrderRevenueAllocationService
 {
@@ -15,8 +16,9 @@ class OrderRevenueAllocationService
 
     public function allocateCents(Order $order): array
     {
-        $order->loadMissing(['items', 'refunds.posReturnItems']);
+        $order->loadMissing(['items', 'refunds.posReturnItems', 'refunds.returnRequest.items']);
         $items = $order->items->sortBy('id')->values();
+        $itemsById = $items->keyBy('id');
 
         if ($items->isEmpty()) {
             return [];
@@ -37,19 +39,28 @@ class OrderRevenueAllocationService
         );
         $proRataAllocations = $this->allocateTargetCents($items, $realizedMerchandiseCents);
 
-        $posReturnItems = $order->refunds
+        $refunds = $order->refunds->sortBy('id')->values();
+        $posReturnItems = $refunds
             ->flatMap(fn ($refund) => $refund->posReturnItems)
             ->filter(fn ($row) => (int) $row->order_item_id > 0 && $this->moneyToCents($row->amount) > 0)
             ->sortBy('id')
             ->values();
+        $rmaRefunds = $refunds
+            ->filter(fn ($refund) => $refund->posReturnItems->isEmpty()
+                && $refund->returnRequest !== null
+                && $refund->returnRequest->items->contains(
+                    fn (ReturnRequestItem $item) => $item->requested_resolution === ReturnRequestItem::RESOLUTION_REFUND
+                        && (int) $item->received_quantity > 0
+                ))
+            ->values();
 
-        if ($posReturnItems->isEmpty()) {
+        if ($posReturnItems->isEmpty() && $rmaRefunds->isEmpty()) {
             return $proRataAllocations;
         }
 
         // Product analytics must never absorb shipping or tax as merchandise revenue.
         // Generic refunds still fall back to pro-rata allocation within this bounded
-        // merchandise budget when no exact POS line provenance exists.
+        // merchandise budget when no exact POS/RMA line provenance exists.
         $refundBudgetCents = max(
             0,
             $grossMerchandiseCents - $realizedMerchandiseCents
@@ -85,6 +96,57 @@ class OrderRevenueAllocationService
 
             $deductions[$itemId] += $appliedCents;
             $remainingRefundCents -= $appliedCents;
+        }
+
+        foreach ($rmaRefunds as $refund) {
+            if ($remainingRefundCents <= 0) {
+                break;
+            }
+
+            $rmaRefundCents = min(
+                $remainingRefundCents,
+                max(0, $this->moneyToCents($refund->amount))
+            );
+
+            if ($rmaRefundCents <= 0) {
+                continue;
+            }
+
+            $rmaCapacities = [];
+            foreach ($refund->returnRequest->items as $returnItem) {
+                if ($returnItem->requested_resolution !== ReturnRequestItem::RESOLUTION_REFUND
+                    || (int) $returnItem->received_quantity <= 0) {
+                    continue;
+                }
+
+                $itemId = (int) $returnItem->order_item_id;
+                $orderItem = $itemsById->get($itemId);
+                if (! $orderItem || ! array_key_exists($itemId, $grossAllocations)) {
+                    continue;
+                }
+
+                $soldQuantity = max(1, (int) $orderItem->quantity);
+                $receivedQuantity = min($soldQuantity, max(0, (int) $returnItem->received_quantity));
+                $eligibleCents = (int) round(
+                    ($grossAllocations[$itemId] * $receivedQuantity) / $soldQuantity
+                );
+                $remainingCapacity = max(
+                    0,
+                    $grossAllocations[$itemId] - $deductions[$itemId]
+                );
+                $rmaCapacities[$itemId] = min(
+                    $remainingCapacity,
+                    (int) ($rmaCapacities[$itemId] ?? 0) + max(0, $eligibleCents)
+                );
+            }
+
+            $appliedRma = $this->allocateAcrossCapacities($rmaCapacities, $rmaRefundCents);
+            $appliedRmaTotal = array_sum($appliedRma);
+
+            foreach ($appliedRma as $itemId => $cents) {
+                $deductions[$itemId] += $cents;
+            }
+            $remainingRefundCents -= $appliedRmaTotal;
         }
 
         if ($remainingRefundCents > 0) {

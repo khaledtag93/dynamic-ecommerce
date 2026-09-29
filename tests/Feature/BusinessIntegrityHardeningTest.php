@@ -14,6 +14,8 @@ use App\Models\Payment;
 use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ReturnRequest;
+use App\Models\ReturnRequestItem;
 use App\Models\User;
 use App\Services\Analytics\AnalyticsAggregationService;
 use App\Services\Analytics\AnalyticsDashboardService;
@@ -378,6 +380,74 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertSame(6000, array_sum($refundedAllocations));
         $this->assertSame([3600, 2400], array_values($refundedAllocations));
+    }
+
+    public function test_realized_revenue_allocation_uses_rma_return_line_provenance(): void
+    {
+        $customer = User::factory()->create();
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 160);
+        $order->update([
+            'user_id' => $customer->id,
+            'status' => Order::STATUS_COMPLETED,
+            'subtotal' => 200,
+            'discount_total' => 40,
+            'grand_total' => 160,
+            'refund_total' => 80,
+        ]);
+
+        $returnedItem = $order->items()->create([
+            'product_name' => 'RMA returned product',
+            'sku' => 'RMA-RETURNED',
+            'unit_price' => 100,
+            'unit_cost' => 20,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 80,
+        ]);
+        $keptItem = $order->items()->create([
+            'product_name' => 'RMA kept product',
+            'sku' => 'RMA-KEPT',
+            'unit_price' => 100,
+            'unit_cost' => 20,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 80,
+        ]);
+
+        $returnRequest = ReturnRequest::query()->create([
+            'reference' => 'RMA-ALLOC-'.Str::upper(Str::random(6)),
+            'order_id' => $order->id,
+            'user_id' => $customer->id,
+            'status' => ReturnRequest::STATUS_COMPLETED,
+            'requested_at' => now()->subHour(),
+            'received_at' => now()->subMinutes(10),
+            'completed_at' => now(),
+        ]);
+        ReturnRequestItem::query()->create([
+            'return_request_id' => $returnRequest->id,
+            'order_id' => $order->id,
+            'order_item_id' => $returnedItem->id,
+            'requested_quantity' => 1,
+            'approved_quantity' => 1,
+            'received_quantity' => 1,
+            'restock_quantity' => 0,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]);
+        OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'return_request_id' => $returnRequest->id,
+            'amount' => 80,
+            'reason' => 'RMA refund provenance test',
+            'processed_at' => now(),
+        ]);
+
+        $allocations = app(OrderRevenueAllocationService::class)
+            ->allocateCents($order->fresh(['items']));
+
+        $this->assertSame(8000, array_sum($allocations));
+        $this->assertSame(0, $allocations[$returnedItem->id]);
+        $this->assertSame(8000, $allocations[$keptItem->id]);
     }
 
     public function test_realized_revenue_allocation_uses_exact_pos_return_line_provenance(): void
