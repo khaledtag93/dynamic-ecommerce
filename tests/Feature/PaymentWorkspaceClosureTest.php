@@ -149,6 +149,71 @@ class PaymentWorkspaceClosureTest extends TestCase
             });
     }
 
+    public function test_unreconciled_provider_reversal_stays_in_attention_queue_until_resolved(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $order = Order::query()->create([
+            'order_number' => 'REVERSAL-ATTENTION-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'grand_total' => 100,
+            'refund_total' => 0,
+            'currency' => 'EGP',
+            'customer_name' => 'Reversal Attention',
+            'customer_email' => 'reversal-attention@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+        ]);
+
+        $payment = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'paymob',
+            'provider_status' => 'refunded',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'REVERSAL-ATTENTION-PAY-001',
+            'amount' => 100,
+            'currency' => 'EGP',
+            'paid_at' => now()->subDay(),
+            'meta' => [
+                'provider_reversal_evidence' => [
+                    'type' => 'refunded',
+                    'transaction_id' => 'PAYMOB-REVERSAL-ATTENTION-001',
+                    'provider_refunded_amount_cents' => 4000,
+                    'canonical_refund_recorded' => false,
+                    'observed_at' => now()->toIso8601String(),
+                ],
+            ],
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('admin.payments.index', ['queue' => 'attention']))
+            ->assertOk()
+            ->assertViewHas('queueStats', fn (array $stats): bool => $stats['attention'] === 1)
+            ->assertViewHas('payments', fn ($payments): bool => $payments->getCollection()->contains('id', $payment->id));
+
+        $this->get(route('admin.payments.show', $payment))
+            ->assertOk()
+            ->assertSee(__('Needs attention'))
+            ->assertSee('EGP 40.00');
+
+        $meta = $payment->meta;
+        data_set($meta, 'provider_reversal_evidence.canonical_refund_recorded', true);
+        data_set($meta, 'provider_reversal_evidence.reconciled_at', now()->toIso8601String());
+        $payment->update(['meta' => $meta]);
+
+        $this->get(route('admin.payments.index', ['queue' => 'attention']))
+            ->assertOk()
+            ->assertViewHas('queueStats', fn (array $stats): bool => $stats['attention'] === 0)
+            ->assertViewHas('payments', fn ($payments): bool => $payments->getCollection()->isEmpty());
+
+        $this->get(route('admin.payments.show', $payment->fresh()))
+            ->assertOk()
+            ->assertDontSee('EGP 40.00');
+    }
+
     public function test_unconfigured_online_gateway_is_not_offered_to_checkout(): void
     {
         config([

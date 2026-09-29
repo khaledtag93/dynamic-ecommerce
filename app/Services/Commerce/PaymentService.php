@@ -277,6 +277,9 @@ class PaymentService
             $providerReversalType = ! empty($context['provider_refunded'])
                 ? 'refunded'
                 : (! empty($context['provider_voided']) ? 'voided' : null);
+            $providerRefundedAmountCents = is_numeric($context['provider_refunded_amount_cents'] ?? null)
+                ? max(0, (int) $context['provider_refunded_amount_cents'])
+                : null;
 
             if ($providerReversalType !== null) {
                 $meta = $lockedPayment->meta ?? [];
@@ -286,7 +289,8 @@ class PaymentService
                     : null;
                 $sameEvidence = is_array($existingEvidence)
                     && (string) ($existingEvidence['type'] ?? '') === $providerReversalType
-                    && (string) ($existingEvidence['transaction_id'] ?? '') === (string) $incomingTransactionId;
+                    && (string) ($existingEvidence['transaction_id'] ?? '') === (string) $incomingTransactionId
+                    && (int) ($existingEvidence['provider_refunded_amount_cents'] ?? 0) === (int) ($providerRefundedAmountCents ?? 0);
 
                 if (! $sameEvidence) {
                     $evidence = [
@@ -295,6 +299,7 @@ class PaymentService
                         'provider_status' => $context['provider_status'] ?? $providerReversalType,
                         'response_code' => $context['response_code'] ?? null,
                         'response_message' => $context['response_message'] ?? null,
+                        'provider_refunded_amount_cents' => $providerReversalType === 'refunded' ? $providerRefundedAmountCents : null,
                         'observed_at' => now()->toIso8601String(),
                         'canonical_refund_recorded' => false,
                     ];
@@ -770,6 +775,75 @@ class PaymentService
         }
     }
 
+    public function reconcileProviderReversalEvidence(Order $order, float $canonicalRefundTotal, ?int $actorId = null): void
+    {
+        $canonicalRefundCents = max(0, (int) round($canonicalRefundTotal * 100));
+        if ($canonicalRefundCents < 1) {
+            return;
+        }
+
+        $resolvedAt = now();
+        $resolvedAny = false;
+        $freshOrder = Order::query()->findOrFail($order->id);
+        $orderMeta = $freshOrder->meta ?? [];
+        $orderEvidence = data_get($orderMeta, 'provider_reversal_evidence');
+
+        if (is_array($orderEvidence) && $this->providerRefundEvidenceSatisfied($orderEvidence, $canonicalRefundCents)) {
+            $orderEvidence['canonical_refund_recorded'] = true;
+            $orderEvidence['canonical_refund_total_cents'] = $canonicalRefundCents;
+            $orderEvidence['reconciled_at'] = $resolvedAt->toIso8601String();
+            $orderMeta['provider_reversal_evidence'] = $orderEvidence;
+            $freshOrder->update(['meta' => $orderMeta]);
+            $resolvedAny = true;
+        }
+
+        Payment::query()
+            ->where('order_id', $order->id)
+            ->get()
+            ->each(function (Payment $payment) use ($canonicalRefundCents, $resolvedAt, &$resolvedAny) {
+                $meta = $payment->meta ?? [];
+                $evidence = data_get($meta, 'provider_reversal_evidence');
+
+                if (! is_array($evidence) || ! $this->providerRefundEvidenceSatisfied($evidence, $canonicalRefundCents)) {
+                    return;
+                }
+
+                $evidence['canonical_refund_recorded'] = true;
+                $evidence['canonical_refund_total_cents'] = $canonicalRefundCents;
+                $evidence['reconciled_at'] = $resolvedAt->toIso8601String();
+                $meta['provider_reversal_evidence'] = $evidence;
+                $meta = $this->pushPaymentEvent(
+                    $meta,
+                    'provider_reversal_reconciled',
+                    __('Provider refund evidence was reconciled to the canonical order refund ledger.')
+                );
+                $payment->update(['meta' => $meta]);
+                $resolvedAny = true;
+            });
+
+        if ($resolvedAny) {
+            $this->activityLogService->log(
+                'commerce',
+                'provider_payment_reversal_reconciled',
+                __('Provider refund evidence was reconciled to the canonical order refund ledger.'),
+                $actorId,
+                $freshOrder,
+                ['canonical_refund_total_cents' => $canonicalRefundCents]
+            );
+        }
+    }
+
+    protected function providerRefundEvidenceSatisfied(array $evidence, int $canonicalRefundCents): bool
+    {
+        $providerRefundedAmountCents = $evidence['provider_refunded_amount_cents'] ?? null;
+
+        return ($evidence['type'] ?? null) === 'refunded'
+            && ! (bool) ($evidence['canonical_refund_recorded'] ?? false)
+            && is_numeric($providerRefundedAmountCents)
+            && (int) $providerRefundedAmountCents > 0
+            && $canonicalRefundCents >= (int) $providerRefundedAmountCents;
+    }
+
     public function inspectOrderPaymentSync(Order $order): array
     {
         // Refund records are the authoritative refund ledger. The denormalized
@@ -826,7 +900,9 @@ class PaymentService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $lockedOrder->update($this->inspectOrderPaymentSync($lockedOrder));
+            $snapshot = $this->inspectOrderPaymentSync($lockedOrder);
+            $lockedOrder->update($snapshot);
+            $this->reconcileProviderReversalEvidence($lockedOrder, (float) ($snapshot['refund_total'] ?? 0));
         });
     }
 

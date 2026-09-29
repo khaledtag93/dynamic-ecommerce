@@ -60,7 +60,12 @@
                             </td>
                             <td>{{ $payment->method_label }}</td>
                             <td>{{ $payment->provider ?: '—' }}</td>
-                            <td><span class="badge admin-status-badge {{ $payment->status_badge_class }}">{{ $payment->status_label }}</span></td>
+                            <td>
+                                <span class="badge admin-status-badge {{ $payment->status_badge_class }}">{{ $payment->status_label }}</span>
+                                @if(data_get($payment->meta, 'provider_reversal_evidence.canonical_refund_recorded') === false)
+                                    <div class="mt-1"><span class="badge badge-soft-warning">{{ __('Needs attention') }}</span></div>
+                                @endif
+                            </td>
                             <td class="small">{{ $payment->transaction_reference ?: '—' }}</td>
                             <td>{{ $payment->currency }} {{ number_format((float) $payment->amount, 2) }}</td>
                             <td>{{ optional($payment->created_at)->format('M d, Y H:i') ?: '—' }}</td>

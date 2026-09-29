@@ -93,6 +93,68 @@ class PaymobUnifiedCheckoutTest extends TestCase
         $this->assertArrayNotHasKey('payment_token', $meta);
     }
 
+    public function test_paymob_callback_exposes_cumulative_provider_refund_amount(): void
+    {
+        $order = $this->makeOnlineOrder(100);
+        $payment = $this->makePayment($order);
+        $payment->update(['transaction_reference' => '265715299']);
+
+        $createdAt = '2026-09-29T16:00:00.000000+00:00';
+        $payload = [
+            'amount_cents' => 10000,
+            'created_at' => $createdAt,
+            'currency' => 'EGP',
+            'error_occured' => false,
+            'has_parent_transaction' => false,
+            'id' => 'PAYMOB-REFUND-AMOUNT-001',
+            'integration_id' => 4345907,
+            'is_3d_secure' => true,
+            'is_auth' => false,
+            'is_capture' => false,
+            'is_refunded' => true,
+            'is_standalone_payment' => true,
+            'is_voided' => false,
+            'order' => 265715299,
+            'owner' => 123,
+            'pending' => false,
+            'source_data.pan' => '1234',
+            'source_data.sub_type' => 'MasterCard',
+            'source_data.type' => 'card',
+            'success' => true,
+            'refunded_amount_cents' => 4000,
+        ];
+
+        $payload['hmac'] = hash_hmac('sha512', implode('', [
+            '10000',
+            $createdAt,
+            'EGP',
+            'false',
+            'false',
+            'PAYMOB-REFUND-AMOUNT-001',
+            '4345907',
+            'true',
+            'false',
+            'false',
+            'true',
+            'true',
+            'false',
+            '265715299',
+            '123',
+            'false',
+            '1234',
+            'MasterCard',
+            'card',
+            'true',
+        ]), 'test-hmac-secret');
+
+        $result = app(PaymobGatewayService::class)->handleCallback($payload);
+
+        $this->assertTrue($result['valid']);
+        $this->assertTrue($result['provider_refunded']);
+        $this->assertSame(4000, $result['provider_refunded_amount_cents']);
+        $this->assertSame($payment->id, $result['payment']->id);
+    }
+
     public function test_provider_refund_callback_never_marks_pending_payment_as_paid_even_when_provider_success_is_true(): void
     {
         $order = $this->makeOnlineOrder(100);
@@ -111,6 +173,7 @@ class PaymobUnifiedCheckoutTest extends TestCase
                 'provider_status' => 'refunded',
                 'provider_refunded' => true,
                 'provider_voided' => false,
+                'provider_refunded_amount_cents' => 10000,
                 'transaction_id' => 'PAYMOB-REFUND-SUCCESS-001',
                 'paymob_order_id' => '265715299',
                 'merchant_order_id' => (string) $order->id,
@@ -139,6 +202,7 @@ class PaymobUnifiedCheckoutTest extends TestCase
             'PAYMOB-REFUND-SUCCESS-001',
             data_get($freshPayment->meta, 'provider_reversal_evidence.transaction_id')
         );
+        $this->assertSame(10000, (int) data_get($freshPayment->meta, 'provider_reversal_evidence.provider_refunded_amount_cents'));
         $this->assertFalse((bool) data_get($freshPayment->meta, 'provider_reversal_evidence.canonical_refund_recorded'));
         $this->assertDatabaseCount('order_refunds', 0);
     }

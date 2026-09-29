@@ -19,6 +19,7 @@ class OrderActionService
         protected CouponService $couponService,
         protected AnalyticsTracker $analyticsTracker,
         protected ProfitService $profitService,
+        protected PaymentService $paymentService,
     ) {
     }
 
@@ -515,6 +516,7 @@ class OrderActionService
                     });
             }
 
+            $this->paymentService->reconcileProviderReversalEvidence($lockedOrder, $newRefundTotal, $processedBy);
             $this->profitService->refreshOrderTotals($lockedOrder);
             $freshOrder = $lockedOrder->fresh(['refunds', 'user']);
             $this->analyticsTracker->syncRealizedPurchase($freshOrder);

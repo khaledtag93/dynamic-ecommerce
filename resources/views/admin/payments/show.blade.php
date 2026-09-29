@@ -17,6 +17,23 @@
     ] as $card)<div class="col-md-6 col-xl-3"><div class="admin-card admin-stat-card h-100"><span class="admin-stat-icon"><i class="mdi {{ $card['icon'] }}"></i></span><div class="admin-stat-label">{{ $card['label'] }}</div><div class="admin-stat-value admin-stat-value-sm">{{ $card['value'] }}</div></div></div>@endforeach
 </div>
 
+@php($providerReversalEvidence = data_get($payment->meta, 'provider_reversal_evidence'))
+@if(is_array($providerReversalEvidence) && !($providerReversalEvidence['canonical_refund_recorded'] ?? false))
+    <div class="alert alert-warning border-0 mb-4">
+        <div class="d-flex gap-2 align-items-start">
+            <i class="mdi mdi-alert-outline fs-5"></i>
+            <div>
+                <strong>{{ __('Needs attention') }}</strong>
+                <div class="small mt-1">{{ __('Provider status') }}: {{ \Illuminate\Support\Str::headline((string) ($providerReversalEvidence['type'] ?? $payment->provider_status ?? '')) }}</div>
+                @if(is_numeric($providerReversalEvidence['provider_refunded_amount_cents'] ?? null) && (int) $providerReversalEvidence['provider_refunded_amount_cents'] > 0)
+                    <div class="small">{{ __('Amount') }}: {{ $payment->currency }} {{ number_format(((int) $providerReversalEvidence['provider_refunded_amount_cents']) / 100, 2) }}</div>
+                @endif
+                <div class="small">{{ __('Created') }}: {{ $providerReversalEvidence['observed_at'] ?? '—' }}</div>
+            </div>
+        </div>
+    </div>
+@endif
+
 <div class="row g-4">
     <div class="col-xl-8">
         <div class="admin-card mb-4"><div class="admin-card-body">

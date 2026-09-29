@@ -1075,6 +1075,7 @@ class PaymobGatewayService
         $pending = $this->truthy(data_get($obj, 'pending') ?? data_get($payload, 'pending'));
         $isVoided = $this->truthy(data_get($obj, 'is_voided') ?? data_get($payload, 'is_voided'));
         $isRefunded = $this->truthy(data_get($obj, 'is_refunded') ?? data_get($payload, 'is_refunded'));
+        $refundedAmountCents = data_get($obj, 'refunded_amount_cents') ?? data_get($payload, 'refunded_amount_cents');
         $errorOccured = $this->truthy(data_get($obj, 'error_occured') ?? data_get($payload, 'error_occured'));
 
         $responseCode = $this->normalizeStatusValue(
@@ -1115,6 +1116,7 @@ class PaymobGatewayService
             'provider_status' => $providerStatus,
             'provider_refunded' => $isRefunded,
             'provider_voided' => $isVoided,
+            'provider_refunded_amount_cents' => is_numeric($refundedAmountCents) ? max(0, (int) $refundedAmountCents) : null,
             'transaction_id' => $identifiers['transaction_id'],
             'paymob_order_id' => $identifiers['paymob_order_id'],
             'merchant_order_id' => $identifiers['merchant_order_id'],

@@ -29,6 +29,11 @@ class PaymentController extends Controller
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
         ];
 
+        $attentionFilter = function ($query): void {
+            $query->whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_FAILED])
+                ->orWhere('meta->provider_reversal_evidence->canonical_refund_recorded', false);
+        };
+
         $payments = Payment::query()
             ->with('order')
             ->when($filters['search'], function ($query) use ($like) {
@@ -40,7 +45,7 @@ class PaymentController extends Controller
             })
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
             ->when($filters['method'], fn ($query, $method) => $query->where('method', $method))
-            ->when($filters['queue'] === 'attention', fn ($query) => $query->whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_FAILED]))
+            ->when($filters['queue'] === 'attention', fn ($query) => $query->where($attentionFilter))
             ->when($filters['queue'] === 'failed', fn ($query) => $query->where('status', Payment::STATUS_FAILED))
             ->latest('id')
             ->paginate($filters['per_page'])
@@ -48,7 +53,7 @@ class PaymentController extends Controller
 
         $queueStats = [
             'failed' => Payment::where('status', Payment::STATUS_FAILED)->count(),
-            'attention' => Payment::whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_FAILED])->count(),
+            'attention' => Payment::query()->where($attentionFilter)->count(),
         ];
 
         if ($request->header('X-Live-List') === '1') {

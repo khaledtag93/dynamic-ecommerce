@@ -248,6 +248,7 @@ class PaymobController extends Controller
                         'paymob_order_id' => $result['paymob_order_id'] ?? null,
                         'merchant_order_id' => $result['merchant_order_id'] ?? null,
                         'provider_status' => $result['provider_status'] ?? null,
+                        'provider_refunded_amount_cents' => $result['provider_refunded_amount_cents'] ?? null,
                         'response_code' => $result['response_code'] ?? null,
                         'response_message' => $result['response_message'] ?? null,
                         'hmac_valid' => $result['hmac_valid'] ?? null,
@@ -255,6 +256,9 @@ class PaymobController extends Controller
                     'provider_status' => $result['provider_status'] ?? 'pending',
                     'provider_refunded' => (bool) ($result['provider_refunded'] ?? false),
                     'provider_voided' => (bool) ($result['provider_voided'] ?? false),
+                    'provider_refunded_amount_cents' => is_numeric($result['provider_refunded_amount_cents'] ?? null)
+                        ? max(0, (int) $result['provider_refunded_amount_cents'])
+                        : null,
                     'hmac_valid' => $result['hmac_valid'] ?? null,
                     'paymob_order_id' => $result['paymob_order_id'] ?? null,
                     'response_code' => $result['response_code'] ?? null,
