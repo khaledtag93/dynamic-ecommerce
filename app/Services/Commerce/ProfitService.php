@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 
 class ProfitService
 {
-    public function refreshOrderTotals(Order $order): Order
+    public function calculateOrderTotals(Order $order): array
     {
         $items = $order->items()->get();
         $costTotalCents = (int) $items->sum(
@@ -25,10 +25,15 @@ class ProfitService
             ? 0
             : $this->moneyToCents($order->realized_revenue) - $unrecoveredCostCents;
 
-        $order->update([
+        return [
             'cost_total' => $this->centsToMoney($costTotalCents),
             'profit_total' => $this->centsToMoney($profitTotalCents),
-        ]);
+        ];
+    }
+
+    public function refreshOrderTotals(Order $order): Order
+    {
+        $order->update($this->calculateOrderTotals($order));
 
         return $order->fresh();
     }
