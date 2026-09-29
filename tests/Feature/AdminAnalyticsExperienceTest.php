@@ -6,6 +6,8 @@ use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsEvent;
 use App\Models\AnalyticsProductDailyStat;
 use App\Models\Order;
+use App\Models\OrderRefund;
+use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
@@ -415,6 +417,120 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertSee('Variant B')
             ->assertSee('EGP 60.00')
             ->assertSee('75.0%');
+    }
+
+    public function test_variant_profitability_keeps_refund_and_restock_economics_on_the_correct_variant(): void
+    {
+        $product = $this->createAnalyticsProduct();
+
+        $variantA = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'VAR-REF-A-'.Str::upper(Str::random(6)),
+            'price' => 100,
+            'stock' => 10,
+            'status' => true,
+        ]);
+        $variantB = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'VAR-REF-B-'.Str::upper(Str::random(6)),
+            'price' => 100,
+            'stock' => 10,
+            'status' => true,
+        ]);
+
+        $order = Order::query()->create([
+            'order_number' => 'VAR-REFUND-RESTOCK-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'grand_total' => 200,
+            'refund_total' => 80,
+            'discount_total' => 0,
+            'shipping_total' => 0,
+            'tax_total' => 0,
+            'customer_name' => 'Variant Return Customer',
+            'customer_email' => 'variant-return@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+
+        $itemA = $order->items()->create([
+            'product_id' => $product->id,
+            'product_variant_id' => $variantA->id,
+            'product_name' => $product->name,
+            'variant_name' => 'Variant A',
+            'sku' => $variantA->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+        $itemB = $order->items()->create([
+            'product_id' => $product->id,
+            'product_variant_id' => $variantB->id,
+            'product_name' => $product->name,
+            'variant_name' => 'Variant B',
+            'sku' => $variantB->sku,
+            'unit_price' => 100,
+            'unit_cost' => 60,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 40,
+        ]);
+
+        $refundA = OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'idempotency_key' => 'variant-refund-a',
+            'amount' => 30,
+            'reason' => 'Variant A partial refund',
+            'processed_at' => now(),
+        ]);
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refundA->id,
+            'order_id' => $order->id,
+            'order_item_id' => $itemA->id,
+            'quantity' => 1,
+            'amount' => 30,
+            'restocked' => false,
+        ]);
+
+        $refundB = OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'idempotency_key' => 'variant-refund-b',
+            'amount' => 50,
+            'reason' => 'Variant B return',
+            'processed_at' => now(),
+        ]);
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refundB->id,
+            'order_id' => $order->id,
+            'order_item_id' => $itemB->id,
+            'quantity' => 1,
+            'amount' => 50,
+            'restocked' => true,
+        ]);
+
+        $rows = app(\App\Services\Analytics\AnalyticsRevenueService::class)
+            ->topVariantsForProduct($product, now()->startOfDay(), now()->endOfDay(), 8);
+
+        $rowA = $rows->firstWhere('product_variant_id', $variantA->id);
+        $rowB = $rows->firstWhere('product_variant_id', $variantB->id);
+
+        $this->assertSame(70.0, (float) $rowA->realized_revenue);
+        $this->assertSame(40.0, (float) $rowA->realized_cogs);
+        $this->assertSame(30.0, (float) $rowA->profit_total);
+        $this->assertSame(42.86, (float) $rowA->gross_margin_percent);
+
+        $this->assertSame(50.0, (float) $rowB->realized_revenue);
+        $this->assertSame(0.0, (float) $rowB->realized_cogs);
+        $this->assertSame(50.0, (float) $rowB->profit_total);
+        $this->assertSame(100.0, (float) $rowB->gross_margin_percent);
+
+        $this->assertSame(120.0, (float) $rows->sum('realized_revenue'));
+        $this->assertSame(40.0, (float) $rows->sum('realized_cogs'));
+        $this->assertSame(80.0, (float) $rows->sum('profit_total'));
     }
 
     public function test_product_drilldown_uses_live_events_when_daily_stats_are_dirty(): void
