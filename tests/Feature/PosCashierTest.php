@@ -653,6 +653,40 @@ class PosCashierTest extends TestCase
         $this->assertSame(100.0, $summary['expected_cash']);
     }
 
+    public function test_cash_pos_return_requires_an_open_cash_shift(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('POS Cash Return Shift Guard', '6224000000092', 2, false, 25);
+        $shiftService = app(PosCashShiftService::class);
+        $shift = $shiftService->openShift($admin, 100);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 25,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $orderItem = $order->items()->firstOrFail();
+
+        $shiftService->closeShift($shift, $admin, 125);
+
+        $this->post(route('admin.pos.sales.return', $order), [
+            'items' => [$orderItem->id => 1],
+            'reason' => 'Cash refund after shift close',
+        ])->assertSessionHasErrors('cash_shift');
+
+        $this->assertDatabaseCount('order_refunds', 0);
+        $this->assertDatabaseCount('pos_return_items', 0);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame('0.00', $order->fresh()->refund_total);
+        $this->assertSame(1, (int) $product->fresh()->quantity);
+    }
+
     public function test_cash_checkout_rejects_insufficient_cash_without_writing_sale_or_stock(): void
     {
         $admin = $this->createSuperAdmin();

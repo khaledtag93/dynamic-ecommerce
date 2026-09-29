@@ -6,6 +6,7 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\PosCashShift;
 use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -45,6 +46,21 @@ class PosReturnService
                 throw ValidationException::withMessages([
                     'return' => __('This POS sale is not eligible for a return.'),
                 ]);
+            }
+
+            if ($lockedOrder->payment_method === Order::PAYMENT_METHOD_POS_CASH) {
+                $cashShift = PosCashShift::query()
+                    ->where('cashier_user_id', $actorId)
+                    ->whereNull('closed_at')
+                    ->latest('id')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $cashShift) {
+                    throw ValidationException::withMessages([
+                        'cash_shift' => __('Open a cash shift before processing a cash refund.'),
+                    ]);
+                }
             }
 
             $items = OrderItem::query()
