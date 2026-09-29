@@ -262,7 +262,12 @@ class PaymobController extends Controller
                     'notes' => $result['message'] ?? __('Payment result received from gateway.'),
                 ];
 
-                if ($result['success'] ?? false) {
+                $providerReversal = (bool) ($result['provider_refunded'] ?? false)
+                    || (bool) ($result['provider_voided'] ?? false);
+
+                if ($providerReversal) {
+                    $this->paymentService->markAsFailed($payment, $context);
+                } elseif ($result['success'] ?? false) {
                     $this->paymentService->markAsPaid($payment, $context);
                 } elseif ($result['pending'] ?? false) {
                     $this->paymentService->markAsPending($payment, $context);
@@ -285,7 +290,7 @@ class PaymobController extends Controller
                     return redirect()
                         ->route('payments.paymob.result', $order)
                         ->with(
-                            ($result['success'] ?? false) ? 'success' : (($result['pending'] ?? false) ? 'info' : 'error'),
+                            $providerReversal ? 'warning' : (($result['success'] ?? false) ? 'success' : (($result['pending'] ?? false) ? 'info' : 'error')),
                             $result['message'] ?? __('Payment result received.')
                         );
                 }

@@ -93,6 +93,56 @@ class PaymobUnifiedCheckoutTest extends TestCase
         $this->assertArrayNotHasKey('payment_token', $meta);
     }
 
+    public function test_provider_refund_callback_never_marks_pending_payment_as_paid_even_when_provider_success_is_true(): void
+    {
+        $order = $this->makeOnlineOrder(100);
+        $payment = $this->makePayment($order);
+
+        $gateway = \Mockery::mock(PaymobGatewayService::class);
+        $gateway->shouldReceive('handleCallback')
+            ->once()
+            ->andReturn([
+                'valid' => true,
+                'success' => true,
+                'pending' => false,
+                'message' => 'Provider refund observed.',
+                'order' => $order,
+                'payment' => $payment,
+                'provider_status' => 'refunded',
+                'provider_refunded' => true,
+                'provider_voided' => false,
+                'transaction_id' => 'PAYMOB-REFUND-SUCCESS-001',
+                'paymob_order_id' => '265715299',
+                'merchant_order_id' => (string) $order->id,
+                'response_code' => '00',
+                'response_message' => 'Refunded',
+                'hmac_valid' => true,
+            ]);
+        $this->app->instance(PaymobGatewayService::class, $gateway);
+
+        $this->postJson(route('payments.paymob.callback'), ['hmac' => 'signed-test-callback'])
+            ->assertOk()
+            ->assertJson([
+                'status' => 'ok',
+                'payment_status' => Payment::STATUS_FAILED,
+                'order_payment_status' => Order::PAYMENT_STATUS_FAILED,
+                'provider_status' => 'refunded',
+            ]);
+
+        $freshPayment = $payment->fresh();
+        $freshOrder = $order->fresh();
+
+        $this->assertSame(Payment::STATUS_FAILED, $freshPayment->status);
+        $this->assertSame(Order::PAYMENT_STATUS_FAILED, $freshOrder->payment_status);
+        $this->assertSame('refunded', data_get($freshPayment->meta, 'provider_reversal_evidence.type'));
+        $this->assertSame(
+            'PAYMOB-REFUND-SUCCESS-001',
+            data_get($freshPayment->meta, 'provider_reversal_evidence.transaction_id')
+        );
+        $this->assertFalse((bool) data_get($freshPayment->meta, 'provider_reversal_evidence.canonical_refund_recorded'));
+        $this->assertDatabaseCount('order_refunds', 0);
+    }
+
     public function test_recent_unified_checkout_session_is_reused_without_creating_second_intention(): void
     {
         $order = $this->makeOnlineOrder(75);
