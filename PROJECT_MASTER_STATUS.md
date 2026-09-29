@@ -1,5 +1,19 @@
 # MASTER PROJECT STATUS
 
+## Sales COGS / Profit Integrity QAS checkpoint — 2026-09-29
+
+- Branch: `sec03-framework-upgrade`.
+- Verified application / CI / QAS revision: `7c66bc19f074d69c007be8fcc1027fb011f7af0d`.
+- Hardening CI #2252 is Green on the exact application SHA.
+- QAS is deployed on `7c66bc19`; maintenance OFF and application/static health checks are HTTP 200.
+- Immutable checkpoint tag: `qas-sales-cogs-integrity-2026-09-29`.
+- Order-level profitability is now lot-provenance-aware: FEFO allocation costs, POS consumption, original-lot restock recovery and online re-reservation are reflected in authoritative order COGS/profit.
+- Legacy order lines without lot provenance retain their historical unit-cost fallback.
+- Line-level `profit_amount` remains non-authoritative until storefront order-level discounts have an explicit line-allocation policy.
+- Detailed evidence: `docs/SALES_COGS_INTEGRITY_CHECKPOINT_2026-09-29.md`.
+- Next accounting-integrity check: identify whether aggregate inventory-movement unit cost is consumed as actual COGS/reporting evidence anywhere; use lot provenance instead where required.
+
+
 ## Workforce Payroll Integrity QAS checkpoint — 2026-09-29
 
 - Branch: `sec03-framework-upgrade`.

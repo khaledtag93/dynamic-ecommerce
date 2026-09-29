@@ -1,5 +1,26 @@
 # New Chat Handoff — Flowra / Dynamic — 2026-09-29
 
+## Current checkpoint — Sales COGS / Profit Integrity on QAS
+
+Continue on `sec03-framework-upgrade`. The exact verified **application / CI / QAS** revision is `7c66bc19f074d69c007be8fcc1027fb011f7af0d` (`7c66bc19`), with **Hardening CI #2252 Green** on that exact SHA.
+
+Order-level COGS/profit is now driven by actual FEFO lot provenance rather than current/average catalog valuation. The closure covers mixed-cost allocations, POS post-consumption recalculation, original-lot COGS recovery on POS/RMA restocks, and online-payment retry/re-reservation when the second reservation comes from different lots. Legacy order lines without lot provenance retain historical `unit_cost` fallback.
+
+QAS was promoted from `123fcbc9` to `7c66bc19` using `deploy-qas.sh sec03-framework-upgrade`. No new migrations were pending. Remote HEAD matches the verified SHA, maintenance is OFF, application/static health are HTTP 200, Home/Login are HTTP 200, and protected Payroll still redirects unauthenticated requests to Login. Immutable tag: `qas-sales-cogs-integrity-2026-09-29`.
+
+**Important boundary:** order-level `cost_total` / `profit_total` is authoritative for this slice. `order_items.profit_amount` is not promoted to accounting evidence until storefront order-level coupon/promotion discounts have a defined line-allocation policy. Shipping cost, tax liability and GL posting remain separate accounting-policy boundaries.
+
+Production remains unchanged. OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification remain independent release gates.
+
+**Next:** audit whether any reporting/history still treats aggregate `inventory_movements.unit_cost` as actual COGS. Where a report is accounting-facing, prefer lot provenance and preserve legacy fallback. Do not invent line-level discount allocation or statutory accounting policy.
+
+Paste-ready continuation:
+
+> نكمل Flowra على `sec03-framework-upgrade` من application/QAS SHA `7c66bc19`. Hardening CI #2252 Green ونفس الـSHA منشور على QAS؛ maintenance OFF وapp/static HTTP 200. Sales COGS/Profit Integrity مقفول order-level: FEFO actual lot costs، mixed-cost allocations، POS recalculation، original-lot restock recovery، وonline retry re-reservation. Legacy orders لها unit_cost fallback. line-level profit_amount لسه non-authoritative لحد ما نحدد order-discount allocation policy. الخطوة التالية audit لأي reporting بيستخدم inventory_movements.unit_cost كـactual COGS بدل lot provenance. Production unchanged؛ OPS-01/PAY-01/OPS-02 وProduction scheduler/queue لسه release gates.
+
+### Earlier checkpoint — Workforce Payroll Integrity
+
+
 ## Current checkpoint — Workforce Payroll Integrity on QAS
 
 Continue on `sec03-framework-upgrade`. The exact verified **application / CI / QAS** revision is `123fcbc9f10eb5fb6b6ed24bf628af877aa31ee6` (`123fcbc9`), with **Hardening CI #2250 Green** on that exact SHA.

@@ -1,5 +1,20 @@
 # CURRENT PHASE
 
+## Sales COGS / Profit Integrity — QAS checkpoint — 2026-09-29
+
+- Active branch: `sec03-framework-upgrade`.
+- **Verified application / CI / QAS SHA:** `7c66bc19f074d69c007be8fcc1027fb011f7af0d` (`7c66bc19`) — `fix: derive sales cogs from lot provenance`.
+- **Hardening CI #2252: Green** on that exact revision.
+- QAS is deployed on the exact same SHA; maintenance OFF, application/static health HTTP 200.
+- Immutable tag: `qas-sales-cogs-integrity-2026-09-29`.
+- Order-level COGS/profit now derives from actual FEFO lot provenance, including mixed-cost lots, POS consumption, POS/RMA restock recovery and online-payment re-reservation.
+- Legacy orders without lot provenance retain their historical `unit_cost` fallback.
+- `order_items.profit_amount` is not accounting-authoritative until an explicit storefront order-discount allocation policy is defined.
+- Detailed evidence: `docs/SALES_COGS_INTEGRITY_CHECKPOINT_2026-09-29.md`.
+
+**Immediate next action:** continue the Business Process & ERP Integrity Audit at the next unclosed profitability/accounting boundary. Audit any reporting or inventory history that still treats aggregate `inventory_movements.unit_cost` as actual COGS instead of lot provenance; fix only if it is consumed as accounting evidence.
+
+
 ## Workforce Payroll Integrity — QAS checkpoint — 2026-09-29
 
 - Active branch: `sec03-framework-upgrade`.
