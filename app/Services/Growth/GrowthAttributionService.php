@@ -129,6 +129,35 @@ class GrowthAttributionService
         }
     }
 
+    public function countOrderProfitSnapshotChanges(Order $order): int
+    {
+        if (! Schema::hasTable('growth_attribution_touches')) {
+            return 0;
+        }
+
+        $touches = GrowthAttributionTouch::query()
+            ->where('order_id', $order->id)
+            ->get(['profit_total']);
+
+        if ($touches->isEmpty()) {
+            return 0;
+        }
+
+        $touchProfitCents = (int) round((float) $touches->sum('profit_total') * 100);
+        $orderProfitCents = (int) round((float) ($order->profit_total ?? 0) * 100);
+
+        return $touchProfitCents === $orderProfitCents ? 0 : 1;
+    }
+
+    public function refreshOrderAttribution(int $orderId): void
+    {
+        if (! Schema::hasTable('growth_attribution_touches')) {
+            return;
+        }
+
+        $this->normalizeOrderAttribution($orderId);
+    }
+
     protected function normalizeOrderAttribution(int $orderId): void
     {
         $order = Order::query()->commerciallyRealized()->find($orderId);

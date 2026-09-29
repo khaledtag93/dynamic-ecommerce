@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Order;
 use App\Services\Commerce\ProfitService;
+use App\Services\Growth\GrowthAttributionService;
 use Illuminate\Console\Command;
 
 class ReconcileLotCogsCommand extends Command
@@ -15,7 +16,10 @@ class ReconcileLotCogsCommand extends Command
 
     protected $description = 'Audit and optionally reconcile historical order COGS from lot provenance';
 
-    public function handle(ProfitService $profitService): int
+    public function handle(
+        ProfitService $profitService,
+        GrowthAttributionService $growthAttributionService,
+    ): int
     {
         $afterId = max(0, (int) $this->option('after-id'));
         $limit = max(1, min(5000, (int) $this->option('limit')));
@@ -38,6 +42,7 @@ class ReconcileLotCogsCommand extends Command
         $changed = 0;
         $applied = 0;
         $lineProfitChanges = 0;
+        $attributionProfitChanges = 0;
 
         foreach ($orders as $order) {
             if (! $this->hasLotProvenance($order)) {
@@ -49,17 +54,21 @@ class ReconcileLotCogsCommand extends Command
             $currentCost = $this->money($order->cost_total);
             $currentProfit = $this->money($order->profit_total);
             $itemProfitChanges = $profitService->countOrderItemProfitChanges($order);
+            $attributionProfitChange = $growthAttributionService->countOrderProfitSnapshotChanges($order);
             $lineProfitChanges += $itemProfitChanges;
+            $attributionProfitChanges += $attributionProfitChange;
 
-            if ($currentCost === $expected['cost_total']
-                && $currentProfit === $expected['profit_total']
-                && $itemProfitChanges === 0) {
+            $coreChanged = $currentCost !== $expected['cost_total']
+                || $currentProfit !== $expected['profit_total']
+                || $itemProfitChanges > 0;
+
+            if (! $coreChanged && $attributionProfitChange === 0) {
                 continue;
             }
 
             $changed++;
             $this->line(sprintf(
-                'Order #%d %s | cost %s -> %s | profit %s -> %s | line-profit changes %d',
+                'Order #%d %s | cost %s -> %s | profit %s -> %s | line-profit changes %d | attribution-profit changes %d',
                 $order->id,
                 $order->order_number ?: '(no number)',
                 $currentCost,
@@ -67,10 +76,15 @@ class ReconcileLotCogsCommand extends Command
                 $currentProfit,
                 $expected['profit_total'],
                 $itemProfitChanges,
+                $attributionProfitChange,
             ));
 
             if ($apply) {
-                $profitService->refreshOrderTotals($order);
+                if ($coreChanged) {
+                    $profitService->refreshOrderTotals($order);
+                }
+
+                $growthAttributionService->refreshOrderAttribution((int) $order->id);
                 $applied++;
             }
         }
@@ -78,12 +92,13 @@ class ReconcileLotCogsCommand extends Command
         $mode = $apply ? 'APPLY' : 'DRY-RUN';
 
         $this->info(sprintf(
-            '%s complete | scanned=%d | lot-provenance=%d | changed=%d | line-profit-changes=%d | applied=%d | last_id=%d',
+            '%s complete | scanned=%d | lot-provenance=%d | changed=%d | line-profit-changes=%d | attribution-profit-changes=%d | applied=%d | last_id=%d',
             $mode,
             $orders->count(),
             $eligible,
             $changed,
             $lineProfitChanges,
+            $attributionProfitChanges,
             $applied,
             $lastId,
         ));

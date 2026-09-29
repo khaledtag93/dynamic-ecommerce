@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\GrowthAttributionTouch;
 use App\Models\Order;
 use App\Services\Commerce\ProfitService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,6 +37,50 @@ class SalesCogsReconciliationCommandTest extends TestCase
                 ],
             ],
         ]);
+        $attribution = GrowthAttributionTouch::query()->create([
+            'order_id' => $tracked->id,
+            'touch_type' => 'last_touch',
+            'status' => 'attributed',
+            'attribution_weight' => 1,
+            'revenue' => 100,
+            'discount_total' => 0,
+            'profit_total' => 40,
+            'occurred_at' => $tracked->placed_at,
+            'attributed_at' => now()->subMinute(),
+        ]);
+
+        $attributionOnly = $this->makeOrder('ATTR-ONLY');
+        $attributionOnly->forceFill([
+            'cost_total' => 30,
+            'profit_total' => 70,
+        ])->save();
+        $attributionOnlyItem = $attributionOnly->items()->create([
+            'product_name' => 'Already reconciled lot item',
+            'sku' => 'ATTR-ONLY-ITEM',
+            'unit_price' => 50,
+            'unit_cost' => 30,
+            'quantity' => 2,
+            'line_total' => 100,
+            'profit_amount' => 70,
+            'meta' => [
+                'inventory_lot_allocations' => [
+                    ['lot_id' => 201, 'quantity' => 1, 'unit_cost' => 10],
+                    ['lot_id' => 202, 'quantity' => 1, 'unit_cost' => 20],
+                ],
+            ],
+        ]);
+        $attributionOnlySnapshot = GrowthAttributionTouch::query()->create([
+            'order_id' => $attributionOnly->id,
+            'touch_type' => 'last_touch',
+            'status' => 'attributed',
+            'attribution_weight' => 1,
+            'revenue' => 100,
+            'discount_total' => 0,
+            'profit_total' => 40,
+            'occurred_at' => $attributionOnly->placed_at,
+            'attributed_at' => now()->subMinute(),
+        ]);
+
         $legacy = $this->makeOrder('LEGACY-COST');
         $legacy->forceFill([
             'cost_total' => 25,
@@ -76,11 +121,17 @@ class SalesCogsReconciliationCommandTest extends TestCase
         ]));
         $dryRunOutput = Artisan::output();
         $this->assertStringContainsString('DRY-RUN complete', $dryRunOutput);
-        $this->assertStringContainsString('changed=1', $dryRunOutput);
+        $this->assertStringContainsString('changed=2', $dryRunOutput);
         $this->assertStringContainsString('line-profit-changes=1', $dryRunOutput);
+        $this->assertStringContainsString('attribution-profit-changes=2', $dryRunOutput);
         $this->assertSame(60.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(40.0, (float) $tracked->fresh()->profit_total);
         $this->assertSame('40.00', $trackedItem->fresh()->profit_amount);
+        $this->assertSame('40.00', $attribution->fresh()->profit_total);
+        $this->assertSame(30.0, (float) $attributionOnly->fresh()->cost_total);
+        $this->assertSame(70.0, (float) $attributionOnly->fresh()->profit_total);
+        $this->assertSame('70.00', $attributionOnlyItem->fresh()->profit_amount);
+        $this->assertSame('40.00', $attributionOnlySnapshot->fresh()->profit_total);
         $this->assertSame(25.0, (float) $legacy->fresh()->cost_total);
         $this->assertSame(75.0, (float) $legacy->fresh()->profit_total);
 
@@ -91,10 +142,15 @@ class SalesCogsReconciliationCommandTest extends TestCase
         ]));
         $applyOutput = Artisan::output();
         $this->assertStringContainsString('APPLY complete', $applyOutput);
-        $this->assertStringContainsString('applied=1', $applyOutput);
+        $this->assertStringContainsString('applied=2', $applyOutput);
         $this->assertSame(30.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(70.0, (float) $tracked->fresh()->profit_total);
         $this->assertSame('70.00', $trackedItem->fresh()->profit_amount);
+        $this->assertSame('70.00', $attribution->fresh()->profit_total);
+        $this->assertSame(30.0, (float) $attributionOnly->fresh()->cost_total);
+        $this->assertSame(70.0, (float) $attributionOnly->fresh()->profit_total);
+        $this->assertSame('70.00', $attributionOnlyItem->fresh()->profit_amount);
+        $this->assertSame('70.00', $attributionOnlySnapshot->fresh()->profit_total);
         $this->assertSame(25.0, (float) $legacy->fresh()->cost_total);
         $this->assertSame(75.0, (float) $legacy->fresh()->profit_total);
     }
