@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsEvent;
+use App\Models\AnalyticsProductDailyStat;
 use App\Models\Coupon;
 use App\Models\InventoryLot;
 use App\Models\InventoryMovement;
@@ -131,6 +132,17 @@ class BusinessIntegrityHardeningTest extends TestCase
             'placed_at' => $deliveredAt->copy()->subDay(),
             'delivered_at' => $deliveredAt,
         ]);
+        $product = $this->makeProduct(0);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
 
         $tracker = app(AnalyticsTracker::class);
         $aggregation = app(AnalyticsAggregationService::class);
@@ -149,6 +161,10 @@ class BusinessIntegrityHardeningTest extends TestCase
         $cleanStat = $dirtyStat->fresh();
         $this->assertNull(data_get($cleanStat->meta, 'restatement_requested_at'));
         $this->assertSame(100.0, (float) $cleanStat->revenue_gross);
+        $this->assertSame(100.0, (float) AnalyticsProductDailyStat::query()
+            ->whereDate('stat_date', $deliveredAt->toDateString())
+            ->where('product_id', $product->id)
+            ->value('revenue_gross'));
 
         $order->update([
             'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
@@ -167,6 +183,8 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertFalse($snapshot['current']['is_aggregated']);
         $this->assertSame(75.0, (float) $snapshot['current']['totals']['revenue_gross']);
+        $this->assertSame(75.0, (float) $snapshot['current']['top_products']->firstWhere('product_id', $product->id)?->revenue_gross);
+        $this->assertSame(75.0, (float) $snapshot['current']['top_categories']->firstWhere('category_id', $product->category_id)?->revenue_gross);
 
         $this->assertSame(0, Artisan::call('analytics:restate-dirty', ['--limit' => 30]));
 
@@ -174,6 +192,10 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull(data_get($restated->meta, 'restatement_requested_at'));
         $this->assertSame(1, (int) $restated->purchases);
         $this->assertSame(75.0, (float) $restated->revenue_gross);
+        $this->assertSame(75.0, (float) AnalyticsProductDailyStat::query()
+            ->whereDate('stat_date', $deliveredAt->toDateString())
+            ->where('product_id', $product->id)
+            ->value('revenue_gross'));
 
         $order->update([
             'payment_status' => Order::PAYMENT_STATUS_REFUNDED,

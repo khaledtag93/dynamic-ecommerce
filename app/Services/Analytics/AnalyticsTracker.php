@@ -135,13 +135,7 @@ class AnalyticsTracker
             'coupon_code' => $order->coupon_code,
             'items_count' => (int) $order->items->sum('quantity'),
             'product_ids' => $order->items->pluck('product_id')->filter()->map(fn ($id) => (int) $id)->unique()->values()->all(),
-            'line_items' => $order->items->map(fn ($item) => [
-                'product_id' => (int) $item->product_id,
-                'variant_id' => $item->product_variant_id ? (int) $item->product_variant_id : null,
-                'quantity' => (int) $item->quantity,
-                'unit_price' => (float) $item->unit_price,
-                'line_total' => (float) $item->line_total,
-            ])->values()->all(),
+            'line_items' => $this->buildRealizedLineItems($order),
         ];
 
         $event = $eventQuery->first();
@@ -172,6 +166,49 @@ class AnalyticsTracker
         $this->markDailyStatForRestatement($event->occurred_at?->toDateString());
     }
 
+    protected function buildRealizedLineItems(Order $order): array
+    {
+        $items = $order->items->values();
+        $lineTotalCents = (int) $items->sum(
+            fn ($item) => max(0, $this->moneyToCents($item->line_total))
+        );
+        $realizedRevenueCents = max(0, $this->moneyToCents($order->realized_revenue));
+        $lastRevenueIndex = $items
+            ->keys()
+            ->filter(fn ($index) => $this->moneyToCents($items[$index]->line_total) > 0)
+            ->last();
+        $allocatedRevenueCents = 0;
+
+        return $items->map(function ($item, $index) use (
+            $lineTotalCents,
+            $realizedRevenueCents,
+            $lastRevenueIndex,
+            &$allocatedRevenueCents
+        ): array {
+            $lineCents = max(0, $this->moneyToCents($item->line_total));
+
+            if ($lineTotalCents <= 0 || $lineCents <= 0) {
+                $lineRealizedRevenueCents = 0;
+            } elseif ($index === $lastRevenueIndex) {
+                $lineRealizedRevenueCents = max(0, $realizedRevenueCents - $allocatedRevenueCents);
+            } else {
+                $lineRealizedRevenueCents = (int) floor(
+                    ($realizedRevenueCents * $lineCents) / $lineTotalCents
+                );
+                $allocatedRevenueCents += $lineRealizedRevenueCents;
+            }
+
+            return [
+                'product_id' => (int) $item->product_id,
+                'variant_id' => $item->product_variant_id ? (int) $item->product_variant_id : null,
+                'quantity' => (int) $item->quantity,
+                'unit_price' => (float) $item->unit_price,
+                'line_total' => (float) $item->line_total,
+                'realized_revenue' => round($lineRealizedRevenueCents / 100, 2),
+            ];
+        })->values()->all();
+    }
+
     protected function markDailyStatForRestatement(?string $date): void
     {
         if (! $date) {
@@ -199,6 +236,11 @@ class AnalyticsTracker
 
             $query->where('session_id', session()->getId());
         });
+    }
+
+    private function moneyToCents(mixed $value): int
+    {
+        return (int) round(((float) $value) * 100);
     }
 
     protected function buildMetaPayload(array $meta): array

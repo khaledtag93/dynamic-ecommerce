@@ -132,7 +132,11 @@ class AnalyticsAggregationService
 
                 $purchaseBuckets[$productId]['purchases']++;
                 $purchaseBuckets[$productId]['purchased_quantity'] += (int) data_get($lineItem, 'quantity', 0);
-                $purchaseBuckets[$productId]['revenue_gross'] += (float) data_get($lineItem, 'line_total', 0);
+                $purchaseBuckets[$productId]['revenue_gross'] += (float) data_get(
+                    $lineItem,
+                    'realized_revenue',
+                    data_get($lineItem, 'line_total', 0)
+                );
             }
         }
 

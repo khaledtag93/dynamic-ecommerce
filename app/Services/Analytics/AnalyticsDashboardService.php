@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 class AnalyticsDashboardService
 {
+    protected array $rawProductStatsCache = [];
+
     public function buildSnapshot(Carbon $from, Carbon $to): array
     {
         $periodDays = max(1, $from->diffInDays($to) + 1);
@@ -258,45 +260,15 @@ class AnalyticsDashboardService
             ->limit(8)
             ->get();
 
-        if ($aggregated->isNotEmpty()) {
+        if ($aggregated->isNotEmpty() && ! $this->hasDirtyDailyStats($from, $to)) {
             return $aggregated->map(function ($row) {
                 $row->conversion_rate = (int) $row->views > 0 ? ((int) $row->purchases / (int) $row->views) : 0;
+
                 return $row;
             });
         }
 
-        $events = AnalyticsEvent::query()
-            ->whereBetween('occurred_at', [$from, $to])
-            ->where('entity_type', AnalyticsEvent::ENTITY_PRODUCT)
-            ->whereNotNull('entity_id')
-            ->get(['event_type', 'entity_id', 'meta']);
-
-        $products = Product::query()
-            ->with('translations')
-            ->whereIn('id', $events->pluck('entity_id')->unique())
-            ->get()
-            ->keyBy('id');
-
-        return $events->groupBy('entity_id')
-            ->map(function (Collection $rows, $productId) use ($products) {
-                $product = $products->get((int) $productId);
-                $views = (int) $rows->where('event_type', AnalyticsEvent::EVENT_VIEW_PRODUCT)->count();
-                $adds = (int) $rows->where('event_type', AnalyticsEvent::EVENT_ADD_TO_CART)->count();
-                $purchases = (int) $rows->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->count();
-                $revenue = (float) $rows->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0));
-
-                return (object) [
-                    'product_id' => (int) $productId,
-                    'product_name' => $product?->name ?? __('Product #:id', ['id' => $productId]),
-                    'product_slug' => $product?->slug,
-                    'views' => $views,
-                    'add_to_cart_count' => $adds,
-                    'purchases' => $purchases,
-                    'purchased_quantity' => 0,
-                    'revenue_gross' => $revenue,
-                    'conversion_rate' => $views > 0 ? $purchases / $views : 0,
-                ];
-            })
+        return $this->buildRawProductStats($from, $to)
             ->sortByDesc('revenue_gross')
             ->take(8)
             ->values();
@@ -319,22 +291,156 @@ class AnalyticsDashboardService
             ->limit(6)
             ->get();
 
-        if ($rows->isEmpty()) {
+        if ($rows->isNotEmpty() && ! $this->hasDirtyDailyStats($from, $to)) {
+            $categories = Category::query()
+                ->with('translations')
+                ->whereIn('id', $rows->pluck('category_id'))
+                ->get()
+                ->keyBy('id');
+
+            return $rows->map(function ($row) use ($categories) {
+                $category = $categories->get((int) $row->category_id);
+                $row->category_name = $category?->name ?? __('Category #:id', ['id' => $row->category_id]);
+                $row->conversion_rate = (int) $row->views > 0 ? ((int) $row->purchases / (int) $row->views) : 0;
+
+                return $row;
+            });
+        }
+
+        $rawRows = $this->buildRawProductStats($from, $to)
+            ->filter(fn ($row) => $row->category_id !== null);
+
+        if ($rawRows->isEmpty()) {
             return collect();
         }
 
         $categories = Category::query()
             ->with('translations')
-            ->whereIn('id', $rows->pluck('category_id'))
+            ->whereIn('id', $rawRows->pluck('category_id')->unique()->all())
             ->get()
             ->keyBy('id');
 
-        return $rows->map(function ($row) use ($categories) {
-            $category = $categories->get((int) $row->category_id);
-            $row->category_name = $category?->name ?? __('Category #:id', ['id' => $row->category_id]);
-            $row->conversion_rate = (int) $row->views > 0 ? ((int) $row->purchases / (int) $row->views) : 0;
-            return $row;
-        });
+        return $rawRows
+            ->groupBy('category_id')
+            ->map(function (Collection $productRows, $categoryId) use ($categories) {
+                $views = (int) $productRows->sum('views');
+                $purchases = (int) $productRows->sum('purchases');
+                $category = $categories->get((int) $categoryId);
+
+                return (object) [
+                    'category_id' => (int) $categoryId,
+                    'category_name' => $category?->name ?? __('Category #:id', ['id' => $categoryId]),
+                    'views' => $views,
+                    'add_to_cart_count' => (int) $productRows->sum('add_to_cart_count'),
+                    'purchases' => $purchases,
+                    'revenue_gross' => round((float) $productRows->sum('revenue_gross'), 2),
+                    'conversion_rate' => $views > 0 ? $purchases / $views : 0,
+                ];
+            })
+            ->sortByDesc('revenue_gross')
+            ->take(6)
+            ->values();
+    }
+
+    protected function buildRawProductStats(Carbon $from, Carbon $to): Collection
+    {
+        $cacheKey = $from->toIso8601String().'|'.$to->toIso8601String();
+
+        if (isset($this->rawProductStatsCache[$cacheKey])) {
+            return $this->rawProductStatsCache[$cacheKey];
+        }
+
+        $events = AnalyticsEvent::query()
+            ->whereBetween('occurred_at', [$from, $to])
+            ->get(['event_type', 'entity_type', 'entity_id', 'meta']);
+
+        $views = $events
+            ->where('event_type', AnalyticsEvent::EVENT_VIEW_PRODUCT)
+            ->filter(fn (AnalyticsEvent $event) => $event->entity_type === AnalyticsEvent::ENTITY_PRODUCT)
+            ->groupBy(fn (AnalyticsEvent $event) => (int) data_get($event->meta, 'product_id', $event->entity_id));
+
+        $adds = $events
+            ->where('event_type', AnalyticsEvent::EVENT_ADD_TO_CART)
+            ->filter(fn (AnalyticsEvent $event) => $event->entity_type === AnalyticsEvent::ENTITY_PRODUCT)
+            ->groupBy(fn (AnalyticsEvent $event) => (int) data_get($event->meta, 'product_id', $event->entity_id));
+
+        $purchaseBuckets = [];
+
+        foreach ($events->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS) as $event) {
+            foreach ((array) data_get($event->meta, 'line_items', []) as $lineItem) {
+                $productId = (int) data_get($lineItem, 'product_id');
+
+                if ($productId <= 0) {
+                    continue;
+                }
+
+                if (! isset($purchaseBuckets[$productId])) {
+                    $purchaseBuckets[$productId] = [
+                        'purchases' => 0,
+                        'purchased_quantity' => 0,
+                        'revenue_gross' => 0.0,
+                    ];
+                }
+
+                $purchaseBuckets[$productId]['purchases']++;
+                $purchaseBuckets[$productId]['purchased_quantity'] += (int) data_get($lineItem, 'quantity', 0);
+                $purchaseBuckets[$productId]['revenue_gross'] += (float) data_get(
+                    $lineItem,
+                    'realized_revenue',
+                    data_get($lineItem, 'line_total', 0)
+                );
+            }
+        }
+
+        $productIds = collect(array_merge(
+            $views->keys()->all(),
+            $adds->keys()->all(),
+            array_keys($purchaseBuckets)
+        ))
+            ->filter(fn ($id) => (int) $id > 0)
+            ->unique()
+            ->values();
+
+        if ($productIds->isEmpty()) {
+            return $this->rawProductStatsCache[$cacheKey] = collect();
+        }
+
+        $products = Product::query()
+            ->with('translations')
+            ->whereIn('id', $productIds->all())
+            ->get()
+            ->keyBy('id');
+
+        return $this->rawProductStatsCache[$cacheKey] = $productIds
+            ->map(function ($productId) use ($products, $views, $adds, $purchaseBuckets) {
+                $productId = (int) $productId;
+                $product = $products->get($productId);
+                $viewCount = (int) optional($views->get($productId))->count();
+                $addCount = (int) optional($adds->get($productId))->count();
+                $purchases = (int) data_get($purchaseBuckets, $productId.'.purchases', 0);
+
+                return (object) [
+                    'product_id' => $productId,
+                    'product_name' => $product?->name ?? __('Product #:id', ['id' => $productId]),
+                    'product_slug' => $product?->slug,
+                    'category_id' => $product?->category_id,
+                    'views' => $viewCount,
+                    'add_to_cart_count' => $addCount,
+                    'purchases' => $purchases,
+                    'purchased_quantity' => (int) data_get($purchaseBuckets, $productId.'.purchased_quantity', 0),
+                    'revenue_gross' => round((float) data_get($purchaseBuckets, $productId.'.revenue_gross', 0), 2),
+                    'conversion_rate' => $viewCount > 0 ? $purchases / $viewCount : 0,
+                ];
+            })
+            ->values();
+    }
+
+    protected function hasDirtyDailyStats(Carbon $from, Carbon $to): bool
+    {
+        return AnalyticsDailyStat::query()
+            ->whereBetween('stat_date', [$from->toDateString(), $to->toDateString()])
+            ->whereNotNull('meta->restatement_requested_at')
+            ->exists();
     }
 
     protected function buildCouponPerformance(Carbon $from, Carbon $to): Collection
