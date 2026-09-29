@@ -300,6 +300,57 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame([3332, 3332, 3335], array_values($allocations));
     }
 
+    public function test_realized_revenue_allocation_uses_exact_pos_return_line_provenance(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 100);
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'refund_total' => 30,
+        ]);
+
+        $returnedItem = $order->items()->create([
+            'product_name' => 'Returned product',
+            'sku' => 'RETURNED-LINE',
+            'unit_price' => 30,
+            'unit_cost' => 10,
+            'quantity' => 1,
+            'line_total' => 30,
+            'profit_amount' => 20,
+        ]);
+        $keptItem = $order->items()->create([
+            'product_name' => 'Kept product',
+            'sku' => 'KEPT-LINE',
+            'unit_price' => 70,
+            'unit_cost' => 20,
+            'quantity' => 1,
+            'line_total' => 70,
+            'profit_amount' => 50,
+        ]);
+
+        $refund = $order->refunds()->create([
+            'amount' => 30,
+            'reason' => 'Returned first line',
+            'processed_at' => now(),
+        ]);
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refund->id,
+            'order_id' => $order->id,
+            'order_item_id' => $returnedItem->id,
+            'quantity' => 1,
+            'amount' => 30,
+            'restocked' => true,
+        ]);
+
+        $allocations = app(OrderRevenueAllocationService::class)
+            ->allocateCents($order->fresh(['items']));
+
+        $this->assertSame(7000, array_sum($allocations));
+        $this->assertSame(0, $allocations[$returnedItem->id]);
+        $this->assertSame(7000, $allocations[$keptItem->id]);
+    }
+
     public function test_inventory_decrement_refuses_oversell_and_records_successful_movement(): void
     {
         $product = $this->makeProduct(1);
