@@ -74,18 +74,10 @@ class SalesCogsReconciliationCommandTest extends TestCase
             '--after-id' => max(0, $tracked->id - 1),
             '--limit' => 10,
         ]));
-        $this->assertStringContainsString(
-            'DRY-RUN complete',
-            Artisan::output()
-        );
-        $this->assertMatchesRegularExpression(
-            '/(?:^|\\| )changed=[1-9]\\d*/',
-            Artisan::output()
-        );
-        $this->assertMatchesRegularExpression(
-            '/line-profit-changes=[1-9]\\d*/',
-            Artisan::output()
-        );
+        $dryRunOutput = Artisan::output();
+        $this->assertStringContainsString('DRY-RUN complete', $dryRunOutput);
+        $this->assertStringContainsString('changed=1', $dryRunOutput);
+        $this->assertStringContainsString('line-profit-changes=1', $dryRunOutput);
         $this->assertSame(60.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(40.0, (float) $tracked->fresh()->profit_total);
         $this->assertSame('40.00', $trackedItem->fresh()->profit_amount);
@@ -97,14 +89,9 @@ class SalesCogsReconciliationCommandTest extends TestCase
             '--limit' => 10,
             '--apply' => true,
         ]));
-        $this->assertStringContainsString(
-            'APPLY complete',
-            Artisan::output()
-        );
-        $this->assertMatchesRegularExpression(
-            '/applied=[1-9]\\d*/',
-            Artisan::output()
-        );
+        $applyOutput = Artisan::output();
+        $this->assertStringContainsString('APPLY complete', $applyOutput);
+        $this->assertStringContainsString('applied=1', $applyOutput);
         $this->assertSame(30.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(70.0, (float) $tracked->fresh()->profit_total);
         $this->assertSame('70.00', $trackedItem->fresh()->profit_amount);
