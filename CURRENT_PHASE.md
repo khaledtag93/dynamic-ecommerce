@@ -1,5 +1,26 @@
 # CURRENT PHASE
 
+## LATEST CONTINUATION CHECKPOINT — 2026-09-29
+
+> This section is authoritative for continuation. Older checkpoints below are historical and must not override this state.
+
+- Active branch: `sec03-framework-upgrade`.
+- **Verified application / CI / QAS SHA:** `cc8a3406ea4ada2bcdbcbec064b283296dc236b4` (`cc8a3406`).
+- **Hardening CI #2258: Green** on that exact application revision.
+- Full PHPUnit: **770 passed / 17,099 assertions**.
+- Checkout FEFO, POS FEFO and Sales COGS reconciliation regressions are Green.
+- Shared browser interactions and frontend production build are Green.
+- Immutable application checkpoint tag: `qas-sales-cogs-reconciliation-2026-09-29`.
+- QAS is deployed on the exact same application SHA; health HTTP 200, static assets HTTP 200, maintenance OFF, no pending migrations.
+- QAS reconciliation dry-run: `scanned=2 | lot-provenance=0 | changed=0 | line-profit-changes=0 | applied=0`; no historical apply was required.
+- `OrderItem.profit_amount` is now synchronized to actual lot COGS when lot provenance exists. Order-level discount allocation is still a separate explicit policy boundary.
+- Detailed evidence: `docs/SALES_COGS_RECONCILIATION_CHECKPOINT_2026-09-29.md`.
+- Production remains unchanged.
+
+**Immediate next action:** continue the Business Process & ERP Integrity Audit at the first unclosed profitability/accounting evidence boundary. Start by auditing any reporting/history consumer that treats aggregate `inventory_movements.unit_cost` as actual COGS; require lot provenance where actual COGS is claimed, with deliberate legacy fallback. Keep authenticated Workforce/Payroll and Purchasing/Inventory QAS journey acceptance as separate acceptance gates. Production release gates remain OPS-01 credential rotation evidence, PAY-01 real Paymob E2E, OPS-02 isolated DB restore rehearsal, and Production scheduler/queue verification.
+
+### Historical checkpoints below
+
 ## Sales COGS / Profit Integrity — QAS checkpoint — 2026-09-29
 
 - Active branch: `sec03-framework-upgrade`.

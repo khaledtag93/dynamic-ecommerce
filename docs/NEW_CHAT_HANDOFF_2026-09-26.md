@@ -1,5 +1,52 @@
 # New Chat Handoff — Flowra / Dynamic — 2026-09-29
 
+## LATEST CONTINUATION CHECKPOINT
+
+Continue on `sec03-framework-upgrade`.
+
+- **Verified application / CI / QAS SHA:** `cc8a3406ea4ada2bcdbcbec064b283296dc236b4` (`cc8a3406`).
+- **Hardening CI #2258: Green**.
+- Full PHPUnit: **770 passed / 17,099 assertions**.
+- CheckoutIdempotencyTest, PosCashierTest and SalesCogsReconciliationCommandTest all PASS.
+- Shared browser interactions and frontend build PASS.
+- Immutable application checkpoint tag: `qas-sales-cogs-reconciliation-2026-09-29`.
+- QAS is deployed on the exact same application SHA.
+- QAS: app HTTP 200, static assets HTTP 200, maintenance OFF, no pending migrations.
+- QAS historical COGS dry-run: `scanned=2 | lot-provenance=0 | changed=0 | line-profit-changes=0 | applied=0`; no apply was needed.
+
+### What just closed
+
+Sales COGS / Profit Integrity is closed through **line-profit reconciliation**:
+- actual FEFO lot provenance drives order COGS/profit where available;
+- legacy rows without lot provenance keep the historical `unit_cost` fallback;
+- POS and storefront flows refresh `OrderItem.profit_amount` from actual lot COGS after allocation;
+- `commerce:reconcile-lot-cogs` audits aggregate order totals and stale line-profit snapshots;
+- dry-run is non-destructive and `--apply` is explicit.
+
+Important boundary: line profit is COGS-consistent, but do not claim a fully allocated contribution margin until order-level coupon/promotion discounts have an explicit line-allocation policy. Shipping/landed cost, statutory tax/VAT, GL posting and provider disputes/chargebacks remain separate policy/integration boundaries.
+
+### Exact next action
+
+Continue the Business Process & ERP Integrity Audit from the first unclosed profitability/accounting evidence boundary:
+1. Audit reports/history that consume `inventory_movements.unit_cost` as if it were actual COGS.
+2. Where a report claims actual COGS, use lot provenance with a deliberate legacy fallback.
+3. Fix only real findings with regression coverage.
+4. Then continue the next genuinely unclosed ERP/accounting boundary.
+
+Separate acceptance still pending:
+- controlled authenticated Workforce/Payroll QAS acceptance;
+- controlled Purchasing/Inventory/lot-batch QAS journeys;
+- role-based end-to-end business journey acceptance;
+- broader EN/AR/RTL/mobile/accessibility acceptance where not already verified.
+
+Production remains unchanged. Release gates still include OPS-01 credential rotation/revocation evidence, PAY-01 real Paymob E2E, OPS-02 isolated database restore rehearsal, and Production scheduler/queue setup/verification.
+
+### Paste-ready continuation for a new chat
+
+> نكمل Flowra على `sec03-framework-upgrade`. آخر verified application/QAS SHA هو `cc8a3406`، وHardening CI #2258 Green بالكامل: 770 tests / 17,099 assertions، browser interactions وfrontend build Green. نفس الـSHA منشور على QAS؛ app/static HTTP 200، maintenance OFF، ومفيش migrations pending. Sales COGS/Profit Integrity اتقفل لحد line-profit reconciliation: actual FEFO lot provenance للـCOGS، legacy unit_cost fallback، POS/storefront line profit بيتحدث من actual lot cost، وhistorical reconciliation command بيدقق order totals + stale line profits. QAS dry-run: scanned=2, lot-provenance=0, changed=0, line-profit-changes=0, applied=0؛ مفيش apply مطلوب. الخطوة التالية: audit لأي accounting/reporting history بيستخدم inventory_movements.unit_cost كـactual COGS بدل lot provenance، وأي defect حقيقي يتقفل regression-first. Workforce/Payroll وPurchasing/Inventory authenticated QAS journeys لسه acceptance منفصلة. Production unchanged؛ OPS-01/PAY-01/OPS-02 وProduction scheduler/queue ما زالوا release gates.
+
+### Earlier checkpoints below
+
 ## Current checkpoint — Sales COGS / Profit Integrity on QAS
 
 Continue on `sec03-framework-upgrade`. The exact verified **application / CI / QAS** revision is `7c66bc19f074d69c007be8fcc1027fb011f7af0d` (`7c66bc19`), with **Hardening CI #2252 Green** on that exact SHA.

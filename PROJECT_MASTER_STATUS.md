@@ -1,5 +1,25 @@
 # MASTER PROJECT STATUS
 
+## LATEST VERIFIED STATE — 2026-09-29
+
+> Authoritative continuation state. Older sections below remain historical evidence only.
+
+- Branch: `sec03-framework-upgrade`.
+- Verified application / CI / QAS revision: `cc8a3406ea4ada2bcdbcbec064b283296dc236b4`.
+- Hardening CI #2258 is Green on the exact application SHA.
+- Full PHPUnit: 770 passed / 17,099 assertions; browser interaction tests and frontend build also passed.
+- Immutable application checkpoint tag: `qas-sales-cogs-reconciliation-2026-09-29`.
+- QAS remote HEAD matches `cc8a3406`, maintenance is OFF, application/static health are HTTP 200, and no migrations were pending.
+- Sales COGS / Profit Integrity now includes line-profit reconciliation from actual FEFO lot provenance. New POS/storefront flows refresh line profit after lot allocation, and the historical reconciliation command audits aggregate totals plus stale line-profit snapshots.
+- QAS dry-run found no lot-provenance historical rows requiring correction, so no `--apply` was run.
+- Detailed evidence: `docs/SALES_COGS_RECONCILIATION_CHECKPOINT_2026-09-29.md`.
+- Commerce Financial Integrity, Lot/Batch Integrity V1, Payroll Integrity, and the current Sales COGS reconciliation slice remain closed unless a reproduced defect reopens them.
+- Production remains unchanged and still requires OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification.
+
+**Next execution:** audit accounting-facing reports/history for misuse of aggregate `inventory_movements.unit_cost` as actual COGS, then continue the next genuinely unclosed ERP/accounting boundary. Keep controlled authenticated QAS acceptance across Workforce/Payroll, Purchasing/Inventory and role-based end-to-end journeys as separate evidence.
+
+### Historical checkpoints below
+
 ## Sales COGS / Profit Integrity QAS checkpoint — 2026-09-29
 
 - Branch: `sec03-framework-upgrade`.
