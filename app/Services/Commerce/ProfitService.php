@@ -53,6 +53,26 @@ class ProfitService
         ];
     }
 
+    public function calculateOrderItemEconomics(OrderItem $item, mixed $realizedRevenue): array
+    {
+        $originalConsumedCostCents = $this->itemCostCents($item);
+        $recoveredRestockCostCents = $this->recoveredRestockCostForItemCents($item);
+        $realizedCogsCents = max(0, $originalConsumedCostCents - $recoveredRestockCostCents);
+        $realizedRevenueCents = max(0, $this->moneyToCents($realizedRevenue));
+        $profitTotalCents = $realizedRevenueCents - $realizedCogsCents;
+
+        return [
+            'original_consumed_cost' => $this->centsToMoney($originalConsumedCostCents),
+            'recovered_restock_cost' => $this->centsToMoney($recoveredRestockCostCents),
+            'realized_cogs' => $this->centsToMoney($realizedCogsCents),
+            'realized_revenue' => $this->centsToMoney($realizedRevenueCents),
+            'profit_total' => $this->centsToMoney($profitTotalCents),
+            'gross_margin_percent' => $realizedRevenueCents > 0
+                ? round(($profitTotalCents / $realizedRevenueCents) * 100, 2)
+                : null,
+        ];
+    }
+
     public function calculateOrderItemProfitAmount(OrderItem $item): string
     {
         return $this->centsToMoney(
@@ -137,21 +157,23 @@ class ProfitService
 
     protected function recoveredRestockCostCents(Collection $items): int
     {
-        if ($items->isEmpty()) {
+        return (int) $items->sum(
+            fn (OrderItem $item) => $this->recoveredRestockCostForItemCents($item)
+        );
+    }
+
+    protected function recoveredRestockCostForItemCents(OrderItem $item): int
+    {
+        $itemCostCents = $this->itemCostCents($item);
+
+        if ($itemCostCents <= 0) {
             return 0;
         }
 
-        $lotTrackedItemIds = $items
-            ->filter(fn (OrderItem $item) => $this->allocationCostCents($item) !== null)
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
-        $lotRecoveredCents = $lotTrackedItemIds === []
-            ? 0
-            : (int) InventoryLotMovement::query()
+        if ($this->allocationCostCents($item) !== null) {
+            $lotRecoveredCents = (int) InventoryLotMovement::query()
                 ->with('lot:id,unit_cost')
-                ->whereIn('order_item_id', $lotTrackedItemIds)
+                ->where('order_item_id', $item->id)
                 ->where('quantity_change', '>', 0)
                 ->whereHas('inventoryMovement', fn ($query) => $query->whereIn('type', [
                     InventoryMovement::TYPE_REFUND_RESTOCK,
@@ -163,53 +185,36 @@ class ProfitService
                     * $this->moneyToCents($movement->lot?->unit_cost ?? 0)
                 );
 
-        $legacyItems = $items->reject(
-            fn (OrderItem $item) => in_array((int) $item->id, $lotTrackedItemIds, true)
-        );
-
-        if ($legacyItems->isEmpty()) {
-            return min(
-                (int) $items->sum(fn (OrderItem $item) => $this->itemCostCents($item)),
-                $lotRecoveredCents
-            );
+            return min($itemCostCents, $lotRecoveredCents);
         }
 
-        $unitCostCents = $legacyItems->mapWithKeys(
-            fn (OrderItem $item) => [(int) $item->id => $this->moneyToCents($item->unit_cost)]
-        );
-        $legacyItemIds = $unitCostCents->keys()->all();
+        $unitCostCents = $this->moneyToCents($item->unit_cost);
 
         $posRecoveredCents = (int) PosReturnItem::query()
-            ->whereIn('order_item_id', $legacyItemIds)
+            ->where('order_item_id', $item->id)
             ->where('restocked', true)
-            ->get(['order_item_id', 'quantity'])
-            ->sum(fn (PosReturnItem $item) =>
-                (int) ($unitCostCents[(int) $item->order_item_id] ?? 0) * (int) $item->quantity
+            ->get(['quantity'])
+            ->sum(fn (PosReturnItem $returnItem) =>
+                $unitCostCents * (int) $returnItem->quantity
             );
 
         $rmaRecoveredCents = (int) ReturnRequestItem::query()
-            ->whereIn('order_item_id', $legacyItemIds)
+            ->where('order_item_id', $item->id)
             ->where('restock_quantity', '>', 0)
             ->whereHas('returnRequest', fn ($query) => $query->whereIn('status', [
                 ReturnRequest::STATUS_RECEIVED,
                 ReturnRequest::STATUS_COMPLETED,
             ]))
-            ->get(['order_item_id', 'restock_quantity'])
-            ->sum(fn (ReturnRequestItem $item) =>
-                (int) ($unitCostCents[(int) $item->order_item_id] ?? 0) * (int) $item->restock_quantity
+            ->get(['restock_quantity'])
+            ->sum(fn (ReturnRequestItem $returnItem) =>
+                $unitCostCents * (int) $returnItem->restock_quantity
             );
 
-        $costTotalCents = (int) $items->sum(
-            fn (OrderItem $item) => $this->itemCostCents($item)
-        );
-
-        return min(
-            $costTotalCents,
-            $lotRecoveredCents + $posRecoveredCents + $rmaRecoveredCents
-        );
+        return min($itemCostCents, $posRecoveredCents + $rmaRecoveredCents);
     }
 
     private function moneyToCents(mixed $value): int
+    {    private function moneyToCents(mixed $value): int
     {
         return (int) round(((float) $value) * 100);
     }

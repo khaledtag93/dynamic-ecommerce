@@ -20,6 +20,8 @@ class AnalyticsProductDailyStat extends Model
         'purchases',
         'purchased_quantity',
         'revenue_gross',
+        'realized_cogs',
+        'profit_total',
         'conversion_rate',
         'meta',
         'aggregated_at',
@@ -28,6 +30,8 @@ class AnalyticsProductDailyStat extends Model
     protected $casts = [
         'stat_date' => 'date',
         'revenue_gross' => 'decimal:2',
+        'realized_cogs' => 'decimal:2',
+        'profit_total' => 'decimal:2',
         'conversion_rate' => 'decimal:4',
         'meta' => 'array',
         'aggregated_at' => 'datetime',

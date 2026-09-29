@@ -261,7 +261,12 @@ class AnalyticsDashboardService
                 DB::raw('SUM(add_to_cart_count) as add_to_cart_count'),
                 DB::raw('SUM(purchases) as purchases'),
                 DB::raw('SUM(purchased_quantity) as purchased_quantity'),
-                DB::raw('SUM(revenue_gross) as revenue_gross')
+                DB::raw('SUM(revenue_gross) as revenue_gross'),
+                DB::raw('SUM(realized_cogs) as realized_cogs'),
+                DB::raw('SUM(profit_total) as profit_total'),
+                DB::raw('COUNT(*) as profitability_rows'),
+                DB::raw('COUNT(realized_cogs) as cogs_rows'),
+                DB::raw('COUNT(profit_total) as profit_rows')
             )
             ->groupBy('product_id')
             ->orderByDesc('revenue_gross')
@@ -271,6 +276,13 @@ class AnalyticsDashboardService
         if ($aggregated->isNotEmpty() && ! $this->hasDirtyDailyStats($from, $to)) {
             return $aggregated->map(function ($row) {
                 $row->conversion_rate = (int) $row->views > 0 ? ((int) $row->purchases / (int) $row->views) : 0;
+                $row->profitability_complete = (int) $row->profitability_rows === (int) $row->cogs_rows
+                    && (int) $row->profitability_rows === (int) $row->profit_rows;
+                $row->realized_cogs = $row->profitability_complete ? round((float) $row->realized_cogs, 2) : null;
+                $row->profit_total = $row->profitability_complete ? round((float) $row->profit_total, 2) : null;
+                $row->gross_margin_percent = $row->profitability_complete && (float) $row->revenue_gross > 0
+                    ? round(((float) $row->profit_total / (float) $row->revenue_gross) * 100, 2)
+                    : null;
 
                 return $row;
             });
@@ -292,7 +304,12 @@ class AnalyticsDashboardService
                 DB::raw('SUM(views) as views'),
                 DB::raw('SUM(add_to_cart_count) as add_to_cart_count'),
                 DB::raw('SUM(purchases) as purchases'),
-                DB::raw('SUM(revenue_gross) as revenue_gross')
+                DB::raw('SUM(revenue_gross) as revenue_gross'),
+                DB::raw('SUM(realized_cogs) as realized_cogs'),
+                DB::raw('SUM(profit_total) as profit_total'),
+                DB::raw('COUNT(*) as profitability_rows'),
+                DB::raw('COUNT(realized_cogs) as cogs_rows'),
+                DB::raw('COUNT(profit_total) as profit_rows')
             )
             ->groupBy('category_id')
             ->orderByDesc('revenue_gross')
@@ -310,6 +327,13 @@ class AnalyticsDashboardService
                 $category = $categories->get((int) $row->category_id);
                 $row->category_name = $category?->name ?? __('Category #:id', ['id' => $row->category_id]);
                 $row->conversion_rate = (int) $row->views > 0 ? ((int) $row->purchases / (int) $row->views) : 0;
+                $row->profitability_complete = (int) $row->profitability_rows === (int) $row->cogs_rows
+                    && (int) $row->profitability_rows === (int) $row->profit_rows;
+                $row->realized_cogs = $row->profitability_complete ? round((float) $row->realized_cogs, 2) : null;
+                $row->profit_total = $row->profitability_complete ? round((float) $row->profit_total, 2) : null;
+                $row->gross_margin_percent = $row->profitability_complete && (float) $row->revenue_gross > 0
+                    ? round(((float) $row->profit_total / (float) $row->revenue_gross) * 100, 2)
+                    : null;
 
                 return $row;
             });
@@ -334,6 +358,16 @@ class AnalyticsDashboardService
                 $views = (int) $productRows->sum('views');
                 $purchases = (int) $productRows->sum('purchases');
                 $category = $categories->get((int) $categoryId);
+                $profitabilityComplete = $productRows->every(
+                    fn ($row) => (bool) data_get($row, 'profitability_complete', false)
+                );
+                $revenue = round((float) $productRows->sum('revenue_gross'), 2);
+                $realizedCogs = $profitabilityComplete
+                    ? round((float) $productRows->sum('realized_cogs'), 2)
+                    : null;
+                $profitTotal = $profitabilityComplete
+                    ? round((float) $productRows->sum('profit_total'), 2)
+                    : null;
 
                 return (object) [
                     'category_id' => (int) $categoryId,
@@ -341,7 +375,13 @@ class AnalyticsDashboardService
                     'views' => $views,
                     'add_to_cart_count' => (int) $productRows->sum('add_to_cart_count'),
                     'purchases' => $purchases,
-                    'revenue_gross' => round((float) $productRows->sum('revenue_gross'), 2),
+                    'revenue_gross' => $revenue,
+                    'realized_cogs' => $realizedCogs,
+                    'profit_total' => $profitTotal,
+                    'gross_margin_percent' => $profitabilityComplete && $revenue > 0
+                        ? round(($profitTotal / $revenue) * 100, 2)
+                        : null,
+                    'profitability_complete' => $profitabilityComplete,
                     'conversion_rate' => $views > 0 ? $purchases / $views : 0,
                 ];
             })
@@ -387,6 +427,9 @@ class AnalyticsDashboardService
                         'purchases' => 0,
                         'purchased_quantity' => 0,
                         'revenue_gross' => 0.0,
+                        'realized_cogs' => 0.0,
+                        'profit_total' => 0.0,
+                        'profitability_complete' => true,
                     ];
                 }
 
@@ -397,6 +440,19 @@ class AnalyticsDashboardService
                     'realized_revenue',
                     data_get($lineItem, 'line_total', 0)
                 );
+
+                $hasProfitability = array_key_exists('realized_cogs', $lineItem)
+                    && array_key_exists('profit_total', $lineItem)
+                    && is_numeric($lineItem['realized_cogs'])
+                    && is_numeric($lineItem['profit_total']);
+
+                if (! $hasProfitability) {
+                    $purchaseBuckets[$productId]['profitability_complete'] = false;
+                    continue;
+                }
+
+                $purchaseBuckets[$productId]['realized_cogs'] += (float) $lineItem['realized_cogs'];
+                $purchaseBuckets[$productId]['profit_total'] += (float) $lineItem['profit_total'];
             }
         }
 
@@ -426,6 +482,15 @@ class AnalyticsDashboardService
                 $viewCount = (int) optional($views->get($productId))->count();
                 $addCount = (int) optional($adds->get($productId))->count();
                 $purchases = (int) data_get($purchaseBuckets, $productId.'.purchases', 0);
+                $revenue = round((float) data_get($purchaseBuckets, $productId.'.revenue_gross', 0), 2);
+                $profitabilityComplete = $purchases === 0
+                    || (bool) data_get($purchaseBuckets, $productId.'.profitability_complete', false);
+                $realizedCogs = $profitabilityComplete
+                    ? round((float) data_get($purchaseBuckets, $productId.'.realized_cogs', 0), 2)
+                    : null;
+                $profitTotal = $profitabilityComplete
+                    ? round((float) data_get($purchaseBuckets, $productId.'.profit_total', 0), 2)
+                    : null;
 
                 return (object) [
                     'product_id' => $productId,
@@ -436,7 +501,13 @@ class AnalyticsDashboardService
                     'add_to_cart_count' => $addCount,
                     'purchases' => $purchases,
                     'purchased_quantity' => (int) data_get($purchaseBuckets, $productId.'.purchased_quantity', 0),
-                    'revenue_gross' => round((float) data_get($purchaseBuckets, $productId.'.revenue_gross', 0), 2),
+                    'revenue_gross' => $revenue,
+                    'realized_cogs' => $realizedCogs,
+                    'profit_total' => $profitTotal,
+                    'gross_margin_percent' => $profitabilityComplete && $revenue > 0
+                        ? round(($profitTotal / $revenue) * 100, 2)
+                        : null,
+                    'profitability_complete' => $profitabilityComplete,
                     'conversion_rate' => $viewCount > 0 ? $purchases / $viewCount : 0,
                 ];
             })

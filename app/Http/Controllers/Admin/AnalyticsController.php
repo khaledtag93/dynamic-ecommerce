@@ -91,12 +91,27 @@ class AnalyticsController extends Controller
                 ->orderBy('stat_date')
                 ->get();
 
+            $profitabilityComplete = $daily->every(
+                fn ($row) => (int) $row->purchases === 0
+                    || ($row->realized_cogs !== null && $row->profit_total !== null)
+            );
+            $revenue = (float) $daily->sum('revenue_gross');
+            $profitTotal = $profitabilityComplete
+                ? (float) $daily->sum('profit_total')
+                : null;
+
             $totals = [
                 'views' => (int) $daily->sum('views'),
                 'add_to_cart_count' => (int) $daily->sum('add_to_cart_count'),
                 'purchases' => (int) $daily->sum('purchases'),
                 'purchased_quantity' => (int) $daily->sum('purchased_quantity'),
-                'revenue_gross' => (float) $daily->sum('revenue_gross'),
+                'revenue_gross' => $revenue,
+                'realized_cogs' => $profitabilityComplete ? (float) $daily->sum('realized_cogs') : null,
+                'profit_total' => $profitTotal,
+                'gross_margin_percent' => $profitabilityComplete && $revenue > 0
+                    ? round(($profitTotal / $revenue) * 100, 2)
+                    : null,
+                'profitability_complete' => $profitabilityComplete,
             ];
             $totals['conversion_rate'] = $totals['views'] > 0 ? $totals['purchases'] / $totals['views'] : 0;
             $totals['add_to_cart_rate'] = $totals['views'] > 0 ? $totals['add_to_cart_count'] / $totals['views'] : 0;

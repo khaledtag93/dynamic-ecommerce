@@ -7,13 +7,15 @@ use App\Models\AnalyticsEvent;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Commerce\OrderRevenueAllocationService;
+use App\Services\Commerce\ProfitService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 
 class AnalyticsTracker
 {
     public function __construct(
-        protected OrderRevenueAllocationService $orderRevenueAllocationService
+        protected OrderRevenueAllocationService $orderRevenueAllocationService,
+        protected ProfitService $profitService
     ) {
     }
 
@@ -215,12 +217,17 @@ class AnalyticsTracker
 
     protected function buildRealizedPurchasePayload(Order $order): array
     {
+        $economics = $this->profitService->calculateOrderEconomics($order);
+
         return [
             'order_id' => (int) $order->id,
             'order_number' => (string) $order->order_number,
             'grand_total' => (float) $order->realized_revenue,
             'original_grand_total' => (float) $order->grand_total,
             'refund_total' => (float) $order->refund_total,
+            'realized_cogs' => (float) $economics['realized_cogs'],
+            'profit_total' => (float) $economics['profit_total'],
+            'gross_margin_percent' => $economics['gross_margin_percent'],
             'subtotal' => (float) $order->subtotal,
             'discount_total' => (float) $order->discount_total,
             'shipping_total' => (float) $order->shipping_total,
@@ -240,14 +247,24 @@ class AnalyticsTracker
         return $order->items
             ->sortBy('id')
             ->values()
-            ->map(fn ($item) => [
-                'product_id' => (int) $item->product_id,
-                'variant_id' => $item->product_variant_id ? (int) $item->product_variant_id : null,
-                'quantity' => (int) $item->quantity,
-                'unit_price' => (float) $item->unit_price,
-                'line_total' => (float) $item->line_total,
-                'realized_revenue' => (float) ($allocations[(int) $item->id] ?? 0),
-            ])
+            ->map(function ($item) use ($allocations) {
+                $realizedRevenue = (float) ($allocations[(int) $item->id] ?? 0);
+                $economics = $this->profitService->calculateOrderItemEconomics($item, $realizedRevenue);
+
+                return [
+                    'product_id' => (int) $item->product_id,
+                    'variant_id' => $item->product_variant_id ? (int) $item->product_variant_id : null,
+                    'quantity' => (int) $item->quantity,
+                    'unit_price' => (float) $item->unit_price,
+                    'line_total' => (float) $item->line_total,
+                    'original_consumed_cost' => (float) $economics['original_consumed_cost'],
+                    'recovered_restock_cost' => (float) $economics['recovered_restock_cost'],
+                    'realized_cogs' => (float) $economics['realized_cogs'],
+                    'realized_revenue' => $realizedRevenue,
+                    'profit_total' => (float) $economics['profit_total'],
+                    'gross_margin_percent' => $economics['gross_margin_percent'],
+                ];
+            })
             ->all();
     }
 

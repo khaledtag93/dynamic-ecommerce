@@ -127,6 +127,9 @@ class AnalyticsAggregationService
                         'purchases' => 0,
                         'purchased_quantity' => 0,
                         'revenue_gross' => 0.0,
+                        'realized_cogs' => 0.0,
+                        'profit_total' => 0.0,
+                        'profitability_complete' => true,
                     ];
                 }
 
@@ -137,6 +140,19 @@ class AnalyticsAggregationService
                     'realized_revenue',
                     data_get($lineItem, 'line_total', 0)
                 );
+
+                $hasProfitability = array_key_exists('realized_cogs', $lineItem)
+                    && array_key_exists('profit_total', $lineItem)
+                    && is_numeric($lineItem['realized_cogs'])
+                    && is_numeric($lineItem['profit_total']);
+
+                if (! $hasProfitability) {
+                    $purchaseBuckets[$productId]['profitability_complete'] = false;
+                    continue;
+                }
+
+                $purchaseBuckets[$productId]['realized_cogs'] += (float) $lineItem['realized_cogs'];
+                $purchaseBuckets[$productId]['profit_total'] += (float) $lineItem['profit_total'];
             }
         }
 
@@ -163,6 +179,14 @@ class AnalyticsAggregationService
             $purchaseCount = (int) data_get($purchaseBuckets, $productId . '.purchases', 0);
             $purchasedQuantity = (int) data_get($purchaseBuckets, $productId . '.purchased_quantity', 0);
             $revenueGross = (float) data_get($purchaseBuckets, $productId . '.revenue_gross', 0);
+            $profitabilityComplete = $purchaseCount === 0
+                || (bool) data_get($purchaseBuckets, $productId . '.profitability_complete', false);
+            $realizedCogs = $profitabilityComplete
+                ? (float) data_get($purchaseBuckets, $productId . '.realized_cogs', 0)
+                : null;
+            $profitTotal = $profitabilityComplete
+                ? (float) data_get($purchaseBuckets, $productId . '.profit_total', 0)
+                : null;
             $product = $products->get((int) $productId);
 
             $rows[] = [
@@ -176,9 +200,12 @@ class AnalyticsAggregationService
                 'purchases' => $purchaseCount,
                 'purchased_quantity' => $purchasedQuantity,
                 'revenue_gross' => round($revenueGross, 2),
+                'realized_cogs' => $realizedCogs === null ? null : round($realizedCogs, 2),
+                'profit_total' => $profitTotal === null ? null : round($profitTotal, 2),
                 'conversion_rate' => round($viewCount > 0 ? $purchaseCount / $viewCount : 0, 4),
                 'meta' => json_encode([
                     'source' => 'analytics_events',
+                    'profitability_complete' => $profitabilityComplete,
                 ], JSON_UNESCAPED_UNICODE),
                 'aggregated_at' => now(),
                 'created_at' => now(),
