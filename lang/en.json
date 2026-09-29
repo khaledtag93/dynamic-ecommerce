@@ -5260,5 +5260,9 @@
     "Review payment captures, exceptions, refunds, and provider evidence from one finance workspace.": "Review payment captures, exceptions, refunds, and provider evidence from one finance workspace.",
     "Merchant settlement tracking is not available in Flowra V1. Reconcile provider payouts against provider and bank settlement reports outside Flowra.": "Merchant settlement tracking is not available in Flowra V1. Reconcile provider payouts against provider and bank settlement reports outside Flowra.",
     "Merchant settlement": "Merchant settlement",
-    "Not tracked in Flowra V1": "Not tracked in Flowra V1"
+    "Not tracked in Flowra V1": "Not tracked in Flowra V1",
+    "Realized revenue": "Realized revenue",
+    "Completed paid order value after recorded refunds in the selected reporting window.": "Completed paid order value after recorded refunds in the selected reporting window.",
+    "Average realized order value": "Average realized order value",
+    "Average realized revenue per completed paid order after recorded refunds.": "Average realized revenue per completed paid order after recorded refunds."
 }

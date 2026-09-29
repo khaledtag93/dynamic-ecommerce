@@ -50,6 +50,9 @@ class AdminAnalyticsExperienceTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Decision read')
+            ->assertSee('Realized revenue')
+            ->assertSee('Average realized order value')
+            ->assertDontSee('Gross revenue')
             ->assertSee('Performance trends')
             ->assertSee('Funnel health')
             ->assertSee('Commercial drilldowns')

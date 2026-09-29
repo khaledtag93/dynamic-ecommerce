@@ -189,10 +189,10 @@
     ];
 
     $kpiCards = [
-        ['label' => __('Gross revenue'), 'value' => 'EGP ' . number_format((float) ($totals['revenue_gross'] ?? 0), 2), 'delta' => $revenueDelta, 'help' => __('Gross revenue inside the selected reporting window.')],
+        ['label' => __('Realized revenue'), 'value' => 'EGP ' . number_format((float) ($totals['realized_revenue'] ?? $totals['revenue_gross'] ?? 0), 2), 'delta' => $revenueDelta, 'help' => __('Completed paid order value after recorded refunds in the selected reporting window.')],
         ['label' => __('Completed orders'), 'value' => number_format((int) ($totals['orders_count'] ?? 0)), 'delta' => $ordersDelta, 'help' => __('Completed orders captured in this range.')],
         ['label' => __('Store conversion rate'), 'value' => number_format(((float) ($totals['conversion_rate'] ?? 0)) * 100, 1) . '%', 'delta' => $conversionDelta, 'help' => __('Sessions that converted into purchases.')],
-        ['label' => __('Average order value'), 'value' => 'EGP ' . number_format((float) ($totals['average_order_value'] ?? 0), 2), 'delta' => $aovDelta, 'help' => __('Average order value across purchased orders.')],
+        ['label' => __('Average realized order value'), 'value' => 'EGP ' . number_format((float) ($totals['average_order_value'] ?? 0), 2), 'delta' => $aovDelta, 'help' => __('Average realized revenue per completed paid order after recorded refunds.')],
     ];
 
     $storySignals = [
@@ -235,10 +235,10 @@
     $topCategoryRevenue = max(1, (float) $topCategories->max(fn ($row) => (float) data_get($row, 'revenue_gross', 0)));
 
     $exportRows = [
-        ['label' => __('Gross revenue'), 'value' => 'EGP ' . number_format((float) ($totals['revenue_gross'] ?? 0), 2), 'context' => $revenueDelta['text']],
+        ['label' => __('Realized revenue'), 'value' => 'EGP ' . number_format((float) ($totals['realized_revenue'] ?? $totals['revenue_gross'] ?? 0), 2), 'context' => $revenueDelta['text']],
         ['label' => __('Completed orders'), 'value' => number_format((int) ($totals['orders_count'] ?? 0)), 'context' => $ordersDelta['text']],
         ['label' => __('Store conversion rate'), 'value' => number_format(((float) ($totals['conversion_rate'] ?? 0)) * 100, 1) . '%', 'context' => $conversionDelta['text']],
-        ['label' => __('Average order value'), 'value' => 'EGP ' . number_format((float) ($totals['average_order_value'] ?? 0), 2), 'context' => $aovDelta['text']],
+        ['label' => __('Average realized order value'), 'value' => 'EGP ' . number_format((float) ($totals['average_order_value'] ?? 0), 2), 'context' => $aovDelta['text']],
         ['label' => __('Returning buyer share'), 'value' => number_format($returningShare * 100, 1) . '%', 'context' => __('Repeat buyers inside the selected window.')],
         ['label' => __('Checkout drop count'), 'value' => number_format($checkoutDropCount), 'context' => data_get($largestDrop, 'label', __('Largest handoff loss not available'))],
     ];
@@ -352,7 +352,7 @@
 
     $periodCompareRows = [
         [
-            'label' => __('Gross revenue'),
+            'label' => __('Realized revenue'),
             'current' => 'EGP ' . number_format($currentRevenueValue, 2),
             'previous' => 'EGP ' . number_format($previousRevenueValue, 2),
             'delta' => $revenueDelta['text'],
@@ -373,11 +373,11 @@
             'help' => __('A weaker rate usually points to traffic quality or checkout friction.'),
         ],
         [
-            'label' => __('Average order value'),
+            'label' => __('Average realized order value'),
             'current' => 'EGP ' . number_format($currentAovValue, 2),
             'previous' => 'EGP ' . number_format($previousAovValue, 2),
             'delta' => $aovDelta['text'],
-            'help' => __('This helps explain whether basket size is lifting or compressing revenue.'),
+            'help' => __('Average realized revenue per completed paid order after recorded refunds.'),
         ],
         [
             'label' => __('Cart abandonment rate'),

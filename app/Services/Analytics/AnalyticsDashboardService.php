@@ -120,7 +120,10 @@ class AnalyticsDashboardService
 
     protected function appendDerivedMetrics(array $totals): array
     {
-        $totals['average_order_value'] = $totals['orders_count'] > 0 ? $totals['revenue_gross'] / $totals['orders_count'] : 0;
+        // revenue_gross is a legacy storage key. Since realized purchase events are
+        // restated after refunds, its semantic value is realized revenue.
+        $totals['realized_revenue'] = (float) ($totals['revenue_gross'] ?? 0);
+        $totals['average_order_value'] = $totals['orders_count'] > 0 ? $totals['realized_revenue'] / $totals['orders_count'] : 0;
         $totals['conversion_rate'] = $totals['sessions_count'] > 0 ? $totals['purchases'] / $totals['sessions_count'] : 0;
         $totals['cart_abandonment_rate'] = $totals['add_to_cart_count'] > 0
             ? max(0, ($totals['add_to_cart_count'] - $totals['purchases']) / $totals['add_to_cart_count'])

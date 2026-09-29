@@ -191,6 +191,7 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertFalse($snapshot['current']['is_aggregated']);
         $this->assertSame(75.0, (float) $snapshot['current']['totals']['revenue_gross']);
+        $this->assertSame(75.0, (float) $snapshot['current']['totals']['realized_revenue']);
         $this->assertSame(75.0, (float) $snapshot['current']['top_products']->firstWhere('product_id', $product->id)?->revenue_gross);
         $this->assertSame(75.0, (float) $snapshot['current']['top_categories']->firstWhere('category_id', $product->category_id)?->revenue_gross);
 
