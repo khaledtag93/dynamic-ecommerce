@@ -560,6 +560,59 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertNull($historicalRow->gross_margin_percent);
     }
 
+    public function test_zero_purchase_legacy_rows_do_not_poison_profitability_completeness(): void
+    {
+        $product = $this->createAnalyticsProduct();
+
+        AnalyticsProductDailyStat::query()->create([
+            'stat_date' => now()->subDay()->toDateString(),
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_slug' => $product->slug,
+            'category_id' => $product->category_id,
+            'views' => 12,
+            'add_to_cart_count' => 2,
+            'purchases' => 0,
+            'purchased_quantity' => 0,
+            'revenue_gross' => 0,
+            'realized_cogs' => null,
+            'profit_total' => null,
+            'conversion_rate' => 0,
+            'aggregated_at' => now()->subDay(),
+        ]);
+
+        AnalyticsProductDailyStat::query()->create([
+            'stat_date' => now()->toDateString(),
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_slug' => $product->slug,
+            'category_id' => $product->category_id,
+            'views' => 8,
+            'add_to_cart_count' => 2,
+            'purchases' => 1,
+            'purchased_quantity' => 1,
+            'revenue_gross' => 100,
+            'realized_cogs' => 40,
+            'profit_total' => 60,
+            'conversion_rate' => 0.125,
+            'aggregated_at' => now(),
+        ]);
+
+        $snapshot = app(AnalyticsDashboardService::class)
+            ->buildSnapshot(now()->subDay()->startOfDay(), now()->endOfDay());
+
+        $productRow = collect($snapshot['current']['top_products'])->sole();
+        $categoryRow = collect($snapshot['current']['top_categories'])->sole();
+
+        foreach ([$productRow, $categoryRow] as $row) {
+            $this->assertTrue((bool) $row->profitability_complete);
+            $this->assertSame(100.0, (float) $row->revenue_gross);
+            $this->assertSame(40.0, (float) $row->realized_cogs);
+            $this->assertSame(60.0, (float) $row->profit_total);
+            $this->assertSame(60.0, (float) $row->gross_margin_percent);
+        }
+    }
+
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void
     {
         $owner = $this->createSuperAdmin();

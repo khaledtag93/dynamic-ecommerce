@@ -421,9 +421,9 @@ class AnalyticsDashboardService
                 DB::raw('SUM(revenue_gross) as revenue_gross'),
                 DB::raw('SUM(realized_cogs) as realized_cogs'),
                 DB::raw('SUM(profit_total) as profit_total'),
-                DB::raw('COUNT(*) as profitability_rows'),
-                DB::raw('COUNT(realized_cogs) as cogs_rows'),
-                DB::raw('COUNT(profit_total) as profit_rows')
+                DB::raw('SUM(CASE WHEN purchases > 0 THEN 1 ELSE 0 END) as profitability_rows'),
+                DB::raw('SUM(CASE WHEN purchases > 0 AND realized_cogs IS NOT NULL THEN 1 ELSE 0 END) as cogs_rows'),
+                DB::raw('SUM(CASE WHEN purchases > 0 AND profit_total IS NOT NULL THEN 1 ELSE 0 END) as profit_rows')
             )
             ->groupBy('product_id')
             ->orderByDesc('revenue_gross')
@@ -464,9 +464,9 @@ class AnalyticsDashboardService
                 DB::raw('SUM(revenue_gross) as revenue_gross'),
                 DB::raw('SUM(realized_cogs) as realized_cogs'),
                 DB::raw('SUM(profit_total) as profit_total'),
-                DB::raw('COUNT(*) as profitability_rows'),
-                DB::raw('COUNT(realized_cogs) as cogs_rows'),
-                DB::raw('COUNT(profit_total) as profit_rows')
+                DB::raw('SUM(CASE WHEN purchases > 0 THEN 1 ELSE 0 END) as profitability_rows'),
+                DB::raw('SUM(CASE WHEN purchases > 0 AND realized_cogs IS NOT NULL THEN 1 ELSE 0 END) as cogs_rows'),
+                DB::raw('SUM(CASE WHEN purchases > 0 AND profit_total IS NOT NULL THEN 1 ELSE 0 END) as profit_rows')
             )
             ->groupBy('category_id')
             ->orderByDesc('revenue_gross')
