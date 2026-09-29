@@ -170,40 +170,19 @@ class OrderRevenueAllocationService
 
     private function allocateTargetCents($items, int $targetCents): array
     {
-        $lineTotalCents = (int) $items->sum(
-            fn ($item) => max(0, $this->moneyToCents($item->line_total))
-        );
+        $capacities = [];
+        foreach ($items as $item) {
+            $capacities[(int) $item->id] = max(
+                0,
+                $this->moneyToCents($item->line_total)
+            );
+        }
 
-        if ($lineTotalCents <= 0) {
+        if (array_sum($capacities) <= 0) {
             return [];
         }
 
-        $lastRevenueIndex = $items
-            ->keys()
-            ->filter(fn ($index) => $this->moneyToCents($items[$index]->line_total) > 0)
-            ->last();
-
-        $allocatedRevenueCents = 0;
-        $allocations = [];
-
-        foreach ($items as $index => $item) {
-            $lineCents = max(0, $this->moneyToCents($item->line_total));
-
-            if ($lineCents <= 0) {
-                $allocatedCents = 0;
-            } elseif ($index === $lastRevenueIndex) {
-                $allocatedCents = max(0, $targetCents - $allocatedRevenueCents);
-            } else {
-                $allocatedCents = (int) floor(
-                    ($targetCents * $lineCents) / $lineTotalCents
-                );
-                $allocatedRevenueCents += $allocatedCents;
-            }
-
-            $allocations[(int) $item->id] = $allocatedCents;
-        }
-
-        return $allocations;
+        return $this->allocateAcrossCapacities($capacities, $targetCents);
     }
 
     private function allocateAcrossCapacities(array $capacities, int $targetCents): array

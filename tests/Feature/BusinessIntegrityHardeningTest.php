@@ -317,7 +317,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull($fullyRefundedEconomics['gross_margin_percent']);
     }
 
-    public function test_realized_revenue_allocation_preserves_exact_order_cents(): void
+    public function test_realized_revenue_allocation_preserves_exact_order_cents_without_exceeding_line_capacity(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 100);
         $order->update([
@@ -341,7 +341,10 @@ class BusinessIntegrityHardeningTest extends TestCase
             ->allocateCents($order->fresh(['items']));
 
         $this->assertSame(9999, array_sum($allocations));
-        $this->assertSame([3332, 3332, 3335], array_values($allocations));
+        $this->assertSame([3333, 3333, 3333], array_values($allocations));
+        $this->assertLessThanOrEqual(3333, $allocations[$order->items[0]->id]);
+        $this->assertLessThanOrEqual(3333, $allocations[$order->items[1]->id]);
+        $this->assertLessThanOrEqual(3334, $allocations[$order->items[2]->id]);
     }
 
     public function test_product_revenue_allocation_excludes_shipping_tax_and_allocates_order_discount(): void
