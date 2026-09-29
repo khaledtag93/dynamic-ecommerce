@@ -5267,6 +5267,11 @@
     "Average realized revenue per completed paid order after recorded refunds.": "Average realized revenue per completed paid order after recorded refunds.",
     "Profit": "Profit",
     "Gross margin": "Gross margin",
+    "Realized COGS": "Realized COGS",
+    "Top revenue variant": "Top revenue variant",
+    "Top profit variant": "Top profit variant",
+    "Variant revenue and profitability mix": "Variant revenue and profitability mix",
+    "Compare realized revenue with realized COGS, profit, and weighted gross margin so the highest-revenue variant is not mistaken for the most profitable one.": "Compare realized revenue with realized COGS, profit, and weighted gross margin so the highest-revenue variant is not mistaken for the most profitable one.",
     "Attributed profit": "Attributed profit",
     "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.": "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot."
 }

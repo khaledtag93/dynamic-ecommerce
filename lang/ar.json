@@ -5957,6 +5957,11 @@
     "Average realized revenue per completed paid order after recorded refunds.": "متوسط الإيراد المتحقق لكل طلب مكتمل ومدفوع بعد خصم المبالغ المستردة المسجلة.",
     "Profit": "الربح",
     "Gross margin": "هامش الربح الإجمالي",
+    "Realized COGS": "تكلفة البضاعة المباعة المتحققة",
+    "Top revenue variant": "الخيار الأعلى إيرادًا",
+    "Top profit variant": "الخيار الأعلى ربحًا",
+    "Variant revenue and profitability mix": "مزيج إيرادات وربحية الخيارات",
+    "Compare realized revenue with realized COGS, profit, and weighted gross margin so the highest-revenue variant is not mistaken for the most profitable one.": "قارن الإيراد المتحقق بتكلفة البضاعة المباعة المتحققة والربح وهامش الربح الإجمالي الموزون حتى لا يُفهم الخيار الأعلى إيرادًا على أنه الأكثر ربحية.",
     "Attributed profit": "الربح المنسوب",
     "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.": "أفضل الحملات حسب الإيراد والربح المنسوبين وهامش الربح الإجمالي الموزون والتحويلات. يتم عرض ما يصل إلى 12 صفًا في هذه اللقطة."
 }
