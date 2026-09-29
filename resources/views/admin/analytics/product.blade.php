@@ -11,6 +11,8 @@
     $maxRevenue = max(1, (float) $dailyRows->max('revenue_gross'));
     $maxPurchases = max(1, (int) $dailyRows->max('purchases'));
     $maxVariantRevenue = max(1, (float) $topVariants->max('revenue_gross'));
+    $topRevenueVariant = $topVariants->sortByDesc('revenue_gross')->first();
+    $topProfitVariant = $topVariants->sortByDesc('profit_total')->first();
 
     $chartRows = $dailyRows->map(function ($row) use ($maxViews, $maxRevenue, $maxPurchases) {
         $dateValue = $row->stat_date instanceof \Carbon\CarbonInterface ? $row->stat_date : \Illuminate\Support\Carbon::parse((string) $row->stat_date);
@@ -269,8 +271,24 @@
     @if ($uiState['show_variants'] ?? false)
     <div class="analytics-card" id="product-variants">
         <div class="card-body">
-            <h4 class="mb-1">{{ __('Top variants / order mix') }}</h4>
-            <div class="text-muted small mb-3">{{ __('Use this section to see whether the main product result is coming from one variant or a healthier mix.') }}</div>
+            <h4 class="mb-1">{{ __('Variant revenue and profitability mix') }}</h4>
+            <div class="text-muted small mb-3">{{ __('Compare realized revenue with realized COGS, profit, and weighted gross margin so the highest-revenue variant is not mistaken for the most profitable one.') }}</div>
+
+            @if ($topVariants->isNotEmpty())
+                <div class="analytics-mini-grid mb-4">
+                    <div class="analytics-mini">
+                        <div class="text-muted small">{{ __('Top revenue variant') }}</div>
+                        <div class="fs-5 fw-bold mt-1">{{ $topRevenueVariant?->variant_name ?: __('Default / simple product') }}</div>
+                        <div class="text-muted small mt-2">EGP {{ number_format((float) ($topRevenueVariant?->revenue_gross ?? 0), 2) }}</div>
+                    </div>
+                    <div class="analytics-mini">
+                        <div class="text-muted small">{{ __('Top profit variant') }}</div>
+                        <div class="fs-5 fw-bold mt-1">{{ $topProfitVariant?->variant_name ?: __('Default / simple product') }}</div>
+                        <div class="text-muted small mt-2">{{ __('Profit') }} EGP {{ number_format((float) ($topProfitVariant?->profit_total ?? 0), 2) }} · {{ __('Gross margin') }} {{ ($topProfitVariant?->gross_margin_percent ?? null) === null ? __('N/A') : number_format((float) $topProfitVariant->gross_margin_percent, 1).'%' }}</div>
+                    </div>
+                </div>
+            @endif
+
             <div class="analytics-list mb-4">
                 @forelse ($topVariants as $row)
                     <div class="analytics-row">
@@ -278,7 +296,10 @@
                             <div class="fw-bold">{{ $row->variant_name ?: __('Default / simple product') }}</div>
                             <div class="analytics-bar-track mt-2"><div class="analytics-bar-fill" style="width: {{ min(100, (((float) $row->revenue_gross) / $maxVariantRevenue) * 100) }}%"></div></div>
                         </div>
-                        <div class="text-end"><div class="fw-bold">EGP {{ number_format((float) $row->revenue_gross, 2) }}</div><div class="text-muted small">{{ __('Qty') }} {{ number_format((int) $row->quantity) }}</div></div>
+                        <div class="text-end">
+                            <div class="fw-bold">{{ __('Realized revenue') }} EGP {{ number_format((float) $row->revenue_gross, 2) }}</div>
+                            <div class="text-muted small">{{ __('Profit') }} EGP {{ number_format((float) $row->profit_total, 2) }} · {{ __('Gross margin') }} {{ ($row->gross_margin_percent ?? null) === null ? __('N/A') : number_format((float) $row->gross_margin_percent, 1).'%' }} · {{ __('Qty') }} {{ number_format((int) $row->quantity) }}</div>
+                        </div>
                     </div>
                 @empty
                     <div class="text-muted">{{ __('No order mix data yet.') }}</div>
@@ -286,12 +307,19 @@
             </div>
             <div class="table-responsive">
                 <table class="analytics-table">
-                    <thead><tr><th>{{ __('Variant') }}</th><th>{{ __('Qty') }}</th><th>{{ __('Realized revenue') }}</th></tr></thead>
+                    <thead><tr><th>{{ __('Variant') }}</th><th>{{ __('Qty') }}</th><th>{{ __('Realized revenue') }}</th><th>{{ __('Realized COGS') }}</th><th>{{ __('Profit') }}</th><th>{{ __('Gross margin') }}</th></tr></thead>
                     <tbody>
                         @forelse ($topVariants as $row)
-                            <tr><td>{{ $row->variant_name ?: __('Default / simple product') }}</td><td>{{ number_format((int) $row->quantity) }}</td><td>EGP {{ number_format((float) $row->revenue_gross, 2) }}</td></tr>
+                            <tr>
+                                <td>{{ $row->variant_name ?: __('Default / simple product') }}</td>
+                                <td>{{ number_format((int) $row->quantity) }}</td>
+                                <td>EGP {{ number_format((float) $row->revenue_gross, 2) }}</td>
+                                <td>EGP {{ number_format((float) $row->realized_cogs, 2) }}</td>
+                                <td>EGP {{ number_format((float) $row->profit_total, 2) }}</td>
+                                <td>{{ ($row->gross_margin_percent ?? null) === null ? __('N/A') : number_format((float) $row->gross_margin_percent, 1).'%' }}</td>
+                            </tr>
                         @empty
-                            <tr><td colspan="3" class="text-muted">{{ __('No order mix data yet.') }}</td></tr>
+                            <tr><td colspan="6" class="text-muted">{{ __('No order mix data yet.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

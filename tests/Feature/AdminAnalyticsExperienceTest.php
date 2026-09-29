@@ -7,6 +7,7 @@ use App\Models\AnalyticsEvent;
 use App\Models\AnalyticsProductDailyStat;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\Analytics\AnalyticsDashboardService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -280,7 +281,99 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertOk()
             ->assertSee('Default / simple product')
             ->assertSee('EGP 75.00')
+            ->assertSee('EGP 35.00')
+            ->assertSee('46.7%')
             ->assertDontSee('EGP 100.00');
+    }
+
+    public function test_variant_profitability_separates_revenue_leader_from_profit_leader_and_weights_margin(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $product = $this->createAnalyticsProduct();
+
+        $variantA = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'VAR-A-'.Str::upper(Str::random(6)),
+            'price' => 100,
+            'stock' => 10,
+            'status' => true,
+        ]);
+        $variantB = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'VAR-B-'.Str::upper(Str::random(6)),
+            'price' => 80,
+            'stock' => 10,
+            'status' => true,
+        ]);
+
+        foreach ([
+            ['number' => 'VAR-A-LOW', 'variant' => $variantA, 'name' => 'Variant A', 'revenue' => 10, 'cost' => 1],
+            ['number' => 'VAR-A-HIGH', 'variant' => $variantA, 'name' => 'Variant A', 'revenue' => 90, 'cost' => 81],
+            ['number' => 'VAR-B-PROFIT', 'variant' => $variantB, 'name' => 'Variant B', 'revenue' => 80, 'cost' => 20],
+        ] as $row) {
+            $order = Order::query()->create([
+                'order_number' => $row['number'],
+                'status' => Order::STATUS_COMPLETED,
+                'payment_status' => Order::PAYMENT_STATUS_PAID,
+                'grand_total' => $row['revenue'],
+                'refund_total' => 0,
+                'discount_total' => 0,
+                'customer_name' => 'Variant Profit Customer',
+                'customer_email' => strtolower($row['number']).'@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test address',
+                'shipping_city' => 'Cairo',
+                'placed_at' => now(),
+            ]);
+
+            $order->items()->create([
+                'product_id' => $product->id,
+                'product_variant_id' => $row['variant']->id,
+                'product_name' => $product->name,
+                'variant_name' => $row['name'],
+                'sku' => $row['variant']->sku,
+                'unit_price' => $row['revenue'],
+                'unit_cost' => $row['cost'],
+                'quantity' => 1,
+                'line_total' => $row['revenue'],
+                'profit_amount' => $row['revenue'] - $row['cost'],
+            ]);
+        }
+
+        $rows = app(\App\Services\Analytics\AnalyticsRevenueService::class)
+            ->topVariantsForProduct($product, now()->startOfDay(), now()->endOfDay(), 8);
+
+        $revenueLeader = $rows->firstWhere('product_variant_id', $variantA->id);
+        $profitLeader = $rows->firstWhere('product_variant_id', $variantB->id);
+
+        $this->assertSame(100.0, (float) $revenueLeader->realized_revenue);
+        $this->assertSame(82.0, (float) $revenueLeader->realized_cogs);
+        $this->assertSame(18.0, (float) $revenueLeader->profit_total);
+        $this->assertSame(18.0, (float) $revenueLeader->gross_margin_percent);
+        $this->assertSame(80.0, (float) $profitLeader->realized_revenue);
+        $this->assertSame(20.0, (float) $profitLeader->realized_cogs);
+        $this->assertSame(60.0, (float) $profitLeader->profit_total);
+        $this->assertSame(75.0, (float) $profitLeader->gross_margin_percent);
+        $this->assertSame($variantA->id, $rows->first()->product_variant_id);
+        $this->assertSame($variantB->id, $rows->sortByDesc('profit_total')->first()->product_variant_id);
+        $this->assertNotSame(50.0, (float) $revenueLeader->gross_margin_percent);
+
+        Cache::flush();
+
+        $response = $this->actingAs($owner)
+            ->get(route('admin.analytics.products.show', [
+                'product' => $product,
+                'range' => 'today',
+            ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('Top revenue variant')
+            ->assertSee('Top profit variant')
+            ->assertSee('Variant A')
+            ->assertSee('Variant B')
+            ->assertSee('EGP 60.00')
+            ->assertSee('75.0%');
     }
 
     public function test_product_drilldown_uses_live_events_when_daily_stats_are_dirty(): void

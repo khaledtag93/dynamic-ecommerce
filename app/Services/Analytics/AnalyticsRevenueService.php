@@ -6,6 +6,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Commerce\OrderRevenueAllocationService;
+use App\Services\Commerce\ProfitService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -14,7 +15,8 @@ use Illuminate\Support\Facades\DB;
 class AnalyticsRevenueService
 {
     public function __construct(
-        protected OrderRevenueAllocationService $orderRevenueAllocationService
+        protected OrderRevenueAllocationService $orderRevenueAllocationService,
+        protected ProfitService $profitService
     ) {
     }
 
@@ -103,27 +105,52 @@ class AnalyticsRevenueService
                             'product_variant_id' => $item->product_variant_id
                                 ? (int) $item->product_variant_id
                                 : null,
-
                             'variant_name' => $item->variant_name,
                             'quantity' => 0,
                             'revenue_cents' => 0,
+                            'cogs_cents' => 0,
+                            'profit_cents' => 0,
                         ];
 
-                        $buckets[$key]['quantity'] += (int) $item->quantity;
-                        $buckets[$key]['revenue_cents'] += (int) (
+                        $realizedRevenueCents = (int) (
                             $allocations[(int) $item->id] ?? 0
+                        );
+                        $economics = $this->profitService->calculateOrderItemEconomics(
+                            $item,
+                            $realizedRevenueCents / 100
+                        );
+
+                        $buckets[$key]['quantity'] += (int) $item->quantity;
+                        $buckets[$key]['revenue_cents'] += $realizedRevenueCents;
+                        $buckets[$key]['cogs_cents'] += (int) round(
+                            ((float) $economics['realized_cogs']) * 100
+                        );
+                        $buckets[$key]['profit_cents'] += (int) round(
+                            ((float) $economics['profit_total']) * 100
                         );
                     }
                 }
             });
 
         return collect($buckets)
-            ->map(fn (array $row) => (object) [
-                'product_variant_id' => $row['product_variant_id'],
-                'variant_name' => $row['variant_name'],
-                'quantity' => $row['quantity'],
-                'revenue_gross' => round($row['revenue_cents'] / 100, 2),
-            ])
+            ->map(function (array $row): object {
+                $revenue = round($row['revenue_cents'] / 100, 2);
+                $cogs = round($row['cogs_cents'] / 100, 2);
+                $profit = round($row['profit_cents'] / 100, 2);
+
+                return (object) [
+                    'product_variant_id' => $row['product_variant_id'],
+                    'variant_name' => $row['variant_name'],
+                    'quantity' => $row['quantity'],
+                    'revenue_gross' => $revenue,
+                    'realized_revenue' => $revenue,
+                    'realized_cogs' => $cogs,
+                    'profit_total' => $profit,
+                    'gross_margin_percent' => $revenue > 0
+                        ? round(($profit / $revenue) * 100, 2)
+                        : null,
+                ];
+            })
             ->sortByDesc('revenue_gross')
             ->take(max(1, $limit))
             ->values();
