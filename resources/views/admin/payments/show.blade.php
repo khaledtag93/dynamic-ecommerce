@@ -78,6 +78,9 @@
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('HMAC valid') }}</div><div>{{ data_get($payment->meta, 'paymob_hmac_valid') === true ? __('Yes') : (data_get($payment->meta, 'paymob_hmac_valid') === false ? __('No') : '—') }}</div></div>
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Last gateway transition') }}</div><div>{{ data_get($payment->meta, 'last_gateway_transition.status') ? \Illuminate\Support\Str::headline(data_get($payment->meta, 'last_gateway_transition.status')) : '—' }}</div><div class="small text-muted">{{ data_get($payment->meta, 'last_gateway_transition.at') ?: '—' }}</div></div>
                 <div class="col-md-6"><div class="admin-inline-label">{{ __('Gateway transaction reference') }}</div><div class="text-break">{{ data_get($payment->meta, 'last_gateway_transition.transaction_id') ?: $payment->transaction_reference ?: '—' }}</div></div>
+                @if($payment->method === \App\Models\Order::PAYMENT_METHOD_ONLINE)
+                    <div class="col-md-6"><div class="admin-inline-label">{{ __('Merchant settlement') }}</div><div>{{ __('Not tracked in Flowra V1') }}</div></div>
+                @endif
             </div>
 
             <h5 class="mb-3">{{ __('Payment events timeline') }}</h5>

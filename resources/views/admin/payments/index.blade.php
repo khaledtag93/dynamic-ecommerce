@@ -3,7 +3,7 @@
 @section('title', __('Payments') . ' | ' . __('Admin'))
 
 @section('content')
-<x-admin.page-header :kicker="__('Finance')" :title="__('Payments')" :description="__('Payment foundation is now ready for COD, transfer, and future gateway integrations.')">
+<x-admin.page-header :kicker="__('Finance')" :title="__('Payments')" :description="__('Review payment captures, exceptions, refunds, and provider evidence from one finance workspace.')">
     @if(auth()->user()?->hasPermission('payments.settings'))
         <a href="{{ route('admin.settings.payments') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-cog-outline"></i><span>{{ __('Payment settings') }}</span></a>
     @endif
@@ -24,7 +24,8 @@
 </div>
 
 <div class="alert alert-info border-0 small mb-4">
-    {{ __('Captured or Paid status confirms the payment transaction in Flowra; it does not prove that a gateway payout or bank settlement reached the merchant account.') }}
+    <div>{{ __('Captured or Paid status confirms the payment transaction in Flowra; it does not prove that a gateway payout or bank settlement reached the merchant account.') }}</div>
+    <div class="mt-1">{{ __('Merchant settlement tracking is not available in Flowra V1. Reconcile provider payouts against provider and bank settlement reports outside Flowra.') }}</div>
 </div>
 
 <div class="admin-card mb-4">

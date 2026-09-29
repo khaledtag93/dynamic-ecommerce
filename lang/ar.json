@@ -5946,5 +5946,9 @@
     "Supplier payment recorded for :reference.": "تم تسجيل دفعة للمورد لأمر الشراء :reference.",
     "Supplier payment voided for :reference.": "تم إلغاء قيد دفعة المورد لأمر الشراء :reference.",
     "Open and received purchase value by currency; drafts and cancelled orders are excluded.": "قيمة أوامر الشراء المفتوحة والمستلمة حسب العملة؛ لا تشمل المسودات أو الطلبات الملغاة.",
-    "Provider refund evidence was reconciled to the canonical order refund ledger.": "تمت مطابقة دليل رد المبلغ من مزود الدفع مع سجل رد مبالغ الطلب المعتمد."
+    "Provider refund evidence was reconciled to the canonical order refund ledger.": "تمت مطابقة دليل رد المبلغ من مزود الدفع مع سجل رد مبالغ الطلب المعتمد.",
+    "Review payment captures, exceptions, refunds, and provider evidence from one finance workspace.": "راجع عمليات تحصيل المدفوعات والاستثناءات ورد المبالغ وأدلة مزود الدفع من مساحة مالية واحدة.",
+    "Merchant settlement tracking is not available in Flowra V1. Reconcile provider payouts against provider and bank settlement reports outside Flowra.": "تتبع تسويات التاجر غير متاح في Flowra V1. طابق دفعات مزود الدفع مع تقارير التسوية لدى المزود والبنك خارج Flowra.",
+    "Merchant settlement": "تسوية التاجر",
+    "Not tracked in Flowra V1": "غير متتبعة في Flowra V1"
 }

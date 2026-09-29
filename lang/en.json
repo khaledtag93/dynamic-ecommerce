@@ -5256,5 +5256,9 @@
     "Supplier payment recorded for :reference.": "Supplier payment recorded for :reference.",
     "Supplier payment voided for :reference.": "Supplier payment voided for :reference.",
     "Open and received purchase value by currency; drafts and cancelled orders are excluded.": "Open and received purchase value by currency; drafts and cancelled orders are excluded.",
-    "Provider refund evidence was reconciled to the canonical order refund ledger.": "Provider refund evidence was reconciled to the canonical order refund ledger."
+    "Provider refund evidence was reconciled to the canonical order refund ledger.": "Provider refund evidence was reconciled to the canonical order refund ledger.",
+    "Review payment captures, exceptions, refunds, and provider evidence from one finance workspace.": "Review payment captures, exceptions, refunds, and provider evidence from one finance workspace.",
+    "Merchant settlement tracking is not available in Flowra V1. Reconcile provider payouts against provider and bank settlement reports outside Flowra.": "Merchant settlement tracking is not available in Flowra V1. Reconcile provider payouts against provider and bank settlement reports outside Flowra.",
+    "Merchant settlement": "Merchant settlement",
+    "Not tracked in Flowra V1": "Not tracked in Flowra V1"
 }

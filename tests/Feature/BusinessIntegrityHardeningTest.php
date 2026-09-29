@@ -40,6 +40,13 @@ class BusinessIntegrityHardeningTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_cod_capture_path_does_not_use_merchant_settlement_semantics(): void
+    {
+        $service = file_get_contents(app_path('Services/Commerce/OrderActionService.php'));
+
+        $this->assertStringNotContainsString('Cash on Delivery payment is not in a state that can be settled.', $service);
+    }
+
     public function test_checkout_completion_tracks_order_placement_without_claiming_realized_purchase(): void
     {
         $user = User::factory()->create();

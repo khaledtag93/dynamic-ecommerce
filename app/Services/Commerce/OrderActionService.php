@@ -264,16 +264,6 @@ class OrderActionService
                     ]);
                 }
 
-                if (! in_array($codPayment->status, [
-                    Payment::STATUS_PENDING,
-                    Payment::STATUS_AUTHORIZED,
-                    Payment::STATUS_PAID,
-                ], true)) {
-                    throw ValidationException::withMessages([
-                        'status' => __('Cash on Delivery payment is not in a state that can be settled.'),
-                    ]);
-                }
-
                 $updates['payment_status'] = Order::PAYMENT_STATUS_PAID;
 
                 if ($lockedOrder->delivery_status !== Order::DELIVERY_STATUS_DELIVERED) {

@@ -99,6 +99,9 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString("__('Captured amount')", $index);
         $this->assertStringContainsString('does not prove that a gateway payout or bank settlement reached the merchant account.', $index);
         $this->assertStringContainsString('Gateway capture does not prove merchant payout or bank settlement.', $view);
+        $this->assertStringContainsString('Merchant settlement tracking is not available in Flowra V1.', $index);
+        $this->assertStringContainsString("__('Merchant settlement')", $view);
+        $this->assertStringContainsString("__('Not tracked in Flowra V1')", $view);
         $this->assertStringNotContainsString("__('Paid amount')", $index);
         $this->assertStringContainsString("->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])", $controller);
         $this->assertStringContainsString("selectRaw('currency, SUM(amount) AS captured_amount')", $controller);
@@ -197,7 +200,9 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->get(route('admin.payments.show', $payment))
             ->assertOk()
             ->assertSee(__('Needs attention'))
-            ->assertSee('EGP 40.00');
+            ->assertSee('EGP 40.00')
+            ->assertSee(__('Merchant settlement'))
+            ->assertSee(__('Not tracked in Flowra V1'));
 
         $meta = $payment->meta;
         data_set($meta, 'provider_reversal_evidence.canonical_refund_recorded', true);
