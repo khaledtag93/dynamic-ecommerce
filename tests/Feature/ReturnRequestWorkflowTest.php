@@ -632,6 +632,59 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertDatabaseCount('return_requests', 0);
     }
 
+    public function test_mixed_pos_and_rma_returns_preserve_revenue_and_restock_cogs_economics(): void
+    {
+        $customer = User::factory()->create();
+        $cashier = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 200);
+        $order->update(['sales_channel' => Order::SALES_CHANNEL_POS]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+
+        app(PosReturnService::class)->process(
+            $order,
+            [$item->id => 1],
+            'First unit returned at POS',
+            null,
+            $cashier->id,
+        );
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order->fresh(), $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+        $service->complete($return->fresh(), 100, null, 'Second unit refunded without restock.', $manager);
+
+        $economics = app(ProfitService::class)->calculateOrderEconomics($order->fresh());
+        $allocations = app(OrderRevenueAllocationService::class)->allocateCents($order->fresh(['items']));
+
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(200.0, (float) $order->fresh()->refund_total);
+        $this->assertSame('0.00', $economics['realized_revenue']);
+        $this->assertSame('40.00', $economics['recovered_restock_cost']);
+        $this->assertSame('40.00', $economics['realized_cogs']);
+        $this->assertSame('-40.00', $economics['profit_total']);
+        $this->assertSame(0, array_sum($allocations));
+        $this->assertSame(1, (int) $product->fresh()->quantity);
+    }
+
     public function test_pos_return_cannot_reuse_quantity_reserved_by_rma(): void
     {
         $customer = User::factory()->create();
