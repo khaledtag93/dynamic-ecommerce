@@ -6,11 +6,17 @@ use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsEvent;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\Commerce\OrderRevenueAllocationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 
 class AnalyticsTracker
 {
+    public function __construct(
+        protected OrderRevenueAllocationService $orderRevenueAllocationService
+    ) {
+    }
+
     public function track(string $eventType, ?string $entityType = null, int|string|null $entityId = null, array $meta = []): void
     {
         AnalyticsEvent::query()->create([
@@ -168,45 +174,20 @@ class AnalyticsTracker
 
     protected function buildRealizedLineItems(Order $order): array
     {
-        $items = $order->items->values();
-        $lineTotalCents = (int) $items->sum(
-            fn ($item) => max(0, $this->moneyToCents($item->line_total))
-        );
-        $realizedRevenueCents = max(0, $this->moneyToCents($order->realized_revenue));
-        $lastRevenueIndex = $items
-            ->keys()
-            ->filter(fn ($index) => $this->moneyToCents($items[$index]->line_total) > 0)
-            ->last();
-        $allocatedRevenueCents = 0;
+        $allocations = $this->orderRevenueAllocationService->allocate($order);
 
-        return $items->map(function ($item, $index) use (
-            $lineTotalCents,
-            $realizedRevenueCents,
-            $lastRevenueIndex,
-            &$allocatedRevenueCents
-        ): array {
-            $lineCents = max(0, $this->moneyToCents($item->line_total));
-
-            if ($lineTotalCents <= 0 || $lineCents <= 0) {
-                $lineRealizedRevenueCents = 0;
-            } elseif ($index === $lastRevenueIndex) {
-                $lineRealizedRevenueCents = max(0, $realizedRevenueCents - $allocatedRevenueCents);
-            } else {
-                $lineRealizedRevenueCents = (int) floor(
-                    ($realizedRevenueCents * $lineCents) / $lineTotalCents
-                );
-                $allocatedRevenueCents += $lineRealizedRevenueCents;
-            }
-
-            return [
+        return $order->items
+            ->sortBy('id')
+            ->values()
+            ->map(fn ($item) => [
                 'product_id' => (int) $item->product_id,
                 'variant_id' => $item->product_variant_id ? (int) $item->product_variant_id : null,
                 'quantity' => (int) $item->quantity,
                 'unit_price' => (float) $item->unit_price,
                 'line_total' => (float) $item->line_total,
-                'realized_revenue' => round($lineRealizedRevenueCents / 100, 2),
-            ];
-        })->values()->all();
+                'realized_revenue' => (float) ($allocations[(int) $item->id] ?? 0),
+            ])
+            ->all();
     }
 
     protected function markDailyStatForRestatement(?string $date): void
@@ -236,11 +217,6 @@ class AnalyticsTracker
 
             $query->where('session_id', session()->getId());
         });
-    }
-
-    private function moneyToCents(mixed $value): int
-    {
-        return (int) round(((float) $value) * 100);
     }
 
     protected function buildMetaPayload(array $meta): array

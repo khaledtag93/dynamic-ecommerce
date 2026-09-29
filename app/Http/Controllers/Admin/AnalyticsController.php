@@ -7,10 +7,10 @@ use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsProductDailyStat;
 use App\Models\Coupon;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\PromotionRule;
 use App\Services\Analytics\AnalyticsDashboardService;
+use App\Services\Analytics\AnalyticsRevenueService;
 use App\Services\Analytics\GrowthAutomationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -21,7 +21,8 @@ class AnalyticsController extends Controller
 {
     public function __construct(
         protected AnalyticsDashboardService $dashboardService,
-        protected GrowthAutomationService $growthAutomationService
+        protected GrowthAutomationService $growthAutomationService,
+        protected AnalyticsRevenueService $analyticsRevenueService
     )
     {
     }
@@ -103,22 +104,8 @@ class AnalyticsController extends Controller
             $totals['cart_to_purchase_rate'] = $totals['add_to_cart_count'] > 0 ? $totals['purchases'] / $totals['add_to_cart_count'] : 0;
             $totals['average_revenue_per_purchase'] = $totals['purchases'] > 0 ? $totals['revenue_gross'] / $totals['purchases'] : 0;
 
-            $topOrderItems = OrderItem::query()
-                ->where('product_id', $product->id)
-                ->whereHas('order', function ($query) use ($from, $to) {
-                    $query->commerciallyRealized()
-                        ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()]);
-                })
-                ->select(
-                    'product_variant_id',
-                    DB::raw('MAX(variant_name) as variant_name'),
-                    DB::raw('SUM(quantity) as quantity'),
-                    DB::raw('SUM(line_total) as revenue_gross')
-                )
-                ->groupBy('product_variant_id')
-                ->orderByDesc('revenue_gross')
-                ->limit(8)
-                ->get();
+            $topOrderItems = $this->analyticsRevenueService
+                ->topVariantsForProduct($product, $from, $to);
 
             return [
                 'daily' => $daily,
@@ -192,19 +179,8 @@ class AnalyticsController extends Controller
                 ->orderByDesc('discount_value')
                 ->get();
 
-            $topDiscountedProduct = OrderItem::query()
-                ->whereHas('order', function ($query) use ($from, $to) {
-                    $query->commerciallyRealized()
-                        ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
-                        ->where('discount_total', '>', 0);
-                })
-                ->select('product_id', DB::raw('MAX(product_name) as product_name'))
-                ->selectRaw('SUM(quantity) as quantity')
-                ->selectRaw('SUM(line_total) as revenue_gross')
-                ->whereNotNull('product_id')
-                ->groupBy('product_id')
-                ->orderByDesc('revenue_gross')
-                ->first();
+            $topDiscountedProduct = $this->analyticsRevenueService
+                ->topDiscountedProduct($from, $to);
 
             return [
                 'coupon_rows' => $couponRows,

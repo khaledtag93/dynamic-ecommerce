@@ -23,6 +23,7 @@ use App\Services\Commerce\CouponService;
 use App\Services\Commerce\InventoryService;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\OrderNotificationService;
+use App\Services\Commerce\OrderRevenueAllocationService;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\StockReservationService;
@@ -270,6 +271,33 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertSame(60.0, (float) $fresh->cost_total);
         $this->assertSame(15.0, (float) $fresh->profit_total);
+    }
+
+    public function test_realized_revenue_allocation_preserves_exact_order_cents(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 100);
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+            'refund_total' => 0.01,
+        ]);
+
+        foreach ([33.33, 33.33, 33.34] as $index => $lineTotal) {
+            $order->items()->create([
+                'product_name' => 'Allocation item '.($index + 1),
+                'sku' => 'ALLOC-'.($index + 1),
+                'unit_price' => $lineTotal,
+                'unit_cost' => 10,
+                'quantity' => 1,
+                'line_total' => $lineTotal,
+                'profit_amount' => $lineTotal - 10,
+            ]);
+        }
+
+        $allocations = app(OrderRevenueAllocationService::class)
+            ->allocateCents($order->fresh(['items']));
+
+        $this->assertSame(9999, array_sum($allocations));
+        $this->assertSame([3332, 3332, 3335], array_values($allocations));
     }
 
     public function test_inventory_decrement_refuses_oversell_and_records_successful_movement(): void

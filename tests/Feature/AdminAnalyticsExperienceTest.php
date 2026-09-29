@@ -3,10 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\AnalyticsDailyStat;
+use App\Models\AnalyticsProductDailyStat;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AdminAnalyticsExperienceTest extends TestCase
@@ -96,7 +100,9 @@ class AdminAnalyticsExperienceTest extends TestCase
     {
         $owner = $this->createSuperAdmin();
 
-        Order::query()->create([
+        $product = $this->createAnalyticsProduct();
+
+        $realizedOrder = Order::query()->create([
             'order_number' => 'OFFERS-REALIZED-001',
             'status' => Order::STATUS_COMPLETED,
             'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
@@ -110,6 +116,16 @@ class AdminAnalyticsExperienceTest extends TestCase
             'shipping_address_line_1' => 'Test address',
             'shipping_city' => 'Cairo',
             'placed_at' => now(),
+        ]);
+        $realizedOrder->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 35,
         ]);
 
         Order::query()->create([
@@ -136,7 +152,68 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertOk()
             ->assertSee('NET25')
             ->assertSee('EGP 75.00')
+            ->assertDontSee('EGP 100.00')
             ->assertDontSee('EGP 500.00');
+    }
+
+    public function test_product_analytics_variant_revenue_uses_realized_net_order_value(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $product = $this->createAnalyticsProduct();
+
+        AnalyticsProductDailyStat::query()->create([
+            'stat_date' => now()->toDateString(),
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_slug' => $product->slug,
+            'category_id' => $product->category_id,
+            'views' => 5,
+            'add_to_cart_count' => 2,
+            'purchases' => 1,
+            'purchased_quantity' => 1,
+            'revenue_gross' => 75,
+            'conversion_rate' => 0.2,
+            'aggregated_at' => now(),
+        ]);
+
+        $order = Order::query()->create([
+            'order_number' => 'PRODUCT-REALIZED-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'grand_total' => 100,
+            'refund_total' => 25,
+            'discount_total' => 0,
+            'customer_name' => 'Product Customer',
+            'customer_email' => 'product-realized@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 35,
+        ]);
+
+        Cache::flush();
+
+        $response = $this->actingAs($owner)
+            ->get(route('admin.analytics.products.show', [
+                'product' => $product,
+                'range' => 'today',
+            ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('Default / simple product')
+            ->assertSee('EGP 75.00')
+            ->assertDontSee('EGP 100.00');
     }
 
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void
@@ -153,5 +230,31 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertDontSee('Offer performance summary');
 
         $this->assertStringNotContainsString('id="offers-operator-summary"', $response->getContent());
+    }
+
+    private function createAnalyticsProduct(): Product
+    {
+        $categoryId = DB::table('categories')->insertGetId([
+            'name' => 'Analytics Category '.Str::random(6),
+            'slug' => 'analytics-category-'.Str::lower(Str::random(8)),
+            'description' => 'Analytics test category',
+            'meta_title' => 'Analytics',
+            'meta_keyword' => 'analytics',
+            'meta_description' => 'Analytics test category',
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return Product::query()->create([
+            'name' => 'Analytics Product '.Str::random(6),
+            'slug' => 'analytics-product-'.Str::lower(Str::random(8)),
+            'sku' => 'AN-'.Str::upper(Str::random(8)),
+            'category_id' => $categoryId,
+            'base_price' => 100,
+            'quantity' => 1,
+            'status' => true,
+            'has_variants' => false,
+        ]);
     }
 }
