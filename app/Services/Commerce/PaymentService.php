@@ -19,6 +19,7 @@ class PaymentService
         protected PaymobGatewayService $paymobGatewayService,
         protected StockReservationService $stockReservationService,
         protected AdminActivityLogService $activityLogService,
+        protected ProfitService $profitService,
     ) {
     }
 
@@ -573,6 +574,7 @@ class PaymentService
                 || (string) data_get($lockedPayment->meta, 'last_gateway_transition.status') === Payment::STATUS_FAILED;
 
             $this->stockReservationService->ensureReservedForOrder($lockedOrder, true);
+            $this->profitService->refreshOrderTotals($lockedOrder);
 
             $meta = $lockedPayment->meta ?? [];
             $meta = $this->pushPaymentEvent(
@@ -710,6 +712,7 @@ class PaymentService
 
         if (in_array($status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) {
             $this->stockReservationService->ensureReservedForOrder($order, true);
+            $this->profitService->refreshOrderTotals($order);
             $this->clearStockReservationException($order, $paymentMeta);
 
             return;
@@ -722,6 +725,7 @@ class PaymentService
         try {
             $this->stockReservationService->ensureReservedForOrder($order, false);
             $this->stockReservationService->commitForOrder($order);
+            $this->profitService->refreshOrderTotals($order);
             $this->clearStockReservationException($order, $paymentMeta);
         } catch (ValidationException $exception) {
             $errors = $exception->errors();

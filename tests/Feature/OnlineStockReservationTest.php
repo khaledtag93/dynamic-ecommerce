@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CartItem;
+use App\Models\InventoryLot;
 use App\Models\InventoryLotMovement;
 use App\Models\InventoryMovement;
 use App\Models\Order;
@@ -599,19 +600,46 @@ class OnlineStockReservationTest extends TestCase
     {
         $user = User::factory()->create();
         $product = $this->makeProduct(3, 100);
+
+        $earlyLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'RETRY-EARLY-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 10,
+            'expiration_date' => today()->addDays(5),
+            'received_at' => now()->subDay(),
+        ]);
+        $laterLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'RETRY-LATE-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 2,
+            'quantity_on_hand' => 2,
+            'unit_cost' => 30,
+            'expiration_date' => today()->addDays(30),
+            'received_at' => now(),
+        ]);
+
         $order = $this->placeOnlineOrder($user, $product, 2);
         $payment = $order->payments()->firstOrFail();
+
+        $this->assertSame(40.0, (float) $order->fresh()->cost_total);
 
         app(PaymentService::class)->markAsFailed($payment, [
             'transaction_id' => 'TX-FAIL-RETRY',
         ]);
 
         $this->assertSame(3, (int) $product->fresh()->quantity);
+        $earlyLot->forceFill(['expiration_date' => today()->subDay()])->save();
 
         $retried = app(PaymentService::class)->prepareOnlineRetry($order->fresh(), $payment->fresh());
 
         $this->assertSame(Payment::STATUS_PENDING, $retried->status);
         $this->assertSame(1, (int) $product->fresh()->quantity);
+        $this->assertSame(60.0, (float) $order->fresh()->cost_total);
+        $this->assertSame(0, (int) $laterLot->fresh()->quantity_on_hand);
         $this->assertSame(
             OrderStockReservation::STATUS_RESERVED,
             OrderStockReservation::query()->firstOrFail()->status

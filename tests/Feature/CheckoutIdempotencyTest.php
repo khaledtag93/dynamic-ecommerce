@@ -136,7 +136,7 @@ class CheckoutIdempotencyTest extends TestCase
             'source_type' => 'test_seed',
             'initial_quantity' => 2,
             'quantity_on_hand' => 2,
-            'unit_cost' => 20,
+            'unit_cost' => 10,
             'expiration_date' => today()->addDays(5),
             'received_at' => now()->subDay(),
         ]);
@@ -146,7 +146,7 @@ class CheckoutIdempotencyTest extends TestCase
             'source_type' => 'test_seed',
             'initial_quantity' => 3,
             'quantity_on_hand' => 3,
-            'unit_cost' => 20,
+            'unit_cost' => 30,
             'expiration_date' => today()->addDays(30),
             'received_at' => now(),
         ]);
@@ -182,6 +182,7 @@ class CheckoutIdempotencyTest extends TestCase
         $this->assertSame(2, (int) $allocations[0]['quantity']);
         $this->assertSame($laterLot->id, (int) $allocations[1]['lot_id']);
         $this->assertSame(1, (int) $allocations[1]['quantity']);
+        $this->assertSame(50.0, (float) $order->fresh()->cost_total);
         $this->assertSame(today()->addDays(5)->toDateString(), $item->fresh()->expires_at->toDateString());
         $this->assertSame(0, (int) $earlyLot->fresh()->quantity_on_hand);
         $this->assertSame(2, (int) $laterLot->fresh()->quantity_on_hand);

@@ -28,6 +28,7 @@ class PosService
         protected InventoryService $inventoryService,
         protected AdminActivityLogService $activityLogService,
         protected AnalyticsTracker $analyticsTracker,
+        protected ProfitService $profitService,
     ) {
     }
 
@@ -1200,6 +1201,7 @@ class PosService
                 'notes' => $data['notes'] ?? null,
             ]);
 
+            $order = $this->profitService->refreshOrderTotals($order);
             $this->analyticsTracker->syncRealizedPurchase($order->fresh(['items']));
 
             $this->activityLogService->log(

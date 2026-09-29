@@ -495,6 +495,62 @@ class PosCashierTest extends TestCase
         $this->assertSame(1, Payment::query()->where('order_id', $order->id)->count());
     }
 
+    public function test_pos_profit_uses_actual_fefo_lot_costs_after_inventory_consumption(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('POS Lot Cost Product', '6224000000199', 3, false, 20, 20);
+        $product->forceFill(['inventory_cost_price' => 20])->save();
+
+        $earlyLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'POS-COST-EARLY-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 5,
+            'expiration_date' => today()->addDays(5),
+            'received_at' => now()->subDay(),
+        ]);
+        $laterLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'POS-COST-LATE-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 2,
+            'quantity_on_hand' => 2,
+            'unit_cost' => 15,
+            'expiration_date' => today()->addDays(30),
+            'received_at' => now(),
+        ]);
+
+        $cart = app(PosService::class)->cartFor($admin);
+        $this->actingAs($admin);
+        app(PosCashShiftService::class)->openShift($admin, 100);
+
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 40,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()
+            ->where('sales_channel', Order::SALES_CHANNEL_POS)
+            ->firstOrFail();
+        $item = $order->items()->firstOrFail();
+        $allocations = data_get($item->meta, 'inventory_lot_allocations', []);
+
+        $this->assertSame('20.00', $order->cost_total);
+        $this->assertSame('20.00', $order->profit_total);
+        $this->assertSame(2, count($allocations));
+        $this->assertSame($earlyLot->id, (int) $allocations[0]['lot_id']);
+        $this->assertSame(5.0, (float) $allocations[0]['unit_cost']);
+        $this->assertSame($laterLot->id, (int) $allocations[1]['lot_id']);
+        $this->assertSame(15.0, (float) $allocations[1]['unit_cost']);
+    }
+
     public function test_cash_checkout_requires_an_open_cash_shift_but_card_checkout_does_not(): void
     {
         $admin = $this->createSuperAdmin();
@@ -1209,6 +1265,29 @@ class PosCashierTest extends TestCase
     {
         $admin = $this->createSuperAdmin();
         $product = $this->product('POS Return Product', '6224000000020', 5, false, 100, 40);
+        $product->forceFill(['inventory_cost_price' => 40])->save();
+
+        $earlyLot = InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'POS-RETURN-EARLY-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 1,
+            'quantity_on_hand' => 1,
+            'unit_cost' => 10,
+            'expiration_date' => today()->addDays(5),
+            'received_at' => now()->subDay(),
+        ]);
+        InventoryLot::query()->create([
+            'product_id' => $product->id,
+            'lot_code' => 'POS-RETURN-LATE-'.Str::upper(Str::random(6)),
+            'source_type' => 'test_seed',
+            'initial_quantity' => 4,
+            'quantity_on_hand' => 4,
+            'unit_cost' => 30,
+            'expiration_date' => today()->addDays(30),
+            'received_at' => now(),
+        ]);
+
         $cart = app(PosService::class)->cartFor($admin);
 
         $this->actingAs($admin);
@@ -1240,7 +1319,10 @@ class PosCashierTest extends TestCase
 
         $this->assertSame('150.00', $orderItem->line_total);
         $this->assertNotSame(0, $sourceLotId);
-        $this->assertSame(3, (int) InventoryLot::query()->whereKey($sourceLotId)->value('quantity_on_hand'));
+        $this->assertSame($earlyLot->id, $sourceLotId);
+        $this->assertSame('40.00', $order->fresh()->cost_total);
+        $this->assertSame('110.00', $order->fresh()->profit_total);
+        $this->assertSame(0, (int) $earlyLot->fresh()->quantity_on_hand);
         $this->assertSame(3, (int) $product->fresh()->quantity);
 
         $this->post(route('admin.pos.sales.return', $order), [
@@ -1306,13 +1388,15 @@ class PosCashierTest extends TestCase
         $this->assertSame($order->id, (int) $posReturnItem->fresh()->order_id);
         $this->assertSame($orderItem->id, (int) $posReturnItem->fresh()->order_item_id);
         $this->assertSame(4, (int) $product->fresh()->quantity);
-        $this->assertSame(4, (int) InventoryLot::query()->whereKey($sourceLotId)->value('quantity_on_hand'));
+        $this->assertSame(1, (int) InventoryLot::query()->whereKey($sourceLotId)->value('quantity_on_hand'));
         $this->assertSame(
             4,
             (int) InventoryLot::query()->where('product_id', $product->id)->sum('quantity_on_hand')
         );
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
         $this->assertSame('75.00', $order->fresh()->refund_total);
+        $this->assertSame('40.00', $order->fresh()->cost_total);
+        $this->assertSame('45.00', $order->fresh()->profit_total);
         $this->assertDatabaseHas('inventory_movements', [
             'order_id' => $order->id,
             'product_id' => $product->id,
