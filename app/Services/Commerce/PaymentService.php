@@ -770,6 +770,54 @@ class PaymentService
         }
     }
 
+    public function inspectOrderPaymentSync(Order $order): array
+    {
+        // Refund records are the authoritative refund ledger. The denormalized
+        // order snapshot must always be derived from this ledger.
+        $refundTotal = round((float) $order->refunds()->sum('amount'), 2);
+
+        if ($refundTotal > 0) {
+            $capturedTotal = round((float) $order->payments()
+                ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
+                ->sum('amount'), 2);
+
+            return [
+                'refund_total' => $refundTotal,
+                'payment_status' => $capturedTotal > 0 && $refundTotal >= $capturedTotal
+                    ? Order::PAYMENT_STATUS_REFUNDED
+                    : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            ];
+        }
+
+        $payments = $order->payments()->get();
+
+        if ($payments->isEmpty()) {
+            return [
+                'refund_total' => 0.0,
+                'payment_status' => (string) $order->payment_status,
+            ];
+        }
+
+        $paidTotal = round((float) $payments
+            ->where('status', Payment::STATUS_PAID)
+            ->sum(fn (Payment $payment) => (float) $payment->amount), 2);
+        $orderTotal = round((float) $order->grand_total, 2);
+
+        $status = match (true) {
+            $paidTotal >= $orderTotal && $orderTotal > 0 => Order::PAYMENT_STATUS_PAID,
+            $paidTotal > 0 => Order::PAYMENT_STATUS_PENDING,
+            $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_REFUNDED) => Order::PAYMENT_STATUS_REFUNDED,
+            $payments->contains(fn (Payment $payment) => in_array($payment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) => Order::PAYMENT_STATUS_PENDING,
+            $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_FAILED) => Order::PAYMENT_STATUS_FAILED,
+            default => Order::PAYMENT_STATUS_UNPAID,
+        };
+
+        return [
+            'refund_total' => 0.0,
+            'payment_status' => $status,
+        ];
+    }
+
     public function syncOrderPaymentStatus(Order $order): void
     {
         DB::transaction(function () use ($order) {
@@ -778,51 +826,7 @@ class PaymentService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // Refund records are the authoritative refund ledger. Never allow a
-            // later payment sync to erase partially-refunded/refunded order state.
-            $refundTotal = round((float) $lockedOrder->refunds()->sum('amount'), 2);
-
-            if ($refundTotal > 0) {
-                $capturedTotal = round((float) $lockedOrder->payments()
-                    ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
-                    ->sum('amount'), 2);
-                $status = $capturedTotal > 0 && $refundTotal >= $capturedTotal
-                    ? Order::PAYMENT_STATUS_REFUNDED
-                    : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
-
-                $lockedOrder->update([
-                    'refund_total' => $refundTotal,
-                    'payment_status' => $status,
-                ]);
-
-                return;
-            }
-
-            $lockedOrder->update(['refund_total' => 0]);
-
-            $payments = $lockedOrder->payments()->get();
-
-            if ($payments->isEmpty()) {
-                return;
-            }
-
-            $paidTotal = round((float) $payments
-                ->where('status', Payment::STATUS_PAID)
-                ->sum(fn (Payment $payment) => (float) $payment->amount), 2);
-            $orderTotal = round((float) $lockedOrder->grand_total, 2);
-
-            $status = match (true) {
-                $paidTotal >= $orderTotal && $orderTotal > 0 => Order::PAYMENT_STATUS_PAID,
-                $paidTotal > 0 => Order::PAYMENT_STATUS_PENDING,
-                $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_REFUNDED) => Order::PAYMENT_STATUS_REFUNDED,
-                $payments->contains(fn (Payment $payment) => in_array($payment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) => Order::PAYMENT_STATUS_PENDING,
-                $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_FAILED) => Order::PAYMENT_STATUS_FAILED,
-                default => Order::PAYMENT_STATUS_UNPAID,
-            };
-
-            $lockedOrder->update([
-                'payment_status' => $status,
-            ]);
+            $lockedOrder->update($this->inspectOrderPaymentSync($lockedOrder));
         });
     }
 
