@@ -372,6 +372,64 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
     }
 
+    public function test_sequential_partial_rmas_cannot_round_past_the_paid_line_value(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 1.02);
+        $order->update([
+            'subtotal' => 0.02,
+            'shipping_total' => 1.00,
+            'grand_total' => 1.02,
+        ]);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 0.01,
+            'unit_cost' => 0,
+            'quantity' => 3,
+            'line_total' => 0.02,
+            'profit_amount' => 0.02,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $makeReceivedReturn = function () use ($service, $order, $customer, $manager, $item) {
+            $return = $service->createForCustomer($order->fresh(), $customer, [[
+                'order_item_id' => $item->id,
+                'quantity' => 1,
+                'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+            ]]);
+            $returnItem = $return->items()->firstOrFail();
+            $service->approve($return, [$returnItem->id => 1], null, $manager);
+            $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+            return $return->fresh();
+        };
+
+        $first = $makeReceivedReturn();
+        $service->complete($first, 0.01, null, 'First rounded cent.', $manager);
+
+        $second = $makeReceivedReturn();
+        try {
+            $service->complete($second, 0.01, null, 'Attempted second rounded cent.', $manager);
+            $this->fail('Sequential partial RMAs must not round beyond cumulative paid line value.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund_amount', $exception->errors());
+        }
+        $service->complete($second->fresh(), 0, null, 'No refundable cent remains yet.', $manager);
+
+        $third = $makeReceivedReturn();
+        $service->complete($third, 0.01, null, 'Final cumulative cent.', $manager);
+
+        $this->assertSame(0.02, (float) $order->fresh()->refund_total);
+        $this->assertDatabaseCount('order_refunds', 2);
+        $this->assertSame(1.00, (float) $order->fresh()->realized_revenue);
+    }
+
     public function test_rma_refund_does_not_double_apply_pos_discounts(): void
     {
         $customer = User::factory()->create();

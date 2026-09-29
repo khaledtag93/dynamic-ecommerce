@@ -14,6 +14,28 @@ class OrderRevenueAllocationService
             ->all();
     }
 
+    public function grossAllocateCents(Order $order): array
+    {
+        $order->loadMissing('items');
+        $items = $order->items->sortBy('id')->values();
+
+        if ($items->isEmpty()) {
+            return [];
+        }
+
+        $lineTotalCents = (int) $items->sum(
+            fn ($item) => max(0, $this->moneyToCents($item->line_total))
+        );
+        $nonMerchandiseCents = max(0, $this->moneyToCents($order->shipping_total))
+            + max(0, $this->moneyToCents($order->tax_total));
+        $grossMerchandiseCents = min(
+            $lineTotalCents,
+            max(0, $this->moneyToCents($order->grand_total) - $nonMerchandiseCents)
+        );
+
+        return $this->allocateTargetCents($items, $grossMerchandiseCents);
+    }
+
     public function allocateCents(Order $order): array
     {
         $order->loadMissing(['items', 'refunds.posReturnItems', 'refunds.returnRequest.items']);

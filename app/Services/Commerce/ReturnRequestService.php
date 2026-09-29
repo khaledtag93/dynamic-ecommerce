@@ -22,6 +22,7 @@ class ReturnRequestService
         protected AdminActivityLogService $activityLogService,
         protected ProfitService $profitService,
         protected GrowthAttributionService $growthAttributionService,
+        protected OrderRevenueAllocationService $orderRevenueAllocationService,
     ) {
     }
 
@@ -501,15 +502,7 @@ class ReturnRequestService
 
             $order = $locked->order()->firstOrFail();
 
-            $maxRmaRefund = round((float) $locked->items()
-                ->with('orderItem:id,unit_price,quantity,line_total')
-                ->where('requested_resolution', ReturnRequestItem::RESOLUTION_REFUND)
-                ->get()
-                ->sum(fn (ReturnRequestItem $item) => $this->refundableReceivedItemValue(
-                    $order,
-                    $item->orderItem,
-                    (int) $item->received_quantity,
-                )), 2);
+            $maxRmaRefund = $this->maxAdditionalRmaRefund($locked, $order);
 
             if ($refundAmount > $maxRmaRefund) {
                 throw ValidationException::withMessages([
@@ -563,28 +556,80 @@ class ReturnRequestService
         });
     }
 
-    private function refundableReceivedItemValue(Order $order, ?OrderItem $orderItem, int $receivedQuantity): float
+    private function maxAdditionalRmaRefund(ReturnRequest $returnRequest, Order $order): float
     {
-        if (! $orderItem || $receivedQuantity < 1 || (int) $orderItem->quantity < 1) {
-            return 0.0;
-        }
+        $order->loadMissing(['items', 'refunds.posReturnItems', 'refunds.returnRequest.items']);
+        $grossAllocations = $this->orderRevenueAllocationService->grossAllocateCents($order);
+        $realizedAllocations = $this->orderRevenueAllocationService->allocateCents($order);
+        $maxRefundCents = 0;
 
-        $linePaidTotal = round(max(0, (float) $orderItem->line_total), 2);
+        $items = $returnRequest->items()
+            ->with('orderItem:id,quantity')
+            ->where('requested_resolution', ReturnRequestItem::RESOLUTION_REFUND)
+            ->get();
 
-        if ($order->sales_channel !== Order::SALES_CHANNEL_POS) {
-            $subtotal = round(max(0, (float) $order->subtotal), 2);
-            $discountTotal = round(min($subtotal, max(0, (float) $order->discount_total)), 2);
+        foreach ($items as $item) {
+            $orderItem = $item->orderItem;
+            $receivedQuantity = max(0, (int) $item->received_quantity);
 
-            if ($subtotal > 0 && $discountTotal > 0 && $linePaidTotal > 0) {
-                $discountShare = round($discountTotal * ($linePaidTotal / $subtotal), 2);
-                $linePaidTotal = round(max(0, $linePaidTotal - min($linePaidTotal, $discountShare)), 2);
+            if (! $orderItem || $receivedQuantity < 1 || (int) $orderItem->quantity < 1) {
+                continue;
             }
+
+            $orderItemId = (int) $orderItem->id;
+            $soldQuantity = (int) $orderItem->quantity;
+            $linePaidCents = max(0, (int) ($grossAllocations[$orderItemId] ?? 0));
+
+            if ($linePaidCents < 1) {
+                continue;
+            }
+
+            $receivedQuantity = min($soldQuantity, $receivedQuantity);
+            $requestCapacityCents = (int) round(
+                ($linePaidCents * $receivedQuantity) / $soldQuantity
+            );
+            $cumulativeReturnedQuantity = min(
+                $soldQuantity,
+                $this->refundEligibleReturnedQuantity($orderItemId)
+            );
+            $cumulativeCapacityCents = (int) round(
+                ($linePaidCents * $cumulativeReturnedQuantity) / $soldQuantity
+            );
+            $alreadyRefundedCents = max(
+                0,
+                $linePaidCents - (int) ($realizedAllocations[$orderItemId] ?? 0)
+            );
+            $remainingCumulativeCapacityCents = max(
+                0,
+                $cumulativeCapacityCents - $alreadyRefundedCents
+            );
+
+            $maxRefundCents += min(
+                $requestCapacityCents,
+                $remainingCumulativeCapacityCents
+            );
         }
 
-        $quantity = (int) $orderItem->quantity;
-        $receivedQuantity = min($quantity, max(0, $receivedQuantity));
+        return round($maxRefundCents / 100, 2);
+    }
 
-        return round(($linePaidTotal / $quantity) * $receivedQuantity, 2);
+    private function refundEligibleReturnedQuantity(int $orderItemId): int
+    {
+        $posReturned = (int) PosReturnItem::query()
+            ->where('order_item_id', $orderItemId)
+            ->sum('quantity');
+
+        $rmaReturned = (int) ReturnRequestItem::query()
+            ->where('order_item_id', $orderItemId)
+            ->where('requested_resolution', ReturnRequestItem::RESOLUTION_REFUND)
+            ->where('received_quantity', '>', 0)
+            ->whereHas('returnRequest', fn ($query) => $query->whereIn('status', [
+                ReturnRequest::STATUS_RECEIVED,
+                ReturnRequest::STATUS_COMPLETED,
+            ]))
+            ->sum('received_quantity');
+
+        return max(0, $posReturned + $rmaReturned);
     }
 
     private function lockRequest(ReturnRequest $returnRequest): ReturnRequest
