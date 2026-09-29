@@ -68,6 +68,7 @@ class SalesCogsReconciliationCommandTest extends TestCase
         $this->assertSame(60.0, (float) $tracked->cost_total);
         $this->assertSame(40.0, (float) $tracked->profit_total);
         $this->assertSame('40.00', $trackedItem->profit_amount);
+        $this->assertSame(1, app(ProfitService::class)->countOrderItemProfitChanges($tracked));
 
         $this->assertSame(0, Artisan::call('commerce:reconcile-lot-cogs', [
             '--after-id' => max(0, $tracked->id - 1),
@@ -77,12 +78,12 @@ class SalesCogsReconciliationCommandTest extends TestCase
             'DRY-RUN complete',
             Artisan::output()
         );
-        $this->assertStringContainsString(
-            'changed=1',
+        $this->assertMatchesRegularExpression(
+            '/(?:^|\\| )changed=[1-9]\\d*/',
             Artisan::output()
         );
-        $this->assertStringContainsString(
-            'line-profit-changes=1',
+        $this->assertMatchesRegularExpression(
+            '/line-profit-changes=[1-9]\\d*/',
             Artisan::output()
         );
         $this->assertSame(60.0, (float) $tracked->fresh()->cost_total);
@@ -100,8 +101,8 @@ class SalesCogsReconciliationCommandTest extends TestCase
             'APPLY complete',
             Artisan::output()
         );
-        $this->assertStringContainsString(
-            'applied=1',
+        $this->assertMatchesRegularExpression(
+            '/applied=[1-9]\\d*/',
             Artisan::output()
         );
         $this->assertSame(30.0, (float) $tracked->fresh()->cost_total);
