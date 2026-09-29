@@ -54,7 +54,10 @@ class ReconcileLotCogsCommand extends Command
             $currentCost = $this->money($order->cost_total);
             $currentProfit = $this->money($order->profit_total);
             $itemProfitChanges = $profitService->countOrderItemProfitChanges($order);
-            $attributionProfitChange = $growthAttributionService->countOrderProfitSnapshotChanges($order);
+            $attributionProfitChange = $growthAttributionService->countOrderProfitSnapshotChanges(
+                $order,
+                $expected['profit_total'],
+            );
             $lineProfitChanges += $itemProfitChanges;
             $attributionProfitChanges += $attributionProfitChange;
 

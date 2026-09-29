@@ -129,7 +129,7 @@ class GrowthAttributionService
         }
     }
 
-    public function countOrderProfitSnapshotChanges(Order $order): int
+    public function countOrderProfitSnapshotChanges(Order $order, mixed $expectedProfitTotal = null): int
     {
         if (! Schema::hasTable('growth_attribution_touches')) {
             return 0;
@@ -144,9 +144,9 @@ class GrowthAttributionService
         }
 
         $touchProfitCents = (int) round((float) $touches->sum('profit_total') * 100);
-        $orderProfitCents = (int) round((float) ($order->profit_total ?? 0) * 100);
+        $expectedProfitCents = (int) round((float) ($expectedProfitTotal ?? $order->profit_total ?? 0) * 100);
 
-        return $touchProfitCents === $orderProfitCents ? 0 : 1;
+        return $touchProfitCents === $expectedProfitCents ? 0 : 1;
     }
 
     public function refreshOrderAttribution(int $orderId): void
