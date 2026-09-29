@@ -1,4 +1,24 @@
-# New Chat Handoff — Flowra / Dynamic — 2026-09-28
+# New Chat Handoff — Flowra / Dynamic — 2026-09-29
+
+## Current checkpoint — Workforce Payroll Integrity on QAS
+
+Continue on `sec03-framework-upgrade`. The exact verified **application / CI / QAS** revision is `123fcbc9f10eb5fb6b6ed24bf628af877aa31ee6` (`123fcbc9`), with **Hardening CI #2250 Green** on that exact SHA.
+
+Payroll Foundation V1 is now business-integrity hardened across effective-dated compensation history, retroactive historical-rate resolution, compensation overlap/proration guards, unstable attendance/break/correction/leave generation blockers, strict payroll money precision, exact-cent currency-separated summaries, direct model-level immutability after approval, and explicit separation between internal `Paid` workflow status and actual bank settlement.
+
+QAS was promoted from `523af8f8` to `123fcbc9` using `deploy-qas.sh sec03-framework-upgrade`. All 25 pending ERP-integrity migrations applied successfully through `2026_09_29_001000_enable_compensation_history`. Application health HTTP 200, static asset HTTP 200, maintenance OFF, Home/Login HTTP 200, and protected Payroll correctly redirects unauthenticated requests to Login. Immutable tag: `qas-payroll-integrity-2026-09-29`.
+
+**Important boundary:** source/full CI/deployed-QAS integrity evidence is CLOSED, but the signed-in Payroll/Workforce browser checklist remains a separate acceptance gate. Do not claim statutory tax/social-insurance, payroll bank settlement, payroll-file acceptance, automatic leave monetization or undefined salary/rate proration.
+
+Production remains unchanged. OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification remain independent release gates.
+
+**Next:** run controlled authenticated Workforce / Payroll QAS acceptance on `123fcbc9` using controlled test data only. Fix only reproduced defects with regression coverage. Then continue the first genuinely unclosed Business Process & ERP Integrity domain.
+
+Paste-ready continuation:
+
+> نكمل Flowra على `sec03-framework-upgrade` من application/QAS SHA `123fcbc9`. Hardening CI #2250 Green ونفس الـSHA منشور على QAS؛ الـ25 migration الجديدة اتطبقت، app/static HTTP 200 وmaintenance OFF. Payroll Integrity مقفول source/CI/deployed-QAS integrity: compensation history، retroactive rates، proration blockers، stable attendance/leave inputs، exact money/currency summaries، finalized immutability، وPaid منفصل عن bank settlement. الخطوة التالية controlled authenticated Workforce/Payroll QAS acceptance ببيانات test فقط، وأي defect حقيقي يتقفل regression-first. Production unchanged؛ OPS-01/PAY-01/OPS-02 وProduction scheduler/queue لسه release gates.
+
+### Earlier checkpoints below
 
 ## Current checkpoint — Purchasing + Inventory / Lot-Batch Integrity V1 on QAS
 

@@ -1,5 +1,18 @@
 # MASTER PROJECT STATUS
 
+## Workforce Payroll Integrity QAS checkpoint — 2026-09-29
+
+- Branch: `sec03-framework-upgrade`.
+- Verified application / CI / QAS revision: `123fcbc9f10eb5fb6b6ed24bf628af877aa31ee6`.
+- Hardening CI #2250 is Green on the exact application SHA.
+- QAS deployment from `523af8f8` to `123fcbc9` completed successfully, including 25 pending ERP-integrity migrations; application and static-asset health are HTTP 200 and maintenance is OFF.
+- Immutable checkpoint tag: `qas-payroll-integrity-2026-09-29`.
+- Payroll Foundation V1 is now hardened across effective-dated compensation history, historical rate resolution, proration blockers, unstable attendance/leave input guards, strict monetary precision, exact-cent/currency-safe summaries, finalized-history immutability and explicit separation of internal Paid status from bank settlement.
+- Payroll V1 does not claim statutory payroll rules, bank reconciliation/disbursement proof, payroll-file acceptance, automatic leave monetization, or undefined proration policy.
+- Authenticated Payroll/Workforce browser acceptance on the exact QAS revision remains the next acceptance task; source/CI/public-QAS evidence must not be confused with that manual gate.
+- Production remains unchanged and still requires the independent OPS-01, PAY-01, OPS-02 and runtime scheduler/queue gates.
+
+
 ## Supplier obligations / Operational AP integrity source checkpoint — 2026-09-28
 
 - Branch: `sec03-framework-upgrade`.

@@ -1,5 +1,22 @@
 # CURRENT PHASE
 
+## Workforce Payroll Integrity — QAS checkpoint — 2026-09-29
+
+- Active branch: `sec03-framework-upgrade`.
+- **Verified application / CI / QAS SHA:** `123fcbc9f10eb5fb6b6ed24bf628af877aa31ee6` (`123fcbc9`) — `fix: clarify payroll paid settlement boundary`.
+- **Hardening CI #2250: Green** on that exact application revision.
+- QAS was promoted from `523af8f8` to `123fcbc9`; all 25 pending ERP-integrity migrations ran successfully through `2026_09_29_001000_enable_compensation_history`.
+- QAS post-deploy evidence: remote HEAD `123fcbc9`, maintenance OFF, Home HTTP 200, Login HTTP 200, static asset HTTP 200, normal Admin redirect, unauthenticated Payroll route redirects to Login.
+- Immutable repository tag: `qas-payroll-integrity-2026-09-29`.
+- **Payroll Integrity is CLOSED for source / full CI / deployed-QAS integrity evidence.** Authenticated manual/destructive Payroll browser acceptance remains a separate acceptance gate.
+- Closed rules include effective-dated compensation history, retroactive rate authority, explicit proration blockers, stable attendance/leave inputs, strict money precision, exact-cent summaries, currency separation, model-level finalized-run immutability and explicit Paid-vs-bank-settlement semantics.
+- V1 intentionally does not claim statutory tax/social insurance, leave monetization, salary/rate proration, payroll bank settlement, payroll-file acceptance, or full effective-dated employment-status history.
+- Production remains unchanged. OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification remain independent release gates.
+- Detailed evidence: `docs/PAYROLL_INTEGRITY_CHECKPOINT_2026-09-29.md`.
+
+**Immediate next action:** run the controlled authenticated Workforce / Payroll QAS acceptance checklist against `123fcbc9` using controlled test data only. Fix only reproduced defects with regression coverage; then continue the next genuinely unclosed Business Process & ERP Integrity boundary.
+
+
 ## Payment disputes / chargebacks readiness — active source checkpoint — 2026-09-29
 
 - Active branch: `sec03-framework-upgrade`.
