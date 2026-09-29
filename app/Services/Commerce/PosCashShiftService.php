@@ -53,6 +53,11 @@ class PosCashShiftService
             ->where('orders.payment_method', Order::PAYMENT_METHOD_POS_CASH)
             ->whereBetween('order_refunds.processed_at', [$shift->opened_at, $shift->closed_at ?? now()])
             ->where('order_refunds.processed_by', $shift->cashier_user_id)
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('pos_return_items')
+                    ->whereColumn('pos_return_items.order_refund_id', 'order_refunds.id');
+            })
             ->sum('order_refunds.amount');
 
         return [

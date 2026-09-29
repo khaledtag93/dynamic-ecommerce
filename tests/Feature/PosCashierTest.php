@@ -638,12 +638,29 @@ class PosCashierTest extends TestCase
             ],
         ]);
 
-        OrderRefund::query()->create([
+        $orderItem = $order->items()->create([
+            'product_name' => 'Cash Refund Item',
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $refund = OrderRefund::query()->create([
             'order_id' => $order->id,
             'amount' => 100,
             'reason' => 'Full cash return',
             'processed_by' => $admin->id,
             'processed_at' => now(),
+        ]);
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refund->id,
+            'order_id' => $order->id,
+            'order_item_id' => $orderItem->id,
+            'quantity' => 1,
+            'amount' => 100,
+            'restocked' => false,
         ]);
 
         $summary = $shiftService->summary($shift->fresh());
@@ -651,6 +668,63 @@ class PosCashierTest extends TestCase
         $this->assertSame(100.0, $summary['cash_sales']);
         $this->assertSame(100.0, $summary['cash_refunds']);
         $this->assertSame(100.0, $summary['expected_cash']);
+    }
+
+    public function test_generic_order_refund_does_not_reduce_pos_cash_shift(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $shiftService = app(PosCashShiftService::class);
+        $shift = $shiftService->openShift($admin, 100);
+
+        $order = Order::query()->create([
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'order_number' => 'POS-SHIFT-GENERIC-REFUND-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+            'grand_total' => 100,
+            'refund_total' => 0,
+            'customer_name' => 'Generic Refund Customer',
+            'customer_email' => 'generic-refund@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'POS counter',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+            'meta' => [
+                'cashier_user_id' => $admin->id,
+                'pos_cash_shift_id' => $shift->id,
+            ],
+        ]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_POS_CASH,
+            'provider' => 'pos',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'POS-CAPTURE-GENERIC-001',
+            'amount' => 100,
+            'currency' => 'EGP',
+            'paid_at' => now(),
+        ]);
+
+        app(\App\Services\Commerce\OrderActionService::class)->refund(
+            $order,
+            100,
+            'Generic admin refund',
+            null,
+            $admin->id,
+            null,
+            (string) Str::uuid()
+        );
+
+        $summary = $shiftService->summary($shift->fresh());
+
+        $this->assertSame(100.0, $summary['cash_sales']);
+        $this->assertSame(0.0, $summary['cash_refunds']);
+        $this->assertSame(200.0, $summary['expected_cash']);
+        $this->assertDatabaseCount('pos_return_items', 0);
     }
 
     public function test_cash_pos_return_requires_an_open_cash_shift(): void
