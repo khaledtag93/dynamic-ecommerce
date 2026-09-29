@@ -305,6 +305,18 @@ class AdminAnalyticsExperienceTest extends TestCase
             'aggregated_at' => now()->subMinute(),
         ]);
 
+        Cache::flush();
+
+        $staleResponse = $this->actingAs($owner)
+            ->get(route('admin.analytics.products.show', [
+                'product' => $product,
+                'range' => 'today',
+            ]));
+
+        $staleResponse
+            ->assertOk()
+            ->assertSee('EGP 999.00');
+
         AnalyticsDailyStat::query()->create([
             'stat_date' => now()->toDateString(),
             'meta' => [
@@ -363,8 +375,6 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(46.67, (float) $drilldown['totals']['gross_margin_percent']);
         $this->assertSame(75.0, (float) $drilldown['daily']->sole()->revenue_gross);
         $this->assertNotSame(999.0, (float) $drilldown['totals']['revenue_gross']);
-
-        Cache::flush();
 
         $response = $this->actingAs($owner)
             ->get(route('admin.analytics.products.show', [

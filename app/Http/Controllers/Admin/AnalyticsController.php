@@ -83,11 +83,13 @@ class AnalyticsController extends Controller
             $to->format('Ymd')
         );
 
-        $drilldown = Cache::remember(
-            $cacheKey,
-            now()->addMinutes(5),
-            fn () => $this->dashboardService->buildProductDrilldown($product, $from, $to)
-        );
+        $drilldown = $this->dashboardService->hasDirtyDailyStats($from, $to)
+            ? $this->dashboardService->buildProductDrilldown($product, $from, $to)
+            : Cache::remember(
+                $cacheKey,
+                now()->addMinutes(5),
+                fn () => $this->dashboardService->buildProductDrilldown($product, $from, $to)
+            );
 
         return view('admin.analytics.product', [
             'range' => $range,

@@ -671,7 +671,7 @@ class AnalyticsDashboardService
             ->values();
     }
 
-    protected function hasDirtyDailyStats(Carbon $from, Carbon $to): bool
+    public function hasDirtyDailyStats(Carbon $from, Carbon $to): bool
     {
         return AnalyticsDailyStat::query()
             ->whereBetween('stat_date', [$from->toDateString(), $to->toDateString()])
