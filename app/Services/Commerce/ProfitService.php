@@ -214,7 +214,6 @@ class ProfitService
     }
 
     private function moneyToCents(mixed $value): int
-    {    private function moneyToCents(mixed $value): int
     {
         return (int) round(((float) $value) * 100);
     }
