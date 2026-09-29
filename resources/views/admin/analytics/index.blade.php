@@ -26,9 +26,9 @@
     $topProductFlowMeta = $topProductForFlow
         ? __('Top product right now: :name', ['name' => $topProductForFlow->product_name ?? __('Product #:id', ['id' => $topProductForFlow->product_id])])
         : __('Product drilldowns will appear here once product performance is tracked.');
-    $bestCouponForFlow = $couponPerformance->sortByDesc('revenue_gross')->first();
+    $bestCouponForFlow = $couponPerformance->sortByDesc('profit_total')->first();
     $offersFlowMeta = $bestCouponForFlow
-        ? __('Leading coupon: :code', ['code' => $bestCouponForFlow->coupon_code])
+        ? $bestCouponForFlow->coupon_code . ' · ' . __('Profit') . ' EGP ' . number_format((float) $bestCouponForFlow->profit_total, 2)
         : __('Open offers drilldown to inspect discount pressure and coupon contribution.');
     $analyticsFlowTitle = __('Cross-page flow');
     $analyticsFlowSubtitle = __('Move from revenue signals into the exact drilldown that explains the next action.');
@@ -309,7 +309,7 @@
     $currentAbandonmentValue = (float) ($totals['cart_abandonment_rate'] ?? 0);
     $previousAbandonmentValue = (float) ($previousTotals['cart_abandonment_rate'] ?? 0);
     $discountShare = $currentRevenueValue > 0 ? ((float) ($totals['discount_total'] ?? 0) / $currentRevenueValue) : 0.0;
-    $couponLeader = $couponPerformance->sortByDesc(fn ($row) => (float) data_get($row, 'revenue_gross', 0))->first();
+    $couponLeader = $couponPerformance->sortByDesc(fn ($row) => (float) data_get($row, 'profit_total', 0))->first();
     $categoryLeader = $topCategories->sortByDesc(fn ($row) => (float) data_get($row, 'revenue_gross', 0))->first();
     $productLeader = $topProducts->sortByDesc(fn ($row) => (float) data_get($row, 'revenue_gross', 0))->first();
 
@@ -417,10 +417,10 @@
             'help' => __('This category is carrying the broadest revenue contribution right now.'),
         ] : null,
         $couponLeader ? [
-            'label' => __('Top coupon return'),
+            'label' => __('Profit'),
             'title' => data_get($couponLeader, 'coupon_code', __('Top coupon')),
-            'value' => 'EGP ' . number_format((float) data_get($couponLeader, 'revenue_gross', 0), 2),
-            'help' => __('This offer is currently producing the highest tracked revenue contribution.'),
+            'value' => 'EGP ' . number_format((float) data_get($couponLeader, 'profit_total', 0), 2),
+            'help' => __('Gross margin') . ': ' . (data_get($couponLeader, 'gross_margin_percent') === null ? __('N/A') : number_format((float) data_get($couponLeader, 'gross_margin_percent'), 1) . '%'),
         ] : null,
     ])->filter()->values();
 
@@ -689,7 +689,10 @@
                         @forelse ($couponPerformance->take(4) as $row)
                             <div class="analytics-row">
                                 <div><div class="fw-bold">{{ data_get($row, 'coupon_code', __('No coupon')) }}</div><div class="text-muted small">{{ number_format((int) data_get($row, 'orders_count', 0)) }} {{ __('orders') }}</div></div>
-                                <div class="text-end fw-bold">EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }}</div>
+                                <div class="text-end">
+                                    <div class="fw-bold">{{ __('Profit') }} EGP {{ number_format((float) data_get($row, 'profit_total', 0), 2) }}</div>
+                                    <div class="text-muted small">{{ __('Realized revenue') }} EGP {{ number_format((float) data_get($row, 'revenue_gross', 0), 2) }} · {{ __('Gross margin') }} {{ data_get($row, 'gross_margin_percent') === null ? __('N/A') : number_format((float) data_get($row, 'gross_margin_percent'), 1).'%' }}</div>
+                                </div>
                             </div>
                         @empty
                             <div class="text-muted">{{ __('No coupon performance records for this range.') }}</div>

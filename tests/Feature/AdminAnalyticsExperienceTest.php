@@ -116,6 +116,8 @@ class AdminAnalyticsExperienceTest extends TestCase
             'grand_total' => 100,
             'refund_total' => 25,
             'discount_total' => 10,
+            'cost_total' => 40,
+            'profit_total' => 35,
             'coupon_code' => 'NET25',
             'customer_name' => 'Realized Customer',
             'customer_email' => 'offers-realized@example.test',
@@ -159,8 +161,64 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertOk()
             ->assertSee('NET25')
             ->assertSee('EGP 75.00')
+            ->assertSee('EGP 35.00')
+            ->assertSee('46.7%')
             ->assertDontSee('EGP 100.00')
             ->assertDontSee('EGP 500.00');
+    }
+
+    public function test_coupon_profitability_uses_weighted_realized_profit_instead_of_revenue_leader(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        foreach ([
+            ['number' => 'COUPON-HIGHREV-001', 'coupon' => 'HIGHREV', 'total' => 100, 'refund' => 0, 'discount' => 20, 'profit' => 5],
+            ['number' => 'COUPON-HIGHPROFIT-001', 'coupon' => 'HIGHPROFIT', 'total' => 60, 'refund' => 0, 'discount' => 5, 'profit' => 40],
+            ['number' => 'COUPON-HIGHPROFIT-002', 'coupon' => 'HIGHPROFIT', 'total' => 40, 'refund' => 20, 'discount' => 5, 'profit' => 10],
+        ] as $row) {
+            Order::query()->create([
+                'order_number' => $row['number'],
+                'status' => Order::STATUS_COMPLETED,
+                'payment_status' => $row['refund'] > 0 ? Order::PAYMENT_STATUS_PARTIALLY_REFUNDED : Order::PAYMENT_STATUS_PAID,
+                'grand_total' => $row['total'],
+                'refund_total' => $row['refund'],
+                'discount_total' => $row['discount'],
+                'cost_total' => max(0, ($row['total'] - $row['refund']) - $row['profit']),
+                'profit_total' => $row['profit'],
+                'coupon_code' => $row['coupon'],
+                'customer_name' => 'Coupon Profit Customer',
+                'customer_email' => strtolower($row['number']).'@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test address',
+                'shipping_city' => 'Cairo',
+                'placed_at' => now(),
+            ]);
+        }
+
+        $rows = app(\App\Services\Analytics\AnalyticsRevenueService::class)
+            ->couponPerformance(now()->startOfDay(), now()->endOfDay());
+
+        $highRevenue = $rows->firstWhere('coupon_code', 'HIGHREV');
+        $highProfit = $rows->firstWhere('coupon_code', 'HIGHPROFIT');
+
+        $this->assertSame(100.0, (float) $highRevenue->realized_revenue);
+        $this->assertSame(5.0, (float) $highRevenue->profit_total);
+        $this->assertSame(5.0, (float) $highRevenue->gross_margin_percent);
+        $this->assertSame(80.0, (float) $highProfit->realized_revenue);
+        $this->assertSame(50.0, (float) $highProfit->profit_total);
+        $this->assertSame(62.5, (float) $highProfit->gross_margin_percent);
+        $this->assertSame(2, (int) $highProfit->orders_count);
+
+        Cache::flush();
+
+        $response = $this->actingAs($owner)
+            ->get(route('admin.analytics.offers', ['range' => 'today']));
+
+        $response
+            ->assertOk()
+            ->assertSee('HIGHPROFIT')
+            ->assertSee('Profit EGP 50.00')
+            ->assertSee('62.5%');
     }
 
     public function test_product_analytics_variant_revenue_uses_realized_net_order_value(): void

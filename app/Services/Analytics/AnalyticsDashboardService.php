@@ -18,6 +18,11 @@ class AnalyticsDashboardService
 {
     protected array $rawProductStatsCache = [];
 
+    public function __construct(
+        protected AnalyticsRevenueService $analyticsRevenueService
+    ) {
+    }
+
     public function buildSnapshot(Carbon $from, Carbon $to): array
     {
         $periodDays = max(1, $from->diffInDays($to) + 1);
@@ -448,21 +453,7 @@ class AnalyticsDashboardService
 
     protected function buildCouponPerformance(Carbon $from, Carbon $to): Collection
     {
-        return Order::query()
-            ->commerciallyRealized()
-            ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
-            ->whereNotNull('coupon_code')
-            ->select(
-                'coupon_code',
-                DB::raw('COUNT(*) as orders_count'),
-                DB::raw('SUM(grand_total - refund_total) as revenue_gross'),
-                DB::raw('SUM(discount_total) as discount_total'),
-                DB::raw('AVG(grand_total - refund_total) as average_order_value')
-            )
-            ->groupBy('coupon_code')
-            ->orderByDesc('revenue_gross')
-            ->limit(6)
-            ->get();
+        return $this->analyticsRevenueService->couponPerformance($from, $to, 6);
     }
 
     protected function buildUserInsights(Carbon $from, Carbon $to): array

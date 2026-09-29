@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AnalyticsDailyStat;
 use App\Models\AnalyticsProductDailyStat;
-use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\PromotionRule;
@@ -137,32 +136,7 @@ class AnalyticsController extends Controller
         );
 
         $drilldown = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($from, $to) {
-            $couponRows = Order::query()
-                ->commerciallyRealized()
-                ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
-                ->whereNotNull('coupon_code')
-                ->select(
-                    'coupon_code',
-                    DB::raw('COUNT(*) as orders_count'),
-                    DB::raw('SUM(grand_total - refund_total) as revenue_gross'),
-                    DB::raw('SUM(discount_total) as discount_total'),
-                    DB::raw('AVG(grand_total - refund_total) as average_order_value')
-                )
-                ->groupBy('coupon_code')
-                ->orderByDesc('revenue_gross')
-                ->get();
-
-            $coupons = Coupon::query()->whereIn('code', $couponRows->pluck('coupon_code'))->get()->keyBy('code');
-            $couponRows = $couponRows->map(function ($row) use ($coupons) {
-                $coupon = $coupons->get($row->coupon_code);
-                $row->usage_limit = $coupon?->usage_limit;
-                $row->used_count = $coupon?->used_count;
-                $row->is_active = $coupon?->is_active;
-                $row->remaining_usage = $coupon && $coupon->usage_limit !== null
-                    ? max(0, (int) $coupon->usage_limit - (int) $coupon->used_count)
-                    : null;
-                return $row;
-            });
+            $couponRows = $this->analyticsRevenueService->couponPerformance($from, $to);
 
             $discountedOrders = Order::query()
                 ->commerciallyRealized()
@@ -171,6 +145,7 @@ class AnalyticsController extends Controller
                 ->selectRaw('COUNT(*) as orders_count')
                 ->selectRaw('SUM(discount_total) as discount_total')
                 ->selectRaw('SUM(grand_total - refund_total) as revenue_gross')
+                ->selectRaw('SUM(profit_total) as profit_total')
                 ->first();
 
             $activePromotions = PromotionRule::query()

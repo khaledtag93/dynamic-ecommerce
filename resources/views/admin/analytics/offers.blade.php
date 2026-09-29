@@ -10,8 +10,12 @@
     $discountedOrdersCount = (int) data_get($discountedOrders, 'orders_count', 0);
     $discountTotal = (float) data_get($discountedOrders, 'discount_total', 0);
     $discountRevenue = (float) data_get($discountedOrders, 'revenue_gross', 0);
+    $discountProfit = (float) data_get($discountedOrders, 'profit_total', 0);
+    $discountGrossMargin = $discountRevenue > 0 ? (($discountProfit / $discountRevenue) * 100) : null;
     $effectiveDiscountRate = $discountRevenue > 0 ? ($discountTotal / $discountRevenue) : 0;
-    $bestCoupon = $couponRows->sortByDesc('revenue_gross')->first();
+    $topRevenueCoupon = $couponRows->sortByDesc('revenue_gross')->first();
+    $topProfitCoupon = $couponRows->sortByDesc('profit_total')->first();
+    $hasProfitableCoupon = $topProfitCoupon && (float) $topProfitCoupon->profit_total > 0;
     $heaviestDiscountCoupon = $couponRows->sortByDesc('discount_total')->first();
     $couponMaxRevenue = max(1, (float) $couponRows->max('revenue_gross'));
     $couponMaxOrders = max(1, (int) $couponRows->max('orders_count'));
@@ -62,7 +66,7 @@
         : __('Discount pressure is elevated, so the team should verify whether offers are buying demand efficiently or compressing value.') ;
 
     $promoLaneItems = [
-        ['label' => __('Scale'), 'value' => $bestCoupon ? __('Lean into :code while it is converting cleanly.', ['code' => $bestCoupon->coupon_code]) : __('No scale signal yet.')],
+        ['label' => __('Scale'), 'value' => $hasProfitableCoupon ? $topProfitCoupon->coupon_code . ' · ' . __('Profit') . ' EGP ' . number_format((float) $topProfitCoupon->profit_total, 2) : __('No scale signal yet.')],
         ['label' => __('Protect'), 'value' => __('Keep effective discount rate near a disciplined operating range.')],
         ['label' => __('Refine'), 'value' => $heaviestDiscountCoupon ? __('Review :code for margin drag or over-discounting.', ['code' => $heaviestDiscountCoupon->coupon_code]) : __('No refinement signal yet.')],
     ];
@@ -72,14 +76,18 @@
         ['label' => __('Discount value'), 'value' => 'EGP ' . number_format($discountTotal, 2), 'context' => __('Total promotional cost absorbed across discounted orders.')],
         ['label' => __('Discounted revenue'), 'value' => 'EGP ' . number_format($discountRevenue, 2), 'context' => __('Revenue created while a discount was present.')],
         ['label' => __('Effective discount rate'), 'value' => number_format($effectiveDiscountRate * 100, 1) . '%', 'context' => __('Discount total divided by discounted-order revenue.')],
-        ['label' => __('Top revenue coupon'), 'value' => $bestCoupon?->coupon_code ?? '—', 'context' => $bestCoupon ? ('EGP ' . number_format((float) $bestCoupon->revenue_gross, 2)) : __('No coupon leader yet')],
+        ['label' => __('Profit'), 'value' => 'EGP ' . number_format($discountProfit, 2), 'context' => __('Discounted orders')],
+        ['label' => __('Gross margin'), 'value' => $discountGrossMargin === null ? __('N/A') : number_format($discountGrossMargin, 1) . '%', 'context' => __('Realized revenue')],
+        ['label' => __('Top revenue coupon'), 'value' => $topRevenueCoupon?->coupon_code ?? '—', 'context' => $topRevenueCoupon ? ('EGP ' . number_format((float) $topRevenueCoupon->revenue_gross, 2)) : __('No coupon leader yet')],
         ['label' => __('Active promotions'), 'value' => number_format($activePromotions->count()), 'context' => __('Configured live promotion rules.')],
     ];
     $offerOperatorReads = [
         [
             'label' => __('Best lever'),
-            'value' => $bestCoupon ? $bestCoupon->coupon_code : __('No coupon leader yet'),
-            'help' => $bestCoupon ? __('Highest revenue coupon in the selected range.') : __('No clean scale signal is visible yet.'),
+            'value' => $hasProfitableCoupon ? $topProfitCoupon->coupon_code : __('No coupon leader yet'),
+            'help' => $hasProfitableCoupon
+                ? __('Profit') . ' EGP ' . number_format((float) $topProfitCoupon->profit_total, 2) . ' · ' . __('Gross margin') . ' ' . (($topProfitCoupon->gross_margin_percent ?? null) === null ? __('N/A') : number_format((float) $topProfitCoupon->gross_margin_percent, 1) . '%')
+                : __('No clean scale signal is visible yet.'),
         ],
         [
             'label' => __('Biggest risk'),
@@ -88,7 +96,7 @@
         ],
         [
             'label' => __('Next action'),
-            'value' => $effectiveDiscountRate <= 0.12 ? __('Scale the leading coupon carefully') : __('Review discount pressure before scaling'),
+            'value' => $hasProfitableCoupon && $effectiveDiscountRate <= 0.12 ? __('Scale the leading coupon carefully') : __('Review discount pressure before scaling'),
             'help' => __('Use this as the first operator move from the current offer mix.'),
         ],
     ];
@@ -161,7 +169,7 @@
         <x-admin.stat-card :label="__('Discounted orders')" :value="number_format($discountedOrdersCount)" :help="__('Orders influenced by coupon or discount logic in this window.')" class="offers-trend-card" />
         <x-admin.stat-card :label="__('Discount value')" :value="'EGP ' . number_format($discountTotal, 2)" :help="__('Total promotional cost absorbed across discounted orders.')" tone="warning" class="offers-trend-card" />
         <x-admin.stat-card :label="__('Discounted revenue')" :value="'EGP ' . number_format($discountRevenue, 2)" :help="__('Revenue created while a discount was present.')" tone="success" class="offers-trend-card" />
-        <x-admin.stat-card :label="__('Effective discount rate')" :value="number_format($effectiveDiscountRate * 100, 1) . '%'" :help="__('Discount total divided by discounted-order revenue.')" class="offers-trend-card" />
+        <x-admin.stat-card :label="__('Gross margin')" :value="$discountGrossMargin === null ? __('N/A') : number_format($discountGrossMargin, 1) . '%'" :help="__('Profit') . ' / ' . __('Realized revenue')" class="offers-trend-card" />
     </div>
 
     <div class="offers-chart-grid" id="offers-analytics-panel-charts" role="tabpanel" aria-labelledby="offers-analytics-tab-charts" data-admin-section-panel="charts">
@@ -216,6 +224,7 @@
                             </div>
                             <div class="text-end">
                                 <div class="fw-bold">EGP {{ number_format((float) $row->revenue_gross, 2) }}</div>
+                                <div class="text-muted small">{{ __('Profit') }} EGP {{ number_format((float) $row->profit_total, 2) }} · {{ __('Gross margin') }} {{ ($row->gross_margin_percent ?? null) === null ? __('N/A') : number_format((float) $row->gross_margin_percent, 1).'%' }}</div>
                                 <div class="text-muted small">{{ __('Discount') }} EGP {{ number_format((float) $row->discount_total, 2) }}</div>
                             </div>
                         </div>
@@ -242,7 +251,11 @@
                                     <div class="text-muted small">{{ number_format((int) $row->orders_count) }} {{ __('orders') }} · {{ __('AOV') }} EGP {{ number_format((float) $row->average_order_value, 2) }}</div>
                                     <div class="offers-bar"><div class="offers-bar-fill" style="width: {{ min(100, ((float) $row->revenue_gross / $couponMaxRevenue) * 100) }}%"></div></div>
                                 </div>
-                                <div class="text-end"><div class="fw-bold">EGP {{ number_format((float) $row->revenue_gross, 2) }}</div><div class="text-muted small">{{ __('Discount') }}: EGP {{ number_format((float) $row->discount_total, 2) }}</div></div>
+                                <div class="text-end">
+                                    <div class="fw-bold">{{ __('Profit') }} EGP {{ number_format((float) $row->profit_total, 2) }}</div>
+                                    <div class="text-muted small">{{ __('Realized revenue') }} EGP {{ number_format((float) $row->revenue_gross, 2) }}</div>
+                                    <div class="text-muted small">{{ __('Gross margin') }} {{ ($row->gross_margin_percent ?? null) === null ? __('N/A') : number_format((float) $row->gross_margin_percent, 1).'%' }} · {{ __('Discount') }} EGP {{ number_format((float) $row->discount_total, 2) }}</div>
+                                </div>
                             </div>
                         @empty
                             <div class="text-muted">{{ __('No coupon analytics yet for this period.') }}</div>

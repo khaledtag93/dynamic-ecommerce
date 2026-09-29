@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Commerce\OrderRevenueAllocationService;
@@ -15,6 +16,56 @@ class AnalyticsRevenueService
     public function __construct(
         protected OrderRevenueAllocationService $orderRevenueAllocationService
     ) {
+    }
+
+    public function couponPerformance(
+        Carbon $from,
+        Carbon $to,
+        ?int $limit = null
+    ): Collection {
+        $query = $this->realizedOrdersQuery($from, $to)
+            ->reorder()
+            ->whereNotNull('coupon_code')
+            ->select(
+                'coupon_code',
+                DB::raw('COUNT(*) as orders_count'),
+                DB::raw('SUM(grand_total - refund_total) as revenue_gross'),
+                DB::raw('SUM(discount_total) as discount_total'),
+                DB::raw('SUM(profit_total) as profit_total'),
+                DB::raw('AVG(grand_total - refund_total) as average_order_value')
+            )
+            ->groupBy('coupon_code')
+            ->orderByDesc('revenue_gross');
+
+        if ($limit !== null) {
+            $query->limit(max(1, $limit));
+        }
+
+        $rows = $query->get();
+        $coupons = Coupon::query()
+            ->whereIn('code', $rows->pluck('coupon_code')->filter()->all())
+            ->get()
+            ->keyBy('code');
+
+        return $rows->map(function ($row) use ($coupons) {
+            $revenue = round((float) $row->revenue_gross, 2);
+            $profit = round((float) $row->profit_total, 2);
+            $coupon = $coupons->get($row->coupon_code);
+
+            $row->realized_revenue = $revenue;
+            $row->profit_total = $profit;
+            $row->gross_margin_percent = $revenue > 0
+                ? round(($profit / $revenue) * 100, 2)
+                : null;
+            $row->usage_limit = $coupon?->usage_limit;
+            $row->used_count = $coupon?->used_count;
+            $row->is_active = $coupon?->is_active;
+            $row->remaining_usage = $coupon && $coupon->usage_limit !== null
+                ? max(0, (int) $coupon->usage_limit - (int) $coupon->used_count)
+                : null;
+
+            return $row;
+        });
     }
 
     public function topVariantsForProduct(
