@@ -11,6 +11,7 @@ use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\Analytics\AnalyticsTracker;
+use App\Services\Growth\GrowthAttributionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -22,6 +23,7 @@ class PosReturnService
         protected ReturnRequestService $returnRequestService,
         protected ProfitService $profitService,
         protected AnalyticsTracker $analyticsTracker,
+        protected GrowthAttributionService $growthAttributionService,
     ) {
     }
 
@@ -206,6 +208,7 @@ class PosReturnService
             ]);
 
             $this->profitService->refreshOrderTotals($lockedOrder);
+            $this->growthAttributionService->refreshOrderAttribution((int) $lockedOrder->id);
             $this->analyticsTracker->syncRealizedPurchase($lockedOrder->fresh(['items']));
 
             if ($newPaymentStatus === Order::PAYMENT_STATUS_REFUNDED) {

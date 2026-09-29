@@ -9,6 +9,7 @@ use App\Models\PosReturnItem;
 use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
+use App\Services\Growth\GrowthAttributionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +21,7 @@ class ReturnRequestService
         protected OrderActionService $orderActionService,
         protected AdminActivityLogService $activityLogService,
         protected ProfitService $profitService,
+        protected GrowthAttributionService $growthAttributionService,
     ) {
     }
 
@@ -543,6 +545,7 @@ class ReturnRequestService
             ]);
 
             $this->profitService->refreshOrderTotals($order->fresh());
+            $this->growthAttributionService->refreshOrderAttribution((int) $order->id);
 
             $this->activityLogService->log(
                 'returns',

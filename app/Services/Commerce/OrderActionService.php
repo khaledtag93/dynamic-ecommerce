@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Services\Analytics\AnalyticsTracker;
+use App\Services\Growth\GrowthAttributionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -20,6 +21,7 @@ class OrderActionService
         protected AnalyticsTracker $analyticsTracker,
         protected ProfitService $profitService,
         protected PaymentService $paymentService,
+        protected GrowthAttributionService $growthAttributionService,
     ) {
     }
 
@@ -509,6 +511,7 @@ class OrderActionService
             $this->paymentService->reconcileProviderReversalEvidence($lockedOrder, $newRefundTotal, $processedBy);
             $this->profitService->refreshOrderTotals($lockedOrder);
             $freshOrder = $lockedOrder->fresh(['refunds', 'user']);
+            $this->growthAttributionService->refreshOrderAttribution((int) $freshOrder->id);
             $this->analyticsTracker->syncRealizedPurchase($freshOrder);
 
             $this->orderNotificationService->notifyRefundRecorded($freshOrder);

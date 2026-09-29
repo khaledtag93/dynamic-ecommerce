@@ -13,9 +13,11 @@ use App\Models\GrowthMessageTemplate;
 use App\Models\GrowthDelivery;
 use App\Models\GrowthMessageLog;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\WebsiteSetting;
 use App\Services\Analytics\GrowthAutomationService;
+use App\Services\Commerce\OrderActionService;
 use App\Services\Growth\GrowthAttributionService;
 use App\Services\Growth\GrowthCampaignService;
 use App\Services\Growth\GrowthCohortRetentionService;
@@ -394,6 +396,84 @@ class GrowthControlIntegrityTest extends TestCase
         $summary = $service->summary();
         $this->assertSame(0, $summary['attributed_orders']);
         $this->assertSame(0.0, $summary['attributed_revenue']);
+    }
+
+    public function test_refund_restates_growth_attribution_immediately_without_waiting_for_growth_run(): void
+    {
+        $user = User::factory()->create();
+        $delivery = GrowthDelivery::query()->create([
+            'user_id' => $user->id,
+            'channel' => 'in_app',
+            'provider' => 'database',
+            'status' => 'sent',
+            'sent_at' => now()->subHours(2),
+        ]);
+
+        $order = Order::query()->create([
+            'user_id' => $user->id,
+            'order_number' => 'ATTR-REFUND-IMMEDIATE-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+            'currency' => 'EGP',
+            'subtotal' => 100,
+            'discount_total' => 0,
+            'shipping_total' => 0,
+            'tax_total' => 0,
+            'grand_total' => 100,
+            'refund_total' => 0,
+            'cost_total' => 40,
+            'profit_total' => 60,
+            'customer_name' => 'Immediate Attribution Customer',
+            'customer_email' => 'attribution-refund@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'placed_at' => now()->subHour(),
+            'delivered_at' => now()->subMinutes(50),
+        ]);
+        $order->items()->create([
+            'product_name' => 'Attributed product',
+            'sku' => 'ATTR-REFUND-001',
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'ATTR-REFUND-PAYMENT-001',
+            'amount' => 100,
+            'currency' => 'EGP',
+            'paid_at' => now()->subMinutes(55),
+        ]);
+
+        $attribution = app(GrowthAttributionService::class);
+        $attribution->syncForDelivery($delivery);
+
+        $touch = GrowthAttributionTouch::query()->where('order_id', $order->id)->firstOrFail();
+        $this->assertSame(100.0, (float) $touch->revenue);
+        $this->assertSame(60.0, (float) $touch->profit_total);
+
+        app(OrderActionService::class)->refund($order, 25, 'Immediate attribution refund');
+
+        $touch = $touch->fresh();
+        $freshOrder = $order->fresh();
+
+        $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $freshOrder->payment_status);
+        $this->assertSame(75.0, (float) $freshOrder->realized_revenue);
+        $this->assertSame(35.0, (float) $freshOrder->profit_total);
+        $this->assertSame(75.0, (float) $touch->revenue);
+        $this->assertSame(35.0, (float) $touch->profit_total);
+        $this->assertSame(75.0, $attribution->summary()['attributed_revenue']);
+        $this->assertSame(35.0, $attribution->summary()['attributed_profit']);
     }
 
     public function test_growth_opportunities_stop_targeting_placed_orders_and_ignore_unrealized_sales(): void
