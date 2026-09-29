@@ -52,19 +52,24 @@ class AnalyticsRevenueService
             $profit = round((float) $row->profit_total, 2);
             $coupon = $coupons->get($row->coupon_code);
 
-            $row->realized_revenue = $revenue;
-            $row->profit_total = $profit;
-            $row->gross_margin_percent = $revenue > 0
-                ? round(($profit / $revenue) * 100, 2)
-                : null;
-            $row->usage_limit = $coupon?->usage_limit;
-            $row->used_count = $coupon?->used_count;
-            $row->is_active = $coupon?->is_active;
-            $row->remaining_usage = $coupon && $coupon->usage_limit !== null
-                ? max(0, (int) $coupon->usage_limit - (int) $coupon->used_count)
-                : null;
-
-            return $row;
+            return (object) [
+                'coupon_code' => (string) $row->coupon_code,
+                'orders_count' => (int) $row->orders_count,
+                'revenue_gross' => $revenue,
+                'realized_revenue' => $revenue,
+                'discount_total' => round((float) $row->discount_total, 2),
+                'profit_total' => $profit,
+                'gross_margin_percent' => $revenue > 0
+                    ? round(($profit / $revenue) * 100, 2)
+                    : null,
+                'average_order_value' => round((float) $row->average_order_value, 2),
+                'usage_limit' => $coupon?->usage_limit,
+                'used_count' => $coupon?->used_count,
+                'is_active' => $coupon?->is_active,
+                'remaining_usage' => $coupon && $coupon->usage_limit !== null
+                    ? max(0, (int) $coupon->usage_limit - (int) $coupon->used_count)
+                    : null,
+            ];
         });
     }
 
