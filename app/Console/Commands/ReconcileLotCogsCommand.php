@@ -12,9 +12,9 @@ class ReconcileLotCogsCommand extends Command
     protected $signature = 'commerce:reconcile-lot-cogs
                             {--after-id=0 : Only scan orders with a higher ID}
                             {--limit=500 : Maximum orders to scan in this run}
-                            {--apply : Persist corrected order COGS/profit totals}';
+                            {--apply : Persist corrected consumed-cost/profit totals}';
 
-    protected $description = 'Audit and optionally reconcile historical order COGS from lot provenance';
+    protected $description = 'Audit and optionally reconcile historical consumed cost, realized COGS, and profit from lot provenance';
 
     public function handle(
         ProfitService $profitService,
@@ -50,7 +50,11 @@ class ReconcileLotCogsCommand extends Command
             }
 
             $eligible++;
-            $expected = $profitService->calculateOrderTotals($order);
+            $economics = $profitService->calculateOrderEconomics($order);
+            $expected = [
+                'cost_total' => $economics['original_consumed_cost'],
+                'profit_total' => $economics['profit_total'],
+            ];
             $currentCost = $this->money($order->cost_total);
             $currentProfit = $this->money($order->profit_total);
             $itemProfitChanges = $profitService->countOrderItemProfitChanges($order);
@@ -71,11 +75,13 @@ class ReconcileLotCogsCommand extends Command
 
             $changed++;
             $this->line(sprintf(
-                'Order #%d %s | cost %s -> %s | profit %s -> %s | line-profit changes %d | attribution-profit changes %d',
+                'Order #%d %s | original consumed cost %s -> %s | recovered restock cost %s | realized COGS %s | profit %s -> %s | line-profit changes %d | attribution-profit changes %d',
                 $order->id,
                 $order->order_number ?: '(no number)',
                 $currentCost,
                 $expected['cost_total'],
+                $economics['recovered_restock_cost'],
+                $economics['realized_cogs'],
                 $currentProfit,
                 $expected['profit_total'],
                 $itemProfitChanges,

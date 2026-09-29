@@ -252,6 +252,13 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertSame(60.0, (float) $fresh->cost_total);
         $this->assertSame(30.0, (float) $fresh->profit_total);
+        $this->assertSame([
+            'original_consumed_cost' => '60.00',
+            'recovered_restock_cost' => '0.00',
+            'realized_cogs' => '60.00',
+            'realized_revenue' => '90.00',
+            'profit_total' => '30.00',
+        ], $service->calculateOrderEconomics($fresh));
 
         $refund = OrderRefund::query()->create([
             'order_id' => $order->id,
@@ -266,6 +273,8 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $fresh = $service->refreshOrderTotals($order->fresh());
         $this->assertSame(-15.0, (float) $fresh->profit_total);
+        $this->assertSame('60.00', $service->calculateOrderEconomics($fresh)['realized_cogs']);
+        $this->assertSame('45.00', $service->calculateOrderEconomics($fresh)['realized_revenue']);
 
         PosReturnItem::query()->create([
             'order_refund_id' => $refund->id,
@@ -280,6 +289,13 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $this->assertSame(60.0, (float) $fresh->cost_total);
         $this->assertSame(15.0, (float) $fresh->profit_total);
+        $this->assertSame([
+            'original_consumed_cost' => '60.00',
+            'recovered_restock_cost' => '30.00',
+            'realized_cogs' => '30.00',
+            'realized_revenue' => '45.00',
+            'profit_total' => '15.00',
+        ], $service->calculateOrderEconomics($fresh));
     }
 
     public function test_realized_revenue_allocation_preserves_exact_order_cents(): void
@@ -542,6 +558,11 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Order::STATUS_CANCELLED, $cancelledOrder->status);
         $this->assertSame(40.0, (float) $cancelledOrder->cost_total);
         $this->assertSame(0.0, (float) $cancelledOrder->profit_total);
+        $cancelledEconomics = app(ProfitService::class)->calculateOrderEconomics($cancelledOrder);
+        $this->assertSame('40.00', $cancelledEconomics['original_consumed_cost']);
+        $this->assertSame('0.00', $cancelledEconomics['realized_revenue']);
+        $this->assertSame('0.00', $cancelledEconomics['realized_cogs']);
+        $this->assertSame('0.00', $cancelledEconomics['profit_total']);
         $this->assertSame(2, (int) $product->fresh()->quantity);
         $this->assertSame(35.0, (float) $product->fresh()->cost_price);
         $this->assertSame(20.0, (float) $product->fresh()->inventory_cost_price);

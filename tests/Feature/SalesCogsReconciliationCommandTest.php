@@ -106,10 +106,18 @@ class SalesCogsReconciliationCommandTest extends TestCase
                 ->whereHas('items', fn ($query) => $query->whereNotNull('meta'))
                 ->exists()
         );
+        $profitService = app(ProfitService::class);
         $this->assertSame([
             'cost_total' => '30.00',
             'profit_total' => '70.00',
-        ], app(ProfitService::class)->calculateOrderTotals($tracked));
+        ], $profitService->calculateOrderTotals($tracked));
+        $this->assertSame([
+            'original_consumed_cost' => '30.00',
+            'recovered_restock_cost' => '0.00',
+            'realized_cogs' => '30.00',
+            'realized_revenue' => '100.00',
+            'profit_total' => '70.00',
+        ], $profitService->calculateOrderEconomics($tracked));
         $this->assertSame(60.0, (float) $tracked->cost_total);
         $this->assertSame(40.0, (float) $tracked->profit_total);
         $this->assertSame('40.00', $trackedItem->profit_amount);
@@ -124,6 +132,9 @@ class SalesCogsReconciliationCommandTest extends TestCase
         $this->assertStringContainsString('changed=2', $dryRunOutput);
         $this->assertStringContainsString('line-profit-changes=1', $dryRunOutput);
         $this->assertStringContainsString('attribution-profit-changes=2', $dryRunOutput);
+        $this->assertStringContainsString('original consumed cost 60.00 -> 30.00', $dryRunOutput);
+        $this->assertStringContainsString('recovered restock cost 0.00', $dryRunOutput);
+        $this->assertStringContainsString('realized COGS 30.00', $dryRunOutput);
         $this->assertSame(60.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(40.0, (float) $tracked->fresh()->profit_total);
         $this->assertSame('40.00', $trackedItem->fresh()->profit_amount);

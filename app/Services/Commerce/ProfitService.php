@@ -13,21 +13,39 @@ use Illuminate\Support\Collection;
 
 class ProfitService
 {
-    public function calculateOrderTotals(Order $order): array
+    public function calculateOrderEconomics(Order $order): array
     {
         $items = $order->items()->get();
-        $costTotalCents = (int) $items->sum(
+        $originalConsumedCostCents = (int) $items->sum(
             fn (OrderItem $item) => $this->itemCostCents($item)
         );
-        $recoveredCostCents = $this->recoveredRestockCostCents($items);
-        $unrecoveredCostCents = max(0, $costTotalCents - $recoveredCostCents);
-        $profitTotalCents = $order->status === Order::STATUS_CANCELLED
+        $recoveredRestockCostCents = $this->recoveredRestockCostCents($items);
+        $realizedRevenueCents = $order->status === Order::STATUS_CANCELLED
             ? 0
-            : $this->moneyToCents($order->realized_revenue) - $unrecoveredCostCents;
+            : $this->moneyToCents($order->realized_revenue);
+        $realizedCogsCents = $order->status === Order::STATUS_CANCELLED
+            ? 0
+            : max(0, $originalConsumedCostCents - $recoveredRestockCostCents);
+        $profitTotalCents = $realizedRevenueCents - $realizedCogsCents;
 
         return [
-            'cost_total' => $this->centsToMoney($costTotalCents),
+            'original_consumed_cost' => $this->centsToMoney($originalConsumedCostCents),
+            'recovered_restock_cost' => $this->centsToMoney($recoveredRestockCostCents),
+            'realized_cogs' => $this->centsToMoney($realizedCogsCents),
+            'realized_revenue' => $this->centsToMoney($realizedRevenueCents),
             'profit_total' => $this->centsToMoney($profitTotalCents),
+        ];
+    }
+
+    public function calculateOrderTotals(Order $order): array
+    {
+        $economics = $this->calculateOrderEconomics($order);
+
+        return [
+            // cost_total is the persisted legacy field for original consumed cost.
+            // Realized COGS is original consumed cost less recovered restock cost.
+            'cost_total' => $economics['original_consumed_cost'],
+            'profit_total' => $economics['profit_total'],
         ];
     }
 
