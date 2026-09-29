@@ -214,7 +214,7 @@ class PaymobController extends Controller
     public function callback(Request $request)
     {
         $payload = $request->all();
-        $isBrowserFlow = $request->isMethod('get') || $request->expectsHtml();
+        $isBrowserFlow = $request->isMethod('get');
 
         try {
             $this->logInfo('Paymob callback route hit', [
