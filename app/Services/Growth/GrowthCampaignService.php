@@ -288,7 +288,7 @@ class GrowthCampaignService
             ? app(GrowthAttributionService::class)->summary()
             : [];
         $attributionBreakdown = ($isFull || $isInsights)
-            ? app(GrowthAttributionService::class)->campaignBreakdown()
+            ? app(GrowthAttributionService::class)->campaignBreakdown(12)
             : collect();
         $cohortSummary = ($isFull || $isOverview || $isInsights)
             ? app(GrowthCohortRetentionService::class)->summary()

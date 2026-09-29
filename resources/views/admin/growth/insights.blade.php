@@ -36,13 +36,20 @@
 
 <div class="gm-two">
     <section class="gm-panel">
-        <div class="gm-section"><div><h4>{{ __('Attribution breakdown') }}</h4><div class="gm-mini">{{ __('Top campaigns by attributed revenue and conversions. Up to 12 rows are shown in this snapshot.') }}</div></div></div>
+        <div class="gm-section"><div><h4>{{ __('Attribution breakdown') }}</h4><div class="gm-mini">{{ __('Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.') }}</div></div></div>
         @if($attributionBreakdown->isEmpty())
             <div class="gm-empty">{{ __('No attribution rows yet.') }}</div>
         @else
-            <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Campaign') }}</th><th>{{ __('Revenue') }}</th><th>{{ __('Orders') }}</th><th>{{ __('Touches') }}</th></tr></thead><tbody>
+            <div class="table-responsive"><table class="gm-table"><thead><tr><th>{{ __('Campaign') }}</th><th>{{ __('Attributed revenue') }}</th><th>{{ __('Attributed profit') }}</th><th>{{ __('Gross margin') }}</th><th>{{ __('Orders') }}</th><th>{{ __('Touches') }}</th></tr></thead><tbody>
             @foreach($attributionBreakdown->take(12) as $row)
-                <tr><td>{{ $row['campaign_name'] ?? $row['campaign'] ?? '—' }}</td><td>{{ number_format((float) ($row['revenue'] ?? $row['attributed_revenue'] ?? 0), 2) }}</td><td>{{ $row['orders'] ?? $row['order_count'] ?? 0 }}</td><td>{{ $row['touches'] ?? $row['touch_count'] ?? 0 }}</td></tr>
+                <tr>
+                    <td>{{ $row['campaign_name'] ?? __('Unassigned') }}</td>
+                    <td>{{ number_format((float) ($row['revenue'] ?? 0), 2) }}</td>
+                    <td>{{ number_format((float) ($row['profit'] ?? 0), 2) }}</td>
+                    <td>{{ ($row['gross_margin_percent'] ?? null) === null ? __('N/A') : number_format((float) $row['gross_margin_percent'], 2).'%' }}</td>
+                    <td>{{ $row['orders'] ?? 0 }}</td>
+                    <td>{{ $row['touches'] ?? 0 }}</td>
+                </tr>
             @endforeach
             </tbody></table></div>
         @endif

@@ -5954,5 +5954,9 @@
     "Realized revenue": "الإيراد المتحقق",
     "Completed paid order value after recorded refunds in the selected reporting window.": "قيمة الطلبات المكتملة والمدفوعة بعد خصم المبالغ المستردة المسجلة خلال فترة التقرير المحددة.",
     "Average realized order value": "متوسط قيمة الطلب المتحققة",
-    "Average realized revenue per completed paid order after recorded refunds.": "متوسط الإيراد المتحقق لكل طلب مكتمل ومدفوع بعد خصم المبالغ المستردة المسجلة."
+    "Average realized revenue per completed paid order after recorded refunds.": "متوسط الإيراد المتحقق لكل طلب مكتمل ومدفوع بعد خصم المبالغ المستردة المسجلة.",
+    "Profit": "الربح",
+    "Gross margin": "هامش الربح الإجمالي",
+    "Attributed profit": "الربح المنسوب",
+    "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.": "أفضل الحملات حسب الإيراد والربح المنسوبين وهامش الربح الإجمالي الموزون والتحويلات. يتم عرض ما يصل إلى 12 صفًا في هذه اللقطة."
 }

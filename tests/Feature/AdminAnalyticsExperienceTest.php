@@ -97,6 +97,10 @@ class AdminAnalyticsExperienceTest extends TestCase
 
         $source = file_get_contents(resource_path('views/admin/growth/insights.blade.php'));
         $this->assertSame(4, substr_count($source, '<x-admin.stat-card'));
+        $this->assertStringContainsString("__('Gross margin')", $source);
+        $this->assertStringContainsString("\$row['profit']", $source);
+        $this->assertStringContainsString("\$row['gross_margin_percent']", $source);
+        $this->assertStringNotContainsString("\$row['attributed_revenue']", $source);
     }
 
     public function test_offers_analytics_uses_realized_net_order_value(): void

@@ -253,6 +253,7 @@ class GrowthAttributionService
                 'attributed_orders' => 0,
                 'attributed_revenue' => 0.0,
                 'attributed_profit' => 0.0,
+                'attributed_gross_margin_percent' => null,
                 'coupon_assisted_orders' => 0,
                 'lift_revenue_30d' => 0.0,
                 'lift_orders_30d' => 0.0,
@@ -270,11 +271,17 @@ class GrowthAttributionService
         $attributedOrdersRecent = (int) (clone $recent)->distinct('order_id')->count('order_id');
         $liftOrders = $deliveriesWithRevenue > 0 ? round(($attributedOrdersRecent / max(1, $deliveriesWithRevenue)) * 100, 2) : 0.0;
         $liftRevenue = (float) (clone $recent)->sum('revenue');
+        $attributedRevenue = round((float) (clone $base)->sum('revenue'), 2);
+        $attributedProfit = round((float) (clone $base)->sum('profit_total'), 2);
+        $attributedGrossMargin = $attributedRevenue > 0
+            ? round(($attributedProfit / $attributedRevenue) * 100, 2)
+            : null;
 
         return [
             'attributed_orders' => (int) (clone $base)->distinct('order_id')->count('order_id'),
-            'attributed_revenue' => round((float) (clone $base)->sum('revenue'), 2),
-            'attributed_profit' => round((float) (clone $base)->sum('profit_total'), 2),
+            'attributed_revenue' => $attributedRevenue,
+            'attributed_profit' => $attributedProfit,
+            'attributed_gross_margin_percent' => $attributedGrossMargin,
             'coupon_assisted_orders' => (int) GrowthAttributionTouch::query()->where('touch_type', 'coupon_match')->distinct('order_id')->count('order_id'),
             'lift_revenue_30d' => round($liftRevenue, 2),
             'lift_orders_30d' => $liftOrders,
@@ -288,11 +295,25 @@ class GrowthAttributionService
         }
 
         return GrowthAttributionTouch::query()
-            ->selectRaw('campaign_id, COUNT(DISTINCT order_id) as orders_count, SUM(revenue) as revenue_total, SUM(profit_total) as profit_total')
+            ->selectRaw('campaign_id, COUNT(*) as touches_count, COUNT(DISTINCT order_id) as orders_count, SUM(revenue) as revenue_total, SUM(profit_total) as profit_total')
             ->groupBy('campaign_id')
             ->with('campaign')
             ->orderByDesc('revenue_total')
             ->limit($limit)
-            ->get();
+            ->get()
+            ->map(function (GrowthAttributionTouch $row): array {
+                $revenue = round((float) $row->revenue_total, 2);
+                $profit = round((float) $row->profit_total, 2);
+
+                return [
+                    'campaign_id' => $row->campaign_id,
+                    'campaign_name' => $row->campaign?->name ?: __('Unassigned'),
+                    'revenue' => $revenue,
+                    'profit' => $profit,
+                    'gross_margin_percent' => $revenue > 0 ? round(($profit / $revenue) * 100, 2) : null,
+                    'orders' => (int) $row->orders_count,
+                    'touches' => (int) $row->touches_count,
+                ];
+            });
     }
 }

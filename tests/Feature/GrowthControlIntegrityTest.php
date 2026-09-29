@@ -375,6 +375,8 @@ class GrowthControlIntegrityTest extends TestCase
         $summary = $service->summary();
         $this->assertSame(1, $summary['attributed_orders']);
         $this->assertSame(80.0, $summary['attributed_revenue']);
+        $this->assertSame(50.0, $summary['attributed_profit']);
+        $this->assertSame(62.5, $summary['attributed_gross_margin_percent']);
 
         $olderDelivery->update(['sent_at' => now()->subDays(30)]);
         $newerDelivery->update(['sent_at' => now()->subDays(29)]);
@@ -396,6 +398,83 @@ class GrowthControlIntegrityTest extends TestCase
         $summary = $service->summary();
         $this->assertSame(0, $summary['attributed_orders']);
         $this->assertSame(0.0, $summary['attributed_revenue']);
+        $this->assertSame(0.0, $summary['attributed_profit']);
+        $this->assertNull($summary['attributed_gross_margin_percent']);
+    }
+
+    public function test_aggregated_growth_margin_is_weighted_by_revenue_not_averaged_by_order(): void
+    {
+        $campaign = GrowthCampaign::query()->create([
+            'name' => 'Weighted Margin Campaign',
+            'campaign_key' => 'weighted-margin-campaign',
+            'campaign_type' => 'retention',
+            'channel' => 'in_app',
+        ]);
+
+        $orders = collect([
+            ['number' => 'MARGIN-WEIGHT-001', 'revenue' => 10.0, 'profit' => 9.0],
+            ['number' => 'MARGIN-WEIGHT-002', 'revenue' => 90.0, 'profit' => 9.0],
+        ])->map(function (array $row) {
+            return Order::query()->create([
+                'order_number' => $row['number'],
+                'status' => Order::STATUS_COMPLETED,
+                'payment_status' => Order::PAYMENT_STATUS_PAID,
+                'payment_method' => Order::PAYMENT_METHOD_COD,
+                'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+                'delivery_method' => Order::DELIVERY_METHOD_STANDARD,
+                'currency' => 'EGP',
+                'subtotal' => $row['revenue'],
+                'discount_total' => 0,
+                'shipping_total' => 0,
+                'tax_total' => 0,
+                'grand_total' => $row['revenue'],
+                'refund_total' => 0,
+                'profit_total' => $row['profit'],
+                'customer_name' => 'Weighted Margin Customer',
+                'customer_email' => strtolower($row['number']).'@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test address',
+                'shipping_city' => 'Cairo',
+                'shipping_country' => 'Egypt',
+                'billing_same_as_shipping' => true,
+                'placed_at' => now()->subHour(),
+                'delivered_at' => now()->subMinutes(30),
+            ]);
+        });
+
+        foreach ($orders as $index => $order) {
+            $row = $index === 0
+                ? ['revenue' => 10.0, 'profit' => 9.0]
+                : ['revenue' => 90.0, 'profit' => 9.0];
+
+            GrowthAttributionTouch::query()->create([
+                'campaign_id' => $campaign->id,
+                'order_id' => $order->id,
+                'touch_type' => 'last_touch',
+                'status' => 'attributed',
+                'attribution_weight' => 1,
+                'revenue' => $row['revenue'],
+                'discount_total' => 0,
+                'profit_total' => $row['profit'],
+                'occurred_at' => now()->subMinutes(20),
+                'attributed_at' => now()->subMinutes(10),
+            ]);
+        }
+
+        $service = app(GrowthAttributionService::class);
+        $summary = $service->summary();
+        $breakdown = $service->campaignBreakdown()->first();
+
+        $this->assertSame(100.0, $summary['attributed_revenue']);
+        $this->assertSame(18.0, $summary['attributed_profit']);
+        $this->assertSame(18.0, $summary['attributed_gross_margin_percent']);
+        $this->assertSame('Weighted Margin Campaign', $breakdown['campaign_name']);
+        $this->assertSame(100.0, $breakdown['revenue']);
+        $this->assertSame(18.0, $breakdown['profit']);
+        $this->assertSame(18.0, $breakdown['gross_margin_percent']);
+        $this->assertSame(2, $breakdown['orders']);
+        $this->assertSame(2, $breakdown['touches']);
+        $this->assertNotSame(50.0, $breakdown['gross_margin_percent']);
     }
 
     public function test_refund_restates_growth_attribution_immediately_without_waiting_for_growth_run(): void
