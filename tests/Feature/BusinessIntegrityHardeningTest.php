@@ -258,6 +258,7 @@ class BusinessIntegrityHardeningTest extends TestCase
             'realized_cogs' => '60.00',
             'realized_revenue' => '90.00',
             'profit_total' => '30.00',
+            'gross_margin_percent' => 33.33,
         ], $service->calculateOrderEconomics($fresh));
 
         $refund = OrderRefund::query()->create([
@@ -273,8 +274,11 @@ class BusinessIntegrityHardeningTest extends TestCase
 
         $fresh = $service->refreshOrderTotals($order->fresh());
         $this->assertSame(-15.0, (float) $fresh->profit_total);
-        $this->assertSame('60.00', $service->calculateOrderEconomics($fresh)['realized_cogs']);
-        $this->assertSame('45.00', $service->calculateOrderEconomics($fresh)['realized_revenue']);
+        $lossEconomics = $service->calculateOrderEconomics($fresh);
+        $this->assertSame('60.00', $lossEconomics['realized_cogs']);
+        $this->assertSame('45.00', $lossEconomics['realized_revenue']);
+        $this->assertSame('-15.00', $lossEconomics['profit_total']);
+        $this->assertSame(-33.33, $lossEconomics['gross_margin_percent']);
 
         PosReturnItem::query()->create([
             'order_refund_id' => $refund->id,
@@ -295,7 +299,20 @@ class BusinessIntegrityHardeningTest extends TestCase
             'realized_cogs' => '30.00',
             'realized_revenue' => '45.00',
             'profit_total' => '15.00',
+            'gross_margin_percent' => 33.33,
         ], $service->calculateOrderEconomics($fresh));
+
+        $order->update([
+            'refund_total' => 90,
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+        ]);
+        $fullyRefunded = $service->refreshOrderTotals($order->fresh());
+        $fullyRefundedEconomics = $service->calculateOrderEconomics($fullyRefunded);
+
+        $this->assertSame('0.00', $fullyRefundedEconomics['realized_revenue']);
+        $this->assertSame('30.00', $fullyRefundedEconomics['realized_cogs']);
+        $this->assertSame('-30.00', $fullyRefundedEconomics['profit_total']);
+        $this->assertNull($fullyRefundedEconomics['gross_margin_percent']);
     }
 
     public function test_realized_revenue_allocation_preserves_exact_order_cents(): void
@@ -563,6 +580,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame('0.00', $cancelledEconomics['realized_revenue']);
         $this->assertSame('0.00', $cancelledEconomics['realized_cogs']);
         $this->assertSame('0.00', $cancelledEconomics['profit_total']);
+        $this->assertNull($cancelledEconomics['gross_margin_percent']);
         $this->assertSame(2, (int) $product->fresh()->quantity);
         $this->assertSame(35.0, (float) $product->fresh()->cost_price);
         $this->assertSame(20.0, (float) $product->fresh()->inventory_cost_price);

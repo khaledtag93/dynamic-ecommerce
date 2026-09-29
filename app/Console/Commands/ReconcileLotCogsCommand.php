@@ -74,8 +74,11 @@ class ReconcileLotCogsCommand extends Command
             }
 
             $changed++;
+            $grossMargin = $economics['gross_margin_percent'] === null
+                ? 'n/a'
+                : number_format((float) $economics['gross_margin_percent'], 2, '.', '').'%';
             $this->line(sprintf(
-                'Order #%d %s | original consumed cost %s -> %s | recovered restock cost %s | realized COGS %s | profit %s -> %s | line-profit changes %d | attribution-profit changes %d',
+                'Order #%d %s | original consumed cost %s -> %s | recovered restock cost %s | realized COGS %s | profit %s -> %s | gross margin %s | line-profit changes %d | attribution-profit changes %d',
                 $order->id,
                 $order->order_number ?: '(no number)',
                 $currentCost,
@@ -84,6 +87,7 @@ class ReconcileLotCogsCommand extends Command
                 $economics['realized_cogs'],
                 $currentProfit,
                 $expected['profit_total'],
+                $grossMargin,
                 $itemProfitChanges,
                 $attributionProfitChange,
             ));

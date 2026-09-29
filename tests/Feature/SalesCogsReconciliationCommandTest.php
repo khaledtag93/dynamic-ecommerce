@@ -117,6 +117,7 @@ class SalesCogsReconciliationCommandTest extends TestCase
             'realized_cogs' => '30.00',
             'realized_revenue' => '100.00',
             'profit_total' => '70.00',
+            'gross_margin_percent' => 70.0,
         ], $profitService->calculateOrderEconomics($tracked));
         $this->assertSame(60.0, (float) $tracked->cost_total);
         $this->assertSame(40.0, (float) $tracked->profit_total);
@@ -135,6 +136,7 @@ class SalesCogsReconciliationCommandTest extends TestCase
         $this->assertStringContainsString('original consumed cost 60.00 -> 30.00', $dryRunOutput);
         $this->assertStringContainsString('recovered restock cost 0.00', $dryRunOutput);
         $this->assertStringContainsString('realized COGS 30.00', $dryRunOutput);
+        $this->assertStringContainsString('gross margin 70.00%', $dryRunOutput);
         $this->assertSame(60.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(40.0, (float) $tracked->fresh()->profit_total);
         $this->assertSame('40.00', $trackedItem->fresh()->profit_amount);

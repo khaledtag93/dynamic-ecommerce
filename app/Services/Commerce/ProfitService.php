@@ -27,6 +27,9 @@ class ProfitService
             ? 0
             : max(0, $originalConsumedCostCents - $recoveredRestockCostCents);
         $profitTotalCents = $realizedRevenueCents - $realizedCogsCents;
+        $grossMarginPercent = $realizedRevenueCents > 0
+            ? round(($profitTotalCents / $realizedRevenueCents) * 100, 2)
+            : null;
 
         return [
             'original_consumed_cost' => $this->centsToMoney($originalConsumedCostCents),
@@ -34,6 +37,7 @@ class ProfitService
             'realized_cogs' => $this->centsToMoney($realizedCogsCents),
             'realized_revenue' => $this->centsToMoney($realizedRevenueCents),
             'profit_total' => $this->centsToMoney($profitTotalCents),
+            'gross_margin_percent' => $grossMarginPercent,
         ];
     }
 
