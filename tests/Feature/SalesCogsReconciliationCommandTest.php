@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Services\Commerce\ProfitService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
@@ -51,7 +52,22 @@ class SalesCogsReconciliationCommandTest extends TestCase
             'profit_amount' => 75,
         ]);
 
+        $tracked->refresh();
+        $trackedItem = $tracked->items()->firstOrFail();
+        $this->assertSame(2, count(data_get($trackedItem->meta, 'inventory_lot_allocations', [])));
+        $this->assertTrue(
+            Order::query()
+                ->whereKey($tracked->id)
+                ->whereHas('items', fn ($query) => $query->whereNotNull('meta'))
+                ->exists()
+        );
+        $this->assertSame([
+            'cost_total' => '30.00',
+            'profit_total' => '70.00',
+        ], app(ProfitService::class)->calculateOrderTotals($tracked));
+
         $this->assertSame(0, Artisan::call('commerce:reconcile-lot-cogs', [
+            '--after-id' => max(0, $tracked->id - 1),
             '--limit' => 10,
         ]));
         $this->assertStringContainsString(
@@ -68,6 +84,7 @@ class SalesCogsReconciliationCommandTest extends TestCase
         $this->assertSame(75.0, (float) $legacy->fresh()->profit_total);
 
         $this->assertSame(0, Artisan::call('commerce:reconcile-lot-cogs', [
+            '--after-id' => max(0, $tracked->id - 1),
             '--limit' => 10,
             '--apply' => true,
         ]));
