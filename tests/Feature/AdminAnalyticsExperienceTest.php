@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AnalyticsDailyStat;
+use App\Models\AnalyticsEvent;
 use App\Models\AnalyticsProductDailyStat;
 use App\Models\Order;
 use App\Models\Product;
@@ -280,6 +281,103 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertSee('Default / simple product')
             ->assertSee('EGP 75.00')
             ->assertDontSee('EGP 100.00');
+    }
+
+    public function test_product_drilldown_uses_live_events_when_daily_stats_are_dirty(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $product = $this->createAnalyticsProduct();
+
+        AnalyticsProductDailyStat::query()->create([
+            'stat_date' => now()->toDateString(),
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_slug' => $product->slug,
+            'category_id' => $product->category_id,
+            'views' => 9,
+            'add_to_cart_count' => 4,
+            'purchases' => 1,
+            'purchased_quantity' => 1,
+            'revenue_gross' => 999,
+            'realized_cogs' => 111,
+            'profit_total' => 888,
+            'conversion_rate' => 0.11,
+            'aggregated_at' => now()->subMinute(),
+        ]);
+
+        AnalyticsDailyStat::query()->create([
+            'stat_date' => now()->toDateString(),
+            'meta' => [
+                'restatement_requested_at' => now()->toIso8601String(),
+                'restatement_reason' => 'realized_purchase_changed',
+            ],
+        ]);
+
+        foreach ([1, 2, 3] as $suffix) {
+            AnalyticsEvent::query()->create([
+                'event_type' => AnalyticsEvent::EVENT_VIEW_PRODUCT,
+                'entity_type' => AnalyticsEvent::ENTITY_PRODUCT,
+                'entity_id' => (string) $product->id,
+                'occurred_at' => now(),
+                'meta' => ['product_id' => $product->id, 'view_copy' => $suffix],
+            ]);
+        }
+
+        AnalyticsEvent::query()->create([
+            'event_type' => AnalyticsEvent::EVENT_ADD_TO_CART,
+            'entity_type' => AnalyticsEvent::ENTITY_PRODUCT,
+            'entity_id' => (string) $product->id,
+            'occurred_at' => now(),
+            'meta' => ['product_id' => $product->id, 'quantity' => 1],
+        ]);
+
+        AnalyticsEvent::query()->create([
+            'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+            'entity_type' => AnalyticsEvent::ENTITY_ORDER,
+            'entity_id' => '999999',
+            'occurred_at' => now(),
+            'meta' => [
+                'grand_total' => 75,
+                'line_items' => [[
+                    'product_id' => $product->id,
+                    'quantity' => 1,
+                    'line_total' => 100,
+                    'realized_revenue' => 75,
+                    'realized_cogs' => 40,
+                    'profit_total' => 35,
+                    'gross_margin_percent' => 46.67,
+                ]],
+            ],
+        ]);
+
+        $drilldown = app(AnalyticsDashboardService::class)
+            ->buildProductDrilldown($product, now()->startOfDay(), now()->endOfDay());
+
+        $this->assertFalse($drilldown['is_aggregated']);
+        $this->assertSame(3, $drilldown['totals']['views']);
+        $this->assertSame(1, $drilldown['totals']['add_to_cart_count']);
+        $this->assertSame(1, $drilldown['totals']['purchases']);
+        $this->assertSame(75.0, (float) $drilldown['totals']['revenue_gross']);
+        $this->assertSame(40.0, (float) $drilldown['totals']['realized_cogs']);
+        $this->assertSame(35.0, (float) $drilldown['totals']['profit_total']);
+        $this->assertSame(46.67, (float) $drilldown['totals']['gross_margin_percent']);
+        $this->assertSame(75.0, (float) $drilldown['daily']->sole()->revenue_gross);
+        $this->assertNotSame(999.0, (float) $drilldown['totals']['revenue_gross']);
+
+        Cache::flush();
+
+        $response = $this->actingAs($owner)
+            ->get(route('admin.analytics.products.show', [
+                'product' => $product,
+                'range' => 'today',
+            ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('EGP 75.00')
+            ->assertSee('EGP 35.00')
+            ->assertSee('46.7%')
+            ->assertDontSee('EGP 999.00');
     }
 
     public function test_product_and_category_profitability_use_weighted_realized_margin_and_preserve_unknown_history(): void

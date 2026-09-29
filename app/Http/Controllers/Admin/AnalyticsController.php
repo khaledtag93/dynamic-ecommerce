@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AnalyticsDailyStat;
-use App\Models\AnalyticsProductDailyStat;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\PromotionRule;
@@ -84,49 +83,11 @@ class AnalyticsController extends Controller
             $to->format('Ymd')
         );
 
-        $drilldown = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($product, $from, $to) {
-            $daily = AnalyticsProductDailyStat::query()
-                ->where('product_id', $product->id)
-                ->whereBetween('stat_date', [$from->toDateString(), $to->toDateString()])
-                ->orderBy('stat_date')
-                ->get();
-
-            $profitabilityComplete = $daily->every(
-                fn ($row) => (int) $row->purchases === 0
-                    || ($row->realized_cogs !== null && $row->profit_total !== null)
-            );
-            $revenue = (float) $daily->sum('revenue_gross');
-            $profitTotal = $profitabilityComplete
-                ? (float) $daily->sum('profit_total')
-                : null;
-
-            $totals = [
-                'views' => (int) $daily->sum('views'),
-                'add_to_cart_count' => (int) $daily->sum('add_to_cart_count'),
-                'purchases' => (int) $daily->sum('purchases'),
-                'purchased_quantity' => (int) $daily->sum('purchased_quantity'),
-                'revenue_gross' => $revenue,
-                'realized_cogs' => $profitabilityComplete ? (float) $daily->sum('realized_cogs') : null,
-                'profit_total' => $profitTotal,
-                'gross_margin_percent' => $profitabilityComplete && $revenue > 0
-                    ? round(($profitTotal / $revenue) * 100, 2)
-                    : null,
-                'profitability_complete' => $profitabilityComplete,
-            ];
-            $totals['conversion_rate'] = $totals['views'] > 0 ? $totals['purchases'] / $totals['views'] : 0;
-            $totals['add_to_cart_rate'] = $totals['views'] > 0 ? $totals['add_to_cart_count'] / $totals['views'] : 0;
-            $totals['cart_to_purchase_rate'] = $totals['add_to_cart_count'] > 0 ? $totals['purchases'] / $totals['add_to_cart_count'] : 0;
-            $totals['average_revenue_per_purchase'] = $totals['purchases'] > 0 ? $totals['revenue_gross'] / $totals['purchases'] : 0;
-
-            $topOrderItems = $this->analyticsRevenueService
-                ->topVariantsForProduct($product, $from, $to);
-
-            return [
-                'daily' => $daily,
-                'totals' => $totals,
-                'top_variants' => $topOrderItems,
-            ];
-        });
+        $drilldown = Cache::remember(
+            $cacheKey,
+            now()->addMinutes(5),
+            fn () => $this->dashboardService->buildProductDrilldown($product, $from, $to)
+        );
 
         return view('admin.analytics.product', [
             'range' => $range,

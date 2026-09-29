@@ -45,6 +45,163 @@ class AnalyticsDashboardService
         ];
     }
 
+    public function buildProductDrilldown(Product $product, Carbon $from, Carbon $to): array
+    {
+        $aggregatedDaily = AnalyticsProductDailyStat::query()
+            ->where('product_id', $product->id)
+            ->whereBetween('stat_date', [$from->toDateString(), $to->toDateString()])
+            ->orderBy('stat_date')
+            ->get();
+
+        $useAggregated = $aggregatedDaily->isNotEmpty()
+            && ! $this->hasDirtyDailyStats($from, $to);
+
+        $daily = $useAggregated
+            ? $aggregatedDaily
+            : $this->buildRawProductDailyStats($product, $from, $to);
+
+        return [
+            'daily' => $daily,
+            'totals' => $this->buildProductTotals($daily),
+            'top_variants' => $this->analyticsRevenueService->topVariantsForProduct($product, $from, $to),
+            'is_aggregated' => $useAggregated,
+        ];
+    }
+
+    protected function buildProductTotals(Collection $daily): array
+    {
+        $profitabilityComplete = $daily->every(
+            fn ($row) => (int) data_get($row, 'purchases', 0) === 0
+                || (
+                    data_get($row, 'realized_cogs') !== null
+                    && data_get($row, 'profit_total') !== null
+                )
+        );
+        $revenue = (float) $daily->sum('revenue_gross');
+        $profitTotal = $profitabilityComplete
+            ? (float) $daily->sum('profit_total')
+            : null;
+
+        $totals = [
+            'views' => (int) $daily->sum('views'),
+            'add_to_cart_count' => (int) $daily->sum('add_to_cart_count'),
+            'purchases' => (int) $daily->sum('purchases'),
+            'purchased_quantity' => (int) $daily->sum('purchased_quantity'),
+            'revenue_gross' => $revenue,
+            'realized_cogs' => $profitabilityComplete ? (float) $daily->sum('realized_cogs') : null,
+            'profit_total' => $profitTotal,
+            'gross_margin_percent' => $profitabilityComplete && $revenue > 0
+                ? round(($profitTotal / $revenue) * 100, 2)
+                : null,
+            'profitability_complete' => $profitabilityComplete,
+        ];
+
+        $totals['conversion_rate'] = $totals['views'] > 0
+            ? $totals['purchases'] / $totals['views']
+            : 0;
+        $totals['add_to_cart_rate'] = $totals['views'] > 0
+            ? $totals['add_to_cart_count'] / $totals['views']
+            : 0;
+        $totals['cart_to_purchase_rate'] = $totals['add_to_cart_count'] > 0
+            ? $totals['purchases'] / $totals['add_to_cart_count']
+            : 0;
+        $totals['average_revenue_per_purchase'] = $totals['purchases'] > 0
+            ? $totals['revenue_gross'] / $totals['purchases']
+            : 0;
+
+        return $totals;
+    }
+
+    protected function buildRawProductDailyStats(Product $product, Carbon $from, Carbon $to): Collection
+    {
+        $events = AnalyticsEvent::query()
+            ->whereBetween('occurred_at', [$from, $to])
+            ->get(['event_type', 'entity_type', 'entity_id', 'meta', 'occurred_at']);
+
+        return $events
+            ->groupBy(fn (AnalyticsEvent $event) => $event->occurred_at?->toDateString())
+            ->map(function (Collection $rows, string $date) use ($product) {
+                $views = $rows
+                    ->where('event_type', AnalyticsEvent::EVENT_VIEW_PRODUCT)
+                    ->filter(fn (AnalyticsEvent $event) =>
+                        (int) data_get($event->meta, 'product_id', $event->entity_id) === (int) $product->id
+                    )
+                    ->count();
+
+                $adds = $rows
+                    ->where('event_type', AnalyticsEvent::EVENT_ADD_TO_CART)
+                    ->filter(fn (AnalyticsEvent $event) =>
+                        (int) data_get($event->meta, 'product_id', $event->entity_id) === (int) $product->id
+                    )
+                    ->count();
+
+                $purchases = 0;
+                $quantity = 0;
+                $revenue = 0.0;
+                $realizedCogs = 0.0;
+                $profitTotal = 0.0;
+                $profitabilityComplete = true;
+
+                foreach ($rows->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS) as $event) {
+                    foreach ((array) data_get($event->meta, 'line_items', []) as $lineItem) {
+                        if ((int) data_get($lineItem, 'product_id') !== (int) $product->id) {
+                            continue;
+                        }
+
+                        $purchases++;
+                        $quantity += (int) data_get($lineItem, 'quantity', 0);
+                        $revenue += (float) data_get(
+                            $lineItem,
+                            'realized_revenue',
+                            data_get($lineItem, 'line_total', 0)
+                        );
+
+                        $hasProfitability = array_key_exists('realized_cogs', $lineItem)
+                            && array_key_exists('profit_total', $lineItem)
+                            && is_numeric($lineItem['realized_cogs'])
+                            && is_numeric($lineItem['profit_total']);
+
+                        if (! $hasProfitability) {
+                            $profitabilityComplete = false;
+                            continue;
+                        }
+
+                        $realizedCogs += (float) $lineItem['realized_cogs'];
+                        $profitTotal += (float) $lineItem['profit_total'];
+                    }
+                }
+
+                if ($views === 0 && $adds === 0 && $purchases === 0) {
+                    return null;
+                }
+
+                $complete = $purchases === 0 || $profitabilityComplete;
+
+                return (object) [
+                    'stat_date' => Carbon::parse($date),
+                    'product_id' => (int) $product->id,
+                    'product_name' => $product->name,
+                    'product_slug' => $product->slug,
+                    'category_id' => $product->category_id,
+                    'views' => $views,
+                    'add_to_cart_count' => $adds,
+                    'purchases' => $purchases,
+                    'purchased_quantity' => $quantity,
+                    'revenue_gross' => round($revenue, 2),
+                    'realized_cogs' => $complete ? round($realizedCogs, 2) : null,
+                    'profit_total' => $complete ? round($profitTotal, 2) : null,
+                    'gross_margin_percent' => $complete && $revenue > 0
+                        ? round(($profitTotal / $revenue) * 100, 2)
+                        : null,
+                    'conversion_rate' => $views > 0 ? $purchases / $views : 0,
+                    'profitability_complete' => $complete,
+                ];
+            })
+            ->filter()
+            ->sortBy(fn ($row) => $row->stat_date->timestamp)
+            ->values();
+    }
+
     protected function buildPeriodSnapshot(Carbon $from, Carbon $to): array
     {
         $dailyStats = AnalyticsDailyStat::query()
