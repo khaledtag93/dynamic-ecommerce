@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\WebsiteSetting;
 use App\Services\Commerce\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -99,11 +100,53 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString('does not prove that a gateway payout or bank settlement reached the merchant account.', $index);
         $this->assertStringContainsString('Gateway capture does not prove merchant payout or bank settlement.', $view);
         $this->assertStringNotContainsString("__('Paid amount')", $index);
+        $this->assertStringContainsString("->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])", $controller);
         $this->assertStringContainsString("selectRaw('currency, SUM(amount) AS captured_amount')", $controller);
         $this->assertStringContainsString("->groupBy('currency')", $controller);
         $this->assertStringContainsString("'captured_by_currency' => \$capturedByCurrency", $controller);
         $this->assertStringContainsString("\$stats['captured_by_currency']", $index);
         $this->assertStringNotContainsString("\$stats['paid_amount']", $index);
+    }
+
+    public function test_captured_amount_keeps_historical_refunded_captures(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $order = Order::query()->create([
+            'order_number' => 'CAPTURE-HISTORY-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'grand_total' => 100,
+            'refund_total' => 100,
+            'currency' => 'EGP',
+            'customer_name' => 'Capture History',
+            'customer_email' => 'capture-history@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+        ]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'test',
+            'status' => Payment::STATUS_REFUNDED,
+            'transaction_reference' => 'CAPTURE-REFUNDED-001',
+            'amount' => 100,
+            'currency' => 'EGP',
+            'paid_at' => now()->subDay(),
+            'refunded_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('admin.payments.index'))
+            ->assertOk()
+            ->assertViewHas('stats', function (array $stats): bool {
+                $egp = $stats['captured_by_currency']->firstWhere('currency', 'EGP');
+
+                return $stats['paid'] === 0
+                    && (float) data_get($egp, 'amount', 0) === 100.0;
+            });
     }
 
     public function test_unconfigured_online_gateway_is_not_offered_to_checkout(): void

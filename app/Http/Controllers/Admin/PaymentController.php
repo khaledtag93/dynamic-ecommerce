@@ -60,7 +60,7 @@ class PaymentController extends Controller
         }
 
         $capturedByCurrency = Payment::query()
-            ->where('status', Payment::STATUS_PAID)
+            ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
             ->selectRaw('currency, SUM(amount) AS captured_amount')
             ->groupBy('currency')
             ->orderBy('currency')
