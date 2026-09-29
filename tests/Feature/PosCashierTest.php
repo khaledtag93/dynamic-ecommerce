@@ -544,6 +544,7 @@ class PosCashierTest extends TestCase
 
         $this->assertSame('20.00', $order->cost_total);
         $this->assertSame('20.00', $order->profit_total);
+        $this->assertSame('20.00', $item->profit_amount);
         $this->assertSame(2, count($allocations));
         $this->assertSame($earlyLot->id, (int) $allocations[0]['lot_id']);
         $this->assertSame(5.0, (float) $allocations[0]['unit_cost']);

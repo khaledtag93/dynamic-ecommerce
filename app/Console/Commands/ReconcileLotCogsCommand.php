@@ -24,7 +24,7 @@ class ReconcileLotCogsCommand extends Command
         $orders = Order::query()
             ->where('id', '>', $afterId)
             ->whereHas('items', fn ($query) => $query->whereNotNull('meta'))
-            ->with(['items:id,order_id,meta'])
+            ->with(['items:id,order_id,line_total,unit_cost,quantity,profit_amount,meta'])
             ->orderBy('id')
             ->limit($limit)
             ->get();
@@ -37,6 +37,7 @@ class ReconcileLotCogsCommand extends Command
         $eligible = 0;
         $changed = 0;
         $applied = 0;
+        $lineProfitChanges = 0;
 
         foreach ($orders as $order) {
             if (! $this->hasLotProvenance($order)) {
@@ -47,21 +48,25 @@ class ReconcileLotCogsCommand extends Command
             $expected = $profitService->calculateOrderTotals($order);
             $currentCost = $this->money($order->cost_total);
             $currentProfit = $this->money($order->profit_total);
+            $itemProfitChanges = $profitService->countOrderItemProfitChanges($order);
+            $lineProfitChanges += $itemProfitChanges;
 
             if ($currentCost === $expected['cost_total']
-                && $currentProfit === $expected['profit_total']) {
+                && $currentProfit === $expected['profit_total']
+                && $itemProfitChanges === 0) {
                 continue;
             }
 
             $changed++;
             $this->line(sprintf(
-                'Order #%d %s | cost %s -> %s | profit %s -> %s',
+                'Order #%d %s | cost %s -> %s | profit %s -> %s | line-profit changes %d',
                 $order->id,
                 $order->order_number ?: '(no number)',
                 $currentCost,
                 $expected['cost_total'],
                 $currentProfit,
                 $expected['profit_total'],
+                $itemProfitChanges,
             ));
 
             if ($apply) {
@@ -73,11 +78,12 @@ class ReconcileLotCogsCommand extends Command
         $mode = $apply ? 'APPLY' : 'DRY-RUN';
 
         $this->info(sprintf(
-            '%s complete | scanned=%d | lot-provenance=%d | changed=%d | applied=%d | last_id=%d',
+            '%s complete | scanned=%d | lot-provenance=%d | changed=%d | line-profit-changes=%d | applied=%d | last_id=%d',
             $mode,
             $orders->count(),
             $eligible,
             $changed,
+            $lineProfitChanges,
             $applied,
             $lastId,
         ));

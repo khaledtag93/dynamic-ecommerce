@@ -65,6 +65,9 @@ class SalesCogsReconciliationCommandTest extends TestCase
             'cost_total' => '30.00',
             'profit_total' => '70.00',
         ], app(ProfitService::class)->calculateOrderTotals($tracked));
+        $this->assertSame(60.0, (float) $tracked->cost_total);
+        $this->assertSame(40.0, (float) $tracked->profit_total);
+        $this->assertSame('40.00', $trackedItem->profit_amount);
 
         $this->assertSame(0, Artisan::call('commerce:reconcile-lot-cogs', [
             '--after-id' => max(0, $tracked->id - 1),
@@ -78,8 +81,13 @@ class SalesCogsReconciliationCommandTest extends TestCase
             'changed=1',
             Artisan::output()
         );
+        $this->assertStringContainsString(
+            'line-profit-changes=1',
+            Artisan::output()
+        );
         $this->assertSame(60.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(40.0, (float) $tracked->fresh()->profit_total);
+        $this->assertSame('40.00', $trackedItem->fresh()->profit_amount);
         $this->assertSame(25.0, (float) $legacy->fresh()->cost_total);
         $this->assertSame(75.0, (float) $legacy->fresh()->profit_total);
 
@@ -98,6 +106,7 @@ class SalesCogsReconciliationCommandTest extends TestCase
         );
         $this->assertSame(30.0, (float) $tracked->fresh()->cost_total);
         $this->assertSame(70.0, (float) $tracked->fresh()->profit_total);
+        $this->assertSame('70.00', $trackedItem->fresh()->profit_amount);
         $this->assertSame(25.0, (float) $legacy->fresh()->cost_total);
         $this->assertSame(75.0, (float) $legacy->fresh()->profit_total);
     }

@@ -183,6 +183,7 @@ class CheckoutIdempotencyTest extends TestCase
         $this->assertSame($laterLot->id, (int) $allocations[1]['lot_id']);
         $this->assertSame(1, (int) $allocations[1]['quantity']);
         $this->assertSame(50.0, (float) $order->fresh()->cost_total);
+        $this->assertSame(100.0, (float) $item->fresh()->profit_amount);
         $this->assertSame(today()->addDays(5)->toDateString(), $item->fresh()->expires_at->toDateString());
         $this->assertSame(0, (int) $earlyLot->fresh()->quantity_on_hand);
         $this->assertSame(2, (int) $laterLot->fresh()->quantity_on_hand);

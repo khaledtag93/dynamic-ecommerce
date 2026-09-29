@@ -31,8 +31,46 @@ class ProfitService
         ];
     }
 
+    public function calculateOrderItemProfitAmount(OrderItem $item): string
+    {
+        return $this->centsToMoney(
+            $this->moneyToCents($item->line_total) - $this->itemCostCents($item)
+        );
+    }
+
+    public function countOrderItemProfitChanges(Order $order): int
+    {
+        $items = $order->relationLoaded('items')
+            ? $order->items
+            : $order->items()->get();
+
+        return $items->filter(
+            fn (OrderItem $item) => $this->moneyToCents($item->profit_amount)
+                !== $this->moneyToCents($this->calculateOrderItemProfitAmount($item))
+        )->count();
+    }
+
+    public function refreshOrderItemProfits(Order $order): int
+    {
+        $changed = 0;
+
+        foreach ($order->items()->get() as $item) {
+            $expected = $this->calculateOrderItemProfitAmount($item);
+
+            if ($this->moneyToCents($item->profit_amount) === $this->moneyToCents($expected)) {
+                continue;
+            }
+
+            $item->forceFill(['profit_amount' => $expected])->save();
+            $changed++;
+        }
+
+        return $changed;
+    }
+
     public function refreshOrderTotals(Order $order): Order
     {
+        $this->refreshOrderItemProfits($order);
         $order->update($this->calculateOrderTotals($order));
 
         return $order->fresh();
