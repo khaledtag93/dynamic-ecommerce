@@ -23,6 +23,8 @@ class AdminDashboardExperienceTest extends TestCase
         $owner = $this->createSuperAdmin();
         foreach ([
             ['order_number' => 'UX-PAID', 'grand_total' => 100, 'payment_status' => Order::PAYMENT_STATUS_PAID],
+            ['order_number' => 'UX-PARTIAL', 'grand_total' => 80, 'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED],
+            ['order_number' => 'UX-REFUNDED', 'grand_total' => 70, 'payment_status' => Order::PAYMENT_STATUS_REFUNDED],
             ['order_number' => 'UX-UNPAID', 'grand_total' => 50, 'payment_status' => Order::PAYMENT_STATUS_UNPAID],
         ] as $data) {
             Order::create($data + [
@@ -36,10 +38,12 @@ class AdminDashboardExperienceTest extends TestCase
 
         $this->actingAs($owner)->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertViewHas('kpiCards', fn ($cards) => $cards[0]['value'] === 'EGP 150.00'
+            ->assertViewHas('kpiCards', fn ($cards) => $cards[0]['value'] === 'EGP 300.00'
                 && $cards[2]['value'] === '50.0%')
             ->assertSee(route('admin.products.create'))
             ->assertSee('UX-PAID')
+            ->assertSee('UX-PARTIAL')
+            ->assertSee('UX-REFUNDED')
             ->assertSee('UX-UNPAID');
     }
 
