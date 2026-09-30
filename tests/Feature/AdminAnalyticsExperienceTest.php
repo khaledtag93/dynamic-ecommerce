@@ -463,6 +463,8 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(-40.0, (float) $row->profit_total);
         $this->assertNull($row->gross_margin_percent);
 
+        app(\App\Services\Analytics\AnalyticsTracker::class)->syncRealizedPurchase($order->fresh());
+
         $owner = $this->createSuperAdmin();
         Cache::flush();
 
