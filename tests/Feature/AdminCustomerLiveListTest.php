@@ -144,7 +144,13 @@ class AdminCustomerLiveListTest extends TestCase
 
         $index
             ->assertOk()
-            ->assertSee('EGP 150.00 · USD 1,010.00')
+            ->assertViewHas('stats', function (array $stats): bool {
+                $totals = collect($stats['revenue_by_currency'] ?? [])
+                    ->mapWithKeys(fn (array $row) => [$row['currency'] => (float) $row['amount']])
+                    ->all();
+
+                return $totals === ['EGP' => 150.0, 'USD' => 1010.0];
+            })
             ->assertSee('EGP 100.00 · USD 10.00')
             ->assertSee('EGP 50.00 · USD 1,000.00');
 
