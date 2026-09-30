@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\OrderRefund;
+use App\Models\Payment;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\AuthorizationService;
@@ -75,6 +77,57 @@ class AdminOrderLiveListTest extends TestCase
             ->assertDontSee('LIVE-COMPLETE')
             ->assertSee('data-live-link', false)
             ->assertDontSee('data-live-filter', false);
+    }
+
+    public function test_order_finance_cards_use_payment_ledger_and_keep_currencies_separate(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $egpOrder = $this->order('LEDGER-EGP', 'EGP Customer', 'egp@example.test', 100, Order::STATUS_COMPLETED);
+        $egpOrder->update([
+            'currency' => 'EGP',
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'refund_total' => 20,
+        ]);
+        Payment::query()->create([
+            'order_id' => $egpOrder->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'provider' => 'bank',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'PAY-EGP-110',
+            'amount' => 110,
+            'currency' => 'EGP',
+            'paid_at' => now(),
+        ]);
+        OrderRefund::query()->create([
+            'order_id' => $egpOrder->id,
+            'amount' => 20,
+            'reason' => 'Ledger-backed refund',
+            'processed_at' => now(),
+        ]);
+
+        $usdOrder = $this->order('LEDGER-USD', 'USD Customer', 'usd@example.test', 50, Order::STATUS_COMPLETED);
+        $usdOrder->update([
+            'currency' => 'USD',
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+        ]);
+        Payment::query()->create([
+            'order_id' => $usdOrder->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'provider' => 'bank',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'PAY-USD-50',
+            'amount' => 50,
+            'currency' => 'USD',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('admin.orders.index'))
+            ->assertOk()
+            ->assertSee('EGP 90.00 · USD 50.00')
+            ->assertSee('EGP 20.00')
+            ->assertDontSee('EGP 80.00');
     }
 
     private function order(string $number, string $name, string $email, float $total, string $status): Order
