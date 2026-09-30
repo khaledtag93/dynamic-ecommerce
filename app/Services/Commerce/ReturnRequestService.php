@@ -166,6 +166,15 @@ class ReturnRequestService
                     ]);
                 }
 
+                if ($resolution === ReturnRequestItem::RESOLUTION_EXCHANGE
+                    && ! $this->hasExchangeValueCapacity($lockedOrder, $orderItem, $quantity)) {
+                    throw ValidationException::withMessages([
+                        'items' => __('Exchange quantity exceeds the uncompensated merchandise value remaining for :product.', [
+                            'product' => $orderItem->product_name,
+                        ]),
+                    ]);
+                }
+
                 ReturnRequestItem::query()->create([
                     'return_request_id' => $returnRequest->id,
                     'order_id' => $lockedOrder->id,
@@ -519,6 +528,24 @@ class ReturnRequestService
 
             $order = $locked->order()->firstOrFail();
 
+            foreach ($locked->items()
+                ->with('orderItem')
+                ->where('requested_resolution', ReturnRequestItem::RESOLUTION_EXCHANGE)
+                ->where('received_quantity', '>', 0)
+                ->get() as $exchangeItem) {
+                if (! $exchangeItem->orderItem
+                    || ! $this->hasExchangeValueCapacity(
+                        $order,
+                        $exchangeItem->orderItem,
+                        (int) $exchangeItem->received_quantity,
+                        (int) $locked->id,
+                    )) {
+                    throw ValidationException::withMessages([
+                        'exchange_order_id' => __('Exchange would exceed the uncompensated merchandise value remaining for the returned items.'),
+                    ]);
+                }
+            }
+
             $maxRmaRefund = $this->maxAdditionalRmaRefund($locked, $order);
 
             if ($refundAmount > $maxRmaRefund) {
@@ -647,6 +674,64 @@ class ReturnRequestService
             ->sum('received_quantity');
 
         return max(0, $posReturned + $rmaReturned);
+    }
+
+    private function hasExchangeValueCapacity(
+        Order $order,
+        OrderItem $orderItem,
+        int $quantity,
+        ?int $excludeReturnRequestId = null,
+    ): bool {
+        $soldQuantity = max(0, (int) $orderItem->quantity);
+        $quantity = min($soldQuantity, max(0, $quantity));
+
+        if ($soldQuantity < 1 || $quantity < 1) {
+            return false;
+        }
+
+        $grossAllocations = $this->orderRevenueAllocationService->grossAllocateCents($order);
+        $realizedAllocations = $this->orderRevenueAllocationService->allocateCents($order);
+        $orderItemId = (int) $orderItem->id;
+        $grossCents = max(0, (int) ($grossAllocations[$orderItemId] ?? 0));
+        $realizedCents = max(0, (int) ($realizedAllocations[$orderItemId] ?? 0));
+
+        if ($grossCents < 1 || $realizedCents < 1) {
+            return false;
+        }
+
+        $usedExchangeQuantity = (int) ReturnRequestItem::query()
+            ->where('order_item_id', $orderItemId)
+            ->where('requested_resolution', ReturnRequestItem::RESOLUTION_EXCHANGE)
+            ->with('returnRequest:id,status')
+            ->whereHas('returnRequest', function ($query) use ($excludeReturnRequestId) {
+                $query->whereIn('status', [
+                    ReturnRequest::STATUS_REQUESTED,
+                    ReturnRequest::STATUS_APPROVED,
+                    ReturnRequest::STATUS_RECEIVED,
+                    ReturnRequest::STATUS_COMPLETED,
+                ]);
+
+                if ($excludeReturnRequestId) {
+                    $query->where('id', '!=', $excludeReturnRequestId);
+                }
+            })
+            ->get()
+            ->sum(function (ReturnRequestItem $item) {
+                return match ($item->returnRequest?->status) {
+                    ReturnRequest::STATUS_REQUESTED => (int) $item->requested_quantity,
+                    ReturnRequest::STATUS_APPROVED,
+                    ReturnRequest::STATUS_RECEIVED,
+                    ReturnRequest::STATUS_COMPLETED => (int) ($item->approved_quantity ?? $item->requested_quantity),
+                    default => 0,
+                };
+            });
+
+        $usedExchangeQuantity = min($soldQuantity, max(0, $usedExchangeQuantity));
+        $usedExchangeCents = (int) round(($grossCents * $usedExchangeQuantity) / $soldQuantity);
+        $requiredExchangeCents = (int) round(($grossCents * $quantity) / $soldQuantity);
+        $availableExchangeCents = max(0, $realizedCents - $usedExchangeCents);
+
+        return $requiredExchangeCents > 0 && $requiredExchangeCents <= $availableExchangeCents;
     }
 
     private function lockRequest(ReturnRequest $returnRequest): ReturnRequest

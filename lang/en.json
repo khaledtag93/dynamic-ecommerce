@@ -3492,6 +3492,8 @@
     "Only received returns can be completed.": "Only received returns can be completed.",
     "Link an exchange order before completing items approved for exchange.": "Link an exchange order before completing items approved for exchange.",
     "An exchange order can only be linked when received items are approved for exchange.": "An exchange order can only be linked when received items are approved for exchange.",
+    "Exchange quantity exceeds the uncompensated merchandise value remaining for :product.": "Exchange quantity exceeds the uncompensated merchandise value remaining for :product.",
+    "Exchange would exceed the uncompensated merchandise value remaining for the returned items.": "Exchange would exceed the uncompensated merchandise value remaining for the returned items.",
     "The exchange order must be different from the original order.": "The exchange order must be different from the original order.",
     "The selected exchange order does not exist.": "The selected exchange order does not exist.",
     "Record a refund, link an exchange order, or enter completion notes before closing the return.": "Record a refund, link an exchange order, or enter completion notes before closing the return.",

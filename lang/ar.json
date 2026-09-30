@@ -2736,6 +2736,8 @@
     "Only received returns can be completed.": "يمكن إكمال طلبات الإرجاع المستلمة فقط.",
     "Link an exchange order before completing items approved for exchange.": "اربط طلب الاستبدال قبل إكمال الأصناف المعتمدة للاستبدال.",
     "An exchange order can only be linked when received items are approved for exchange.": "لا يمكن ربط طلب استبدال إلا عند وجود أصناف مستلمة ومعتمدة للاستبدال.",
+    "Exchange quantity exceeds the uncompensated merchandise value remaining for :product.": "تتجاوز كمية الاستبدال قيمة البضاعة المتبقية غير المعوضة للصنف :product.",
+    "Exchange would exceed the uncompensated merchandise value remaining for the returned items.": "سيؤدي الاستبدال إلى تجاوز قيمة البضاعة المتبقية غير المعوضة للأصناف المرتجعة.",
     "Only requested returns can be approved.": "يمكن اعتماد طلبات الإرجاع المطلوبة فقط.",
     "Only requested returns can be rejected.": "يمكن رفض طلبات الإرجاع المطلوبة فقط.",
     "Only safe next statuses are available. Manual changes should be backed by provider or transaction evidence.": "تظهر فقط الحالات التالية الآمنة. يجب أن تستند التغييرات اليدوية إلى دليل من مزود الدفع أو المعاملة.",

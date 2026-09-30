@@ -922,6 +922,125 @@ class ReturnRequestWorkflowTest extends TestCase
 
 
 
+    public function test_fully_refunded_item_cannot_receive_exchange_compensation(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        app(OrderActionService::class)->refund($order->fresh(), 100, 'Full refund before physical return.', null, $manager->id);
+
+        try {
+            app(ReturnRequestService::class)->createForCustomer($order->fresh(), $customer, [[
+                'order_item_id' => $item->id,
+                'quantity' => 1,
+                'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+            ]]);
+            $this->fail('A fully compensated item must not receive an exchange replacement as additional compensation.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items', $exception->errors());
+        }
+
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+        $this->assertDatabaseCount('return_requests', 0);
+    }
+
+    public function test_partial_refund_limits_exchange_quantity_to_uncompensated_value(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 200);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+
+        app(OrderActionService::class)->refund($order->fresh(), 100, 'Partial refund before exchange.', null, $manager->id);
+
+        try {
+            app(ReturnRequestService::class)->createForCustomer($order->fresh(), $customer, [[
+                'order_item_id' => $item->id,
+                'quantity' => 2,
+                'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+            ]]);
+            $this->fail('Exchange quantity must not exceed the merchandise value left uncompensated after refunds.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items', $exception->errors());
+        }
+
+        $return = app(ReturnRequestService::class)->createForCustomer($order->fresh(), $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+
+        $this->assertSame(1, (int) $return->items->first()->requested_quantity);
+    }
+
+    public function test_refund_recorded_after_exchange_request_blocks_double_compensation_at_completion(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+        app(OrderActionService::class)->refund($order->fresh(), 100, 'Refund after exchange request.', null, $manager->id);
+
+        try {
+            $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
+            $this->fail('A later refund must consume exchange compensation capacity before completion.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('exchange_order_id', $exception->errors());
+        }
+
+        $this->assertSame(ReturnRequest::STATUS_RECEIVED, $return->fresh()->status);
+        $this->assertNull($return->fresh()->exchange_order_id);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+    }
+
     public function test_exchange_items_cannot_be_completed_without_exchange_order(): void
     {
         $customer = User::factory()->create();
