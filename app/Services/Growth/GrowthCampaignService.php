@@ -906,7 +906,10 @@ class GrowthCampaignService
         $couponIssuedCount = Schema::hasTable('growth_coupon_issues') ? GrowthCouponIssue::query()->count() : 0;
 
         $attributedRevenue = Schema::hasTable('growth_attribution_touches') ? (float) GrowthAttributionTouch::query()->sum('revenue') : 0.0;
-        $attributedOrders = Schema::hasTable('growth_attribution_touches') ? (int) GrowthAttributionTouch::query()->distinct('order_id')->count('order_id') : 0;
+        $attributedOrders = Schema::hasTable('growth_attribution_touches') ? (int) GrowthAttributionTouch::query()
+            ->whereHas('order', fn ($query) => $query->where('payment_status', '!=', Order::PAYMENT_STATUS_REFUNDED))
+            ->distinct('order_id')
+            ->count('order_id') : 0;
         $cohortRevenue90d = Schema::hasTable('growth_cohort_snapshots') ? (float) GrowthCohortSnapshot::query()->sum('revenue_90d') : 0.0;
         $predictiveCount = Schema::hasTable('growth_customer_scores') ? GrowthCustomerScore::query()->count() : 0;
         $atRiskCount = Schema::hasTable('growth_customer_scores') ? GrowthCustomerScore::query()->where('retention_stage', 'at_risk')->count() : 0;
