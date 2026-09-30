@@ -258,6 +258,44 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertDontSee('EGP 500.00');
     }
 
+    public function test_offers_analytics_does_not_hide_loss_only_discount_activity_without_coupon(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        Order::query()->create([
+            'order_number' => 'OFFERS-LOSS-ONLY-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'grand_total' => 50,
+            'refund_total' => 50,
+            'discount_total' => 10,
+            'cost_total' => 20,
+            'profit_total' => -20,
+            'customer_name' => 'Loss Only Offer Customer',
+            'customer_email' => 'offers-loss-only@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+
+        Cache::flush();
+
+        $this->actingAs($owner)
+            ->get(route('admin.analytics.offers', ['range' => 'today']))
+            ->assertOk()
+            ->assertViewHas('drilldown', function ($drilldown) {
+                $discounted = data_get($drilldown, 'discounted_orders');
+
+                return (int) data_get($discounted, 'orders_count', -1) === 0
+                    && (float) data_get($discounted, 'discount_total', -1) === 0.0
+                    && (float) data_get($discounted, 'revenue_gross', -1) === 0.0
+                    && (float) data_get($discounted, 'profit_total', 0) === -20.0;
+            })
+            ->assertViewHas('trust', fn ($trust) => data_get($trust, 'has_data') === true)
+            ->assertViewHas('uiState', fn ($state) => data_get($state, 'empty') === false);
+    }
+
     public function test_coupon_profitability_uses_weighted_realized_profit_instead_of_revenue_leader(): void
     {
         $owner = $this->createSuperAdmin();
