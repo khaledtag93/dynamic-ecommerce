@@ -5,7 +5,7 @@
 - Branch: `sec03-framework-upgrade`.
 - Latest verified application / CI revision: `51e6d72717c6e11a04d6602585f58f5e906756d6`.
 - Hardening CI #2384 is Green on that exact application SHA, including clean MySQL migration, full PHPUnit, shared browser interactions and frontend production build.
-- Latest verified QAS application remains `e5b13a1583a4411d2198cb64488b273dce2ed976`; newer source/CI hardening has not yet been promoted.
+- Latest verified QAS / branch revision is `496d65e53417e954aec9ee5a2fa9267101569ed9`; Hardening CI #2387 is Green on that exact deployed SHA. QAS application/static health are HTTP 200, maintenance is OFF, no migrations were pending, scheduler and queue worker are healthy, and the failed-jobs ledger is back to 0 after review/removal of one stale operational heartbeat failure from 2026-09-26.
 - Order Discount Line-Profit Integrity is source/CI closed: discounted merchandise revenue is allocated in exact cents across lines before authoritative COGS, POS net lines are not discounted twice, and historical discounted rows can be audited/repaired with bounded dry-run/apply command `commerce:reconcile-order-line-profit`.
 - Offer analytics now separates commercially realized promotion performance from fully-refunded discounted losses. Fully-refunded orders do not rank as coupon performance but their negative profit remains visible as separate loss evidence.
 - Paymob checkout preflight is source/CI closed for order/payment/gateway currency and amount consistency before provider initiation.
@@ -13,7 +13,7 @@
 - Exchange/Replacement, Returns/Refunds/POS, Order Cash Summary, Customer Value Currency, Sales COGS/Lot provenance, Purchasing/Inventory, Supplier Operational AP and Payroll integrity remain closed at their recorded scopes unless a reproduced defect reopens them.
 - Production remains unchanged.
 
-**Next execution:** deploy exact Green application SHA `51e6d727` to QAS, run the discounted-line-profit reconciliation dry-run before any apply, then perform controlled authenticated checkout/POS/Offers/Paymob smoke on the matching revision. Continue the next genuinely unclosed ERP/accounting boundary only after that evidence. Production gates remain OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification.
+**Next execution:** perform controlled authenticated checkout/POS/Offers/Paymob smoke on exact QAS revision `496d65e5`. The discounted-line-profit reconciliation dry-run found 0 candidate orders, so no historical apply was needed. After authenticated acceptance, continue the next genuinely unclosed ERP/accounting boundary. Production gates remain OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification.
 
 ## LATEST VERIFIED STATE — 2026-09-29
 
