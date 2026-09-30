@@ -13,6 +13,11 @@ use Illuminate\Support\Collection;
 
 class ProfitService
 {
+    public function __construct(
+        protected OrderRevenueAllocationService $orderRevenueAllocationService
+    ) {
+    }
+
     public function calculateOrderEconomics(Order $order): array
     {
         $items = $order->items()->get();
@@ -75,29 +80,52 @@ class ProfitService
 
     public function calculateOrderItemProfitAmount(OrderItem $item): string
     {
-        return $this->centsToMoney(
-            $this->moneyToCents($item->line_total) - $this->itemCostCents($item)
+        $order = $item->relationLoaded('order')
+            ? $item->order
+            : $item->order()->first();
+
+        if (! $order || ! $item->exists) {
+            return $this->centsToMoney(
+                $this->moneyToCents($item->line_total) - $this->itemCostCents($item)
+            );
+        }
+
+        $order->load('items');
+        $allocations = $this->orderRevenueAllocationService->grossAllocateCents($order);
+
+        return $this->calculateOrderItemProfitFromRevenueCents(
+            $item,
+            (int) ($allocations[(int) $item->id] ?? max(0, $this->moneyToCents($item->line_total)))
         );
     }
 
     public function countOrderItemProfitChanges(Order $order): int
     {
-        $items = $order->relationLoaded('items')
-            ? $order->items
-            : $order->items()->get();
+        $order->load('items');
+        $allocations = $this->orderRevenueAllocationService->grossAllocateCents($order);
 
-        return $items->filter(
-            fn (OrderItem $item) => $this->moneyToCents($item->profit_amount)
-                !== $this->moneyToCents($this->calculateOrderItemProfitAmount($item))
-        )->count();
+        return $order->items->filter(function (OrderItem $item) use ($allocations): bool {
+            $expected = $this->calculateOrderItemProfitFromRevenueCents(
+                $item,
+                (int) ($allocations[(int) $item->id] ?? max(0, $this->moneyToCents($item->line_total)))
+            );
+
+            return $this->moneyToCents($item->profit_amount)
+                !== $this->moneyToCents($expected);
+        })->count();
     }
 
     public function refreshOrderItemProfits(Order $order): int
     {
+        $order->load('items');
+        $allocations = $this->orderRevenueAllocationService->grossAllocateCents($order);
         $changed = 0;
 
-        foreach ($order->items()->get() as $item) {
-            $expected = $this->calculateOrderItemProfitAmount($item);
+        foreach ($order->items as $item) {
+            $expected = $this->calculateOrderItemProfitFromRevenueCents(
+                $item,
+                (int) ($allocations[(int) $item->id] ?? max(0, $this->moneyToCents($item->line_total)))
+            );
 
             if ($this->moneyToCents($item->profit_amount) === $this->moneyToCents($expected)) {
                 continue;
@@ -116,6 +144,13 @@ class ProfitService
         $order->update($this->calculateOrderTotals($order));
 
         return $order->fresh();
+    }
+
+    protected function calculateOrderItemProfitFromRevenueCents(OrderItem $item, int $revenueCents): string
+    {
+        return $this->centsToMoney(
+            max(0, $revenueCents) - $this->itemCostCents($item)
+        );
     }
 
     protected function itemCostCents(OrderItem $item): int
