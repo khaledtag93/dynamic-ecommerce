@@ -181,8 +181,9 @@ class GrowthControlIntegrityTest extends TestCase
             'shipping_city' => 'Cairo',
         ]);
         $order->forceFill([
-            'created_at' => $reference->copy()->subMinutes(90),
-            'updated_at' => $reference->copy()->subMinutes(90),
+            'placed_at' => $reference->copy()->subMinutes(90),
+            'created_at' => $reference->copy()->subDays(30),
+            'updated_at' => $reference->copy()->subDays(30),
         ])->save();
 
         $result = collect(app(GrowthCampaignService::class)->variantPerformance($experiment))->keyBy('key');
