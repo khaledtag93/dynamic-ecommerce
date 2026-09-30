@@ -25,16 +25,15 @@ class AnalyticsRevenueService
         Carbon $to,
         ?int $limit = null
     ): Collection {
-        $query = $this->realizedOrdersQuery($from, $to)
+        $query = $this->economicOrdersQuery($from, $to)
             ->reorder()
             ->whereNotNull('coupon_code')
             ->select(
                 'coupon_code',
-                DB::raw('COUNT(*) as orders_count'),
+                DB::raw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN 1 ELSE 0 END) as orders_count"),
                 DB::raw('SUM(grand_total - refund_total) as revenue_gross'),
-                DB::raw('SUM(discount_total) as discount_total'),
-                DB::raw('SUM(profit_total) as profit_total'),
-                DB::raw('AVG(grand_total - refund_total) as average_order_value')
+                DB::raw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN discount_total ELSE 0 END) as discount_total"),
+                DB::raw('SUM(profit_total) as profit_total')
             )
             ->groupBy('coupon_code')
             ->orderByDesc('revenue_gross');
@@ -64,7 +63,9 @@ class AnalyticsRevenueService
                 'gross_margin_percent' => $revenue > 0
                     ? round(($profit / $revenue) * 100, 2)
                     : null,
-                'average_order_value' => round((float) $row->average_order_value, 2),
+                'average_order_value' => (int) $row->orders_count > 0
+                    ? round($revenue / (int) $row->orders_count, 2)
+                    : 0.0,
                 'usage_limit' => $coupon?->usage_limit,
                 'used_count' => $coupon?->used_count,
                 'is_active' => $coupon?->is_active,
@@ -83,7 +84,7 @@ class AnalyticsRevenueService
     ): Collection {
         $buckets = [];
 
-        $this->realizedOrdersQuery($from, $to)
+        $this->economicOrdersQuery($from, $to)
             ->whereHas('items', fn (Builder $query) => $query
                 ->where('product_id', $product->id))
             ->with(['items' => fn ($query) => $query->orderBy('id')])
@@ -120,7 +121,9 @@ class AnalyticsRevenueService
                             $realizedRevenueCents / 100
                         );
 
-                        $buckets[$key]['quantity'] += (int) $item->quantity;
+                        if ($order->payment_status !== Order::PAYMENT_STATUS_REFUNDED) {
+                            $buckets[$key]['quantity'] += (int) $item->quantity;
+                        }
                         $buckets[$key]['revenue_cents'] += $realizedRevenueCents;
                         $buckets[$key]['cogs_cents'] += (int) round(
                             ((float) $economics['realized_cogs']) * 100
@@ -209,6 +212,22 @@ class AnalyticsRevenueService
             'quantity' => $row['quantity'],
             'revenue_gross' => round($row['revenue_cents'] / 100, 2),
         ];
+    }
+
+    protected function economicOrdersQuery(Carbon $from, Carbon $to): Builder
+    {
+        return Order::query()
+            ->where('status', Order::STATUS_COMPLETED)
+            ->whereIn('payment_status', [
+                Order::PAYMENT_STATUS_PAID,
+                Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                Order::PAYMENT_STATUS_REFUNDED,
+            ])
+            ->whereBetween(
+                DB::raw('DATE(COALESCE(placed_at, created_at))'),
+                [$from->toDateString(), $to->toDateString()]
+            )
+            ->orderBy('id');
     }
 
     protected function realizedOrdersQuery(Carbon $from, Carbon $to): Builder
