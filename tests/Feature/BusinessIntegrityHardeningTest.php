@@ -302,6 +302,47 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(60.0, (float) $stat->profit_total);
     }
 
+    public function test_partial_monetary_refund_without_physical_return_keeps_purchase_quantity(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 200);
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'refund_total' => 100,
+            'delivered_at' => now(),
+        ]);
+        $product = $this->makeProduct(0);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+        OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 100,
+            'reason' => 'Commercial goodwill refund without return',
+            'processed_at' => now(),
+        ]);
+
+        app(AnalyticsTracker::class)->syncRealizedPurchase($order->fresh());
+
+        $event = AnalyticsEvent::query()
+            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+            ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
+            ->where('entity_id', (string) $order->id)
+            ->sole();
+
+        $this->assertSame(2, (int) data_get($event->meta, 'line_items.0.quantity'));
+        $this->assertSame(100.0, (float) data_get($event->meta, 'line_items.0.realized_revenue'));
+        $this->assertSame(80.0, (float) data_get($event->meta, 'line_items.0.realized_cogs'));
+        $this->assertSame(20.0, (float) data_get($event->meta, 'line_items.0.profit_total'));
+    }
+
     public function test_profit_uses_net_order_value_and_reverses_cogs_only_for_restocked_units(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 90);
