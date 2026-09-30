@@ -245,10 +245,14 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertViewHas('drilldown', function ($drilldown) {
                 $discounted = data_get($drilldown, 'discounted_orders');
 
+                $refundedLosses = data_get($drilldown, 'refunded_discount_losses');
+
                 return (int) data_get($discounted, 'orders_count', 0) === 1
                     && (float) data_get($discounted, 'discount_total', 0) === 10.0
                     && (float) data_get($discounted, 'revenue_gross', 0) === 75.0
-                    && (float) data_get($discounted, 'profit_total', 0) === 15.0;
+                    && (float) data_get($discounted, 'profit_total', 0) === 35.0
+                    && (int) data_get($refundedLosses, 'orders_count', 0) === 1
+                    && (float) data_get($refundedLosses, 'profit_total', 0) === -20.0;
             })
             ->assertSee('NET25')
             ->assertSee('EGP 75.00')
@@ -287,13 +291,19 @@ class AdminAnalyticsExperienceTest extends TestCase
             ->assertViewHas('drilldown', function ($drilldown) {
                 $discounted = data_get($drilldown, 'discounted_orders');
 
+                $refundedLosses = data_get($drilldown, 'refunded_discount_losses');
+
                 return (int) data_get($discounted, 'orders_count', -1) === 0
                     && (float) data_get($discounted, 'discount_total', -1) === 0.0
                     && (float) data_get($discounted, 'revenue_gross', -1) === 0.0
-                    && (float) data_get($discounted, 'profit_total', 0) === -20.0;
+                    && (float) data_get($discounted, 'profit_total', -1) === 0.0
+                    && (int) data_get($refundedLosses, 'orders_count', 0) === 1
+                    && (float) data_get($refundedLosses, 'profit_total', 0) === -20.0;
             })
             ->assertViewHas('trust', fn ($trust) => data_get($trust, 'has_data') === true)
-            ->assertViewHas('uiState', fn ($state) => data_get($state, 'empty') === false);
+            ->assertViewHas('uiState', fn ($state) => data_get($state, 'empty') === false)
+            ->assertSee('Refunded · Profit')
+            ->assertSee('EGP -20.00');
     }
 
     public function test_coupon_profitability_uses_weighted_realized_profit_instead_of_revenue_leader(): void
@@ -356,12 +366,7 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(50.0, (float) $highProfit->profit_total);
         $this->assertSame(62.5, (float) $highProfit->gross_margin_percent);
         $this->assertSame(2, (int) $highProfit->orders_count);
-        $this->assertSame(0, (int) $loss->orders_count);
-        $this->assertSame(0.0, (float) $loss->realized_revenue);
-        $this->assertSame(0.0, (float) $loss->discount_total);
-        $this->assertSame(-20.0, (float) $loss->profit_total);
-        $this->assertNull($loss->gross_margin_percent);
-        $this->assertSame(0.0, (float) $loss->average_order_value);
+        $this->assertNull($loss);
 
         Cache::flush();
 
