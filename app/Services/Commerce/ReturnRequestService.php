@@ -516,6 +516,12 @@ class ReturnRequestService
                     ]);
                 }
 
+                if (! $exchangeOrder->items()->where('quantity', '>', 0)->exists()) {
+                    throw ValidationException::withMessages([
+                        'exchange_order_id' => __('The exchange order must contain at least one replacement item.'),
+                    ]);
+                }
+
                 if (ReturnRequest::query()
                     ->where('exchange_order_id', $exchangeOrder->id)
                     ->where('id', '!=', $locked->id)

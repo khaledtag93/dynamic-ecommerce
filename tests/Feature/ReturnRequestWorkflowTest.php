@@ -1004,7 +1004,7 @@ class ReturnRequestWorkflowTest extends TestCase
         $manager = User::factory()->create();
         $product = $this->makeProduct(0);
         $order = $this->makeDeliveredPaidOrder($customer, 100);
-        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 100);
         $item = $order->items()->create([
             'product_id' => $product->id,
             'product_name' => $product->name,
@@ -1086,7 +1086,7 @@ class ReturnRequestWorkflowTest extends TestCase
         $manager = User::factory()->create();
         $product = $this->makeProduct(0);
         $order = $this->makeDeliveredPaidOrder($customer, 100);
-        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 100);
         $item = $order->items()->create([
             'product_id' => $product->id,
             'product_name' => $product->name,
@@ -1119,6 +1119,46 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame(ReturnRequest::STATUS_RECEIVED, $return->fresh()->status);
         $this->assertNull($return->fresh()->exchange_order_id);
         $this->assertDatabaseCount('order_refunds', 0);
+    }
+
+    public function test_empty_order_cannot_be_used_as_exchange_replacement(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $emptyExchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+        try {
+            $service->complete($return->fresh(), 0, $emptyExchangeOrder->id, null, $manager);
+            $this->fail('An exchange order without replacement items must not settle an RMA.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('exchange_order_id', $exception->errors());
+        }
+
+        $this->assertSame(ReturnRequest::STATUS_RECEIVED, $return->fresh()->status);
+        $this->assertNull($return->fresh()->exchange_order_id);
     }
 
     public function test_cancelled_order_cannot_be_used_as_exchange_order(): void
@@ -1170,7 +1210,7 @@ class ReturnRequestWorkflowTest extends TestCase
         $manager = User::factory()->create();
         $product = $this->makeProduct(0);
         $order = $this->makeDeliveredPaidOrder($customer, 100);
-        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 100);
         $item = $order->items()->create([
             'product_id' => $product->id,
             'product_name' => $product->name,
@@ -1211,7 +1251,7 @@ class ReturnRequestWorkflowTest extends TestCase
         $manager = User::factory()->create();
         $product = $this->makeProduct(0);
         $order = $this->makeDeliveredPaidOrder($customer, 100);
-        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 100);
         $item = $order->items()->create([
             'product_id' => $product->id,
             'product_name' => $product->name,
@@ -1270,7 +1310,7 @@ class ReturnRequestWorkflowTest extends TestCase
         $product = $this->makeProduct(0);
         $firstOrder = $this->makeDeliveredPaidOrder($customer, 100);
         $secondOrder = $this->makeDeliveredPaidOrder($customer, 100);
-        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 100);
 
         $makeItem = function (Order $order) use ($product) {
             return $order->items()->create([
@@ -1335,7 +1375,7 @@ class ReturnRequestWorkflowTest extends TestCase
         $firstProduct = $this->makeProduct(0);
         $secondProduct = $this->makeProduct(0);
         $order = $this->makeDeliveredPaidOrder($customer, 200);
-        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 100);
 
         $refundItem = $order->items()->create([
             'product_id' => $firstProduct->id,
@@ -1511,6 +1551,24 @@ class ReturnRequestWorkflowTest extends TestCase
             'تعذر إلغاء طلب الإرجاع. حاول مرة أخرى.',
             $arabic['Could not cancel the return request. Please try again.'] ?? null
         );
+    }
+
+    private function makeExchangeOrder(User $user, float $total): Order
+    {
+        $order = $this->makeDeliveredPaidOrder($user, $total);
+        $product = $this->makeProduct(0);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => $total,
+            'unit_cost' => min(40, $total),
+            'quantity' => 1,
+            'line_total' => $total,
+            'profit_amount' => max(0, $total - min(40, $total)),
+        ]);
+
+        return $order;
     }
 
     private function makeDeliveredPaidOrder(User $user, float $total): Order

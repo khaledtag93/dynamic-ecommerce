@@ -257,8 +257,18 @@ class ReturnManagementTest extends TestCase
 
         $customer = User::factory()->create();
         $manager = $this->staffWithRole('operations_manager');
-        [$order, $item] = $this->makePaidCompletedOrder($customer, 1);
+        [$order, $item, $replacementProduct] = $this->makePaidCompletedOrder($customer, 1);
         $exchange = $this->makeOrder($customer, ['order_number' => 'EXCHANGE-' . Str::upper(Str::random(6))]);
+        $exchange->items()->create([
+            'product_id' => $replacementProduct->id,
+            'product_name' => $replacementProduct->name,
+            'sku' => $replacementProduct->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
 
         $service = app(ReturnRequestService::class);
         $return = $service->createForCustomer($order, $customer, [[
