@@ -9,13 +9,29 @@
         <a href="{{ route('admin.customers.index') }}" class="btn btn-light border">{{ __('Back to customers') }}</a>
     </x-admin.page-header>
 
+    @php
+        $spendRows = collect($summary['spend_by_currency'] ?? []);
+        $totalSpendDisplay = $spendRows
+            ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['gross_total'], 2))
+            ->implode(' · ');
+        $refundDisplay = $spendRows
+            ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['refund_total'], 2))
+            ->implode(' · ');
+        $netSpendDisplay = $spendRows
+            ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['net_total'], 2))
+            ->implode(' · ');
+        $averageOrderDisplay = $spendRows
+            ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['average_order_value'], 2))
+            ->implode(' · ');
+    @endphp
+
     <div class="row g-3 mb-4">
         @foreach([
             ['label' => __('Role'), 'value' => $user->roles->first()?->name ?? ((int) $user->role_as === 1 ? __('Unassigned admin (legacy)') : __('Customer')), 'copy' => $user->email, 'icon' => 'mdi-account-circle-outline'],
             ['label' => __('Orders'), 'value' => $summary['orders_count'], 'copy' => __('Total orders placed by this account.'), 'icon' => 'mdi-cart-outline'],
-            ['label' => __('Total spend'), 'value' => 'EGP ' . number_format($summary['total_spend'], 2), 'copy' => __('Gross order value across all orders.'), 'icon' => 'mdi-cash-multiple'],
-            ['label' => __('Refunded'), 'value' => 'EGP ' . number_format($summary['refund_total'], 2), 'copy' => __('Total refunded amount for this customer.'), 'icon' => 'mdi-cash-refund'],
-            ['label' => __('Net spend'), 'value' => 'EGP ' . number_format($summary['net_spend'], 2), 'copy' => __('Order value after recorded refunds.'), 'icon' => 'mdi-wallet-outline'],
+            ['label' => __('Total spend'), 'value' => $totalSpendDisplay !== '' ? $totalSpendDisplay : '—', 'copy' => __('Gross realized order value grouped by currency.'), 'icon' => 'mdi-cash-multiple'],
+            ['label' => __('Refunded'), 'value' => $refundDisplay !== '' ? $refundDisplay : '—', 'copy' => __('Recorded customer refunds grouped by currency.'), 'icon' => 'mdi-cash-refund'],
+            ['label' => __('Net spend'), 'value' => $netSpendDisplay !== '' ? $netSpendDisplay : '—', 'copy' => __('Realized order value after refunds, grouped by currency.'), 'icon' => 'mdi-wallet-outline'],
         ] as $card)
             <div class="col-md-6 col-xl">
                 <div class="admin-card admin-stat-card h-100">
@@ -39,7 +55,7 @@
                         <div class="text-muted small mt-1">{{ __('Joined') }} {{ $user->created_at?->format('d M Y, h:i A') }}</div>
                     </div>
                     <div class="row g-2 mb-4">
-                        <div class="col-6"><div class="p-3 rounded-4 border h-100"><div class="text-muted small">{{ __('Average order') }}</div><div class="fw-bold">EGP {{ number_format($summary['average_order_value'], 2) }}</div></div></div>
+                        <div class="col-6"><div class="p-3 rounded-4 border h-100"><div class="text-muted small">{{ __('Average order') }}</div><div class="fw-bold">{{ $averageOrderDisplay !== '' ? $averageOrderDisplay : '—' }}</div><div class="text-muted small mt-1">{{ __('Average realized order value grouped by currency.') }}</div></div></div>
                         <div class="col-6"><div class="p-3 rounded-4 border h-100"><div class="text-muted small">{{ __('Last order') }}</div><div class="fw-bold">{{ $summary['latest_order_at']?->format('d M Y') ?? __('No orders yet') }}</div></div></div>
                     </div>
                     <div class="border-top pt-3">
@@ -110,7 +126,7 @@
                                                     <span class="badge admin-status-badge {{ $order->payment_status_badge_class }}">{{ $order->payment_status_label }}</span>
                                                 </div>
                                             </td>
-                                            <td class="fw-semibold">EGP {{ number_format($order->grand_total, 2) }}</td>
+                                            <td class="fw-semibold">{{ strtoupper($order->currency ?: 'EGP') }} {{ number_format($order->grand_total, 2) }}</td>
                                             <td>
                                                 <div>{{ $order->created_at?->format('d M Y') }}</div>
                                                 <div class="text-muted small">{{ $order->created_at?->format('h:i A') }}</div>
