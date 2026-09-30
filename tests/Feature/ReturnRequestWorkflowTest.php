@@ -1435,6 +1435,61 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame(100.0, (float) $fresh->refunds->sum('amount'));
     }
 
+    public function test_restocked_exchange_with_free_replacement_preserves_combined_cogs_economics(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $originalProduct = $this->makeProduct(0);
+        $replacementProduct = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 0);
+        $item = $order->items()->create([
+            'product_id' => $originalProduct->id,
+            'product_name' => $originalProduct->name,
+            'sku' => $originalProduct->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+        $exchangeOrder->items()->create([
+            'product_id' => $replacementProduct->id,
+            'product_name' => $replacementProduct->name,
+            'sku' => $replacementProduct->sku,
+            'unit_price' => 0,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 0,
+            'profit_amount' => -40,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 1], $manager);
+        $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
+
+        $profitService = app(ProfitService::class);
+        $originalEconomics = $profitService->calculateOrderEconomics($order->fresh());
+        $replacementEconomics = $profitService->calculateOrderEconomics($exchangeOrder->fresh());
+
+        $this->assertSame('100.00', $originalEconomics['realized_revenue']);
+        $this->assertSame('0.00', $originalEconomics['realized_cogs']);
+        $this->assertSame('100.00', $originalEconomics['profit_total']);
+        $this->assertSame('0.00', $replacementEconomics['realized_revenue']);
+        $this->assertSame('40.00', $replacementEconomics['realized_cogs']);
+        $this->assertSame('-40.00', $replacementEconomics['profit_total']);
+        $this->assertSame(60.0, (float) $originalEconomics['profit_total'] + (float) $replacementEconomics['profit_total']);
+        $this->assertSame(1, (int) $originalProduct->fresh()->quantity);
+    }
+
     public function test_exchange_link_does_not_silently_settle_replacement_price_difference(): void
     {
         $customer = User::factory()->create();
