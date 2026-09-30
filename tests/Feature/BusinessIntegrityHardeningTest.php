@@ -975,7 +975,8 @@ class BusinessIntegrityHardeningTest extends TestCase
         $service->refund($order, '0.10', 'first exact-cent refund');
         $service->refund($order->fresh(), '0.20', 'second exact-cent refund');
 
-        $refunds = $order->refunds()->orderBy('id')->pluck('amount')->all();
+        $refunds = $order->refunds()->pluck('amount')->all();
+        sort($refunds, SORT_STRING);
 
         $this->assertSame(['0.10', '0.20'], $refunds);
         $this->assertSame(0.30, (float) $order->fresh()->refund_total);
