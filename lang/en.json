@@ -5301,5 +5301,11 @@
     "Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.": "Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.",
     "Refund amount exceeds the remaining value for the selected allocation.": "Refund amount exceeds the remaining value for the selected allocation.",
     "The calculated amount exceeds the supported monetary range.": "The calculated amount exceeds the supported monetary range.",
-    "The resulting profit margin exceeds the supported range.": "The resulting profit margin exceeds the supported range."
+    "The resulting profit margin exceeds the supported range.": "The resulting profit margin exceeds the supported range.",
+    "Refund amount must use at most two decimal places.": "Refund amount must use at most two decimal places.",
+    "Refund amount must be greater than zero.": "Refund amount must be greater than zero.",
+    "Refund amount exceeds the supported monetary range.": "Refund amount exceeds the supported monetary range.",
+    "Refund amount cannot be negative.": "Refund amount cannot be negative.",
+    "This order cannot be refunded in its current state.": "This order cannot be refunded in its current state.",
+    "Refund amount must be within the remaining refundable balance.": "Refund amount must be within the remaining refundable balance."
 }

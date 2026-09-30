@@ -18,6 +18,7 @@ class ReturnWorkspaceClosureTest extends TestCase
     public function test_admin_return_lifecycle_controls_have_explicit_labels(): void
     {
         $view = file_get_contents(resource_path('views/admin/returns/show.blade.php'));
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/ReturnRequestController.php'));
 
         foreach ([
             'approvedQuantity-{{ $item->id }}',
@@ -34,6 +35,7 @@ class ReturnWorkspaceClosureTest extends TestCase
         }
 
         $this->assertStringContainsString('id="approvedQuantity-{{ $item->id }}" type="number"', $view);
+        $this->assertStringContainsString("'refund_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99']", $controller);
         $this->assertStringContainsString('id="rejectReviewNotes"', $view);
         $this->assertStringContainsString('aria-required="true"', $view);
     }

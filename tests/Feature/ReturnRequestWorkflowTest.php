@@ -329,6 +329,48 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertDatabaseCount('order_refunds', 0);
     }
 
+    public function test_rma_completion_rejects_over_precision_before_refund_mutation(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+
+        try {
+            $service->complete($return->fresh(), '50.001', null, 'Over-precision refund attempt.', $manager);
+            $this->fail('RMA completion must reject refund amounts with more than two decimal places.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund_amount', $exception->errors());
+        }
+
+        $this->assertSame(ReturnRequest::STATUS_RECEIVED, $return->fresh()->status);
+        $this->assertSame(0.0, (float) $order->fresh()->refund_total);
+        $this->assertDatabaseCount('order_refunds', 0);
+    }
+
     public function test_rma_refund_respects_storefront_order_level_discount(): void
     {
         $customer = User::factory()->create();

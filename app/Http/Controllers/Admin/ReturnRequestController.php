@@ -148,7 +148,7 @@ class ReturnRequestController extends Controller
     public function complete(Request $request, ReturnRequest $returnRequest): RedirectResponse
     {
         $data = $request->validate([
-            'refund_amount' => ['nullable', 'numeric', 'min:0'],
+            'refund_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'exchange_order_id' => ['nullable', 'integer', 'exists:orders,id'],
             'completion_notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -156,7 +156,7 @@ class ReturnRequestController extends Controller
         try {
             $this->returnRequestService->complete(
                 $returnRequest,
-                (float) ($data['refund_amount'] ?? 0),
+                (string) ($data['refund_amount'] ?? '0.00'),
                 isset($data['exchange_order_id']) ? (int) $data['exchange_order_id'] : null,
                 $data['completion_notes'] ?? null,
                 $request->user(),

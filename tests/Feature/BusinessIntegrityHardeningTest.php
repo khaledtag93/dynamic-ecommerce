@@ -921,6 +921,68 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull($payment->fresh()->refunded_at);
     }
 
+    public function test_refund_rejects_over_precision_before_any_financial_mutation(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $payment = $this->makePayment($order, Payment::STATUS_PAID);
+
+        $notifications = Mockery::mock(OrderNotificationService::class);
+        $notifications->shouldNotReceive('notifyRefundRecorded');
+
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class),
+            app(PaymentService::class),
+            app(GrowthAttributionService::class)
+        );
+
+        try {
+            $service->refund($order, '1.001', 'over precision refund');
+            $this->fail('Refund amounts with more than two decimal places must be rejected.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund', $exception->errors());
+        }
+
+        $this->assertDatabaseCount('order_refunds', 0);
+        $this->assertSame(0.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
+    }
+
+    public function test_refund_balance_and_full_refund_status_are_exact_in_cents(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 0.30);
+        $payment = $this->makePayment($order, Payment::STATUS_PAID);
+
+        $notifications = Mockery::mock(OrderNotificationService::class);
+        $notifications->shouldReceive('notifyRefundRecorded')->twice();
+
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class),
+            app(PaymentService::class),
+            app(GrowthAttributionService::class)
+        );
+
+        $service->refund($order, '0.10', 'first exact-cent refund');
+        $service->refund($order->fresh(), '0.20', 'second exact-cent refund');
+
+        $refunds = $order->refunds()->orderBy('id')->pluck('amount')->all();
+
+        $this->assertSame(['0.10', '0.20'], $refunds);
+        $this->assertSame(0.30, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(Payment::STATUS_REFUNDED, $payment->fresh()->status);
+    }
+
     public function test_database_preserves_inventory_movement_order_history_from_direct_order_deletion(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_UNPAID, 100);
@@ -1061,7 +1123,7 @@ class BusinessIntegrityHardeningTest extends TestCase
         );
 
         $first = $service->refund($order, 20, 'duplicate safe refund', 'same request', $actor->id, null, $key);
-        $replay = $service->refund($order->fresh(), 20, 'duplicate safe refund', 'same request', $actor->id, null, $key);
+        $replay = $service->refund($order->fresh(), '20.00', 'duplicate safe refund', 'same request', $actor->id, null, $key);
 
         $this->assertTrue($first['created']);
         $this->assertFalse($replay['created']);

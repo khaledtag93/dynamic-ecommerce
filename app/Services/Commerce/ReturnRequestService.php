@@ -10,6 +10,8 @@ use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
 use App\Services\Growth\GrowthAttributionService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -462,7 +464,7 @@ class ReturnRequestService
 
     public function complete(
         ReturnRequest $returnRequest,
-        float $refundAmount,
+        int|float|string $refundAmount,
         ?int $exchangeOrderId,
         ?string $notes,
         User $actor,
@@ -476,7 +478,8 @@ class ReturnRequestService
                 ]);
             }
 
-            $refundAmount = round(max(0, $refundAmount), 2);
+            $refundAmountCents = $this->refundAmountToCents($refundAmount);
+            $refundAmount = $this->centsToMoney($refundAmountCents);
             $notes = $this->nullableTrim($notes);
             $hasReceivedExchangeItems = $locked->items()
                 ->where('requested_resolution', ReturnRequestItem::RESOLUTION_EXCHANGE)
@@ -564,23 +567,23 @@ class ReturnRequestService
                 }
             }
 
-            $maxRmaRefund = $this->maxAdditionalRmaRefund($locked, $order);
+            $maxRmaRefundCents = $this->maxAdditionalRmaRefundCents($locked, $order);
 
-            if ($refundAmount > $maxRmaRefund) {
+            if ($refundAmountCents > $maxRmaRefundCents) {
                 throw ValidationException::withMessages([
                     'refund_amount' => __('Refund amount cannot exceed the value of received items approved for refund (:amount).', [
-                        'amount' => number_format($maxRmaRefund, 2),
+                        'amount' => $this->centsToMoney($maxRmaRefundCents),
                     ]),
                 ]);
             }
 
-            if ($refundAmount <= 0 && ! $exchangeOrder && ! $notes) {
+            if ($refundAmountCents <= 0 && ! $exchangeOrder && ! $notes) {
                 throw ValidationException::withMessages([
                     'completion_notes' => __('Record a refund, link an exchange order, or enter completion notes before closing the return.'),
                 ]);
             }
 
-            if ($refundAmount > 0) {
+            if ($refundAmountCents > 0) {
                 $this->orderActionService->refund(
                     $order,
                     $refundAmount,
@@ -622,7 +625,7 @@ class ReturnRequestService
         });
     }
 
-    private function maxAdditionalRmaRefund(ReturnRequest $returnRequest, Order $order): float
+    private function maxAdditionalRmaRefundCents(ReturnRequest $returnRequest, Order $order): int
     {
         $order->loadMissing(['items', 'refunds.posReturnItems', 'refunds.returnRequest.items']);
         $grossAllocations = $this->orderRevenueAllocationService->grossAllocateCents($order);
@@ -676,7 +679,7 @@ class ReturnRequestService
             );
         }
 
-        return round($maxRefundCents / 100, 2);
+        return $maxRefundCents;
     }
 
     private function refundEligibleReturnedQuantity(int $orderItemId): int
@@ -771,6 +774,40 @@ class ReturnRequestService
         } while (ReturnRequest::query()->where('reference', $reference)->exists());
 
         return $reference;
+    }
+
+    private function refundAmountToCents(int|float|string $amount): int
+    {
+        try {
+            $decimal = BigDecimal::of((string) $amount)
+                ->toScale(2, RoundingMode::Unnecessary);
+        } catch (\Throwable) {
+            throw ValidationException::withMessages([
+                'refund_amount' => __('Refund amount must use at most two decimal places.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('0') < 0) {
+            throw ValidationException::withMessages([
+                'refund_amount' => __('Refund amount cannot be negative.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('9999999999.99') > 0) {
+            throw ValidationException::withMessages([
+                'refund_amount' => __('Refund amount exceeds the supported monetary range.'),
+            ]);
+        }
+
+        return $decimal->multipliedBy('100')->toInt();
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        $sign = $cents < 0 ? '-' : '';
+        $absolute = abs($cents);
+
+        return $sign.intdiv($absolute, 100).'.'.str_pad((string) ($absolute % 100), 2, '0', STR_PAD_LEFT);
     }
 
     private function nullableTrim(?string $value): ?string

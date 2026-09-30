@@ -215,7 +215,7 @@ class OrderController extends Controller
     public function refund(Request $request, Order $order): RedirectResponse
     {
         $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:0.01'],
+            'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:9999999999.99'],
             'reason' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'allocation_scope' => ['required', Rule::in(RefundAllocationService::scopes())],
@@ -225,7 +225,7 @@ class OrderController extends Controller
         try {
             $result = $this->orderActionService->refund(
                 $order,
-                (float) $validated['amount'],
+                (string) $validated['amount'],
                 $validated['reason'],
                 $validated['notes'] ?? null,
                 optional(auth()->user())->id,
@@ -242,7 +242,7 @@ class OrderController extends Controller
                     optional(auth()->user())->id,
                     $result['order'],
                     [
-                        'amount' => (float) $validated['amount'],
+                        'amount' => (string) $result['refund']->amount,
                         'allocation_scope' => $validated['allocation_scope'],
                         'reason' => $validated['reason'],
                         'order_refund_id' => $result['refund']->id,

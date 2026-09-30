@@ -5,6 +5,8 @@ namespace App\Services\Commerce;
 use App\Models\Order;
 use App\Models\OrderRefund;
 use App\Models\Payment;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Validation\ValidationException;
 
 class RefundAllocationService
@@ -28,9 +30,9 @@ class RefundAllocationService
 
     public function allocateNewRefund(
         Order $order,
-        float $amount,
+        int|float|string $amount,
         string $scope = self::SCOPE_ORDER,
-        float $exchangeCompensation = 0
+        int|float|string $exchangeCompensation = 0
     ): array {
         $scope = in_array($scope, self::scopes(), true)
             ? $scope
@@ -295,11 +297,17 @@ class RefundAllocationService
 
     private function moneyToCents(mixed $value): int
     {
-        return (int) round(((float) $value) * 100);
+        return BigDecimal::of((string) $value)
+            ->multipliedBy('100')
+            ->toScale(0, RoundingMode::HalfUp)
+            ->toInt();
     }
 
     private function centsToMoney(int $cents): string
     {
-        return number_format($cents / 100, 2, '.', '');
+        $sign = $cents < 0 ? '-' : '';
+        $absolute = abs($cents);
+
+        return $sign.intdiv($absolute, 100).'.'.str_pad((string) ($absolute % 100), 2, '0', STR_PAD_LEFT);
     }
 }

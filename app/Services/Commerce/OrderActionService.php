@@ -9,6 +9,8 @@ use App\Models\Payment;
 use App\Models\ReturnRequest;
 use App\Services\Analytics\AnalyticsTracker;
 use App\Services\Growth\GrowthAttributionService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -376,15 +378,12 @@ class OrderActionService
         }
     }
 
-    public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null, ?string $idempotencyKey = null, string $allocationScope = RefundAllocationService::SCOPE_ORDER): array
+    public function refund(Order $order, int|float|string $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null, ?string $idempotencyKey = null, string $allocationScope = RefundAllocationService::SCOPE_ORDER): array
     {
-        if ($amount <= 0) {
-            throw ValidationException::withMessages([
-                'refund' => 'Refund amount must be greater than zero.',
-            ]);
-        }
+        $amountCents = $this->refundAmountToCents($amount);
+        $amount = $this->centsToMoney($amountCents);
 
-        return DB::transaction(function () use ($order, $amount, $reason, $notes, $processedBy, $returnRequestId, $idempotencyKey, $allocationScope) {
+        return DB::transaction(function () use ($order, $amount, $amountCents, $reason, $notes, $processedBy, $returnRequestId, $idempotencyKey, $allocationScope) {
             $lockedOrder = Order::query()
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
@@ -415,7 +414,7 @@ class OrderActionService
 
                 if ($existingRefund) {
                     $existingScope = data_get($existingRefund->allocation, 'scope');
-                    $samePayload = round((float) $existingRefund->amount, 2) === round($amount, 2)
+                    $samePayload = $this->moneyToCents($existingRefund->amount) === $amountCents
                         && ($existingScope === null || $existingScope === $allocationScope)
                         && (string) $existingRefund->reason === $reason
                         && (string) ($existingRefund->notes ?? '') === (string) ($notes ?? '')
@@ -436,31 +435,29 @@ class OrderActionService
                 }
             }
 
-            $alreadyRefunded = round((float) $lockedOrder->refunds()->sum('amount'), 2);
-            $capturedTotal = round((float) $lockedOrder->payments()
+            $alreadyRefundedCents = $this->moneyToCents($lockedOrder->refunds()->sum('amount'));
+            $capturedTotalCents = $this->moneyToCents($lockedOrder->payments()
                 ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
-                ->sum('amount'), 2);
-            $exchangeCompensation = round(
-                app(OrderRevenueAllocationService::class)->completedExchangeCompensationCents($lockedOrder) / 100,
-                2
-            );
-            $refundableBalance = round(max(
+                ->sum('amount'));
+            $exchangeCompensationCents = app(OrderRevenueAllocationService::class)
+                ->completedExchangeCompensationCents($lockedOrder);
+            $refundableBalanceCents = max(
                 0,
-                $capturedTotal - $alreadyRefunded - $exchangeCompensation
-            ), 2);
+                $capturedTotalCents - $alreadyRefundedCents - $exchangeCompensationCents
+            );
 
             if (! in_array($lockedOrder->payment_status, [
                 Order::PAYMENT_STATUS_PAID,
                 Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
-            ], true) || $refundableBalance <= 0) {
+            ], true) || $refundableBalanceCents <= 0) {
                 throw ValidationException::withMessages([
-                    'refund' => 'This order cannot be refunded in its current state.',
+                    'refund' => __('This order cannot be refunded in its current state.'),
                 ]);
             }
 
-            if ($amount > $refundableBalance) {
+            if ($amountCents > $refundableBalanceCents) {
                 throw ValidationException::withMessages([
-                    'refund' => 'Refund amount must be within the remaining refundable balance.',
+                    'refund' => __('Refund amount must be within the remaining refundable balance.'),
                 ]);
             }
 
@@ -468,7 +465,7 @@ class OrderActionService
                 $lockedOrder,
                 $amount,
                 $allocationScope,
-                $exchangeCompensation,
+                $this->centsToMoney($exchangeCompensationCents),
             );
 
             $refund = $lockedOrder->refunds()->create([
@@ -483,12 +480,12 @@ class OrderActionService
             ]);
 
             $lockedOrder->unsetRelation('refunds');
-            $newRefundTotal = round($alreadyRefunded + $amount, 2);
-            $newCommercialRefundTotal = round(
-                $this->refundAllocationService->commercialRefundTotalCents($lockedOrder) / 100,
-                2
+            $newRefundTotalCents = $alreadyRefundedCents + $amountCents;
+            $newRefundTotal = $this->centsToMoney($newRefundTotalCents);
+            $newCommercialRefundTotal = $this->centsToMoney(
+                $this->refundAllocationService->commercialRefundTotalCents($lockedOrder)
             );
-            $newPaymentStatus = $newRefundTotal >= $capturedTotal
+            $newPaymentStatus = $newRefundTotalCents >= $capturedTotalCents
                 ? Order::PAYMENT_STATUS_REFUNDED
                 : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
 
@@ -553,7 +550,7 @@ class OrderActionService
                     });
             }
 
-            $this->paymentService->reconcileProviderReversalEvidence($lockedOrder, $newRefundTotal, $processedBy);
+            $this->paymentService->reconcileProviderReversalEvidence($lockedOrder, $newRefundTotalCents / 100, $processedBy);
             $this->profitService->refreshOrderTotals($lockedOrder);
             $freshOrder = $lockedOrder->fresh(['refunds', 'user']);
             $this->growthAttributionService->refreshOrderAttribution((int) $freshOrder->id);
@@ -567,6 +564,48 @@ class OrderActionService
                 'created' => true,
             ];
         });
+    }
+
+    private function refundAmountToCents(int|float|string $amount): int
+    {
+        try {
+            $decimal = BigDecimal::of((string) $amount)
+                ->toScale(2, RoundingMode::Unnecessary);
+        } catch (\Throwable) {
+            throw ValidationException::withMessages([
+                'refund' => __('Refund amount must use at most two decimal places.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('0.01') < 0) {
+            throw ValidationException::withMessages([
+                'refund' => __('Refund amount must be greater than zero.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('9999999999.99') > 0) {
+            throw ValidationException::withMessages([
+                'refund' => __('Refund amount exceeds the supported monetary range.'),
+            ]);
+        }
+
+        return $decimal->multipliedBy('100')->toInt();
+    }
+
+    private function moneyToCents(mixed $amount): int
+    {
+        return BigDecimal::of((string) $amount)
+            ->multipliedBy('100')
+            ->toScale(0, RoundingMode::HalfUp)
+            ->toInt();
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        $sign = $cents < 0 ? '-' : '';
+        $absolute = abs($cents);
+
+        return $sign.intdiv($absolute, 100).'.'.str_pad((string) ($absolute % 100), 2, '0', STR_PAD_LEFT);
     }
 
 }

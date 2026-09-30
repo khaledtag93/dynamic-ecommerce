@@ -69,6 +69,7 @@ class OrderWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString("Str::uuid()", $view);
 
         $this->assertStringContainsString("'status' => ['required', Rule::in(array_keys(Order::statusOptions()))]", $orderController);
+        $this->assertStringContainsString("'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0.01', 'max:9999999999.99']", $orderController);
         $this->assertStringContainsString("'reason' => ['required', 'string', 'max:255']", $orderController);
         $this->assertStringContainsString("'notes' => ['nullable', 'string', 'max:1000']", $orderController);
         $this->assertStringContainsString("'refund_idempotency_key' => ['required', 'uuid']", $orderController);
