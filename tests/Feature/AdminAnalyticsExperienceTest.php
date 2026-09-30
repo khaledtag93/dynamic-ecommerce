@@ -143,6 +143,23 @@ class AdminAnalyticsExperienceTest extends TestCase
         ]);
 
         Order::query()->create([
+            'order_number' => 'OFFERS-REFUNDED-LOSS-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'grand_total' => 50,
+            'refund_total' => 50,
+            'discount_total' => 10,
+            'cost_total' => 20,
+            'profit_total' => -20,
+            'customer_name' => 'Refunded Loss Customer',
+            'customer_email' => 'offers-refunded-loss@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+
+        Order::query()->create([
             'order_number' => 'OFFERS-CANCELLED-001',
             'status' => Order::STATUS_CANCELLED,
             'payment_status' => Order::PAYMENT_STATUS_UNPAID,
@@ -164,6 +181,14 @@ class AdminAnalyticsExperienceTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertViewHas('drilldown', function ($drilldown) {
+                $discounted = data_get($drilldown, 'discounted_orders');
+
+                return (int) data_get($discounted, 'orders_count', 0) === 1
+                    && (float) data_get($discounted, 'discount_total', 0) === 10.0
+                    && (float) data_get($discounted, 'revenue_gross', 0) === 75.0
+                    && (float) data_get($discounted, 'profit_total', 0) === 15.0;
+            })
             ->assertSee('NET25')
             ->assertSee('EGP 75.00')
             ->assertSee('EGP 35.00')
