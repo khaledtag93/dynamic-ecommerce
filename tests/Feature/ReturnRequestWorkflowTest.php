@@ -735,6 +735,102 @@ class ReturnRequestWorkflowTest extends TestCase
             ->sum('amount'));
     }
 
+    public function test_fully_refunded_order_can_record_physical_rma_return_without_second_refund(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        app(OrderActionService::class)->refund(
+            $order,
+            100,
+            'Refund issued before goods arrived',
+            null,
+            $manager->id,
+            null,
+            (string) Str::uuid()
+        );
+
+        $service = app(ReturnRequestService::class);
+        $this->assertTrue($service->canCustomerRequest($order->fresh(), $customer));
+
+        $return = $service->createForCustomer($order->fresh(), $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_DAMAGED,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 1], $manager);
+        $service->complete($return->fresh(), 0, null, 'Physical goods received after prior full refund.', $manager);
+
+        $this->assertSame(ReturnRequest::STATUS_COMPLETED, $return->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(100.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(1, (int) $product->fresh()->quantity);
+        $this->assertSame(1, (int) $order->refunds()->count());
+    }
+
+    public function test_fully_refunded_pos_sale_can_restock_physical_return_without_second_cash_refund(): void
+    {
+        $customer = User::factory()->create();
+        $cashier = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $order->update([
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+        ]);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        app(OrderActionService::class)->refund(
+            $order,
+            100,
+            'Refund issued before counter return',
+            null,
+            $cashier->id,
+            null,
+            (string) Str::uuid()
+        );
+
+        app(PosReturnService::class)->process(
+            $order->fresh(),
+            [$item->id => 1],
+            'Physical item returned after refund',
+            null,
+            $cashier->id,
+        );
+
+        $refunds = $order->fresh()->refunds()->orderBy('id')->pluck('amount')->map(fn ($amount) => (float) $amount)->all();
+
+        $this->assertSame([100.0, 0.0], $refunds);
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(100.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(1, (int) $product->fresh()->quantity);
+        $this->assertSame(1, (int) \App\Models\PosReturnItem::query()->where('order_item_id', $item->id)->sum('quantity'));
+    }
+
     public function test_pos_return_cannot_reuse_quantity_reserved_by_rma(): void
     {
         $customer = User::factory()->create();

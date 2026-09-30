@@ -39,6 +39,7 @@ class ReturnRequestService
         if (! in_array($order->payment_status, [
             Order::PAYMENT_STATUS_PAID,
             Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            Order::PAYMENT_STATUS_REFUNDED,
         ], true)) {
             return false;
         }

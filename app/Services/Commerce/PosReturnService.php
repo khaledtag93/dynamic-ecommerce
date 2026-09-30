@@ -47,25 +47,11 @@ class PosReturnService
             if (! in_array($lockedOrder->payment_status, [
                 Order::PAYMENT_STATUS_PAID,
                 Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                Order::PAYMENT_STATUS_REFUNDED,
             ], true)) {
                 throw ValidationException::withMessages([
                     'return' => __('This POS sale is not eligible for a return.'),
                 ]);
-            }
-
-            if ($lockedOrder->payment_method === Order::PAYMENT_METHOD_POS_CASH) {
-                $cashShift = PosCashShift::query()
-                    ->where('cashier_user_id', $actorId)
-                    ->whereNull('closed_at')
-                    ->latest('id')
-                    ->lockForUpdate()
-                    ->first();
-
-                if (! $cashShift) {
-                    throw ValidationException::withMessages([
-                        'cash_shift' => __('Open a cash shift before processing a cash refund.'),
-                    ]);
-                }
             }
 
             $items = OrderItem::query()
@@ -174,6 +160,21 @@ class PosReturnService
                 ]);
             }
 
+            if ($refundAmount > 0 && $lockedOrder->payment_method === Order::PAYMENT_METHOD_POS_CASH) {
+                $cashShift = PosCashShift::query()
+                    ->where('cashier_user_id', $actorId)
+                    ->whereNull('closed_at')
+                    ->latest('id')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $cashShift) {
+                    throw ValidationException::withMessages([
+                        'cash_shift' => __('Open a cash shift before processing a cash refund.'),
+                    ]);
+                }
+            }
+
             $refund = $lockedOrder->refunds()->create([
                 'amount' => $refundAmount,
                 'reason' => $reason,
@@ -250,7 +251,7 @@ class PosReturnService
             $this->growthAttributionService->refreshOrderAttribution((int) $lockedOrder->id);
             $this->analyticsTracker->syncRealizedPurchase($lockedOrder->fresh(['items']));
 
-            if ($newPaymentStatus === Order::PAYMENT_STATUS_REFUNDED) {
+            if ($refundAmount > 0 && $newPaymentStatus === Order::PAYMENT_STATUS_REFUNDED) {
                 $refundedAt = now();
 
                 $lockedOrder->payments()
