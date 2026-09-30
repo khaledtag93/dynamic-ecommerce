@@ -1056,6 +1056,8 @@
     "Needs values": "Needs values",
     "Net after refunds": "Net after refunds",
     "Net collected after refunds.": "Net collected after refunds.",
+    "Net collected from the payment ledger after recorded refunds.": "Net collected from the payment ledger after recorded refunds.",
+    "Recorded refunds grouped by currency.": "Recorded refunds grouped by currency.",
     "Net paid": "Net paid",
     "Net revenue": "Net revenue",
     "Net spend": "Net spend",
