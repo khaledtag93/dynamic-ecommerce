@@ -162,7 +162,9 @@ class CustomerController extends Controller
     public function show(User $user)
     {
         $user->load(['roles', 'orders' => function ($query) {
-            $query->latest('id')->take(10);
+            $query->orderByRaw('COALESCE(placed_at, created_at) DESC')
+                ->orderByDesc('id')
+                ->take(10);
         }]);
 
         $staffRoles = collect();
@@ -200,7 +202,17 @@ class CustomerController extends Controller
             'orders_count' => $user->orders()->count(),
             'realized_orders_count' => (int) $spendByCurrency->sum('orders_count'),
             'spend_by_currency' => $spendByCurrency,
-            'latest_order_at' => optional((clone $realizedOrders)->latest('id')->first())->created_at,
+            'latest_order_at' => optional(
+                (clone $realizedOrders)
+                    ->orderByRaw('COALESCE(placed_at, created_at) DESC')
+                    ->orderByDesc('id')
+                    ->first()
+            )?->placed_at ?: optional(
+                (clone $realizedOrders)
+                    ->orderByRaw('COALESCE(placed_at, created_at) DESC')
+                    ->orderByDesc('id')
+                    ->first()
+            )?->created_at,
         ];
 
         return view('admin.customers.show', compact('user', 'summary', 'staffRoles'));
