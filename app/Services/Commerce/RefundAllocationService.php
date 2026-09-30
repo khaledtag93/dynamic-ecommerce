@@ -68,6 +68,15 @@ class RefundAllocationService
         return $this->serializeAllocation($scope, $allocation);
     }
 
+    public function zeroAllocation(string $scope): array
+    {
+        $scope = in_array($scope, self::scopes(), true)
+            ? $scope
+            : self::SCOPE_ORDER;
+
+        return $this->serializeAllocation($scope, $this->emptyComponents());
+    }
+
     public function allocatedComponentsCents(Order $order): array
     {
         $order->loadMissing(['items', 'refunds', 'payments']);
@@ -75,6 +84,17 @@ class RefundAllocationService
         $gross = $this->grossComponentsCents($order);
         $remaining = $gross;
         $allocated = $this->emptyComponents();
+
+        $applyAllocation = function (array $candidate) use (&$allocated, &$remaining): void {
+            foreach ($allocated as $component => $value) {
+                $applied = min(
+                    max(0, (int) ($candidate[$component] ?? 0)),
+                    max(0, (int) ($remaining[$component] ?? 0))
+                );
+                $allocated[$component] += $applied;
+                $remaining[$component] = max(0, $remaining[$component] - $applied);
+            }
+        };
 
         foreach ($order->refunds->sortBy('id') as $refund) {
             $amountCents = max(0, $this->moneyToCents($refund->amount));
@@ -93,14 +113,56 @@ class RefundAllocationService
                 );
             }
 
-            foreach ($allocated as $component => $value) {
-                $applied = min(
-                    max(0, (int) ($stored[$component] ?? 0)),
-                    max(0, (int) ($remaining[$component] ?? 0))
-                );
-                $allocated[$component] += $applied;
-                $remaining[$component] = max(0, $remaining[$component] - $applied);
-            }
+            $applyAllocation($stored);
+        }
+
+        // Legacy and synthetic historical records may carry the authoritative
+        // refund snapshot on the order without a complete order_refunds ledger.
+        // Reconcile only the unrepresented snapshot delta, preserving explicit
+        // component allocations whenever they exist.
+        $snapshotRefundCents = max(0, $this->moneyToCents($order->refund_total));
+        $snapshotCommercialRefundCents = $order->commercial_refund_total === null
+            ? $snapshotRefundCents
+            : min(
+                $snapshotRefundCents,
+                max(0, $this->moneyToCents($order->commercial_refund_total))
+            );
+
+        $allocatedCommercialCents = (int) $allocated[self::SCOPE_MERCHANDISE]
+            + (int) $allocated[self::SCOPE_SHIPPING]
+            + (int) $allocated[self::SCOPE_TAX];
+        $missingCommercialCents = max(
+            0,
+            $snapshotCommercialRefundCents - $allocatedCommercialCents
+        );
+
+        if ($missingCommercialCents > 0) {
+            $applyAllocation($this->allocateAcrossRemaining(
+                $missingCommercialCents,
+                $remaining,
+                [
+                    self::SCOPE_MERCHANDISE,
+                    self::SCOPE_SHIPPING,
+                    self::SCOPE_TAX,
+                ]
+            ));
+        }
+
+        $snapshotPaymentExcessCents = max(
+            0,
+            $snapshotRefundCents - $snapshotCommercialRefundCents
+        );
+        $missingPaymentExcessCents = max(
+            0,
+            $snapshotPaymentExcessCents - (int) $allocated[self::SCOPE_PAYMENT_EXCESS]
+        );
+
+        if ($missingPaymentExcessCents > 0) {
+            $applyAllocation($this->allocateAcrossRemaining(
+                $missingPaymentExcessCents,
+                $remaining,
+                [self::SCOPE_PAYMENT_EXCESS]
+            ));
         }
 
         return $allocated;
@@ -149,10 +211,13 @@ class RefundAllocationService
         $shippingCents = max(0, $this->moneyToCents($order->shipping_total));
         $taxCents = max(0, $this->moneyToCents($order->tax_total));
         $grandTotalCents = max(0, $this->moneyToCents($order->grand_total));
-        $merchandiseCents = min(
-            $lineTotalCents,
-            max(0, $grandTotalCents - $shippingCents - $taxCents)
+        $commercialMerchandiseCents = max(
+            0,
+            $grandTotalCents - $shippingCents - $taxCents
         );
+        $merchandiseCents = $lineTotalCents > 0
+            ? min($lineTotalCents, $commercialMerchandiseCents)
+            : $commercialMerchandiseCents;
         $capturedCents = (int) $order->payments
             ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
             ->sum(fn ($payment) => max(0, $this->moneyToCents($payment->amount)));

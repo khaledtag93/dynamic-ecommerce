@@ -421,16 +421,19 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="orderRefundAllocation">{{ __('Refund allocation') }}</label>
+                            @php
+                                $capturedTotal = (float) $order->payments
+                                    ->whereIn('status', [\App\Models\Payment::STATUS_PAID, \App\Models\Payment::STATUS_REFUNDED])
+                                    ->sum('amount');
+                                $paymentExcess = max(0, $capturedTotal - (float) $order->grand_total);
+                                $selectedAllocation = old('allocation_scope', 'order');
+                            @endphp
                             <select id="orderRefundAllocation" name="allocation_scope" class="form-select" required aria-required="true">
-                                <option value="order" @selected(old('allocation_scope', 'order') === 'order')>{{ __('Automatic allocation') }}</option>
-                                <option value="merchandise" @selected(old('allocation_scope') === 'merchandise')>{{ __('Merchandise') }}</option>
-                                <option value="shipping" @selected(old('allocation_scope') === 'shipping') @disabled((float) $order->shipping_total <= 0)>{{ __('Shipping') }}</option>
-                                <option value="tax" @selected(old('allocation_scope') === 'tax') @disabled((float) $order->tax_total <= 0)>{{ __('Tax') }}</option>
-                                @php
-                                    $capturedTotal = (float) $order->payments->whereIn('status', [\App\Models\Payment::STATUS_PAID, \App\Models\Payment::STATUS_REFUNDED])->sum('amount');
-                                    $paymentExcess = max(0, $capturedTotal - (float) $order->grand_total);
-                                @endphp
-                                <option value="payment_excess" @selected(old('allocation_scope') === 'payment_excess') @disabled($paymentExcess <= 0)>{{ __('Payment excess') }}</option>
+                                <option value="order" {{ $selectedAllocation === 'order' ? 'selected' : '' }}>{{ __('Automatic allocation') }}</option>
+                                <option value="merchandise" {{ $selectedAllocation === 'merchandise' ? 'selected' : '' }}>{{ __('Merchandise') }}</option>
+                                <option value="shipping" {{ $selectedAllocation === 'shipping' ? 'selected' : '' }} {{ (float) $order->shipping_total <= 0 ? 'disabled' : '' }}>{{ __('Shipping') }}</option>
+                                <option value="tax" {{ $selectedAllocation === 'tax' ? 'selected' : '' }} {{ (float) $order->tax_total <= 0 ? 'disabled' : '' }}>{{ __('Tax') }}</option>
+                                <option value="payment_excess" {{ $selectedAllocation === 'payment_excess' ? 'selected' : '' }} {{ $paymentExcess <= 0 ? 'disabled' : '' }}>{{ __('Payment excess') }}</option>
                             </select>
                             <div class="form-text">{{ __('Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.') }}</div>
                         </div>

@@ -176,11 +176,15 @@ class PosReturnService
                 }
             }
 
-            $allocation = $this->refundAllocationService->allocateNewRefund(
-                $lockedOrder,
-                $refundAmount,
-                RefundAllocationService::SCOPE_MERCHANDISE,
-            );
+            $allocation = $refundAmount > 0
+                ? $this->refundAllocationService->allocateNewRefund(
+                    $lockedOrder,
+                    $refundAmount,
+                    RefundAllocationService::SCOPE_MERCHANDISE,
+                )
+                : $this->refundAllocationService->zeroAllocation(
+                    RefundAllocationService::SCOPE_MERCHANDISE
+                );
 
             $refund = $lockedOrder->refunds()->create([
                 'amount' => $refundAmount,
