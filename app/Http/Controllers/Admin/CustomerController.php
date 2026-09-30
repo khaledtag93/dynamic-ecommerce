@@ -32,14 +32,33 @@ class CustomerController extends Controller
         $role = (string) $request->string('role');
         $activity = (string) $request->string('activity');
         $value = (string) $request->string('value');
+        $valueCurrency = strtoupper(mb_substr(trim((string) $request->string('value_currency')), 0, 3));
         $perPage = max(12, min(100, (int) $request->integer('per_page', 12)));
+        $currencyExpression = "UPPER(COALESCE(NULLIF(currency, ''), 'EGP'))";
+
+        $valueCurrencies = Order::query()
+            ->commerciallyRealized()
+            ->whereNotNull('user_id')
+            ->selectRaw($currencyExpression.' as value_currency')
+            ->distinct()
+            ->orderBy('value_currency')
+            ->pluck('value_currency')
+            ->values();
+
+        if ($valueCurrency !== '' && ! $valueCurrencies->contains($valueCurrency)) {
+            $valueCurrency = '';
+        }
+
+        if ($value === 'high_value' && $valueCurrency === '' && $valueCurrencies->count() === 1) {
+            $valueCurrency = (string) $valueCurrencies->first();
+        }
+
+        $rankingRequiresCurrency = $value === 'high_value' && $valueCurrency === '' && $valueCurrencies->count() > 1;
 
         $users = User::query()
             ->with('roles:id,name')
             ->withCount('orders')
             ->withCount(['orders as realized_orders_count' => fn ($query) => $query->commerciallyRealized()])
-            ->withSum(['orders as realized_orders_sum_grand_total' => fn ($query) => $query->commerciallyRealized()], 'grand_total')
-            ->withSum(['orders as realized_orders_sum_refund_total' => fn ($query) => $query->commerciallyRealized()], 'refund_total')
             ->when($search, function ($query) use ($like) {
                 $query->where(function ($inner) use ($like) {
                     $inner->where('name', 'like', $like)
@@ -50,12 +69,52 @@ class CustomerController extends Controller
             ->when($activity === 'buyers', fn ($query) => $query->whereHas('orders', fn ($orders) => $orders->commerciallyRealized()))
             ->when($activity === 'no_orders', fn ($query) => $query->doesntHave('orders'))
             ->when($value === 'repeat', fn ($query) => $query->whereHas('orders', fn ($orders) => $orders->commerciallyRealized(), '>=', 2))
-            ->when($value === 'high_value', fn ($query) => $query
-                ->whereHas('orders', fn ($orders) => $orders->commerciallyRealized())
-                ->orderByRaw('(COALESCE(realized_orders_sum_grand_total, 0) - COALESCE(realized_orders_sum_refund_total, 0)) DESC'))
+            ->when($value === 'high_value' && $valueCurrency !== '', function ($query) use ($valueCurrency, $currencyExpression) {
+                $query
+                    ->whereHas('orders', fn ($orders) => $orders
+                        ->commerciallyRealized()
+                        ->whereRaw($currencyExpression.' = ?', [$valueCurrency]))
+                    ->withSum(['orders as ranked_orders_sum_grand_total' => fn ($orders) => $orders
+                        ->commerciallyRealized()
+                        ->whereRaw($currencyExpression.' = ?', [$valueCurrency])], 'grand_total')
+                    ->withSum(['orders as ranked_orders_sum_refund_total' => fn ($orders) => $orders
+                        ->commerciallyRealized()
+                        ->whereRaw($currencyExpression.' = ?', [$valueCurrency])], 'refund_total')
+                    ->orderByRaw('(COALESCE(ranked_orders_sum_grand_total, 0) - COALESCE(ranked_orders_sum_refund_total, 0)) DESC');
+            })
+            ->when($value === 'high_value' && $valueCurrency === '', fn ($query) => $query
+                ->whereHas('orders', fn ($orders) => $orders->commerciallyRealized()))
             ->latest('id')
             ->paginate($perPage)
             ->withQueryString();
+
+        $pageUserIds = $users->getCollection()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $spendRowsByUser = $pageUserIds === []
+            ? collect()
+            : Order::query()
+                ->commerciallyRealized()
+                ->whereIntegerInRaw('user_id', $pageUserIds)
+                ->selectRaw('user_id, '.$currencyExpression.' as statement_currency')
+                ->selectRaw('SUM(grand_total) as gross_total, SUM(refund_total) as refund_total')
+                ->groupBy('user_id')
+                ->groupByRaw($currencyExpression)
+                ->orderBy('statement_currency')
+                ->get()
+                ->groupBy('user_id');
+
+        $users->setCollection($users->getCollection()->map(function (User $user) use ($spendRowsByUser): User {
+            $rows = collect($spendRowsByUser->get($user->id, collect()))
+                ->map(fn ($row): array => [
+                    'currency' => (string) $row->statement_currency,
+                    'amount' => round(max(0, (float) $row->gross_total - (float) $row->refund_total), 2),
+                ])
+                ->values()
+                ->all();
+
+            $user->setAttribute('realized_spend_by_currency', $rows);
+
+            return $user;
+        }));
 
         $queueStats = [
             'buyers' => User::whereHas('orders', fn ($orders) => $orders->commerciallyRealized())->count(),
@@ -70,6 +129,9 @@ class CustomerController extends Controller
                 'role',
                 'activity',
                 'value',
+                'valueCurrency',
+                'valueCurrencies',
+                'rankingRequiresCurrency',
                 'perPage',
                 'queueStats',
             ));
@@ -79,14 +141,22 @@ class CustomerController extends Controller
             'total' => User::count(),
             'admins' => User::where('role_as', 1)->count(),
             'customers' => User::where('role_as', 0)->count(),
-            'revenue' => (float) Order::query()
+            'revenue_by_currency' => Order::query()
                 ->commerciallyRealized()
                 ->whereNotNull('user_id')
-                ->selectRaw('COALESCE(SUM(grand_total - refund_total), 0) as realized_revenue')
-                ->value('realized_revenue'),
+                ->selectRaw($currencyExpression.' as currency')
+                ->selectRaw('SUM(grand_total - refund_total) as realized_revenue')
+                ->groupByRaw($currencyExpression)
+                ->orderBy('currency')
+                ->get()
+                ->map(fn ($row): array => [
+                    'currency' => (string) $row->currency,
+                    'amount' => round((float) $row->realized_revenue, 2),
+                ])
+                ->values(),
         ];
 
-        return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'value', 'perPage', 'stats', 'queueStats'));
+        return view('admin.customers.index', compact('users', 'search', 'role', 'activity', 'value', 'valueCurrency', 'valueCurrencies', 'rankingRequiresCurrency', 'perPage', 'stats', 'queueStats'));
     }
 
     public function show(User $user)
@@ -102,19 +172,35 @@ class CustomerController extends Controller
         }
 
         $realizedOrders = $user->orders()->commerciallyRealized();
-        $realizedCount = (clone $realizedOrders)->count();
-        $realizedGross = (float) (clone $realizedOrders)->sum('grand_total');
-        $realizedRefunds = (float) (clone $realizedOrders)->sum('refund_total');
-        $realizedNet = max(0, $realizedGross - $realizedRefunds);
+        $currencyExpression = "UPPER(COALESCE(NULLIF(currency, ''), 'EGP'))";
+        $spendByCurrency = (clone $realizedOrders)
+            ->selectRaw($currencyExpression.' as currency')
+            ->selectRaw('COUNT(*) as orders_count, SUM(grand_total) as gross_total, SUM(refund_total) as refund_total')
+            ->groupByRaw($currencyExpression)
+            ->orderBy('currency')
+            ->get()
+            ->map(function ($row): array {
+                $gross = round((float) $row->gross_total, 2);
+                $refunds = round((float) $row->refund_total, 2);
+                $net = round(max(0, $gross - $refunds), 2);
+                $count = (int) $row->orders_count;
+
+                return [
+                    'currency' => (string) $row->currency,
+                    'orders_count' => $count,
+                    'gross_total' => $gross,
+                    'refund_total' => $refunds,
+                    'net_total' => $net,
+                    'average_order_value' => $count > 0 ? round($net / $count, 2) : 0.0,
+                ];
+            })
+            ->values();
 
         $summary = [
             'orders_count' => $user->orders()->count(),
-            'realized_orders_count' => $realizedCount,
-            'total_spend' => $realizedGross,
-            'refund_total' => $realizedRefunds,
+            'realized_orders_count' => (int) $spendByCurrency->sum('orders_count'),
+            'spend_by_currency' => $spendByCurrency,
             'latest_order_at' => optional((clone $realizedOrders)->latest('id')->first())->created_at,
-            'net_spend' => $realizedNet,
-            'average_order_value' => $realizedCount > 0 ? $realizedNet / $realizedCount : 0,
         ];
 
         return view('admin.customers.show', compact('user', 'summary', 'staffRoles'));
