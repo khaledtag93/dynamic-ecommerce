@@ -1,19 +1,23 @@
 # MASTER PROJECT STATUS
 
-## LATEST VERIFIED STATE — 2026-09-30
+## LATEST VERIFIED STATE — 2026-10-01
 
 - Branch: `sec03-framework-upgrade`.
-- Latest verified application / CI revision: `51e6d72717c6e11a04d6602585f58f5e906756d6`.
-- Hardening CI #2384 is Green on that exact application SHA, including clean MySQL migration, full PHPUnit, shared browser interactions and frontend production build.
-- Latest verified QAS / branch revision is `496d65e53417e954aec9ee5a2fa9267101569ed9`; Hardening CI #2387 is Green on that exact deployed SHA. QAS application/static health are HTTP 200, maintenance is OFF, no migrations were pending, scheduler and queue worker are healthy, and the failed-jobs ledger is back to 0 after review/removal of one stale operational heartbeat failure from 2026-09-26.
+- Latest verified application / CI revision: `657970ae8343c8523e00be2270c75781cd82720b`.
+- Hardening CI #2392 is Green on that exact application SHA, including clean MySQL migration, full PHPUnit (**834 passed / 17,702 assertions**), shared browser interactions and frontend production build.
+- Latest verified QAS application revision is `657970ae8343c8523e00be2270c75781cd82720b`. QAS promotion from `496d65e5` completed successfully with application/static HTTP 200, maintenance OFF, migration `2026_09_30_020000_add_allocation_to_order_refunds_table` Ran, scheduler + queue worker healthy, failed jobs 0 and strict ops health Green. The one pending `RecordQueueHeartbeat` had attempts 0 and was confirmed as the normal worker-health heartbeat.
 - Order Discount Line-Profit Integrity is source/CI closed: discounted merchandise revenue is allocated in exact cents across lines before authoritative COGS, POS net lines are not discounted twice, and historical discounted rows can be audited/repaired with bounded dry-run/apply command `commerce:reconcile-order-line-profit`.
 - Offer analytics now separates commercially realized promotion performance from fully-refunded discounted losses. Fully-refunded orders do not rank as coupon performance but their negative profit remains visible as separate loss evidence.
 - Paymob checkout preflight is source/CI closed for order/payment/gateway currency and amount consistency before provider initiation.
 - Customer order chronology and Growth experiment attribution now use business time rather than mutable update timestamps.
 - Exchange/Replacement, Returns/Refunds/POS, Order Cash Summary, Customer Value Currency, Sales COGS/Lot provenance, Purchasing/Inventory, Supplier Operational AP and Payroll integrity remain closed at their recorded scopes unless a reproduced defect reopens them.
+- Refund Component Allocation Integrity is closed for source + full CI + deployed-QAS runtime evidence. Refund ledger rows persist explicit merchandise/shipping/tax/payment-excess allocation; `refund_total` remains all cash returned while `commercial_refund_total` excludes payment-excess returns from realized commercial revenue. Legacy rows preserve merchandise-first compatibility.
+- QAS refund-ledger reconciliation dry-run scanned 1 candidate with `changed=0`, `commercial-refund-snapshot-changes=0`, `payment-status-changes=0`, `applied=0`. Transaction-wrapped QAS refund smoke passed automatic allocation, component bounds, payment-excess isolation, realized revenue, allocation reload and rollback cleanup.
+- A separate transaction-wrapped QAS runtime smoke passed discounted Storefront/POS profit, Offers refunded-loss evidence and Paymob currency preflight, leaving no test rows behind. Authenticated browser acceptance remains distinct evidence.
+- Detailed evidence: `docs/REFUND_COMPONENT_ALLOCATION_INTEGRITY_CHECKPOINT_2026-10-01.md`.
 - Production remains unchanged.
 
-**Next execution:** perform controlled authenticated checkout/POS/Offers/Paymob smoke on exact QAS revision `496d65e5`. The discounted-line-profit reconciliation dry-run found 0 candidate orders, so no historical apply was needed. After authenticated acceptance, continue the next genuinely unclosed ERP/accounting boundary. Production gates remain OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification.
+**Next execution:** perform controlled authenticated browser acceptance on exact QAS revision `657970ae` for Order Details refund-history rendering/allocation selector plus the outstanding discounted checkout, POS, Offers and Paymob journeys. Then continue the next genuinely unclosed ERP/accounting boundary. Production gates remain OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification.
 
 ## LATEST VERIFIED STATE — 2026-09-29
 
