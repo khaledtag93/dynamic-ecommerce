@@ -36,14 +36,23 @@
 </x-admin.page-header>
 
 <div class="admin-page-shell" data-live-list>
+@php
+    $netCollectedDisplay = collect($stats['net_collected_by_currency'] ?? [])
+        ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['amount'], 2))
+        ->implode(' · ');
+    $refundsDisplay = collect($stats['refunds_by_currency'] ?? [])
+        ->filter(fn (array $row) => abs((float) $row['amount']) > 0.00001)
+        ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['amount'], 2))
+        ->implode(' · ');
+@endphp
 <div class="row g-3 mb-4">
     @foreach([
         ['label' => __('Pending'), 'value' => $stats['pending'], 'copy' => __('Orders waiting for processing.'), 'icon' => 'mdi-timer-sand'],
         ['label' => __('Processing'), 'value' => $stats['processing'], 'copy' => __('Orders currently being handled.'), 'icon' => 'mdi-progress-clock'],
         ['label' => __('Completed'), 'value' => $stats['completed'], 'copy' => __('Orders successfully completed.'), 'icon' => 'mdi-check-decagram-outline'],
         ['label' => __('Cancelled'), 'value' => $stats['cancelled'], 'copy' => __('Orders cancelled before completion.'), 'icon' => 'mdi-close-circle-outline'],
-        ['label' => __('Paid total'), 'value' => 'EGP ' . number_format($stats['paid_total'], 2), 'copy' => __('Net collected after refunds.'), 'icon' => 'mdi-cash-check'],
-        ['label' => __('Refunded total'), 'value' => 'EGP ' . number_format($stats['refunds_total'], 2), 'copy' => __('Recorded refunds across all orders.'), 'icon' => 'mdi-cash-refund'],
+        ['label' => __('Paid total'), 'value' => $netCollectedDisplay !== '' ? $netCollectedDisplay : '—', 'copy' => __('Net collected from the payment ledger after recorded refunds.'), 'icon' => 'mdi-cash-check'],
+        ['label' => __('Refunded total'), 'value' => $refundsDisplay !== '' ? $refundsDisplay : '—', 'copy' => __('Recorded refunds grouped by currency.'), 'icon' => 'mdi-cash-refund'],
     ] as $card)
         <div class="col-md-6 col-xl-4">
             <x-admin.stat-card
