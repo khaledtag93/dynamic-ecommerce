@@ -1534,6 +1534,14 @@ class ReturnRequestWorkflowTest extends TestCase
         $returnItem = $return->items()->firstOrFail();
         $service->approve($return, [$returnItem->id => 1], null, $manager);
         $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 1], $manager);
+
+        $receivedOrder = $order->fresh();
+        $receivedEvent = $beforeEvent->fresh();
+        $this->assertSame(100.0, (float) $receivedOrder->profit_total);
+        $this->assertSame(0, (int) data_get($receivedEvent->meta, 'line_items.0.quantity'));
+        $this->assertSame(0.0, (float) data_get($receivedEvent->meta, 'line_items.0.realized_cogs'));
+        $this->assertSame(100.0, (float) data_get($receivedEvent->meta, 'line_items.0.profit_total'));
+
         $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
 
         $profitService = app(ProfitService::class);
