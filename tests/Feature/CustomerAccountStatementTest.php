@@ -179,6 +179,40 @@ class CustomerAccountStatementTest extends TestCase
         $this->assertStringNotContainsString("\n=1+1,", $csv);
     }
 
+    public function test_zero_value_physical_return_refund_rows_are_not_financial_statement_movements(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $customer = User::factory()->create(['role_as' => 0]);
+        $order = $this->orderFor($customer, 'STAT-ZERO-REFUND', 100, 'EGP');
+
+        OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 0,
+            'reason' => 'Physical POS return with no additional money movement',
+            'processed_by' => $admin->id,
+            'processed_at' => now(),
+        ]);
+        OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 10,
+            'reason' => 'Actual financial refund',
+            'processed_by' => $admin->id,
+            'processed_at' => now(),
+        ]);
+
+        $statement = app(\App\Services\Commerce\CustomerAccountStatementService::class)->build($customer, [
+            'type' => 'refund',
+            'date_from' => now()->subDay()->toDateString(),
+            'date_to' => now()->toDateString(),
+        ]);
+
+        $this->assertSame(1, $statement['counts']['refunds']);
+        $this->assertSame(1, $statement['matching_count']);
+        $this->assertSame(1, $statement['movements']->count());
+        $this->assertSame(10.0, $statement['totals_by_currency']->firstWhere('currency', 'EGP')['refunds_processed']);
+        $this->assertSame(10.0, (float) data_get($statement['movements']->getCollection()->first(), 'amount'));
+    }
+
     public function test_payment_movements_require_captured_status_even_when_paid_at_is_present(): void
     {
         $admin = $this->createSuperAdmin();

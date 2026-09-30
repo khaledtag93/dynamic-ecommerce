@@ -226,6 +226,7 @@ class CustomerAccountStatementService
             $queries[] = DB::table('order_refunds')
                 ->join('orders', 'orders.id', '=', 'order_refunds.order_id')
                 ->where('orders.user_id', $customer->id)
+                ->where('order_refunds.amount', '>', 0)
                 ->whereNotNull('order_refunds.processed_at')
                 ->whereBetween('order_refunds.processed_at', [$from, $to])
                 ->selectRaw("'refund' AS movement_type, order_refunds.id AS movement_id, order_refunds.processed_at AS occurred_at");
@@ -233,6 +234,7 @@ class CustomerAccountStatementService
             $queries[] = DB::table('order_refunds')
                 ->join('orders', 'orders.id', '=', 'order_refunds.order_id')
                 ->where('orders.user_id', $customer->id)
+                ->where('order_refunds.amount', '>', 0)
                 ->whereNull('order_refunds.processed_at')
                 ->whereBetween('order_refunds.created_at', [$from, $to])
                 ->selectRaw("'refund' AS movement_type, order_refunds.id AS movement_id, order_refunds.created_at AS occurred_at");
@@ -292,6 +294,7 @@ class CustomerAccountStatementService
         return DB::table('order_refunds')
             ->join('orders', 'orders.id', '=', 'order_refunds.order_id')
             ->where('orders.user_id', $customer->id)
+            ->where('order_refunds.amount', '>', 0)
             ->where(function (QueryBuilder $query) use ($from, $to) {
                 $query->whereBetween('order_refunds.processed_at', [$from, $to])
                     ->orWhere(function (QueryBuilder $fallback) use ($from, $to) {
