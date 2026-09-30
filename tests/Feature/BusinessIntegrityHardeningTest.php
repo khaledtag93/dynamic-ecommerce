@@ -1370,6 +1370,57 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
     }
 
+    public function test_order_completion_refreshes_final_profit_analytics_and_growth_attribution(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
+        $order->update([
+            'status' => Order::STATUS_PROCESSING,
+            'payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivered_at' => now(),
+            'profit_total' => 999,
+        ]);
+        $product = $this->makeProduct(0);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 999,
+        ]);
+        $this->makePayment($order, Payment::STATUS_PAID);
+
+        $growth = Mockery::mock(GrowthAttributionService::class);
+        $growth->shouldReceive('refreshOrderAttribution')
+            ->once()
+            ->with($order->id);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class),
+            app(PaymentService::class),
+            $growth
+        );
+
+        $completed = $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
+
+        $this->assertSame(Order::STATUS_COMPLETED, $completed->status);
+        $this->assertSame(60.0, (float) $completed->profit_total);
+        $this->assertDatabaseHas('analytics_events', [
+            'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+            'entity_type' => AnalyticsEvent::ENTITY_ORDER,
+            'entity_id' => (string) $order->id,
+        ]);
+    }
+
     public function test_non_cod_storefront_order_cannot_complete_before_delivery(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
