@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AnalyticsEvent;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\Payment;
@@ -10,6 +11,7 @@ use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
+use App\Services\Analytics\AnalyticsTracker;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\OrderRevenueAllocationService;
 use App\Services\Commerce\PosReturnService;
@@ -1512,6 +1514,16 @@ class ReturnRequestWorkflowTest extends TestCase
             'profit_amount' => -40,
         ]);
 
+        app(AnalyticsTracker::class)->syncRealizedPurchase($order->fresh());
+        $beforeEvent = AnalyticsEvent::query()
+            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+            ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
+            ->where('entity_id', (string) $order->id)
+            ->sole();
+        $this->assertSame(1, (int) data_get($beforeEvent->meta, 'line_items.0.quantity'));
+        $this->assertSame(40.0, (float) data_get($beforeEvent->meta, 'line_items.0.realized_cogs'));
+        $this->assertSame(60.0, (float) data_get($beforeEvent->meta, 'line_items.0.profit_total'));
+
         $service = app(ReturnRequestService::class);
         $return = $service->createForCustomer($order, $customer, [[
             'order_item_id' => $item->id,
@@ -1536,6 +1548,12 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame('-40.00', $replacementEconomics['profit_total']);
         $this->assertSame(60.0, (float) $originalEconomics['profit_total'] + (float) $replacementEconomics['profit_total']);
         $this->assertSame(1, (int) $originalProduct->fresh()->quantity);
+
+        $afterEvent = $beforeEvent->fresh();
+        $this->assertSame(0, (int) data_get($afterEvent->meta, 'line_items.0.quantity'));
+        $this->assertSame(100.0, (float) data_get($afterEvent->meta, 'line_items.0.realized_revenue'));
+        $this->assertSame(0.0, (float) data_get($afterEvent->meta, 'line_items.0.realized_cogs'));
+        $this->assertSame(100.0, (float) data_get($afterEvent->meta, 'line_items.0.profit_total'));
     }
 
     public function test_completed_exchange_replacement_order_cannot_be_cancelled_without_reversal(): void
