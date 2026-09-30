@@ -116,24 +116,30 @@ class AnalyticsController extends Controller
         $drilldown = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($from, $to) {
             $couponRows = $this->analyticsRevenueService->couponPerformance($from, $to);
 
-            $discountedOrders = Order::query()
+            $discountedOrdersQuery = Order::query()
                 ->commerciallyRealized()
                 ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
-                ->where('discount_total', '>', 0)
-                ->selectRaw('COUNT(*) as orders_count')
-                ->selectRaw('SUM(discount_total) as discount_total')
-                ->selectRaw('SUM(grand_total - refund_total) as revenue_gross')
-                ->selectRaw('SUM(profit_total) as profit_total')
-                ->first();
+                ->where('discount_total', '>', 0);
 
-            $refundedDiscountLosses = Order::query()
+            $discountedOrders = (object) [
+                'orders_count' => (clone $discountedOrdersQuery)->count(),
+                'discount_total' => (float) (clone $discountedOrdersQuery)->sum('discount_total'),
+                'revenue_gross' => (float) (clone $discountedOrdersQuery)
+                    ->selectRaw('COALESCE(SUM(grand_total - refund_total), 0) as aggregate')
+                    ->value('aggregate'),
+                'profit_total' => (float) (clone $discountedOrdersQuery)->sum('profit_total'),
+            ];
+
+            $refundedDiscountLossesQuery = Order::query()
                 ->where('status', Order::STATUS_COMPLETED)
                 ->where('payment_status', Order::PAYMENT_STATUS_REFUNDED)
                 ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
-                ->where('discount_total', '>', 0)
-                ->selectRaw('COUNT(*) as orders_count')
-                ->selectRaw('SUM(profit_total) as profit_total')
-                ->first();
+                ->where('discount_total', '>', 0);
+
+            $refundedDiscountLosses = (object) [
+                'orders_count' => (clone $refundedDiscountLossesQuery)->count(),
+                'profit_total' => (float) (clone $refundedDiscountLossesQuery)->sum('profit_total'),
+            ];
 
             $activePromotions = PromotionRule::query()
                 ->where('is_active', true)
