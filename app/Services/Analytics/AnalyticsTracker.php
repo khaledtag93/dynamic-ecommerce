@@ -245,18 +245,19 @@ class AnalyticsTracker
     protected function buildRealizedLineItems(Order $order): array
     {
         $allocations = $this->orderRevenueAllocationService->allocate($order);
+        $quantities = $this->orderRevenueAllocationService->realizedQuantities($order);
 
         return $order->items
             ->sortBy('id')
             ->values()
-            ->map(function ($item) use ($allocations) {
+            ->map(function ($item) use ($allocations, $quantities) {
                 $realizedRevenue = (float) ($allocations[(int) $item->id] ?? 0);
                 $economics = $this->profitService->calculateOrderItemEconomics($item, $realizedRevenue);
 
                 return [
                     'product_id' => (int) $item->product_id,
                     'variant_id' => $item->product_variant_id ? (int) $item->product_variant_id : null,
-                    'quantity' => (int) $item->quantity,
+                    'quantity' => (int) ($quantities[(int) $item->id] ?? 0),
                     'unit_price' => (float) $item->unit_price,
                     'line_total' => (float) $item->line_total,
                     'original_consumed_cost' => (float) $economics['original_consumed_cost'],
