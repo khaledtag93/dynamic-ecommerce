@@ -92,6 +92,8 @@ class AnalyticsRevenueService
                 foreach ($orders as $order) {
                     $allocations = $this->orderRevenueAllocationService
                         ->allocateCents($order);
+                    $quantities = $this->orderRevenueAllocationService
+                        ->realizedQuantities($order);
 
                     foreach ($order->items as $item) {
                         if ((int) $item->product_id !== (int) $product->id) {
@@ -121,9 +123,7 @@ class AnalyticsRevenueService
                             $realizedRevenueCents / 100
                         );
 
-                        if ($order->payment_status !== Order::PAYMENT_STATUS_REFUNDED) {
-                            $buckets[$key]['quantity'] += (int) $item->quantity;
-                        }
+                        $buckets[$key]['quantity'] += (int) ($quantities[(int) $item->id] ?? 0);
                         $buckets[$key]['revenue_cents'] += $realizedRevenueCents;
                         $buckets[$key]['cogs_cents'] += (int) round(
                             ((float) $economics['realized_cogs']) * 100
