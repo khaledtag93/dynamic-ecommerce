@@ -145,13 +145,13 @@ class CustomerController extends Controller
                 ->commerciallyRealized()
                 ->whereNotNull('user_id')
                 ->selectRaw($currencyExpression.' as currency')
-                ->selectRaw('SUM(grand_total - refund_total) as realized_revenue')
+                ->selectRaw('SUM(grand_total - refund_total) as statement_total')
                 ->groupByRaw($currencyExpression)
                 ->orderBy('currency')
                 ->get()
                 ->map(fn ($row): array => [
                     'currency' => (string) $row->currency,
-                    'amount' => round((float) $row->realized_revenue, 2),
+                    'amount' => round((float) $row->statement_total, 2),
                 ])
                 ->values(),
         ];
