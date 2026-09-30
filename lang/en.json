@@ -5299,5 +5299,7 @@
     "Allocation": "Allocation",
     "Legacy refund allocation": "Legacy refund allocation",
     "Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.": "Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.",
-    "Refund amount exceeds the remaining value for the selected allocation.": "Refund amount exceeds the remaining value for the selected allocation."
+    "Refund amount exceeds the remaining value for the selected allocation.": "Refund amount exceeds the remaining value for the selected allocation.",
+    "The calculated amount exceeds the supported monetary range.": "The calculated amount exceeds the supported monetary range.",
+    "The resulting profit margin exceeds the supported range.": "The resulting profit margin exceeds the supported range."
 }

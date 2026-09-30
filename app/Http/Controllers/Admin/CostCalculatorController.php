@@ -8,8 +8,11 @@ use App\Models\ProductCostSummary;
 use App\Models\ProductExtraCostItem;
 use App\Models\ProductMaterialCostItem;
 use App\Models\RawMaterial;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CostCalculatorController extends Controller
 {
@@ -63,7 +66,7 @@ class CostCalculatorController extends Controller
             'name' => ['required', 'string', 'max:190'],
             'code' => ['nullable', 'string', 'max:80'],
             'unit' => ['required', 'string', 'max:50'],
-            'unit_price' => ['required', 'numeric', 'min:0'],
+            'unit_price' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -83,16 +86,16 @@ class CostCalculatorController extends Controller
     {
         $data = $request->validate([
             'product_id' => ['required', 'exists:products,id'],
-            'selling_price' => ['required', 'numeric', 'min:0'],
+            'selling_price' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'materials' => ['nullable', 'array'],
             'materials.*.raw_material_id' => ['nullable', 'exists:raw_materials,id'],
             'materials.*.material_name' => ['nullable', 'string', 'max:190'],
             'materials.*.unit' => ['nullable', 'string', 'max:50'],
-            'materials.*.quantity' => ['nullable', 'numeric', 'min:0'],
-            'materials.*.unit_price' => ['nullable', 'numeric', 'min:0'],
+            'materials.*.quantity' => ['nullable', 'numeric', 'decimal:0,3', 'min:0', 'max:999999999.999'],
+            'materials.*.unit_price' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'extras' => ['nullable', 'array'],
             'extras.*.name' => ['nullable', 'string', 'max:190'],
-            'extras.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'extras.*.amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
         ]);
 
         DB::transaction(function () use ($data) {
@@ -101,87 +104,126 @@ class CostCalculatorController extends Controller
             ProductMaterialCostItem::where('product_id', $productId)->delete();
             ProductExtraCostItem::where('product_id', $productId)->delete();
 
-            $materialsCost = 0;
+            $materialsCost = BigDecimal::of('0.00');
 
-            foreach (($data['materials'] ?? []) as $row) {
-                $quantity = (float) ($row['quantity'] ?? 0);
-                $unitPrice = (float) ($row['unit_price'] ?? 0);
+            foreach (($data['materials'] ?? []) as $index => $row) {
+                $quantity = BigDecimal::of((string) ($row['quantity'] ?? '0'))
+                    ->toScale(3, RoundingMode::Unnecessary);
+                $unitPrice = BigDecimal::of((string) ($row['unit_price'] ?? '0'))
+                    ->toScale(2, RoundingMode::Unnecessary);
 
-                if ($quantity <= 0 || $unitPrice < 0) {
+                if ($quantity->compareTo('0') <= 0 || $unitPrice->compareTo('0') < 0) {
                     continue;
                 }
 
                 $rawMaterial = null;
 
-                if (!empty($row['raw_material_id'])) {
+                if (! empty($row['raw_material_id'])) {
                     $rawMaterial = RawMaterial::find($row['raw_material_id']);
                 }
 
                 $materialName = $rawMaterial?->name ?: ($row['material_name'] ?? null);
 
-                if (!$materialName) {
+                if (! $materialName) {
                     continue;
                 }
 
-                $totalCost = round($quantity * $unitPrice, 2);
-                $materialsCost += $totalCost;
+                $lineCost = $quantity
+                    ->multipliedBy($unitPrice)
+                    ->toScale(2, RoundingMode::HalfUp);
+                $this->assertMoneyRange($lineCost, "materials.{$index}.unit_price");
+
+                $materialsCost = $materialsCost->plus($lineCost);
+                $this->assertMoneyRange($materialsCost, 'materials');
 
                 ProductMaterialCostItem::create([
                     'product_id' => $productId,
                     'raw_material_id' => $rawMaterial?->id,
                     'material_name' => $materialName,
                     'unit' => $rawMaterial?->unit ?: ($row['unit'] ?? null),
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'total_cost' => $totalCost,
+                    'quantity' => (string) $quantity,
+                    'unit_price' => (string) $unitPrice,
+                    'total_cost' => (string) $lineCost,
                 ]);
             }
 
-            $extraCost = 0;
+            $extraCost = BigDecimal::of('0.00');
 
             foreach (($data['extras'] ?? []) as $row) {
                 $name = $row['name'] ?? null;
-                $amount = (float) ($row['amount'] ?? 0);
+                $amount = BigDecimal::of((string) ($row['amount'] ?? '0'))
+                    ->toScale(2, RoundingMode::Unnecessary);
 
-                if (!$name || $amount <= 0) {
+                if (! $name || $amount->compareTo('0') <= 0) {
                     continue;
                 }
 
-                $extraCost += $amount;
+                $extraCost = $extraCost->plus($amount);
+                $this->assertMoneyRange($extraCost, 'extras');
 
                 ProductExtraCostItem::create([
                     'product_id' => $productId,
                     'name' => $name,
-                    'amount' => $amount,
+                    'amount' => (string) $amount,
                 ]);
             }
 
-            $sellingPrice = (float) $data['selling_price'];
-            $totalCost = round($materialsCost + $extraCost, 2);
-            $profit = round($sellingPrice - $totalCost, 2);
+            $sellingPrice = BigDecimal::of((string) $data['selling_price'])
+                ->toScale(2, RoundingMode::Unnecessary);
+            $totalCost = $materialsCost
+                ->plus($extraCost)
+                ->toScale(2, RoundingMode::Unnecessary);
+            $this->assertMoneyRange($totalCost, 'extras');
+
+            $profit = $sellingPrice
+                ->minus($totalCost)
+                ->toScale(2, RoundingMode::Unnecessary);
+            $this->assertMoneyRange($profit, 'selling_price');
+
             // Profit margin is profit as a percentage of selling price.
             // (profit / cost) would be markup, which is a different metric.
-            $profitMargin = $sellingPrice > 0 ? round(($profit / $sellingPrice) * 100, 2) : 0;
+            $profitMargin = $sellingPrice->compareTo('0') > 0
+                ? $profit->multipliedBy('100')->dividedBy($sellingPrice, 2, RoundingMode::HalfUp)
+                : BigDecimal::of('0.00');
+            $this->assertProfitMarginRange($profitMargin);
 
             ProductCostSummary::updateOrCreate(
                 ['product_id' => $productId],
                 [
-                    'materials_cost' => $materialsCost,
-                    'extra_cost' => $extraCost,
-                    'total_cost' => $totalCost,
-                    'selling_price' => $sellingPrice,
-                    'profit' => $profit,
-                    'profit_margin' => $profitMargin,
+                    'materials_cost' => (string) $materialsCost,
+                    'extra_cost' => (string) $extraCost,
+                    'total_cost' => (string) $totalCost,
+                    'selling_price' => (string) $sellingPrice,
+                    'profit' => (string) $profit,
+                    'profit_margin' => (string) $profitMargin,
                 ]
             );
 
             Product::whereKey($productId)->update([
-                'cost_price' => $totalCost,
+                'cost_price' => (string) $totalCost,
             ]);
         });
 
         return redirect()
             ->route('admin.cost-calculator.index', ['product_id' => $data['product_id']])
             ->with('success', __('Product cost saved successfully.'));
+    }
+
+    private function assertMoneyRange(BigDecimal $amount, string $field): void
+    {
+        if ($amount->compareTo('-9999999999.99') < 0 || $amount->compareTo('9999999999.99') > 0) {
+            throw ValidationException::withMessages([
+                $field => __('The calculated amount exceeds the supported monetary range.'),
+            ]);
+        }
+    }
+
+    private function assertProfitMarginRange(BigDecimal $margin): void
+    {
+        if ($margin->compareTo('-999999.99') < 0 || $margin->compareTo('999999.99') > 0) {
+            throw ValidationException::withMessages([
+                'selling_price' => __('The resulting profit margin exceeds the supported range.'),
+            ]);
+        }
     }
 }

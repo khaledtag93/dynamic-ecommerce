@@ -5989,5 +5989,7 @@
     "Allocation": "التوزيع",
     "Legacy refund allocation": "توزيع استرداد تاريخي",
     "Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.": "التوزيع التلقائي يحافظ على التسلسل التاريخي لقيمة الطلب: المنتجات ثم الشحن ثم الضريبة ثم مبلغ الدفع الزائد. اختر مكونًا محددًا عندما يكون سبب الاسترداد معروفًا.",
-    "Refund amount exceeds the remaining value for the selected allocation.": "مبلغ الاسترداد يتجاوز القيمة المتبقية للمكون المحدد."
+    "Refund amount exceeds the remaining value for the selected allocation.": "مبلغ الاسترداد يتجاوز القيمة المتبقية للمكون المحدد.",
+    "The calculated amount exceeds the supported monetary range.": "القيمة المحسوبة تتجاوز النطاق المالي المدعوم.",
+    "The resulting profit margin exceeds the supported range.": "هامش الربح الناتج يتجاوز النطاق المدعوم."
 }
