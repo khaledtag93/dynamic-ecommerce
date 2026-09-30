@@ -5290,5 +5290,6 @@
     "Variant revenue and profitability mix": "Variant revenue and profitability mix",
     "Compare realized revenue with realized COGS, profit, and weighted gross margin so the highest-revenue variant is not mistaken for the most profitable one.": "Compare realized revenue with realized COGS, profit, and weighted gross margin so the highest-revenue variant is not mistaken for the most profitable one.",
     "Attributed profit": "Attributed profit",
-    "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.": "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot."
+    "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.": "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.",
+    "Online payment configuration does not match this order. Please choose another payment method or contact support.": "Online payment configuration does not match this order. Please choose another payment method or contact support."
 }
