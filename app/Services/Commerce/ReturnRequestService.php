@@ -435,6 +435,15 @@ class ReturnRequestService
                 'received_at' => now(),
             ]);
 
+            $order = Order::query()
+                ->whereKey($locked->order_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+            $this->profitService->refreshOrderTotals($order);
+            $freshOrder = $order->fresh();
+            $this->growthAttributionService->refreshOrderAttribution((int) $order->id);
+            app(\App\Services\Analytics\AnalyticsTracker::class)->syncRealizedPurchase($freshOrder);
+
             $this->activityLogService->log(
                 'returns',
                 'return_received',
