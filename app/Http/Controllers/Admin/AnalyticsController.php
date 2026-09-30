@@ -202,8 +202,7 @@ class AnalyticsController extends Controller
     protected function buildOffersTrust(array $drilldown): array
     {
         $couponRows = collect($drilldown['coupon_rows'] ?? []);
-        $discountedOrders = (int) data_get($drilldown, 'discounted_orders.orders_count', 0);
-        $hasData = $couponRows->isNotEmpty() || $discountedOrders > 0;
+        $hasData = $couponRows->isNotEmpty() || $this->offersHaveEconomicData($drilldown);
 
         return [
             'source_label' => __('Order discount activity'),
@@ -300,13 +299,23 @@ class AnalyticsController extends Controller
     {
         $couponRows = collect($drilldown['coupon_rows'] ?? []);
         $promotions = collect($drilldown['active_promotions'] ?? []);
-        $hasData = $couponRows->isNotEmpty() || (int) data_get($drilldown, 'discounted_orders.orders_count', 0) > 0 || $promotions->isNotEmpty();
+        $hasData = $couponRows->isNotEmpty() || $this->offersHaveEconomicData($drilldown) || $promotions->isNotEmpty();
 
         return [
             'empty' => ! $hasData,
             'show_coupon_charts' => $couponRows->isNotEmpty(),
             'show_promotions' => $promotions->isNotEmpty(),
         ];
+    }
+
+    protected function offersHaveEconomicData(array $drilldown): bool
+    {
+        $discounted = (array) data_get($drilldown, 'discounted_orders', []);
+
+        return (int) ($discounted['orders_count'] ?? 0) > 0
+            || abs((float) ($discounted['revenue_gross'] ?? 0)) > 0.00001
+            || abs((float) ($discounted['discount_total'] ?? 0)) > 0.00001
+            || abs((float) ($discounted['profit_total'] ?? 0)) > 0.00001;
     }
 
     protected function buildProductUiState(array $drilldown): array
