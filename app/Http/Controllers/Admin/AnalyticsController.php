@@ -236,9 +236,16 @@ class AnalyticsController extends Controller
     protected function buildOverviewUiState(array $snapshot): array
     {
         $current = $snapshot['current'] ?? [];
+        $hasEconomicProductData = collect(data_get($current, 'top_products', []))
+            ->contains(fn ($row) => abs((float) data_get($row, 'realized_cogs', 0)) > 0.00001
+                || abs((float) data_get($row, 'profit_total', 0)) > 0.00001
+                || abs((float) data_get($row, 'revenue_gross', 0)) > 0.00001);
+
         $hasHeadlineData = ((float) data_get($current, 'totals.revenue_gross', 0)) > 0
             || ((int) data_get($current, 'totals.orders_count', 0)) > 0
-            || collect(data_get($current, 'daily_stats', []))->sum(fn ($row) => (int) data_get($row, 'sessions_count', 0)) > 0;
+            || collect(data_get($current, 'daily_stats', []))->sum(fn ($row) => (int) data_get($row, 'sessions_count', 0)) > 0
+            || filled(data_get($current, 'last_event_at'))
+            || $hasEconomicProductData;
 
         return [
             'empty' => ! $hasHeadlineData,
