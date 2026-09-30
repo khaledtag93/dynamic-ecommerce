@@ -68,7 +68,12 @@ class GrowthAttributionService
         $couponCode = data_get($delivery->payload, 'coupon_code') ?: data_get($delivery->meta, 'coupon_code');
 
         $orders = Order::query()
-            ->commerciallyRealized()
+            ->where('status', Order::STATUS_COMPLETED)
+            ->whereIn('payment_status', [
+                Order::PAYMENT_STATUS_PAID,
+                Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                Order::PAYMENT_STATUS_REFUNDED,
+            ])
             ->when($delivery->user_id, fn (Builder $query) => $query->where('user_id', $delivery->user_id))
             ->when(! $delivery->user_id && $delivery->recipient, fn (Builder $query) => $query->where('customer_email', $delivery->recipient))
             ->whereBetween(DB::raw('COALESCE(placed_at, created_at)'), [$sentAt, $windowEnd])
@@ -160,7 +165,14 @@ class GrowthAttributionService
 
     protected function normalizeOrderAttribution(int $orderId): void
     {
-        $order = Order::query()->commerciallyRealized()->find($orderId);
+        $order = Order::query()
+            ->where('status', Order::STATUS_COMPLETED)
+            ->whereIn('payment_status', [
+                Order::PAYMENT_STATUS_PAID,
+                Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                Order::PAYMENT_STATUS_REFUNDED,
+            ])
+            ->find($orderId);
 
         if (! $order) {
             GrowthAttributionTouch::query()->where('order_id', $orderId)->delete();
@@ -268,7 +280,10 @@ class GrowthAttributionService
             ->where('sent_at', '>=', now()->subDays(30))
             ->count();
 
-        $attributedOrdersRecent = (int) (clone $recent)->distinct('order_id')->count('order_id');
+        $attributedOrdersRecent = (int) (clone $recent)
+            ->whereHas('order', fn (Builder $query) => $query->where('payment_status', '!=', Order::PAYMENT_STATUS_REFUNDED))
+            ->distinct('order_id')
+            ->count('order_id');
         $liftOrders = $deliveriesWithRevenue > 0 ? round(($attributedOrdersRecent / max(1, $deliveriesWithRevenue)) * 100, 2) : 0.0;
         $liftRevenue = (float) (clone $recent)->sum('revenue');
         $attributedRevenue = round((float) (clone $base)->sum('revenue'), 2);
@@ -278,11 +293,18 @@ class GrowthAttributionService
             : null;
 
         return [
-            'attributed_orders' => (int) (clone $base)->distinct('order_id')->count('order_id'),
+            'attributed_orders' => (int) (clone $base)
+                ->whereHas('order', fn (Builder $query) => $query->where('payment_status', '!=', Order::PAYMENT_STATUS_REFUNDED))
+                ->distinct('order_id')
+                ->count('order_id'),
             'attributed_revenue' => $attributedRevenue,
             'attributed_profit' => $attributedProfit,
             'attributed_gross_margin_percent' => $attributedGrossMargin,
-            'coupon_assisted_orders' => (int) GrowthAttributionTouch::query()->where('touch_type', 'coupon_match')->distinct('order_id')->count('order_id'),
+            'coupon_assisted_orders' => (int) GrowthAttributionTouch::query()
+                ->where('touch_type', 'coupon_match')
+                ->whereHas('order', fn (Builder $query) => $query->where('payment_status', '!=', Order::PAYMENT_STATUS_REFUNDED))
+                ->distinct('order_id')
+                ->count('order_id'),
             'lift_revenue_30d' => round($liftRevenue, 2),
             'lift_orders_30d' => $liftOrders,
         ];
@@ -295,7 +317,7 @@ class GrowthAttributionService
         }
 
         return GrowthAttributionTouch::query()
-            ->selectRaw('campaign_id, COUNT(*) as touches_count, COUNT(DISTINCT order_id) as orders_count, SUM(revenue) as revenue_total, SUM(profit_total) as profit_total')
+            ->selectRaw('campaign_id, COUNT(*) as touches_count, SUM(revenue) as revenue_total, SUM(profit_total) as profit_total')
             ->groupBy('campaign_id')
             ->with('campaign')
             ->orderByDesc('revenue_total')
@@ -311,7 +333,11 @@ class GrowthAttributionService
                     'revenue' => $revenue,
                     'profit' => $profit,
                     'gross_margin_percent' => $revenue > 0 ? round(($profit / $revenue) * 100, 2) : null,
-                    'orders' => (int) $row->orders_count,
+                    'orders' => (int) GrowthAttributionTouch::query()
+                        ->where('campaign_id', $row->campaign_id)
+                        ->whereHas('order', fn (Builder $query) => $query->where('payment_status', '!=', Order::PAYMENT_STATUS_REFUNDED))
+                        ->distinct('order_id')
+                        ->count('order_id'),
                     'touches' => (int) $row->touches_count,
                 ];
             });
