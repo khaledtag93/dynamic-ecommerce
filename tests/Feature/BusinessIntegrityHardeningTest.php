@@ -241,6 +241,67 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(-40.0, (float) $fullyRefundedProductStat->profit_total);
     }
 
+    public function test_physical_partial_return_restates_realized_purchase_quantity_and_product_analytics(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, 200);
+        $order->update([
+            'status' => Order::STATUS_COMPLETED,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'refund_total' => 100,
+            'delivered_at' => now(),
+        ]);
+        $product = $this->makeProduct(0);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+        $refund = OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 100,
+            'reason' => 'Physical partial return',
+            'processed_at' => now(),
+        ]);
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refund->id,
+            'order_id' => $order->id,
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'amount' => 100,
+            'restocked' => true,
+        ]);
+
+        $tracker = app(AnalyticsTracker::class);
+        $tracker->syncRealizedPurchase($order->fresh());
+
+        $event = AnalyticsEvent::query()
+            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+            ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
+            ->where('entity_id', (string) $order->id)
+            ->sole();
+
+        $this->assertSame(1, (int) data_get($event->meta, 'line_items.0.quantity'));
+        $this->assertSame(100.0, (float) data_get($event->meta, 'line_items.0.realized_revenue'));
+        $this->assertSame(40.0, (float) data_get($event->meta, 'line_items.0.realized_cogs'));
+        $this->assertSame(60.0, (float) data_get($event->meta, 'line_items.0.profit_total'));
+
+        app(AnalyticsAggregationService::class)->aggregateDay(now());
+
+        $stat = AnalyticsProductDailyStat::query()
+            ->whereDate('stat_date', now()->toDateString())
+            ->where('product_id', $product->id)
+            ->firstOrFail();
+        $this->assertSame(1, (int) $stat->purchased_quantity);
+        $this->assertSame(100.0, (float) $stat->revenue_gross);
+        $this->assertSame(40.0, (float) $stat->realized_cogs);
+        $this->assertSame(60.0, (float) $stat->profit_total);
+    }
+
     public function test_profit_uses_net_order_value_and_reverses_cogs_only_for_restocked_units(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 90);
