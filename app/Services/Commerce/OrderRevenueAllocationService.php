@@ -3,6 +3,8 @@
 namespace App\Services\Commerce;
 
 use App\Models\Order;
+use App\Models\PosReturnItem;
+use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 
 class OrderRevenueAllocationService
@@ -34,6 +36,54 @@ class OrderRevenueAllocationService
         );
 
         return $this->allocateTargetCents($items, $grossMerchandiseCents);
+    }
+
+    public function realizedQuantities(Order $order): array
+    {
+        $order->loadMissing('items');
+        $items = $order->items->sortBy('id')->values();
+
+        if ($items->isEmpty()) {
+            return [];
+        }
+
+        $quantities = $items->mapWithKeys(
+            fn ($item) => [(int) $item->id => max(0, (int) $item->quantity)]
+        )->all();
+
+        if ($order->payment_status === Order::PAYMENT_STATUS_REFUNDED) {
+            return array_fill_keys(array_keys($quantities), 0);
+        }
+
+        $itemIds = array_keys($quantities);
+        $posReturned = PosReturnItem::query()
+            ->selectRaw('order_item_id, SUM(quantity) as returned_quantity')
+            ->where('order_id', $order->id)
+            ->whereIn('order_item_id', $itemIds)
+            ->groupBy('order_item_id')
+            ->pluck('returned_quantity', 'order_item_id');
+        $rmaReturned = ReturnRequestItem::query()
+            ->selectRaw('order_item_id, SUM(received_quantity) as returned_quantity')
+            ->where('order_id', $order->id)
+            ->whereIn('order_item_id', $itemIds)
+            ->where('received_quantity', '>', 0)
+            ->whereHas('returnRequest', fn ($query) => $query->whereIn('status', [
+                ReturnRequest::STATUS_RECEIVED,
+                ReturnRequest::STATUS_COMPLETED,
+            ]))
+            ->groupBy('order_item_id')
+            ->pluck('returned_quantity', 'order_item_id');
+
+        foreach ($quantities as $itemId => $soldQuantity) {
+            $returnedQuantity = min(
+                $soldQuantity,
+                max(0, (int) ($posReturned[$itemId] ?? 0))
+                    + max(0, (int) ($rmaReturned[$itemId] ?? 0))
+            );
+            $quantities[$itemId] = max(0, $soldQuantity - $returnedQuantity);
+        }
+
+        return $quantities;
     }
 
     public function completedExchangeCompensationCents(Order $order): int
