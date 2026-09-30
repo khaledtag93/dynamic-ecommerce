@@ -85,7 +85,10 @@ class DashBoardController extends Controller
             $period = Order::query()
                 ->whereBetween('created_at', [now()->subDays(29)->startOfDay(), now()])
                 ->selectRaw('COUNT(*) as orders_count, COALESCE(SUM(grand_total), 0) as order_value')
-                ->selectRaw('COALESCE(SUM(CASE WHEN payment_status = ? THEN 1 ELSE 0 END), 0) as paid_orders', [Order::PAYMENT_STATUS_PAID])
+                ->selectRaw(
+                    'COALESCE(SUM(CASE WHEN payment_status IN (?, ?) THEN 1 ELSE 0 END), 0) as paid_orders',
+                    [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_PARTIALLY_REFUNDED]
+                )
                 ->first();
 
             $ordersCount = (int) $period->orders_count;
