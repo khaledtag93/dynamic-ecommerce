@@ -119,7 +119,60 @@ class AdminCustomerLiveListTest extends TestCase
             ->assertSee('EGP 75.00');
     }
 
-    private function orderFor(User $user, string $number, float $total): Order
+    public function test_customer_value_stays_currency_safe_and_rankings_require_a_currency(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $owner = $this->createSuperAdmin();
+
+        $egpLeader = User::factory()->create([
+            'name' => 'EGP Leader',
+            'email' => 'rank-egp@example.test',
+            'role_as' => 0,
+        ]);
+        $usdLeader = User::factory()->create([
+            'name' => 'USD Leader',
+            'email' => 'rank-usd@example.test',
+            'role_as' => 0,
+        ]);
+
+        $this->orderFor($egpLeader, 'RANK-EGP-1', 100, 'EGP');
+        $this->orderFor($egpLeader, 'RANK-USD-1', 10, 'USD');
+        $this->orderFor($usdLeader, 'RANK-EGP-2', 50, 'EGP');
+        $this->orderFor($usdLeader, 'RANK-USD-2', 1000, 'USD');
+
+        $index = $this->actingAs($owner)->get(route('admin.customers.index'));
+
+        $index
+            ->assertOk()
+            ->assertSee('EGP 150.00 · USD 1,010.00')
+            ->assertSee('EGP 100.00 · USD 10.00')
+            ->assertSee('EGP 50.00 · USD 1,000.00');
+
+        $this->actingAs($owner)
+            ->get(route('admin.customers.index', ['value' => 'high_value']))
+            ->assertOk()
+            ->assertSee('Choose a currency to rank customer spend safely.');
+
+        $this->actingAs($owner)
+            ->get(route('admin.customers.index', ['value' => 'high_value', 'value_currency' => 'EGP']))
+            ->assertOk()
+            ->assertSeeInOrder(['rank-egp@example.test', 'rank-usd@example.test']);
+
+        $this->actingAs($owner)
+            ->get(route('admin.customers.index', ['value' => 'high_value', 'value_currency' => 'USD']))
+            ->assertOk()
+            ->assertSeeInOrder(['rank-usd@example.test', 'rank-egp@example.test']);
+
+        $profile = $this->actingAs($owner)->get(route('admin.customers.show', $egpLeader));
+
+        $profile
+            ->assertOk()
+            ->assertSee('EGP 100.00 · USD 10.00')
+            ->assertSee('EGP 0.00 · USD 0.00')
+            ->assertSee('USD 10.00');
+    }
+
+    private function orderFor(User $user, string $number, float $total, string $currency = 'EGP'): Order
     {
         return Order::create([
             'user_id' => $user->id,
@@ -130,6 +183,7 @@ class AdminCustomerLiveListTest extends TestCase
             'shipping_address_line_1' => '1 Test Street',
             'shipping_city' => 'Cairo',
             'grand_total' => $total,
+            'currency' => $currency,
             'status' => Order::STATUS_COMPLETED,
             'payment_status' => Order::PAYMENT_STATUS_PAID,
         ]);
