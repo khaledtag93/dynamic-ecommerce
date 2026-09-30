@@ -200,11 +200,30 @@ class AdminAnalyticsExperienceTest extends TestCase
             ]);
         }
 
+        Order::query()->create([
+            'order_number' => 'COUPON-LOSS-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'grand_total' => 50,
+            'refund_total' => 50,
+            'discount_total' => 10,
+            'cost_total' => 20,
+            'profit_total' => -20,
+            'coupon_code' => 'LOSS',
+            'customer_name' => 'Refunded Coupon Customer',
+            'customer_email' => 'coupon-loss@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+
         $rows = app(\App\Services\Analytics\AnalyticsRevenueService::class)
             ->couponPerformance(now()->startOfDay(), now()->endOfDay());
 
         $highRevenue = $rows->firstWhere('coupon_code', 'HIGHREV');
         $highProfit = $rows->firstWhere('coupon_code', 'HIGHPROFIT');
+        $loss = $rows->firstWhere('coupon_code', 'LOSS');
 
         $this->assertSame(100.0, (float) $highRevenue->realized_revenue);
         $this->assertSame(5.0, (float) $highRevenue->profit_total);
@@ -213,6 +232,12 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(50.0, (float) $highProfit->profit_total);
         $this->assertSame(62.5, (float) $highProfit->gross_margin_percent);
         $this->assertSame(2, (int) $highProfit->orders_count);
+        $this->assertSame(0, (int) $loss->orders_count);
+        $this->assertSame(0.0, (float) $loss->realized_revenue);
+        $this->assertSame(0.0, (float) $loss->discount_total);
+        $this->assertSame(-20.0, (float) $loss->profit_total);
+        $this->assertNull($loss->gross_margin_percent);
+        $this->assertSame(0.0, (float) $loss->average_order_value);
 
         Cache::flush();
 
@@ -327,6 +352,46 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(40.0, (float) $row->realized_cogs);
         $this->assertSame(50.0, (float) $row->profit_total);
         $this->assertSame(55.56, (float) $row->gross_margin_percent);
+    }
+
+    public function test_variant_profitability_retains_fully_refunded_non_restocked_loss_without_counting_quantity(): void
+    {
+        $product = $this->createAnalyticsProduct();
+        $order = Order::query()->create([
+            'order_number' => 'PRODUCT-REFUNDED-LOSS-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
+            'grand_total' => 100,
+            'subtotal' => 100,
+            'refund_total' => 100,
+            'discount_total' => 0,
+            'customer_name' => 'Refunded Variant Customer',
+            'customer_email' => 'variant-refunded-loss@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $row = app(\App\Services\Analytics\AnalyticsRevenueService::class)
+            ->topVariantsForProduct($product, now()->startOfDay(), now()->endOfDay(), 8)
+            ->sole();
+
+        $this->assertSame(0, (int) $row->quantity);
+        $this->assertSame(0.0, (float) $row->realized_revenue);
+        $this->assertSame(40.0, (float) $row->realized_cogs);
+        $this->assertSame(-40.0, (float) $row->profit_total);
+        $this->assertNull($row->gross_margin_percent);
     }
 
     public function test_variant_profitability_separates_revenue_leader_from_profit_leader_and_weights_margin(): void
