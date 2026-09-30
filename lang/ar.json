@@ -2354,6 +2354,8 @@
     "Net": "الصافي",
     "Net after refunds": "الصافي بعد الاستردادات",
     "Net collected after refunds.": "الصافي المُحصّل بعد المرتجعات.",
+    "Net collected from the payment ledger after recorded refunds.": "صافي المبالغ المحصلة من سجل المدفوعات بعد الاستردادات المسجلة.",
+    "Recorded refunds grouped by currency.": "الاستردادات المسجلة مجمعة حسب العملة.",
     "Net paid": "صافي المدفوع",
     "Net revenue": "صافي الإيرادات",
     "Net spend": "صافي الإنفاق",
