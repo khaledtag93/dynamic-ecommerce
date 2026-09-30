@@ -9,6 +9,8 @@ use App\Services\Admin\ProductService;
 use App\Services\Commerce\InventoryAdjustmentService;
 use App\Services\Commerce\InventoryAvailabilityService;
 use App\Support\MediaPath;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -483,7 +485,7 @@ class Index extends Component
     {
         $this->validate(
             [
-                "inlineBasePrice.$id" => ['required', 'numeric', 'min:0'],
+                "inlineBasePrice.$id" => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
             ],
             [
                 "inlineBasePrice.$id.required" => __('Base price is required.'),
@@ -497,7 +499,7 @@ class Index extends Component
     {
         $this->validate(
             [
-                "inlineSalePrice.$id" => ['nullable', 'numeric', 'min:0'],
+                "inlineSalePrice.$id" => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
             ],
             [
                 "inlineSalePrice.$id.numeric" => __('Sale price must be a valid number.'),
@@ -518,6 +520,12 @@ class Index extends Component
                 "inlineQty.$id.min" => __('Quantity cannot be negative.'),
             ]
         );
+    }
+
+    private function catalogMoney(mixed $amount): BigDecimal
+    {
+        return BigDecimal::of((string) $amount)
+            ->toScale(2, RoundingMode::Unnecessary);
     }
 
     protected function addInlineError(string $field, int $id, string $message): void
@@ -559,10 +567,13 @@ class Index extends Component
             return;
         }
 
-        $newBasePrice = (float) $this->inlineBasePrice[$id];
+        $newBasePrice = $this->catalogMoney($this->inlineBasePrice[$id]);
         $currentSalePrice = $product->sale_price;
 
-        if (! is_null($currentSalePrice) && (float) $currentSalePrice > $newBasePrice) {
+        if (
+            ! is_null($currentSalePrice)
+            && $this->catalogMoney($currentSalePrice)->compareTo($newBasePrice) > 0
+        ) {
             $this->addInlineError(
                 'inlineBasePrice',
                 $id,
@@ -572,7 +583,7 @@ class Index extends Component
         }
 
         Product::whereKey($id)->update([
-            'base_price' => $newBasePrice,
+            'base_price' => (string) $newBasePrice,
         ]);
 
         $this->editingBasePriceId = null;
@@ -625,10 +636,10 @@ class Index extends Component
             return;
         }
 
-        $salePrice = (float) $salePrice;
-        $basePrice = (float) ($product->base_price ?? 0);
+        $salePrice = $this->catalogMoney($salePrice);
+        $basePrice = $this->catalogMoney($product->base_price ?? '0');
 
-        if ($salePrice > $basePrice) {
+        if ($salePrice->compareTo($basePrice) > 0) {
             $this->addInlineError(
                 'inlineSalePrice',
                 $id,
@@ -638,7 +649,7 @@ class Index extends Component
         }
 
         Product::whereKey($id)->update([
-            'sale_price' => $salePrice,
+            'sale_price' => (string) $salePrice,
         ]);
 
         $this->editingSalePriceId = null;

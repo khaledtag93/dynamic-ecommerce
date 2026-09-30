@@ -10,6 +10,8 @@ use App\Models\ProductVariant;
 use App\Services\Admin\ProductService;
 use App\Services\Admin\ProductVariantService;
 use App\Services\Admin\CatalogStockAuditService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -114,8 +116,8 @@ class ProductForm extends Component
                 'variants' => ['required', 'array', 'min:1'],
                 'variants.*.sku' => ['nullable', 'string', 'max:255'],
                 'variants.*.barcode' => ['nullable', 'string', 'max:255'],
-                'variants.*.price' => ['required', 'numeric', 'min:0'],
-                'variants.*.sale_price' => ['nullable', 'numeric', 'min:0'],
+                'variants.*.price' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+                'variants.*.sale_price' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
                 'variants.*.stock' => ['nullable', 'integer', 'min:0'],
                 'variants.*.is_default' => ['nullable', 'boolean'],
                 'variants.*.status' => ['nullable', 'boolean'],
@@ -129,8 +131,8 @@ class ProductForm extends Component
         }
 
         return array_merge($rules, [
-            'base_price' => ['required', 'numeric', 'min:0'],
-            'sale_price' => ['nullable', 'numeric', 'min:0'],
+            'base_price' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'sale_price' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
             'quantity' => ['required', 'integer', 'min:0'],
             'stock_status' => ['required', 'in:in_stock,out_of_stock,preorder,backorder'],
         ]);
@@ -683,8 +685,8 @@ class ProductForm extends Component
             'id' => null,
             'sku' => '',
             'barcode' => '',
-            'price' => is_numeric($this->base_price) ? (float) $this->base_price : '',
-            'sale_price' => is_numeric($this->sale_price) ? (float) $this->sale_price : '',
+            'price' => is_numeric($this->base_price) ? (string) $this->base_price : '',
+            'sale_price' => is_numeric($this->sale_price) ? (string) $this->sale_price : '',
             'stock' => 0,
             'is_default' => count($this->variants) === 0,
             'status' => true,
@@ -930,13 +932,20 @@ class ProductForm extends Component
             return;
         }
 
+        $this->validate([
+            'variantBulk.price' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'variantBulk.sale_price' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'variantBulk.stock' => ['nullable', 'integer', 'min:0'],
+            'variantBulk.status' => ['nullable', 'boolean'],
+        ]);
+
         foreach ($this->variants as $index => $variant) {
             if ($this->variantBulk['price'] !== '' && $this->variantBulk['price'] !== null) {
-                $this->variants[$index]['price'] = (float) $this->variantBulk['price'];
+                $this->variants[$index]['price'] = (string) $this->catalogMoney($this->variantBulk['price']);
             }
 
             if ($this->variantBulk['sale_price'] !== '' && $this->variantBulk['sale_price'] !== null) {
-                $this->variants[$index]['sale_price'] = (float) $this->variantBulk['sale_price'];
+                $this->variants[$index]['sale_price'] = (string) $this->catalogMoney($this->variantBulk['sale_price']);
             }
 
             if ($this->variantBulk['stock'] !== '' && $this->variantBulk['stock'] !== null) {
@@ -1008,8 +1017,8 @@ class ProductForm extends Component
             $this->variants[] = [
                 'id' => null,
                 'sku' => '',
-                'price' => is_numeric($this->base_price) ? (float) $this->base_price : '',
-                'sale_price' => is_numeric($this->sale_price) ? (float) $this->sale_price : '',
+                'price' => is_numeric($this->base_price) ? (string) $this->base_price : '',
+                'sale_price' => is_numeric($this->sale_price) ? (string) $this->sale_price : '',
                 'stock' => 0,
                 'is_default' => false,
                 'status' => true,
@@ -1186,7 +1195,11 @@ class ProductForm extends Component
         $basePrice = $validated['base_price'] ?? null;
         $salePrice = $validated['sale_price'] ?? null;
 
-        if ($salePrice !== null && $salePrice !== '' && (float) $salePrice > (float) $basePrice) {
+        if (
+            $salePrice !== null
+            && $salePrice !== ''
+            && $this->catalogMoney($salePrice)->compareTo($this->catalogMoney($basePrice)) > 0
+        ) {
             throw ValidationException::withMessages([
                 'sale_price' => __('Sale price cannot be greater than the base price.'),
             ]);
@@ -1219,10 +1232,14 @@ class ProductForm extends Component
                 }
             }
 
-            $price = (float) ($variant['price'] ?? 0);
+            $price = $this->catalogMoney($variant['price'] ?? '0');
             $salePrice = $variant['sale_price'];
 
-            if ($salePrice !== null && $salePrice !== '' && (float) $salePrice > $price) {
+            if (
+                $salePrice !== null
+                && $salePrice !== ''
+                && $this->catalogMoney($salePrice)->compareTo($price) > 0
+            ) {
                 throw ValidationException::withMessages([
                     'variants.' . $variantIndex . '.sale_price' => __('Sale price cannot be greater than the variant price.'),
                 ]);
@@ -1248,8 +1265,10 @@ class ProductForm extends Component
                     'id' => $variant['id'] ?? null,
                     'sku' => filled($variant['sku'] ?? null) ? trim((string) $variant['sku']) : null,
                     'barcode' => filled($variant['barcode'] ?? null) ? trim((string) $variant['barcode']) : null,
-                    'price' => (float) ($variant['price'] ?? 0),
-                    'sale_price' => ($variant['sale_price'] ?? '') !== '' ? (float) $variant['sale_price'] : null,
+                    'price' => (string) $this->catalogMoney($variant['price'] ?? '0'),
+                    'sale_price' => ($variant['sale_price'] ?? '') !== ''
+                        ? (string) $this->catalogMoney($variant['sale_price'])
+                        : null,
                     'stock' => ($variant['stock'] ?? '') !== '' ? (int) $variant['stock'] : 0,
                     'is_default' => !empty($variant['is_default']),
                     'status' => !empty($variant['status']),
@@ -1267,6 +1286,12 @@ class ProductForm extends Component
         }
 
         return $variants;
+    }
+
+    private function catalogMoney(mixed $amount): BigDecimal
+    {
+        return BigDecimal::of((string) $amount)
+            ->toScale(2, RoundingMode::Unnecessary);
     }
 
     public function getVariantLabel($index): string
