@@ -117,11 +117,16 @@ class AnalyticsController extends Controller
             $couponRows = $this->analyticsRevenueService->couponPerformance($from, $to);
 
             $discountedOrders = Order::query()
-                ->commerciallyRealized()
+                ->where('status', Order::STATUS_COMPLETED)
+                ->whereIn('payment_status', [
+                    Order::PAYMENT_STATUS_PAID,
+                    Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                    Order::PAYMENT_STATUS_REFUNDED,
+                ])
                 ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
                 ->where('discount_total', '>', 0)
-                ->selectRaw('COUNT(*) as orders_count')
-                ->selectRaw('SUM(discount_total) as discount_total')
+                ->selectRaw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN 1 ELSE 0 END) as orders_count")
+                ->selectRaw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN discount_total ELSE 0 END) as discount_total")
                 ->selectRaw('SUM(grand_total - refund_total) as revenue_gross')
                 ->selectRaw('SUM(profit_total) as profit_total')
                 ->first();
