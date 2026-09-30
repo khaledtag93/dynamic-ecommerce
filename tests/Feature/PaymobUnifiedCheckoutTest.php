@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\PaymobCheckoutException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -35,6 +36,63 @@ class PaymobUnifiedCheckoutTest extends TestCase
             'services.paymob.currency' => 'EGP',
             'services.paymob.verify_ssl' => true,
         ]);
+    }
+
+    public function test_checkout_fails_before_provider_request_when_gateway_currency_differs_from_order(): void
+    {
+        config(['services.paymob.currency' => 'USD']);
+
+        $order = $this->makeOnlineOrder(100);
+        $payment = $this->makePayment($order);
+        Http::fake();
+
+        try {
+            app(PaymobGatewayService::class)->checkoutUrl($order, $payment);
+            $this->fail('Paymob checkout must not start when gateway currency differs from the order.');
+        } catch (PaymobCheckoutException $exception) {
+            $this->assertSame('EGP', $exception->diagnostics()['order_currency'] ?? null);
+            $this->assertSame('EGP', $exception->diagnostics()['payment_currency'] ?? null);
+            $this->assertSame('USD', $exception->diagnostics()['gateway_currency'] ?? null);
+        }
+
+        Http::assertNothingSent();
+    }
+
+    public function test_checkout_fails_before_provider_request_when_payment_currency_differs_from_order(): void
+    {
+        $order = $this->makeOnlineOrder(100);
+        $payment = $this->makePayment($order);
+        $payment->update(['currency' => 'USD']);
+        Http::fake();
+
+        try {
+            app(PaymobGatewayService::class)->checkoutUrl($order, $payment->fresh());
+            $this->fail('Paymob checkout must not start when payment currency differs from the order.');
+        } catch (PaymobCheckoutException $exception) {
+            $this->assertSame('EGP', $exception->diagnostics()['order_currency'] ?? null);
+            $this->assertSame('USD', $exception->diagnostics()['payment_currency'] ?? null);
+            $this->assertSame('EGP', $exception->diagnostics()['gateway_currency'] ?? null);
+        }
+
+        Http::assertNothingSent();
+    }
+
+    public function test_checkout_fails_before_provider_request_when_payment_amount_differs_from_order(): void
+    {
+        $order = $this->makeOnlineOrder(100);
+        $payment = $this->makePayment($order);
+        $payment->update(['amount' => 99]);
+        Http::fake();
+
+        try {
+            app(PaymobGatewayService::class)->checkoutUrl($order, $payment->fresh());
+            $this->fail('Paymob checkout must not start when payment amount differs from the order.');
+        } catch (PaymobCheckoutException $exception) {
+            $this->assertSame(10000, $exception->diagnostics()['order_amount_cents'] ?? null);
+            $this->assertSame(9900, $exception->diagnostics()['payment_amount_cents'] ?? null);
+        }
+
+        Http::assertNothingSent();
     }
 
     public function test_unified_checkout_creates_intention_and_encrypts_client_secret_at_rest(): void
