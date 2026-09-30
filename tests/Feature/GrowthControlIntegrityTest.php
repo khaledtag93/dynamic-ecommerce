@@ -387,18 +387,20 @@ class GrowthControlIntegrityTest extends TestCase
         $order->update([
             'payment_status' => Order::PAYMENT_STATUS_REFUNDED,
             'refund_total' => 100,
+            'profit_total' => -20,
         ]);
 
         $service->syncRecentAttribution();
 
-        $this->assertDatabaseMissing('growth_attribution_touches', [
-            'order_id' => $order->id,
-        ]);
+        $touches = GrowthAttributionTouch::query()->where('order_id', $order->id)->get();
+        $this->assertCount(2, $touches);
+        $this->assertSame(0.0, round((float) $touches->sum('revenue'), 2));
+        $this->assertSame(-20.0, round((float) $touches->sum('profit_total'), 2));
 
         $summary = $service->summary();
         $this->assertSame(0, $summary['attributed_orders']);
         $this->assertSame(0.0, $summary['attributed_revenue']);
-        $this->assertSame(0.0, $summary['attributed_profit']);
+        $this->assertSame(-20.0, $summary['attributed_profit']);
         $this->assertNull($summary['attributed_gross_margin_percent']);
     }
 
@@ -553,6 +555,21 @@ class GrowthControlIntegrityTest extends TestCase
         $this->assertSame(35.0, (float) $touch->profit_total);
         $this->assertSame(75.0, $attribution->summary()['attributed_revenue']);
         $this->assertSame(35.0, $attribution->summary()['attributed_profit']);
+
+        app(OrderActionService::class)->refund($freshOrder, 75, 'Full attribution refund');
+
+        $touch = $touch->fresh();
+        $freshOrder = $order->fresh();
+        $summary = $attribution->summary();
+
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $freshOrder->payment_status);
+        $this->assertSame(0.0, (float) $freshOrder->realized_revenue);
+        $this->assertSame(-40.0, (float) $freshOrder->profit_total);
+        $this->assertSame(0.0, (float) $touch->revenue);
+        $this->assertSame(-40.0, (float) $touch->profit_total);
+        $this->assertSame(0, $summary['attributed_orders']);
+        $this->assertSame(0.0, $summary['attributed_revenue']);
+        $this->assertSame(-40.0, $summary['attributed_profit']);
     }
 
     public function test_growth_opportunities_stop_targeting_placed_orders_and_ignore_unrealized_sales(): void
