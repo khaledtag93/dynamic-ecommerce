@@ -5,9 +5,12 @@
 @php
     $couponRows = collect(data_get($drilldown, 'coupon_rows', collect()))->values();
     $discountedOrders = data_get($drilldown, 'discounted_orders');
+    $refundedDiscountLosses = data_get($drilldown, 'refunded_discount_losses');
     $activePromotions = collect(data_get($drilldown, 'active_promotions', collect()))->values();
 
     $discountedOrdersCount = (int) data_get($discountedOrders, 'orders_count', 0);
+    $refundedDiscountLossCount = (int) data_get($refundedDiscountLosses, 'orders_count', 0);
+    $refundedDiscountProfit = (float) data_get($refundedDiscountLosses, 'profit_total', 0);
     $discountTotal = (float) data_get($discountedOrders, 'discount_total', 0);
     $discountRevenue = (float) data_get($discountedOrders, 'revenue_gross', 0);
     $discountProfit = (float) data_get($discountedOrders, 'profit_total', 0);
@@ -170,6 +173,9 @@
         <x-admin.stat-card :label="__('Discount value')" :value="'EGP ' . number_format($discountTotal, 2)" :help="__('Total promotional cost absorbed across discounted orders.')" tone="warning" class="offers-trend-card" />
         <x-admin.stat-card :label="__('Discounted revenue')" :value="'EGP ' . number_format($discountRevenue, 2)" :help="__('Revenue created while a discount was present.')" tone="success" class="offers-trend-card" />
         <x-admin.stat-card :label="__('Gross margin')" :value="$discountGrossMargin === null ? __('N/A') : number_format($discountGrossMargin, 1) . '%'" :help="__('Profit') . ' / ' . __('Realized revenue')" class="offers-trend-card" />
+        @if ($refundedDiscountLossCount > 0 && abs($refundedDiscountProfit) > 0.00001)
+            <x-admin.stat-card :label="__('Refunded') . ' · ' . __('Profit')" :value="'EGP ' . number_format($refundedDiscountProfit, 2)" :help="number_format($refundedDiscountLossCount) . ' ' . __('orders')" tone="danger" class="offers-trend-card" />
+        @endif
     </div>
 
     <div class="offers-chart-grid" id="offers-analytics-panel-charts" role="tabpanel" aria-labelledby="offers-analytics-tab-charts" data-admin-section-panel="charts">
