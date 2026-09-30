@@ -61,7 +61,10 @@ class GrowthPredictiveIntelligenceService
         $viewCount30d = (int) $events30->where('event_type', AnalyticsEvent::EVENT_VIEW_PRODUCT)->count();
         $cartCount30d = (int) $events30->where('event_type', AnalyticsEvent::EVENT_ADD_TO_CART)->count();
         $checkoutCount30d = (int) $events30->where('event_type', AnalyticsEvent::EVENT_CHECKOUT_START)->count();
-        $purchaseCount90d = (int) $events90->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->count();
+        $purchaseCount90d = (int) $events90
+            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+            ->filter(fn (AnalyticsEvent $event) => data_get($event->meta, 'counts_as_purchase', true) !== false)
+            ->count();
 
         $ltvScore = $this->ltvScore($ordersCount, $averageOrderValue, $totalRevenue, $daysSinceLastOrder);
         $engagementScore = $this->engagementScore($viewCount30d, $cartCount30d, $checkoutCount30d, $purchaseCount90d);
