@@ -232,12 +232,28 @@ class GrowthControlIntegrityTest extends TestCase
             ]);
         }
 
+        AnalyticsEvent::query()->create([
+            'user_id' => $user->id,
+            'session_id' => 'predictive-realized',
+            'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+            'meta' => ['counts_as_purchase' => true],
+            'occurred_at' => now()->subDay(),
+        ]);
+        AnalyticsEvent::query()->create([
+            'user_id' => $user->id,
+            'session_id' => 'predictive-refunded',
+            'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+            'meta' => ['counts_as_purchase' => false],
+            'occurred_at' => now()->subDay(),
+        ]);
+
         $score = app(\App\Services\Growth\GrowthPredictiveIntelligenceService::class)->refreshUserScore($user);
 
         $this->assertSame(1, $score->orders_count);
         $this->assertSame(1, $score->completed_orders_count);
         $this->assertSame('150.00', $score->total_revenue);
         $this->assertSame('150.00', $score->average_order_value);
+        $this->assertSame(1, $score->purchase_count_90d);
     }
 
     public function test_cohort_revenue_accumulates_all_realized_repeat_orders_within_each_window(): void
