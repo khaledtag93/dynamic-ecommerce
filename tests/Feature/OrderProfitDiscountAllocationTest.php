@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Order;
 use App\Services\Commerce\ProfitService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -67,6 +68,48 @@ class OrderProfitDiscountAllocationTest extends TestCase
 
         $this->assertSame('60.00', $item->fresh()->profit_amount);
         $this->assertSame(60.0, (float) $refreshed->profit_total);
+    }
+
+    public function test_historical_discounted_line_profit_reconciliation_is_bounded_and_dry_run_safe(): void
+    {
+        $discounted = $this->makeOrder([
+            'subtotal' => 200,
+            'discount_total' => 20,
+            'grand_total' => 180,
+        ]);
+        $first = $this->addItem($discounted, 'HISTORY-A', 100, 40, 60);
+        $second = $this->addItem($discounted, 'HISTORY-B', 100, 60, 40);
+
+        $undiscounted = $this->makeOrder();
+        $this->addItem($undiscounted, 'NO-DISCOUNT', 100, 20, 80);
+
+        $this->assertSame(0, Artisan::call('commerce:reconcile-order-line-profit', [
+            '--after-id' => max(0, $discounted->id - 1),
+            '--limit' => 10,
+        ]));
+        $dryRunOutput = Artisan::output();
+
+        $this->assertStringContainsString('DRY-RUN complete', $dryRunOutput);
+        $this->assertStringContainsString('scanned=1', $dryRunOutput);
+        $this->assertStringContainsString('changed=1', $dryRunOutput);
+        $this->assertStringContainsString('line-profit-changes=2', $dryRunOutput);
+        $this->assertStringContainsString('applied=0', $dryRunOutput);
+        $this->assertSame('60.00', $first->fresh()->profit_amount);
+        $this->assertSame('40.00', $second->fresh()->profit_amount);
+
+        $this->assertSame(0, Artisan::call('commerce:reconcile-order-line-profit', [
+            '--after-id' => max(0, $discounted->id - 1),
+            '--limit' => 1,
+            '--apply' => true,
+        ]));
+        $applyOutput = Artisan::output();
+
+        $this->assertStringContainsString('APPLY complete', $applyOutput);
+        $this->assertStringContainsString('scanned=1', $applyOutput);
+        $this->assertStringContainsString('applied=1', $applyOutput);
+        $this->assertSame('50.00', $first->fresh()->profit_amount);
+        $this->assertSame('30.00', $second->fresh()->profit_amount);
+        $this->assertSame('80.00', $undiscounted->items()->firstOrFail()->profit_amount);
     }
 
     private function makeOrder(array $overrides = []): Order
