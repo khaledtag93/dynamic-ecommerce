@@ -3,9 +3,9 @@
 ## LATEST VERIFIED STATE — 2026-10-01
 
 - Branch: `sec03-framework-upgrade`.
-- Latest verified application / CI revision: `9043b6cebd2c3cdae14da8e0cb9e5ee948458072`.
-- Hardening CI #2400 is Green on that exact application SHA (`fix: harden promotion money boundaries`) with **852 passed / 17,769 assertions**.
-- Latest verified QAS application revision is `9043b6cebd2c3cdae14da8e0cb9e5ee948458072`. QAS promotion from `86f1b182` completed successfully with application/static HTTP 200, maintenance OFF, no pending migrations, scheduler + queue worker healthy, failed jobs 0 and strict ops health Green.
+- Latest verified application / CI revision: `cff53feae877021818ba4073d860cdbaca248d30`.
+- Hardening CI #2402 is Green on that exact application SHA (`fix: harden catalog price money boundaries`) with **860 passed / 17,806 assertions**.
+- Latest verified QAS application revision is `cff53feae877021818ba4073d860cdbaca248d30`. QAS promotion from `9043b6ce` completed successfully with application/static HTTP 200, maintenance OFF, no pending migrations, scheduler + queue worker healthy, failed jobs 0 and strict ops health Green.
 - Order Discount Line-Profit Integrity is source/CI closed: discounted merchandise revenue is allocated in exact cents across lines before authoritative COGS, POS net lines are not discounted twice, and historical discounted rows can be audited/repaired with bounded dry-run/apply command `commerce:reconcile-order-line-profit`.
 - Offer analytics now separates commercially realized promotion performance from fully-refunded discounted losses. Fully-refunded orders do not rank as coupon performance but their negative profit remains visible as separate loss evidence.
 - Paymob checkout preflight is source/CI closed for order/payment/gateway currency and amount consistency before provider initiation.
@@ -17,11 +17,12 @@
 - Product Cost Money Integrity is closed for source + full CI + deployed-QAS runtime evidence: Cost Calculator input precision matches persisted decimals, calculations use exact `BigDecimal` arithmetic, derived money/margin ranges are guarded before persistence, overflow rolls back atomically, and product costing remains separate from inventory valuation.
 - Coupon Money Integrity is closed for source + full CI + deployed-QAS runtime evidence: persisted monetary precision is enforced, percentage comparison and calculation use exact decimals, minimum-subtotal eligibility and discount calculation share one cent-normalized rule, and exact cap/subtotal clamp behavior is verified on QAS.
 - Promotion Money Integrity is closed for source + full CI + deployed-QAS runtime evidence: persisted monetary precision is enforced, order/category percentage and Buy-X-Get-Y calculations use exact cents, best-discount selection is exact, and legacy invalid discounts are clamped to subtotal.
+- Catalog Price Money Integrity is closed for source + full CI + deployed-QAS runtime evidence: Product/Variant selling prices enforce `DECIMAL(10,2)` across editor/bulk/inline flows, sale comparisons are exact, normalization preserves decimal strings, and QAS runtime evidence verifies exact range and persistence.
 - A separate transaction-wrapped QAS runtime smoke passed discounted Storefront/POS profit, Offers refunded-loss evidence and Paymob currency preflight, leaving no test rows behind. Authenticated browser acceptance remains distinct evidence.
-- Detailed evidence: `docs/REFUND_COMPONENT_ALLOCATION_INTEGRITY_CHECKPOINT_2026-10-01.md`, `docs/SHIPPING_MONEY_BOUNDARIES_CHECKPOINT_2026-10-01.md`, `docs/PRODUCT_COST_MONEY_INTEGRITY_CHECKPOINT_2026-10-01.md`, `docs/COUPON_MONEY_INTEGRITY_CHECKPOINT_2026-10-01.md`, and `docs/PROMOTION_MONEY_INTEGRITY_CHECKPOINT_2026-10-01.md`.
+- Detailed evidence: `docs/REFUND_COMPONENT_ALLOCATION_INTEGRITY_CHECKPOINT_2026-10-01.md`, `docs/SHIPPING_MONEY_BOUNDARIES_CHECKPOINT_2026-10-01.md`, `docs/PRODUCT_COST_MONEY_INTEGRITY_CHECKPOINT_2026-10-01.md`, `docs/COUPON_MONEY_INTEGRITY_CHECKPOINT_2026-10-01.md`, `docs/PROMOTION_MONEY_INTEGRITY_CHECKPOINT_2026-10-01.md`, and `docs/CATALOG_PRICE_MONEY_INTEGRITY_CHECKPOINT_2026-10-01.md`.
 - Production remains unchanged.
 
-**Next execution:** continue the next genuinely unclosed ERP/accounting source boundary from exact verified QAS revision `9043b6ce`. Keep controlled authenticated browser acceptance queued for the dedicated testing phase, including Order Details refund allocation, discounted checkout, POS, Offers, Paymob, Shipping, Cost Calculator, Coupon and Promotion journeys. Production gates remain OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification.
+**Next execution:** continue the next genuinely unclosed ERP/accounting source boundary from exact verified QAS revision `cff53fea`. Keep controlled authenticated browser acceptance queued for the dedicated testing phase, including Order Details refund allocation, discounted checkout, POS, Offers, Paymob, Shipping, Cost Calculator, Coupon, Promotion and Catalog Price journeys. Production gates remain OPS-01, PAY-01, OPS-02 and Production scheduler/queue verification.
 
 ## LATEST VERIFIED STATE — 2026-09-29
 
