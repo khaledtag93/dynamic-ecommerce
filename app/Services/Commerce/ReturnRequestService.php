@@ -591,7 +591,9 @@ class ReturnRequestService
             ]);
 
             $this->profitService->refreshOrderTotals($order->fresh());
+            $freshOrder = $order->fresh();
             $this->growthAttributionService->refreshOrderAttribution((int) $order->id);
+            app(\App\Services\Analytics\AnalyticsTracker::class)->syncRealizedPurchase($freshOrder);
 
             $this->activityLogService->log(
                 'returns',
