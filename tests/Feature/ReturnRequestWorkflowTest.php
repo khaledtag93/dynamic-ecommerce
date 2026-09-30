@@ -998,6 +998,54 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame(1, (int) $return->items->first()->requested_quantity);
     }
 
+    public function test_completed_exchange_reduces_future_generic_refundable_balance(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 200);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 100);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+        $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
+
+        $this->assertSame(100.0, $order->fresh()->refundable_balance);
+
+        try {
+            app(OrderActionService::class)->refund($order->fresh(), 100.01, 'Attempt to refund exchanged value.', null, $manager->id);
+            $this->fail('Completed exchange compensation must reduce the generic refundable balance.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund', $exception->errors());
+        }
+
+        app(OrderActionService::class)->refund($order->fresh(), 100, 'Refund remaining uncompensated unit.', null, $manager->id);
+
+        $fresh = $order->fresh();
+        $this->assertSame(100.0, (float) $fresh->refund_total);
+        $this->assertSame(0.0, $fresh->refundable_balance);
+        $this->assertFalse($fresh->canBeRefunded());
+        $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $fresh->payment_status);
+    }
+
     public function test_refund_recorded_after_exchange_request_blocks_double_compensation_at_completion(): void
     {
         $customer = User::factory()->create();

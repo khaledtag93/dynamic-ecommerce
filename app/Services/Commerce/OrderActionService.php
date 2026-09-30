@@ -22,6 +22,7 @@ class OrderActionService
         protected ProfitService $profitService,
         protected PaymentService $paymentService,
         protected GrowthAttributionService $growthAttributionService,
+        protected OrderRevenueAllocationService $orderRevenueAllocationService,
     ) {
     }
 
@@ -416,7 +417,14 @@ class OrderActionService
             $capturedTotal = round((float) $lockedOrder->payments()
                 ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
                 ->sum('amount'), 2);
-            $refundableBalance = round(max(0, $capturedTotal - $alreadyRefunded), 2);
+            $exchangeCompensation = round(
+                $this->orderRevenueAllocationService->completedExchangeCompensationCents($lockedOrder) / 100,
+                2
+            );
+            $refundableBalance = round(max(
+                0,
+                $capturedTotal - $alreadyRefunded - $exchangeCompensation
+            ), 2);
 
             if (! in_array($lockedOrder->payment_status, [
                 Order::PAYMENT_STATUS_PAID,

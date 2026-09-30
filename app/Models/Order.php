@@ -386,7 +386,13 @@ class Order extends Model
         $capturedTotal = $this->payments()
             ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
             ->sum('amount');
-        return round(max(0, (float) $capturedTotal - (float) $this->refund_total), 2);
+        $exchangeCompensation = app(\App\Services\Commerce\OrderRevenueAllocationService::class)
+            ->completedExchangeCompensationCents($this) / 100;
+
+        return round(max(
+            0,
+            (float) $capturedTotal - (float) $this->refund_total - $exchangeCompensation
+        ), 2);
     }
 
     public function getCanUserCancelAttribute(): bool

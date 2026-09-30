@@ -36,6 +36,42 @@ class OrderRevenueAllocationService
         return $this->allocateTargetCents($items, $grossMerchandiseCents);
     }
 
+    public function completedExchangeCompensationCents(Order $order): int
+    {
+        $order->loadMissing('items');
+        $grossAllocations = $this->grossAllocateCents($order);
+        $itemsById = $order->items->keyBy('id');
+
+        if ($grossAllocations === [] || $itemsById->isEmpty()) {
+            return 0;
+        }
+
+        $exchangeQuantities = ReturnRequestItem::query()
+            ->selectRaw('order_item_id, SUM(received_quantity) as exchanged_quantity')
+            ->where('order_id', $order->id)
+            ->where('requested_resolution', ReturnRequestItem::RESOLUTION_EXCHANGE)
+            ->where('received_quantity', '>', 0)
+            ->whereHas('returnRequest', fn ($query) => $query->where('status', \App\Models\ReturnRequest::STATUS_COMPLETED))
+            ->groupBy('order_item_id')
+            ->pluck('exchanged_quantity', 'order_item_id');
+
+        $totalCents = 0;
+        foreach ($exchangeQuantities as $orderItemId => $quantity) {
+            $item = $itemsById->get((int) $orderItemId);
+            $soldQuantity = max(0, (int) ($item?->quantity ?? 0));
+            $grossCents = max(0, (int) ($grossAllocations[(int) $orderItemId] ?? 0));
+
+            if ($soldQuantity < 1 || $grossCents < 1) {
+                continue;
+            }
+
+            $exchangedQuantity = min($soldQuantity, max(0, (int) $quantity));
+            $totalCents += (int) round(($grossCents * $exchangedQuantity) / $soldQuantity);
+        }
+
+        return max(0, $totalCents);
+    }
+
     public function allocateCents(Order $order): array
     {
         $order->loadMissing(['items', 'refunds.posReturnItems', 'refunds.returnRequest.items']);
