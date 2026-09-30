@@ -126,11 +126,14 @@ class BusinessIntegrityHardeningTest extends TestCase
         ]);
         $tracker->syncRealizedPurchase($order->fresh());
 
-        $this->assertDatabaseMissing('analytics_events', [
-            'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
-            'entity_type' => AnalyticsEvent::ENTITY_ORDER,
-            'entity_id' => (string) $order->id,
-        ]);
+        $refundedEvent = AnalyticsEvent::query()
+            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+            ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
+            ->where('entity_id', (string) $order->id)
+            ->firstOrFail();
+
+        $this->assertSame(0.0, (float) data_get($refundedEvent->meta, 'grand_total'));
+        $this->assertFalse((bool) data_get($refundedEvent->meta, 'counts_as_purchase', true));
     }
 
     public function test_late_refunds_mark_historical_analytics_dirty_and_restate_net_revenue(): void
@@ -226,6 +229,16 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(0, (int) $fullyRestated->purchases);
         $this->assertSame(0.0, (float) $fullyRestated->revenue_gross);
         $this->assertNull(data_get($fullyRestated->meta, 'restatement_requested_at'));
+
+        $fullyRefundedProductStat = AnalyticsProductDailyStat::query()
+            ->whereDate('stat_date', $deliveredAt->toDateString())
+            ->where('product_id', $product->id)
+            ->firstOrFail();
+        $this->assertSame(0, (int) $fullyRefundedProductStat->purchases);
+        $this->assertSame(0, (int) $fullyRefundedProductStat->purchased_quantity);
+        $this->assertSame(0.0, (float) $fullyRefundedProductStat->revenue_gross);
+        $this->assertSame(40.0, (float) $fullyRefundedProductStat->realized_cogs);
+        $this->assertSame(-40.0, (float) $fullyRefundedProductStat->profit_total);
     }
 
     public function test_profit_uses_net_order_value_and_reverses_cogs_only_for_restocked_units(): void

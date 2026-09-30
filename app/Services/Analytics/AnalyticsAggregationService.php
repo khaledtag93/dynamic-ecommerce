@@ -24,24 +24,25 @@ class AnalyticsAggregationService
             ->get(['id', 'user_id', 'session_id', 'event_type', 'entity_type', 'entity_id', 'meta', 'occurred_at']);
 
         $eventCounts = $events->countBy('event_type');
+        $purchaseEvents = $events->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS);
+        $countedPurchaseEvents = $purchaseEvents->filter(
+            fn (AnalyticsEvent $event) => data_get($event->meta, 'counts_as_purchase', true) !== false
+        );
 
         $productViews = (int) ($eventCounts[AnalyticsEvent::EVENT_VIEW_PRODUCT] ?? 0);
         $cartViews = (int) ($eventCounts[AnalyticsEvent::EVENT_VIEW_CART] ?? 0);
         $addToCart = (int) ($eventCounts[AnalyticsEvent::EVENT_ADD_TO_CART] ?? 0);
         $removeFromCart = (int) ($eventCounts[AnalyticsEvent::EVENT_REMOVE_FROM_CART] ?? 0);
         $checkoutStarts = (int) ($eventCounts[AnalyticsEvent::EVENT_CHECKOUT_START] ?? 0);
-        $purchases = (int) ($eventCounts[AnalyticsEvent::EVENT_PURCHASE_SUCCESS] ?? 0);
+        $purchases = $countedPurchaseEvents->count();
 
-        $revenueGross = (float) $events
-            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+        $revenueGross = (float) $purchaseEvents
             ->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0));
 
-        $discountTotal = (float) $events
-            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+        $discountTotal = (float) $countedPurchaseEvents
             ->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'discount_total', 0));
 
-        $shippingTotal = (float) $events
-            ->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)
+        $shippingTotal = (float) $countedPurchaseEvents
             ->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'shipping_total', 0));
 
         $sessionsCount = (int) $events->pluck('session_id')->filter()->unique()->count();
@@ -133,8 +134,11 @@ class AnalyticsAggregationService
                     ];
                 }
 
-                $purchaseBuckets[$productId]['purchases']++;
-                $purchaseBuckets[$productId]['purchased_quantity'] += (int) data_get($lineItem, 'quantity', 0);
+                $countsAsPurchase = data_get($event->meta, 'counts_as_purchase', true) !== false;
+                if ($countsAsPurchase) {
+                    $purchaseBuckets[$productId]['purchases']++;
+                    $purchaseBuckets[$productId]['purchased_quantity'] += (int) data_get($lineItem, 'quantity', 0);
+                }
                 $purchaseBuckets[$productId]['revenue_gross'] += (float) data_get(
                     $lineItem,
                     'realized_revenue',

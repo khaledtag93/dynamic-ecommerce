@@ -198,6 +198,7 @@ class AnalyticsTracker
             && in_array($order->payment_status, [
                 Order::PAYMENT_STATUS_PAID,
                 Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                Order::PAYMENT_STATUS_REFUNDED,
             ], true);
     }
 
@@ -223,6 +224,7 @@ class AnalyticsTracker
             'order_id' => (int) $order->id,
             'order_number' => (string) $order->order_number,
             'grand_total' => (float) $order->realized_revenue,
+            'counts_as_purchase' => $order->payment_status !== Order::PAYMENT_STATUS_REFUNDED,
             'original_grand_total' => (float) $order->grand_total,
             'refund_total' => (float) $order->refund_total,
             'realized_cogs' => (float) $economics['realized_cogs'],

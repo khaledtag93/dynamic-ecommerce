@@ -148,8 +148,11 @@ class AnalyticsDashboardService
                             continue;
                         }
 
-                        $purchases++;
-                        $quantity += (int) data_get($lineItem, 'quantity', 0);
+                        $countsAsPurchase = data_get($event->meta, 'counts_as_purchase', true) !== false;
+                        if ($countsAsPurchase) {
+                            $purchases++;
+                            $quantity += (int) data_get($lineItem, 'quantity', 0);
+                        }
                         $revenue += (float) data_get(
                             $lineItem,
                             'realized_revenue',
@@ -171,11 +174,15 @@ class AnalyticsDashboardService
                     }
                 }
 
-                if ($views === 0 && $adds === 0 && $purchases === 0) {
+                $hasEconomicImpact = abs($revenue) > 0.00001
+                    || abs($realizedCogs) > 0.00001
+                    || abs($profitTotal) > 0.00001;
+
+                if ($views === 0 && $adds === 0 && $purchases === 0 && ! $hasEconomicImpact) {
                     return null;
                 }
 
-                $complete = $purchases === 0 || $profitabilityComplete;
+                $complete = $profitabilityComplete;
 
                 return (object) [
                     'stat_date' => Carbon::parse($date),
@@ -261,6 +268,10 @@ class AnalyticsDashboardService
             ->get(['user_id', 'session_id', 'event_type', 'meta']);
 
         $eventCounts = $events->countBy('event_type');
+        $purchaseEvents = $events->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS);
+        $countedPurchaseEvents = $purchaseEvents->filter(
+            fn (AnalyticsEvent $event) => data_get($event->meta, 'counts_as_purchase', true) !== false
+        );
 
         $totals = [
             'product_views' => (int) ($eventCounts[AnalyticsEvent::EVENT_VIEW_PRODUCT] ?? 0),
@@ -268,13 +279,13 @@ class AnalyticsDashboardService
             'add_to_cart_count' => (int) ($eventCounts[AnalyticsEvent::EVENT_ADD_TO_CART] ?? 0),
             'remove_from_cart_count' => (int) ($eventCounts[AnalyticsEvent::EVENT_REMOVE_FROM_CART] ?? 0),
             'checkout_starts' => (int) ($eventCounts[AnalyticsEvent::EVENT_CHECKOUT_START] ?? 0),
-            'purchases' => (int) ($eventCounts[AnalyticsEvent::EVENT_PURCHASE_SUCCESS] ?? 0),
-            'orders_count' => (int) ($eventCounts[AnalyticsEvent::EVENT_PURCHASE_SUCCESS] ?? 0),
+            'purchases' => $countedPurchaseEvents->count(),
+            'orders_count' => $countedPurchaseEvents->count(),
             'sessions_count' => (int) $events->pluck('session_id')->filter()->unique()->count(),
             'users_count' => (int) $events->pluck('user_id')->filter()->unique()->count(),
-            'revenue_gross' => (float) $events->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0)),
-            'discount_total' => (float) $events->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'discount_total', 0)),
-            'shipping_total' => (float) $events->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'shipping_total', 0)),
+            'revenue_gross' => (float) $purchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0)),
+            'discount_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'discount_total', 0)),
+            'shipping_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'shipping_total', 0)),
         ];
 
         return $this->appendDerivedMetrics($totals);
@@ -345,6 +356,10 @@ class AnalyticsDashboardService
             ->map(function (Carbon $date) use ($byDate) {
                 $rows = $byDate->get($date->toDateString(), collect());
                 $eventCounts = $rows->countBy('event_type');
+                $purchaseEvents = $rows->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS);
+                $countedPurchaseEvents = $purchaseEvents->filter(
+                    fn (AnalyticsEvent $event) => data_get($event->meta, 'counts_as_purchase', true) !== false
+                );
 
                 return (object) $this->appendDerivedMetrics([
                     'stat_date' => $date->copy(),
@@ -353,13 +368,13 @@ class AnalyticsDashboardService
                     'add_to_cart_count' => (int) ($eventCounts[AnalyticsEvent::EVENT_ADD_TO_CART] ?? 0),
                     'remove_from_cart_count' => (int) ($eventCounts[AnalyticsEvent::EVENT_REMOVE_FROM_CART] ?? 0),
                     'checkout_starts' => (int) ($eventCounts[AnalyticsEvent::EVENT_CHECKOUT_START] ?? 0),
-                    'purchases' => (int) ($eventCounts[AnalyticsEvent::EVENT_PURCHASE_SUCCESS] ?? 0),
-                    'orders_count' => (int) ($eventCounts[AnalyticsEvent::EVENT_PURCHASE_SUCCESS] ?? 0),
+                    'purchases' => $countedPurchaseEvents->count(),
+                    'orders_count' => $countedPurchaseEvents->count(),
                     'sessions_count' => (int) $rows->pluck('session_id')->filter()->unique()->count(),
                     'users_count' => (int) $rows->pluck('user_id')->filter()->unique()->count(),
-                    'revenue_gross' => (float) $rows->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0)),
-                    'discount_total' => (float) $rows->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'discount_total', 0)),
-                    'shipping_total' => (float) $rows->where('event_type', AnalyticsEvent::EVENT_PURCHASE_SUCCESS)->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'shipping_total', 0)),
+                    'revenue_gross' => (float) $purchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0)),
+                    'discount_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'discount_total', 0)),
+                    'shipping_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'shipping_total', 0)),
                 ]);
             })
             ->values();
@@ -590,8 +605,11 @@ class AnalyticsDashboardService
                     ];
                 }
 
-                $purchaseBuckets[$productId]['purchases']++;
-                $purchaseBuckets[$productId]['purchased_quantity'] += (int) data_get($lineItem, 'quantity', 0);
+                $countsAsPurchase = data_get($event->meta, 'counts_as_purchase', true) !== false;
+                if ($countsAsPurchase) {
+                    $purchaseBuckets[$productId]['purchases']++;
+                    $purchaseBuckets[$productId]['purchased_quantity'] += (int) data_get($lineItem, 'quantity', 0);
+                }
                 $purchaseBuckets[$productId]['revenue_gross'] += (float) data_get(
                     $lineItem,
                     'realized_revenue',
