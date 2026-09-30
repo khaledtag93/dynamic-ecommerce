@@ -588,6 +588,8 @@ class ReturnRequestService
                     $notes,
                     $actor->id,
                     $locked->id,
+                    null,
+                    RefundAllocationService::SCOPE_MERCHANDISE,
                 );
             }
 

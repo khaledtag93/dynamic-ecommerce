@@ -9,6 +9,11 @@ use App\Models\ReturnRequestItem;
 
 class OrderRevenueAllocationService
 {
+    public function __construct(
+        protected RefundAllocationService $refundAllocationService
+    ) {
+    }
+
     public function allocate(Order $order): array
     {
         return collect($this->allocateCents($order))
@@ -141,10 +146,12 @@ class OrderRevenueAllocationService
             $lineTotalCents,
             max(0, $this->moneyToCents($order->grand_total) - $nonMerchandiseCents)
         );
-        $realizedMerchandiseCents = min(
+        $refundComponents = $this->refundAllocationService->allocatedComponentsCents($order);
+        $refundBudgetCents = min(
             $grossMerchandiseCents,
-            max(0, $this->moneyToCents($order->realized_revenue) - $nonMerchandiseCents)
+            max(0, (int) ($refundComponents[RefundAllocationService::SCOPE_MERCHANDISE] ?? 0))
         );
+        $realizedMerchandiseCents = max(0, $grossMerchandiseCents - $refundBudgetCents);
         $proRataAllocations = $this->allocateTargetCents($items, $realizedMerchandiseCents);
 
         $refunds = $order->refunds->sortBy('id')->values();
@@ -166,13 +173,9 @@ class OrderRevenueAllocationService
             return $proRataAllocations;
         }
 
-        // Product analytics must never absorb shipping or tax as merchandise revenue.
-        // Generic refunds still fall back to pro-rata allocation within this bounded
-        // merchandise budget when no exact POS/RMA line provenance exists.
-        $refundBudgetCents = max(
-            0,
-            $grossMerchandiseCents - $realizedMerchandiseCents
-        );
+        // Product analytics must never absorb shipping or tax refunds as merchandise deductions.
+        // New refunds carry explicit component allocation. Legacy refunds without allocation
+        // retain the historical merchandise-first fallback inside RefundAllocationService.
 
         if ($refundBudgetCents <= 0) {
             return $proRataAllocations;

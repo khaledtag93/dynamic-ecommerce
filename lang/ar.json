@@ -5981,5 +5981,13 @@
     "Compare realized revenue with realized COGS, profit, and weighted gross margin so the highest-revenue variant is not mistaken for the most profitable one.": "قارن الإيراد المتحقق بتكلفة البضاعة المباعة المتحققة والربح وهامش الربح الإجمالي الموزون حتى لا يُفهم الخيار الأعلى إيرادًا على أنه الأكثر ربحية.",
     "Attributed profit": "الربح المنسوب",
     "Top campaigns by attributed revenue, profit, weighted gross margin, and conversions. Up to 12 rows are shown in this snapshot.": "أفضل الحملات حسب الإيراد والربح المنسوبين وهامش الربح الإجمالي الموزون والتحويلات. يتم عرض ما يصل إلى 12 صفًا في هذه اللقطة.",
-    "Online payment configuration does not match this order. Please choose another payment method or contact support.": "إعداد عملة أو مبلغ الدفع الإلكتروني لا يطابق هذا الطلب. اختر طريقة دفع أخرى أو تواصل مع الدعم."
+    "Online payment configuration does not match this order. Please choose another payment method or contact support.": "إعداد عملة أو مبلغ الدفع الإلكتروني لا يطابق هذا الطلب. اختر طريقة دفع أخرى أو تواصل مع الدعم.",
+    "Refund allocation": "توزيع الاسترداد",
+    "Automatic allocation": "توزيع تلقائي",
+    "Merchandise": "قيمة المنتجات",
+    "Payment excess": "مبلغ دفع زائد",
+    "Allocation": "التوزيع",
+    "Legacy refund allocation": "توزيع استرداد تاريخي",
+    "Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.": "التوزيع التلقائي يحافظ على التسلسل التاريخي لقيمة الطلب: المنتجات ثم الشحن ثم الضريبة ثم مبلغ الدفع الزائد. اختر مكونًا محددًا عندما يكون سبب الاسترداد معروفًا.",
+    "Refund amount exceeds the remaining value for the selected allocation.": "مبلغ الاسترداد يتجاوز القيمة المتبقية للمكون المحدد."
 }

@@ -28,6 +28,7 @@ use App\Services\Commerce\OrderNotificationService;
 use App\Services\Commerce\OrderRevenueAllocationService;
 use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
+use App\Services\Commerce\RefundAllocationService;
 use App\Services\Commerce\StockReservationService;
 use App\Services\Growth\GrowthAttributionService;
 use Illuminate\Database\QueryException;
@@ -493,6 +494,11 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(9000, array_sum($allocations));
         $this->assertSame([5400, 3600], array_values($allocations));
 
+        $order->refunds()->create([
+            'amount' => 30,
+            'reason' => 'Legacy unclassified refund',
+            'processed_at' => now(),
+        ]);
         $order->update(['refund_total' => 30]);
         $refundedAllocations = $service->allocateCents($order->fresh(['items']));
 

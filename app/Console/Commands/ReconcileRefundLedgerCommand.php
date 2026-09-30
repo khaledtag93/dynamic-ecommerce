@@ -43,6 +43,7 @@ class ReconcileRefundLedgerCommand extends Command
 
         $changed = 0;
         $refundSnapshotChanges = 0;
+        $commercialRefundSnapshotChanges = 0;
         $paymentStatusChanges = 0;
         $applied = 0;
         $lastId = $afterId;
@@ -52,24 +53,30 @@ class ReconcileRefundLedgerCommand extends Command
             $expected = $paymentService->inspectOrderPaymentSync($order);
             $currentRefund = $this->money($order->refund_total);
             $expectedRefund = $this->money($expected['refund_total']);
+            $currentCommercialRefund = $this->money($order->commercial_refund_total);
+            $expectedCommercialRefund = $this->money($expected['commercial_refund_total']);
             $currentStatus = (string) $order->payment_status;
             $expectedStatus = (string) $expected['payment_status'];
             $refundChanged = $currentRefund !== $expectedRefund;
+            $commercialRefundChanged = $currentCommercialRefund !== $expectedCommercialRefund;
             $statusChanged = $currentStatus !== $expectedStatus;
-            if (! $refundChanged && ! $statusChanged) {
+            if (! $refundChanged && ! $commercialRefundChanged && ! $statusChanged) {
                 continue;
             }
 
             $changed++;
             $refundSnapshotChanges += $refundChanged ? 1 : 0;
+            $commercialRefundSnapshotChanges += $commercialRefundChanged ? 1 : 0;
             $paymentStatusChanges += $statusChanged ? 1 : 0;
 
             $this->line(sprintf(
-                'Order #%d %s | refund %s -> %s | payment-status %s -> %s',
+                'Order #%d %s | refund %s -> %s | commercial-refund %s -> %s | payment-status %s -> %s',
                 $order->id,
                 $order->order_number ?: '(no number)',
                 $currentRefund,
                 $expectedRefund,
+                $currentCommercialRefund,
+                $expectedCommercialRefund,
                 $currentStatus,
                 $expectedStatus,
             ));
@@ -90,11 +97,12 @@ class ReconcileRefundLedgerCommand extends Command
         $mode = $apply ? 'APPLY' : 'DRY-RUN';
 
         $this->info(sprintf(
-            '%s complete | scanned=%d | changed=%d | refund-snapshot-changes=%d | payment-status-changes=%d | applied=%d | last_id=%d',
+            '%s complete | scanned=%d | changed=%d | refund-snapshot-changes=%d | commercial-refund-snapshot-changes=%d | payment-status-changes=%d | applied=%d | last_id=%d',
             $mode,
             $orders->count(),
             $changed,
             $refundSnapshotChanges,
+            $commercialRefundSnapshotChanges,
             $paymentStatusChanges,
             $applied,
             $lastId,

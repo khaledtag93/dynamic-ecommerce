@@ -170,6 +170,29 @@
                                     <strong>{{ $currency }} {{ number_format($refund->amount, 2) }}</strong>
                                 </div>
                                 <div class="text-muted small">{{ __('Processed :date', ['date' => optional($refund->processed_at)->format('d M Y, h:i A')]) }}@if($refund->processedBy) · {{ __('By :name', ['name' => $refund->processedBy->name]) }}@endif</div>
+                                @php
+                                    $refundAllocation = is_array($refund->allocation) ? $refund->allocation : null;
+                                    $refundScopeLabels = [
+                                        'order' => __('Automatic allocation'),
+                                        'merchandise' => __('Merchandise'),
+                                        'shipping' => __('Shipping'),
+                                        'tax' => __('Tax'),
+                                        'payment_excess' => __('Payment excess'),
+                                    ];
+                                @endphp
+                                <div class="text-muted small mt-1">
+                                    {{ __('Allocation') }}:
+                                    @if($refundAllocation)
+                                        {{ $refundScopeLabels[data_get($refundAllocation, 'scope')] ?? __('Automatic allocation') }}
+                                        @foreach(['merchandise_amount' => __('Merchandise'), 'shipping_amount' => __('Shipping'), 'tax_amount' => __('Tax'), 'payment_excess_amount' => __('Payment excess')] as $component => $label)
+                                            @if((float) data_get($refundAllocation, $component, 0) > 0)
+                                                · {{ $label }} {{ $currency }} {{ number_format((float) data_get($refundAllocation, $component), 2) }}
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        {{ __('Legacy refund allocation') }}
+                                    @endif
+                                </div>
                                 @if($refund->notes)<div class="text-muted small mt-2">{{ $refund->notes }}</div>@endif
                             </div>
                         @endforeach
@@ -395,6 +418,21 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="orderRefundAmount">{{ __('Amount') }}</label>
                             <input id="orderRefundAmount" type="number" step="0.01" min="0.01" max="{{ $order->refundable_balance }}" name="amount" class="form-control" value="{{ old('amount', $order->refundable_balance) }}" required aria-required="true">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" for="orderRefundAllocation">{{ __('Refund allocation') }}</label>
+                            <select id="orderRefundAllocation" name="allocation_scope" class="form-select" required aria-required="true">
+                                <option value="order" @selected(old('allocation_scope', 'order') === 'order')>{{ __('Automatic allocation') }}</option>
+                                <option value="merchandise" @selected(old('allocation_scope') === 'merchandise')>{{ __('Merchandise') }}</option>
+                                <option value="shipping" @selected(old('allocation_scope') === 'shipping') @disabled((float) $order->shipping_total <= 0)>{{ __('Shipping') }}</option>
+                                <option value="tax" @selected(old('allocation_scope') === 'tax') @disabled((float) $order->tax_total <= 0)>{{ __('Tax') }}</option>
+                                @php
+                                    $capturedTotal = (float) $order->payments->whereIn('status', [\App\Models\Payment::STATUS_PAID, \App\Models\Payment::STATUS_REFUNDED])->sum('amount');
+                                    $paymentExcess = max(0, $capturedTotal - (float) $order->grand_total);
+                                @endphp
+                                <option value="payment_excess" @selected(old('allocation_scope') === 'payment_excess') @disabled($paymentExcess <= 0)>{{ __('Payment excess') }}</option>
+                            </select>
+                            <div class="form-text">{{ __('Automatic allocation follows the historical order-value sequence: merchandise, shipping, tax, then payment excess. Choose a specific component when the business reason is known.') }}</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="orderRefundReason">{{ __('Reason') }}</label>

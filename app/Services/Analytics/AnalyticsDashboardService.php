@@ -710,7 +710,7 @@ class AnalyticsDashboardService
 
         $orderUsers = (clone $orderScope)
             ->whereNotNull('user_id')
-            ->select('user_id', DB::raw('COUNT(*) as orders_count'), DB::raw('SUM(grand_total - refund_total) as revenue_gross'))
+            ->select('user_id', DB::raw('COUNT(*) as orders_count'), DB::raw('SUM(grand_total - COALESCE(commercial_refund_total, refund_total)) as revenue_gross'))
             ->groupBy('user_id')
             ->orderByDesc('revenue_gross')
             ->limit(5)

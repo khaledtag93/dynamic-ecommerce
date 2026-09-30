@@ -8,6 +8,7 @@ use App\Models\OrderRefund;
 use App\Models\Payment;
 use App\Services\Commerce\AdminActivityLogService;
 use App\Services\Commerce\OrderActionService;
+use App\Services\Commerce\RefundAllocationService;
 use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class OrderController extends Controller
     public function __construct(
         protected OrderActionService $orderActionService,
         protected AdminActivityLogService $adminActivityLogService,
+        protected RefundAllocationService $refundAllocationService,
     ) {
     }
 
@@ -216,6 +218,7 @@ class OrderController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'reason' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'allocation_scope' => ['required', Rule::in(RefundAllocationService::scopes())],
             'refund_idempotency_key' => ['required', 'uuid'],
         ]);
 
@@ -228,6 +231,7 @@ class OrderController extends Controller
                 optional(auth()->user())->id,
                 null,
                 $validated['refund_idempotency_key'],
+                $validated['allocation_scope'],
             );
 
             if ($result['created']) {
@@ -239,6 +243,7 @@ class OrderController extends Controller
                     $result['order'],
                     [
                         'amount' => (float) $validated['amount'],
+                        'allocation_scope' => $validated['allocation_scope'],
                         'reason' => $validated['reason'],
                         'order_refund_id' => $result['refund']->id,
                     ]

@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class OrderActionService
 {
+    protected RefundAllocationService $refundAllocationService;
+
     public function __construct(
         protected OrderNotificationService $orderNotificationService,
         protected InventoryService $inventoryService,
@@ -23,7 +25,9 @@ class OrderActionService
         protected ProfitService $profitService,
         protected PaymentService $paymentService,
         protected GrowthAttributionService $growthAttributionService,
+        ?RefundAllocationService $refundAllocationService = null,
     ) {
+        $this->refundAllocationService = $refundAllocationService ?? app(RefundAllocationService::class);
     }
 
     public function cancel(Order $order, ?string $reason = null, ?int $actorId = null): Order
@@ -372,7 +376,7 @@ class OrderActionService
         }
     }
 
-    public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null, ?string $idempotencyKey = null): array
+    public function refund(Order $order, float $amount, string $reason, ?string $notes = null, ?int $processedBy = null, ?int $returnRequestId = null, ?string $idempotencyKey = null, string $allocationScope = RefundAllocationService::SCOPE_ORDER): array
     {
         if ($amount <= 0) {
             throw ValidationException::withMessages([
@@ -380,7 +384,7 @@ class OrderActionService
             ]);
         }
 
-        return DB::transaction(function () use ($order, $amount, $reason, $notes, $processedBy, $returnRequestId, $idempotencyKey) {
+        return DB::transaction(function () use ($order, $amount, $reason, $notes, $processedBy, $returnRequestId, $idempotencyKey, $allocationScope) {
             $lockedOrder = Order::query()
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
@@ -410,7 +414,9 @@ class OrderActionService
                     ->first();
 
                 if ($existingRefund) {
+                    $existingScope = data_get($existingRefund->allocation, 'scope');
                     $samePayload = round((float) $existingRefund->amount, 2) === round($amount, 2)
+                        && ($existingScope === null || $existingScope === $allocationScope)
                         && (string) $existingRefund->reason === $reason
                         && (string) ($existingRefund->notes ?? '') === (string) ($notes ?? '')
                         && (int) ($existingRefund->processed_by ?? 0) === (int) ($processedBy ?? 0)
@@ -458,23 +464,37 @@ class OrderActionService
                 ]);
             }
 
+            $allocation = $this->refundAllocationService->allocateNewRefund(
+                $lockedOrder,
+                $amount,
+                $allocationScope,
+                $exchangeCompensation,
+            );
+
             $refund = $lockedOrder->refunds()->create([
                 'return_request_id' => $returnRequestId,
                 'idempotency_key' => $idempotencyKey,
                 'amount' => $amount,
+                'allocation' => $allocation,
                 'reason' => $reason,
                 'notes' => $notes,
                 'processed_by' => $processedBy,
                 'processed_at' => now(),
             ]);
 
+            $lockedOrder->unsetRelation('refunds');
             $newRefundTotal = round($alreadyRefunded + $amount, 2);
+            $newCommercialRefundTotal = round(
+                $this->refundAllocationService->commercialRefundTotalCents($lockedOrder) / 100,
+                2
+            );
             $newPaymentStatus = $newRefundTotal >= $capturedTotal
                 ? Order::PAYMENT_STATUS_REFUNDED
                 : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
 
             $lockedOrder->update([
                 'refund_total' => $newRefundTotal,
+                'commercial_refund_total' => $newCommercialRefundTotal,
                 'refunded_at' => now(),
                 'payment_status' => $newPaymentStatus,
             ]);

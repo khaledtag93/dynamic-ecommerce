@@ -91,6 +91,7 @@ class Order extends Model
         'cancelled_at',
         'cancelled_reason',
         'refund_total',
+        'commercial_refund_total',
         'cost_total',
         'profit_total',
         'refunded_at',
@@ -119,6 +120,7 @@ class Order extends Model
         'tax_total' => 'decimal:2',
         'grand_total' => 'decimal:2',
         'refund_total' => 'decimal:2',
+        'commercial_refund_total' => 'decimal:2',
         'cost_total' => 'decimal:2',
         'profit_total' => 'decimal:2',
         'billing_same_as_shipping' => 'boolean',
@@ -372,7 +374,16 @@ class Order extends Model
 
     public function getRealizedRevenueAttribute(): float
     {
-        return round(max(0, (float) $this->grand_total - (float) $this->refund_total), 2);
+        $commercialRefundTotal = $this->commercial_refund_total;
+
+        if ($commercialRefundTotal === null) {
+            $commercialRefundTotal = $this->refund_total;
+        }
+
+        return round(max(
+            0,
+            (float) $this->grand_total - (float) $commercialRefundTotal
+        ), 2);
     }
 
     public function canBeRefunded(): bool

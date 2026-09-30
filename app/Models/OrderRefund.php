@@ -14,6 +14,7 @@ class OrderRefund extends Model
         'return_request_id',
         'idempotency_key',
         'amount',
+        'allocation',
         'reason',
         'notes',
         'processed_by',
@@ -22,6 +23,7 @@ class OrderRefund extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'allocation' => 'array',
         'processed_at' => 'datetime',
     ];
 

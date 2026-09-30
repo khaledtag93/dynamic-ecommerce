@@ -24,6 +24,7 @@ class PosReturnService
         protected AdminActivityLogService $activityLogService,
         protected ReturnRequestService $returnRequestService,
         protected OrderRevenueAllocationService $orderRevenueAllocationService,
+        protected RefundAllocationService $refundAllocationService,
         protected ProfitService $profitService,
         protected AnalyticsTracker $analyticsTracker,
         protected GrowthAttributionService $growthAttributionService,
@@ -175,8 +176,15 @@ class PosReturnService
                 }
             }
 
+            $allocation = $this->refundAllocationService->allocateNewRefund(
+                $lockedOrder,
+                $refundAmount,
+                RefundAllocationService::SCOPE_MERCHANDISE,
+            );
+
             $refund = $lockedOrder->refunds()->create([
                 'amount' => $refundAmount,
+                'allocation' => $allocation,
                 'reason' => $reason,
                 'notes' => $notes,
                 'processed_by' => $actorId,
@@ -232,7 +240,12 @@ class PosReturnService
                 );
             }
 
+            $lockedOrder->unsetRelation('refunds');
             $newRefundTotal = round($alreadyRefunded + $refundAmount, 2);
+            $newCommercialRefundTotal = round(
+                $this->refundAllocationService->commercialRefundTotalCents($lockedOrder) / 100,
+                2
+            );
             $newPaymentStatus = $lockedOrder->payment_status;
 
             if ($refundAmount > 0) {
@@ -242,6 +255,7 @@ class PosReturnService
 
                 $lockedOrder->update([
                     'refund_total' => $newRefundTotal,
+                    'commercial_refund_total' => $newCommercialRefundTotal,
                     'refunded_at' => now(),
                     'payment_status' => $newPaymentStatus,
                 ]);

@@ -125,7 +125,7 @@ class AnalyticsController extends Controller
                 'orders_count' => (clone $discountedOrdersQuery)->count(),
                 'discount_total' => (float) (clone $discountedOrdersQuery)->sum('discount_total'),
                 'revenue_gross' => (float) (clone $discountedOrdersQuery)
-                    ->selectRaw('COALESCE(SUM(grand_total - refund_total), 0) as aggregate')
+                    ->selectRaw('COALESCE(SUM(grand_total - COALESCE(commercial_refund_total, refund_total)), 0) as aggregate')
                     ->value('aggregate'),
                 'profit_total' => (float) (clone $discountedOrdersQuery)->sum('profit_total'),
             ];

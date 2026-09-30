@@ -31,7 +31,7 @@ class AnalyticsRevenueService
             ->select(
                 'coupon_code',
                 DB::raw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN 1 ELSE 0 END) as orders_count"),
-                DB::raw('SUM(grand_total - refund_total) as revenue_gross'),
+                DB::raw('SUM(grand_total - COALESCE(commercial_refund_total, refund_total)) as revenue_gross'),
                 DB::raw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN discount_total ELSE 0 END) as discount_total"),
                 DB::raw('SUM(profit_total) as profit_total')
             )

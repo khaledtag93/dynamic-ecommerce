@@ -77,10 +77,10 @@ class CustomerController extends Controller
                     ->withSum(['orders as ranked_orders_sum_grand_total' => fn ($orders) => $orders
                         ->commerciallyRealized()
                         ->whereRaw($currencyExpression.' = ?', [$valueCurrency])], 'grand_total')
-                    ->withSum(['orders as ranked_orders_sum_refund_total' => fn ($orders) => $orders
+                    ->withSum(['orders as ranked_orders_sum_commercial_refund_total' => fn ($orders) => $orders
                         ->commerciallyRealized()
-                        ->whereRaw($currencyExpression.' = ?', [$valueCurrency])], 'refund_total')
-                    ->orderByRaw('(COALESCE(ranked_orders_sum_grand_total, 0) - COALESCE(ranked_orders_sum_refund_total, 0)) DESC');
+                        ->whereRaw($currencyExpression.' = ?', [$valueCurrency])], 'commercial_refund_total')
+                    ->orderByRaw('(COALESCE(ranked_orders_sum_grand_total, 0) - COALESCE(ranked_orders_sum_commercial_refund_total, 0)) DESC');
             })
             ->when($value === 'high_value' && $valueCurrency === '', fn ($query) => $query
                 ->whereHas('orders', fn ($orders) => $orders->commerciallyRealized()))
@@ -95,7 +95,7 @@ class CustomerController extends Controller
                 ->commerciallyRealized()
                 ->whereIntegerInRaw('user_id', $pageUserIds)
                 ->selectRaw('user_id, '.$currencyExpression.' as statement_currency')
-                ->selectRaw('SUM(grand_total) as gross_total, SUM(refund_total) as refund_total')
+                ->selectRaw('SUM(grand_total) as gross_total, SUM(COALESCE(commercial_refund_total, refund_total)) as commercial_refund_total')
                 ->groupBy('user_id')
                 ->groupByRaw($currencyExpression)
                 ->orderBy('statement_currency')
@@ -106,7 +106,7 @@ class CustomerController extends Controller
             $rows = collect($spendRowsByUser->get($user->id, collect()))
                 ->map(fn ($row): array => [
                     'currency' => (string) $row->statement_currency,
-                    'amount' => round(max(0, (float) $row->gross_total - (float) $row->refund_total), 2),
+                    'amount' => round(max(0, (float) $row->gross_total - (float) $row->commercial_refund_total), 2),
                 ])
                 ->values()
                 ->all();
@@ -145,7 +145,7 @@ class CustomerController extends Controller
                 ->commerciallyRealized()
                 ->whereNotNull('user_id')
                 ->selectRaw($currencyExpression.' as currency')
-                ->selectRaw('SUM(grand_total - refund_total) as statement_total')
+                ->selectRaw('SUM(grand_total - COALESCE(commercial_refund_total, refund_total)) as statement_total')
                 ->groupByRaw($currencyExpression)
                 ->orderBy('currency')
                 ->get()
@@ -177,14 +177,15 @@ class CustomerController extends Controller
         $currencyExpression = "UPPER(COALESCE(NULLIF(currency, ''), 'EGP'))";
         $spendByCurrency = (clone $realizedOrders)
             ->selectRaw($currencyExpression.' as currency')
-            ->selectRaw('COUNT(*) as orders_count, SUM(grand_total) as gross_total, SUM(refund_total) as refund_total')
+            ->selectRaw('COUNT(*) as orders_count, SUM(grand_total) as gross_total, SUM(refund_total) as refund_total, SUM(COALESCE(commercial_refund_total, refund_total)) as commercial_refund_total')
             ->groupByRaw($currencyExpression)
             ->orderBy('currency')
             ->get()
             ->map(function ($row): array {
                 $gross = round((float) $row->gross_total, 2);
                 $refunds = round((float) $row->refund_total, 2);
-                $net = round(max(0, $gross - $refunds), 2);
+                $commercialRefunds = round((float) $row->commercial_refund_total, 2);
+                $net = round(max(0, $gross - $commercialRefunds), 2);
                 $count = (int) $row->orders_count;
 
                 return [

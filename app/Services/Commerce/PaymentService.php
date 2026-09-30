@@ -20,6 +20,7 @@ class PaymentService
         protected StockReservationService $stockReservationService,
         protected AdminActivityLogService $activityLogService,
         protected ProfitService $profitService,
+        protected RefundAllocationService $refundAllocationService,
     ) {
     }
 
@@ -851,12 +852,18 @@ class PaymentService
         $refundTotal = round((float) $order->refunds()->sum('amount'), 2);
 
         if ($refundTotal > 0) {
+            $order->unsetRelation('refunds');
+            $commercialRefundTotal = round(
+                $this->refundAllocationService->commercialRefundTotalCents($order) / 100,
+                2
+            );
             $capturedTotal = round((float) $order->payments()
                 ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
                 ->sum('amount'), 2);
 
             return [
                 'refund_total' => $refundTotal,
+                'commercial_refund_total' => $commercialRefundTotal,
                 'payment_status' => $capturedTotal > 0 && $refundTotal >= $capturedTotal
                     ? Order::PAYMENT_STATUS_REFUNDED
                     : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
@@ -868,6 +875,7 @@ class PaymentService
         if ($payments->isEmpty()) {
             return [
                 'refund_total' => 0.0,
+                'commercial_refund_total' => 0.0,
                 'payment_status' => (string) $order->payment_status,
             ];
         }
@@ -888,6 +896,7 @@ class PaymentService
 
         return [
             'refund_total' => 0.0,
+            'commercial_refund_total' => 0.0,
             'payment_status' => $status,
         ];
     }
