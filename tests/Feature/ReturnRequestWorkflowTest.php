@@ -1209,6 +1209,73 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertNull($secondReturn->fresh()->exchange_order_id);
     }
 
+    public function test_mixed_refund_and_exchange_completion_refunds_only_refund_resolution_value(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $firstProduct = $this->makeProduct(0);
+        $secondProduct = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 200);
+        $exchangeOrder = $this->makeDeliveredPaidOrder($customer, 100);
+
+        $refundItem = $order->items()->create([
+            'product_id' => $firstProduct->id,
+            'product_name' => $firstProduct->name,
+            'sku' => $firstProduct->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+        $exchangeItem = $order->items()->create([
+            'product_id' => $secondProduct->id,
+            'product_name' => $secondProduct->name,
+            'sku' => $secondProduct->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [
+            [
+                'order_item_id' => $refundItem->id,
+                'quantity' => 1,
+                'reason_code' => ReturnRequestItem::REASON_DEFECTIVE,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_REFUND,
+            ],
+            [
+                'order_item_id' => $exchangeItem->id,
+                'quantity' => 1,
+                'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+                'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+            ],
+        ]);
+        $quantities = $return->items()->pluck('requested_quantity', 'id')->map(fn ($quantity) => (int) $quantity)->all();
+        $service->approve($return, $quantities, null, $manager);
+        $received = $return->fresh('items')->items->pluck('approved_quantity', 'id')->map(fn ($quantity) => (int) $quantity)->all();
+        $restock = array_fill_keys(array_keys($received), 0);
+        $service->receive($return->fresh(), $received, $restock, $manager);
+
+        try {
+            $service->complete($return->fresh(), 100.01, $exchangeOrder->id, null, $manager);
+            $this->fail('Exchange-resolved item value must not increase the refundable RMA capacity.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('refund_amount', $exception->errors());
+        }
+
+        $service->complete($return->fresh(), 100, $exchangeOrder->id, null, $manager);
+
+        $fresh = $return->fresh(['refunds']);
+        $this->assertSame(ReturnRequest::STATUS_COMPLETED, $fresh->status);
+        $this->assertSame($exchangeOrder->id, $fresh->exchange_order_id);
+        $this->assertSame(100.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(100.0, (float) $fresh->refunds->sum('amount'));
+    }
+
     public function test_customer_can_create_return_through_live_endpoint(): void
     {
         $customer = User::factory()->create();
