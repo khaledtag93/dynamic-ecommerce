@@ -25,7 +25,7 @@ class AnalyticsRevenueService
         Carbon $to,
         ?int $limit = null
     ): Collection {
-        $query = $this->economicOrdersQuery($from, $to)
+        $query = $this->realizedOrdersQuery($from, $to)
             ->reorder()
             ->whereNotNull('coupon_code')
             ->select(
