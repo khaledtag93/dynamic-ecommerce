@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderRefund;
+use App\Models\Payment;
 use App\Services\Commerce\AdminActivityLogService;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\StoreSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -88,16 +90,46 @@ class OrderController extends Controller
             ]);
         }
 
-        $paidStatuses = [
-            Order::PAYMENT_STATUS_PAID,
-            Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
-            Order::PAYMENT_STATUS_REFUNDED,
-        ];
+        $currencyExpression = "COALESCE(NULLIF(payments.currency, ''), NULLIF(orders.currency, ''), 'EGP')";
+        $capturedByCurrency = DB::table('payments')
+            ->join('orders', 'orders.id', '=', 'payments.order_id')
+            ->whereIn('payments.status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
+            ->selectRaw($currencyExpression.' AS statement_currency')
+            ->selectRaw('SUM(payments.amount) AS statement_total')
+            ->groupByRaw($currencyExpression)
+            ->get()
+            ->keyBy(fn ($row) => strtoupper((string) $row->statement_currency));
 
-        $paidTotal = Order::query()
-            ->whereIn('payment_status', $paidStatuses)
-            ->get(['grand_total', 'refund_total'])
-            ->sum(fn (Order $order) => max(0, (float) $order->grand_total - (float) $order->refund_total));
+        $orderCurrencyExpression = "COALESCE(NULLIF(orders.currency, ''), 'EGP')";
+        $refundsByCurrency = DB::table('order_refunds')
+            ->join('orders', 'orders.id', '=', 'order_refunds.order_id')
+            ->where('order_refunds.amount', '>', 0)
+            ->selectRaw($orderCurrencyExpression.' AS statement_currency')
+            ->selectRaw('SUM(order_refunds.amount) AS statement_total')
+            ->groupByRaw($orderCurrencyExpression)
+            ->get()
+            ->keyBy(fn ($row) => strtoupper((string) $row->statement_currency));
+
+        $currencies = $capturedByCurrency->keys()
+            ->merge($refundsByCurrency->keys())
+            ->unique()
+            ->sort()
+            ->values();
+
+        $netCollectedByCurrency = $currencies->map(function (string $currency) use ($capturedByCurrency, $refundsByCurrency): array {
+            $captured = round((float) ($capturedByCurrency->get($currency)?->statement_total ?? 0), 2);
+            $refunded = round((float) ($refundsByCurrency->get($currency)?->statement_total ?? 0), 2);
+
+            return [
+                'currency' => $currency,
+                'amount' => round($captured - $refunded, 2),
+            ];
+        });
+
+        $refundTotalsByCurrency = $currencies->map(fn (string $currency): array => [
+            'currency' => $currency,
+            'amount' => round((float) ($refundsByCurrency->get($currency)?->statement_total ?? 0), 2),
+        ]);
 
         $totalOrders = Order::count();
 
@@ -107,8 +139,8 @@ class OrderController extends Controller
             'processing' => Order::where('status', Order::STATUS_PROCESSING)->count(),
             'completed' => Order::where('status', Order::STATUS_COMPLETED)->count(),
             'cancelled' => Order::where('status', Order::STATUS_CANCELLED)->count(),
-            'refunds_total' => (float) OrderRefund::sum('amount'),
-            'paid_total' => (float) $paidTotal,
+            'net_collected_by_currency' => $netCollectedByCurrency,
+            'refunds_by_currency' => $refundTotalsByCurrency,
             'avg_total' => (float) ($totalOrders > 0 ? Order::avg('grand_total') : 0),
         ];
 
