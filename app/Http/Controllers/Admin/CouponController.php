@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
+use Brick\Math\BigDecimal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -147,15 +148,24 @@ class CouponController extends Controller
             'value' => [
                 'required',
                 'numeric',
+                'decimal:0,2',
                 'min:0.01',
+                'max:9999999999.99',
                 function (string $attribute, mixed $value, \Closure $fail) use ($request) {
-                    if ($request->input('type') === Coupon::TYPE_PERCENT && (float) $value > 100) {
+                    if (! is_numeric($value)) {
+                        return;
+                    }
+
+                    if (
+                        $request->input('type') === Coupon::TYPE_PERCENT
+                        && BigDecimal::of((string) $value)->compareTo('100.00') > 0
+                    ) {
                         $fail(__('Percentage coupons cannot exceed 100%.'));
                     }
                 },
             ],
-            'min_order_amount' => ['nullable', 'numeric', 'min:0'],
-            'max_discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'min_order_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
+            'max_discount_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'usage_limit' => ['nullable', 'integer', 'min:1'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],

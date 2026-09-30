@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -89,26 +91,69 @@ class Coupon extends Model
         return $this->is_active && $this->isWithinSchedule($now) && $this->hasRemainingUsage();
     }
 
+    public function meetsMinimumSubtotal(float $subtotal): bool
+    {
+        return $this->meetsMinimumSubtotalAmount($this->subtotalAmount($subtotal));
+    }
+
     public function calculateDiscount(float $subtotal): float
     {
-        if ($subtotal <= 0) {
+        $subtotalAmount = $this->subtotalAmount($subtotal);
+
+        if ($subtotalAmount->compareTo('0.00') <= 0) {
             return 0.0;
         }
 
-        if ($this->min_order_amount !== null && $subtotal < (float) $this->min_order_amount) {
+        if (! $this->meetsMinimumSubtotalAmount($subtotalAmount)) {
             return 0.0;
         }
+
+        $couponValue = BigDecimal::of((string) $this->value)
+            ->toScale(2, RoundingMode::Unnecessary);
 
         $discount = match ($this->type) {
-            self::TYPE_FIXED => (float) $this->value,
-            self::TYPE_PERCENT => $subtotal * ((float) $this->value / 100),
-            default => 0.0,
+            self::TYPE_FIXED => $couponValue,
+            self::TYPE_PERCENT => $subtotalAmount
+                ->multipliedBy($couponValue)
+                ->dividedBy('100', 2, RoundingMode::HalfUp),
+            default => BigDecimal::of('0.00'),
         };
 
         if ($this->max_discount_amount !== null) {
-            $discount = min($discount, (float) $this->max_discount_amount);
+            $maximumDiscount = BigDecimal::of((string) $this->max_discount_amount)
+                ->toScale(2, RoundingMode::Unnecessary);
+
+            if ($discount->compareTo($maximumDiscount) > 0) {
+                $discount = $maximumDiscount;
+            }
         }
 
-        return round(max(0, min($discount, $subtotal)), 2);
+        if ($discount->compareTo('0.00') < 0) {
+            $discount = BigDecimal::of('0.00');
+        }
+
+        if ($discount->compareTo($subtotalAmount) > 0) {
+            $discount = $subtotalAmount;
+        }
+
+        return (float) (string) $discount->toScale(2, RoundingMode::Unnecessary);
+    }
+
+    private function meetsMinimumSubtotalAmount(BigDecimal $subtotal): bool
+    {
+        if ($this->min_order_amount === null) {
+            return true;
+        }
+
+        $minimumSubtotal = BigDecimal::of((string) $this->min_order_amount)
+            ->toScale(2, RoundingMode::Unnecessary);
+
+        return $subtotal->compareTo($minimumSubtotal) >= 0;
+    }
+
+    private function subtotalAmount(float $subtotal): BigDecimal
+    {
+        return BigDecimal::of((string) $subtotal)
+            ->toScale(2, RoundingMode::HalfUp);
     }
 }

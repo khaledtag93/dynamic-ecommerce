@@ -185,7 +185,7 @@ class CouponService
             throw ValidationException::withMessages(['coupon' => __('This coupon has reached its usage limit.')]);
         }
 
-        if ($coupon->min_order_amount !== null && $subtotal < (float) $coupon->min_order_amount) {
+        if (! $coupon->meetsMinimumSubtotal($subtotal)) {
             throw ValidationException::withMessages([
                 'coupon' => __('Order subtotal must be at least :amount to use this coupon.', [
                     'amount' => 'EGP '.number_format((float) $coupon->min_order_amount, 2),
