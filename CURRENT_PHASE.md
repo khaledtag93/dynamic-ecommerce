@@ -1,23 +1,18 @@
 # CURRENT PHASE
 
-## LATEST CONTINUATION CHECKPOINT — 2026-09-29
+## LATEST CONTINUATION CHECKPOINT — 2026-09-30
 
 > This section is authoritative for continuation. Older checkpoints below are historical and must not override this state.
 
 - Active branch: `sec03-framework-upgrade`.
-- **Verified application / CI / QAS SHA:** `cc8a3406ea4ada2bcdbcbec064b283296dc236b4` (`cc8a3406`).
-- **Hardening CI #2258: Green** on that exact application revision.
-- Full PHPUnit: **770 passed / 17,099 assertions**.
-- Checkout FEFO, POS FEFO and Sales COGS reconciliation regressions are Green.
-- Shared browser interactions and frontend production build are Green.
-- Immutable application checkpoint tag: `qas-sales-cogs-reconciliation-2026-09-29`.
-- QAS is deployed on the exact same application SHA; health HTTP 200, static assets HTTP 200, maintenance OFF, no pending migrations.
-- QAS reconciliation dry-run: `scanned=2 | lot-provenance=0 | changed=0 | line-profit-changes=0 | applied=0`; no historical apply was required.
-- `OrderItem.profit_amount` is now synchronized to actual lot COGS when lot provenance exists. Order-level discount allocation is still a separate explicit policy boundary.
-- Detailed evidence: `docs/SALES_COGS_RECONCILIATION_CHECKPOINT_2026-09-29.md`.
+- **Verified application / CI / QAS SHA:** `88d6f7e6dd216c7d95577727abed341bab76782b` (`88d6f7e6`).
+- **Hardening CI #2299: Green** on that exact application revision, including clean MySQL migration, PHPUnit, shared browser interactions and frontend production build.
+- Working tree was clean and synchronized with `origin/sec03-framework-upgrade` before QAS promotion.
+- QAS was promoted successfully to `88d6f7e6` using `deploy-qas.sh sec03-framework-upgrade`; deployment finished with `QAS READY`, maintenance OFF, application HTTP 200 and static asset HTTP 200. A separate post-deploy external check also returned Home HTTP 200 and static asset HTTP 200.
+- The current returns/refunds integrity slice now covers cumulative RMA refund rounding, cumulative POS return rounding, mixed POS+RMA economics, physical returns after prior full refund, zero-money physical-return provenance, correct restock/COGS behavior, and exclusion of zero-value technical return rows from Customer Account Statement financial movements.
 - Production remains unchanged.
 
-**Immediate next action:** continue the Business Process & ERP Integrity Audit at the first unclosed profitability/accounting evidence boundary. Start by auditing any reporting/history consumer that treats aggregate `inventory_movements.unit_cost` as actual COGS; require lot provenance where actual COGS is claimed, with deliberate legacy fallback. Keep authenticated Workforce/Payroll and Purchasing/Inventory QAS journey acceptance as separate acceptance gates. Production release gates remain OPS-01 credential rotation evidence, PAY-01 real Paymob E2E, OPS-02 isolated DB restore rehearsal, and Production scheduler/queue verification.
+**Immediate next action:** continue the Business Process & ERP Integrity Audit with **Exchange / Replacement Financial Integrity**. Audit replacement-order validity, value/quantity policy, prior-refund + exchange double compensation, mixed exchange + partial refund, replacement price differences, revenue/COGS/restock effects, replay/idempotency and concurrency. Fix only concrete defects with regression coverage, then run the exact-head Hardening CI and promote a coherent checkpoint to QAS when Green. Authenticated manual QAS acceptance remains a separate gate. Production release gates remain OPS-01 credential rotation evidence, PAY-01 real Paymob E2E, OPS-02 isolated DB restore rehearsal, and Production scheduler/queue verification.
 
 ### Historical checkpoints below
 

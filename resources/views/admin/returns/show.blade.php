@@ -148,8 +148,9 @@
         @elseif($returnRequest->status === $returnRequest::STATUS_RECEIVED)
             <div class="admin-card">
                 <div class="admin-card-body">
+                    @php($hasExchangeItems = $returnRequest->items->contains(fn ($item) => $item->requested_resolution === \App\Models\ReturnRequestItem::RESOLUTION_EXCHANGE && (int) $item->received_quantity > 0))
                     <h4 class="mb-2">{{ __('Complete return') }}</h4>
-                    <p class="text-muted small">{{ __('Refund amount is explicit and uses the canonical order refund ledger. Exchange order is optional and must be a different order.') }}</p>
+                    <p class="text-muted small">{{ __('Refund amount is explicit and uses the canonical order refund ledger. An exchange order is required when received items are approved for exchange.') }}</p>
                     <form method="POST" action="{{ route('admin.returns.complete', $returnRequest) }}" data-submit-loading data-return-complete-form data-return-currency="{{ $returnRequest->order?->currency ?? 'EGP' }}">
                         @csrf
                         @method('PATCH')
@@ -157,10 +158,12 @@
                             <label class="form-label fw-semibold" for="returnRefundAmount">{{ __('Refund amount') }}</label>
                             <div class="input-group"><span class="input-group-text">{{ $returnRequest->order?->currency ?? 'EGP' }}</span><input id="returnRefundAmount" type="number" name="refund_amount" min="0" step="0.01" value="{{ old('refund_amount', 0) }}" class="form-control"></div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" for="returnExchangeOrderId">{{ __('Exchange order ID (optional)') }}</label>
-                            <input id="returnExchangeOrderId" type="number" name="exchange_order_id" min="1" value="{{ old('exchange_order_id') }}" class="form-control">
-                        </div>
+                        @if($hasExchangeItems)
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="returnExchangeOrderId">{{ __('Exchange order') }} <span class="text-danger">*</span></label>
+                                <input id="returnExchangeOrderId" type="number" name="exchange_order_id" min="1" value="{{ old('exchange_order_id') }}" class="form-control" required>
+                            </div>
+                        @endif
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="returnCompletionNotes">{{ __('Completion notes') }}</label>
                             <textarea id="returnCompletionNotes" name="completion_notes" rows="4" maxlength="2000" class="form-control">{{ old('completion_notes') }}</textarea>

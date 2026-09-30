@@ -460,6 +460,22 @@ class ReturnRequestService
 
             $refundAmount = round(max(0, $refundAmount), 2);
             $notes = $this->nullableTrim($notes);
+            $hasReceivedExchangeItems = $locked->items()
+                ->where('requested_resolution', ReturnRequestItem::RESOLUTION_EXCHANGE)
+                ->where('received_quantity', '>', 0)
+                ->exists();
+
+            if ($hasReceivedExchangeItems && ! $exchangeOrderId) {
+                throw ValidationException::withMessages([
+                    'exchange_order_id' => __('Link an exchange order before completing items approved for exchange.'),
+                ]);
+            }
+
+            if (! $hasReceivedExchangeItems && $exchangeOrderId) {
+                throw ValidationException::withMessages([
+                    'exchange_order_id' => __('An exchange order can only be linked when received items are approved for exchange.'),
+                ]);
+            }
 
             $exchangeOrder = null;
             if ($exchangeOrderId) {
