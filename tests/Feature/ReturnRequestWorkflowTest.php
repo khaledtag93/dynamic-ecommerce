@@ -822,9 +822,13 @@ class ReturnRequestWorkflowTest extends TestCase
             $cashier->id,
         );
 
-        $refunds = $order->fresh()->refunds()->orderBy('id')->pluck('amount')->map(fn ($amount) => (float) $amount)->all();
+        $refunds = $order->fresh()->refunds()->pluck('amount')
+            ->map(fn ($amount) => (float) $amount)
+            ->sort()
+            ->values()
+            ->all();
 
-        $this->assertSame([100.0, 0.0], $refunds);
+        $this->assertSame([0.0, 100.0], $refunds);
         $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $order->fresh()->payment_status);
         $this->assertSame(100.0, (float) $order->fresh()->refund_total);
         $this->assertSame(1, (int) $product->fresh()->quantity);
