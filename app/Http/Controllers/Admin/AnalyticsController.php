@@ -175,7 +175,7 @@ class AnalyticsController extends Controller
             'generated_at' => $generatedAt,
             'last_sync_at' => $lastAggregatedAt ?: $lastEventAt,
             'coverage_days' => $dailyStats->count(),
-            'has_data' => $dailyStats->isNotEmpty(),
+            'has_data' => $this->overviewHasData($current),
             'help' => $isAggregated
                 ? __('This view is reading from prepared daily analytics tables for faster executive reporting.')
                 : __('This view is falling back to live event data because aggregated daily stats are not available for the full window.'),
@@ -242,22 +242,41 @@ class AnalyticsController extends Controller
     protected function buildOverviewUiState(array $snapshot): array
     {
         $current = $snapshot['current'] ?? [];
-        $hasEconomicProductData = collect(data_get($current, 'top_products', []))
-            ->contains(fn ($row) => abs((float) data_get($row, 'realized_cogs', 0)) > 0.00001
-                || abs((float) data_get($row, 'profit_total', 0)) > 0.00001
-                || abs((float) data_get($row, 'revenue_gross', 0)) > 0.00001);
-
-        $hasHeadlineData = ((float) data_get($current, 'totals.revenue_gross', 0)) > 0
-            || ((int) data_get($current, 'totals.orders_count', 0)) > 0
-            || collect(data_get($current, 'daily_stats', []))->sum(fn ($row) => (int) data_get($row, 'sessions_count', 0)) > 0
-            || filled(data_get($current, 'last_event_at'))
-            || $hasEconomicProductData;
+        $hasData = $this->overviewHasData($current);
 
         return [
-            'empty' => ! $hasHeadlineData,
-            'show_drilldowns' => $hasHeadlineData,
+            'empty' => ! $hasData,
+            'show_drilldowns' => $hasData,
             'show_watchlist' => collect(data_get($current, 'user_insights.top_sessions', []))->isNotEmpty(),
         ];
+    }
+
+    protected function overviewHasData(array $current): bool
+    {
+        $totals = (array) data_get($current, 'totals', []);
+        $hasCountActivity = collect([
+            'product_views',
+            'cart_views',
+            'add_to_cart_count',
+            'remove_from_cart_count',
+            'checkout_starts',
+            'purchases',
+            'orders_count',
+            'sessions_count',
+            'users_count',
+        ])->contains(fn (string $key) => (int) ($totals[$key] ?? 0) > 0);
+
+        $hasEconomicProductData = collect(data_get($current, 'top_products', []))
+            ->contains(fn ($row) => (int) data_get($row, 'views', 0) > 0
+                || (int) data_get($row, 'purchases', 0) > 0
+                || abs((float) data_get($row, 'revenue_gross', 0)) > 0.00001
+                || abs((float) data_get($row, 'realized_cogs', 0)) > 0.00001
+                || abs((float) data_get($row, 'profit_total', 0)) > 0.00001);
+
+        return $hasCountActivity
+            || abs((float) ($totals['revenue_gross'] ?? 0)) > 0.00001
+            || filled(data_get($current, 'last_event_at'))
+            || $hasEconomicProductData;
     }
 
     protected function buildGrowthUiState(array $snapshot): array
