@@ -11,7 +11,9 @@ use App\Models\ReturnRequest;
 use App\Models\ReturnRequestItem;
 use App\Models\User;
 use App\Services\Commerce\OrderActionService;
+use App\Services\Commerce\OrderRevenueAllocationService;
 use App\Services\Commerce\PosReturnService;
+use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\ReturnRequestService;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -683,6 +685,54 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame('-40.00', $economics['profit_total']);
         $this->assertSame(0, array_sum($allocations));
         $this->assertSame(1, (int) $product->fresh()->quantity);
+    }
+
+    public function test_sequential_pos_returns_cannot_round_past_the_paid_line_value(): void
+    {
+        $customer = User::factory()->create();
+        $cashier = User::factory()->create();
+        $tinyProduct = $this->makeProduct(0);
+        $otherProduct = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 1.02);
+        $order->update(['sales_channel' => Order::SALES_CHANNEL_POS]);
+
+        $tinyItem = $order->items()->create([
+            'product_id' => $tinyProduct->id,
+            'product_name' => $tinyProduct->name,
+            'sku' => $tinyProduct->sku,
+            'unit_price' => 0.01,
+            'unit_cost' => 0,
+            'quantity' => 3,
+            'line_total' => 0.02,
+            'profit_amount' => 0.02,
+        ]);
+        $order->items()->create([
+            'product_id' => $otherProduct->id,
+            'product_name' => $otherProduct->name,
+            'sku' => $otherProduct->sku,
+            'unit_price' => 1.00,
+            'unit_cost' => 0,
+            'quantity' => 1,
+            'line_total' => 1.00,
+            'profit_amount' => 1.00,
+        ]);
+
+        $service = app(PosReturnService::class);
+        $service->process($order, [$tinyItem->id => 1], 'First tiny-unit return', null, $cashier->id);
+        $service->process($order->fresh(), [$tinyItem->id => 1], 'Second tiny-unit return', null, $cashier->id);
+        $service->process($order->fresh(), [$tinyItem->id => 1], 'Third tiny-unit return', null, $cashier->id);
+
+        $amounts = $order->fresh()->refunds()->orderBy('id')->pluck('amount')->map(fn ($amount) => (float) $amount)->all();
+
+        $this->assertSame([0.01, 0.0, 0.01], $amounts);
+        $this->assertSame(0.02, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PARTIALLY_REFUNDED, $order->fresh()->payment_status);
+        $this->assertSame(3, (int) $tinyProduct->fresh()->quantity);
+        $this->assertSame(3, (int) $order->refunds()->count());
+        $this->assertSame(0.02, (float) $order->refunds()->sum('amount'));
+        $this->assertSame(0.02, (float) \App\Models\PosReturnItem::query()
+            ->where('order_item_id', $tinyItem->id)
+            ->sum('amount'));
     }
 
     public function test_pos_return_cannot_reuse_quantity_reserved_by_rma(): void

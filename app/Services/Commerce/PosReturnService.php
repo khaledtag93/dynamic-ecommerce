@@ -10,6 +10,8 @@ use App\Models\PosCashShift;
 use App\Models\PosReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ReturnRequest;
+use App\Models\ReturnRequestItem;
 use App\Services\Analytics\AnalyticsTracker;
 use App\Services\Growth\GrowthAttributionService;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +23,7 @@ class PosReturnService
         protected InventoryService $inventoryService,
         protected AdminActivityLogService $activityLogService,
         protected ReturnRequestService $returnRequestService,
+        protected OrderRevenueAllocationService $orderRevenueAllocationService,
         protected ProfitService $profitService,
         protected AnalyticsTracker $analyticsTracker,
         protected GrowthAttributionService $growthAttributionService,
@@ -78,10 +81,25 @@ class PosReturnService
                 ->groupBy('order_item_id')
                 ->pluck('returned_quantity', 'order_item_id');
 
-            $rmaReserved = $this->returnRequestService->rmaReservedQuantities($items->keys()->all());
+            $itemIds = $items->keys()->map(fn ($id) => (int) $id)->all();
+            $rmaReserved = $this->returnRequestService->rmaReservedQuantities($itemIds);
+            $rmaReceivedRefunds = ReturnRequestItem::query()
+                ->selectRaw('order_item_id, SUM(received_quantity) as returned_quantity')
+                ->whereIn('order_item_id', $itemIds)
+                ->where('requested_resolution', ReturnRequestItem::RESOLUTION_REFUND)
+                ->where('received_quantity', '>', 0)
+                ->whereHas('returnRequest', fn ($query) => $query->whereIn('status', [
+                    ReturnRequest::STATUS_RECEIVED,
+                    ReturnRequest::STATUS_COMPLETED,
+                ]))
+                ->groupBy('order_item_id')
+                ->pluck('returned_quantity', 'order_item_id');
+            $allocationOrder = $lockedOrder->fresh(['items', 'refunds.posReturnItems', 'refunds.returnRequest.items']);
+            $grossAllocations = $this->orderRevenueAllocationService->grossAllocateCents($allocationOrder);
+            $realizedAllocations = $this->orderRevenueAllocationService->allocateCents($allocationOrder);
 
             $selected = [];
-            $refundAmount = 0.0;
+            $refundAmountCents = 0;
 
             foreach ($quantities as $itemId => $quantity) {
                 $quantity = (int) $quantity;
@@ -109,26 +127,43 @@ class PosReturnService
                     ]);
                 }
 
-                $unitNet = (float) $item->quantity > 0
-                    ? round((float) $item->line_total / (int) $item->quantity, 4)
-                    : 0.0;
-                $lineAmount = round($unitNet * $quantity, 2);
+                $soldQuantity = max(1, (int) $item->quantity);
+                $linePaidCents = max(0, (int) ($grossAllocations[$item->id] ?? 0));
+                $alreadyRefundedCents = max(
+                    0,
+                    $linePaidCents - (int) ($realizedAllocations[$item->id] ?? 0)
+                );
+                $physicallyReturnedBefore = min(
+                    $soldQuantity,
+                    $alreadyReturned + (int) ($rmaReceivedRefunds[$item->id] ?? 0)
+                );
+                $physicallyReturnedAfter = min(
+                    $soldQuantity,
+                    $physicallyReturnedBefore + $quantity
+                );
+                $cumulativeCapacityCents = (int) round(
+                    ($linePaidCents * $physicallyReturnedAfter) / $soldQuantity
+                );
+                $lineAmountCents = max(
+                    0,
+                    $cumulativeCapacityCents - $alreadyRefundedCents
+                );
 
                 $selected[] = [
                     'item' => $item,
                     'quantity' => $quantity,
-                    'amount' => $lineAmount,
+                    'amount' => round($lineAmountCents / 100, 2),
                 ];
-                $refundAmount += $lineAmount;
+                $refundAmountCents += $lineAmountCents;
             }
 
-            $refundAmount = round($refundAmount, 2);
-
-            if ($selected === [] || $refundAmount <= 0) {
+            if ($selected === []) {
                 throw ValidationException::withMessages([
                     'items' => __('Select at least one item quantity to return.'),
                 ]);
             }
+
+            $refundAmount = round($refundAmountCents / 100, 2);
 
             $alreadyRefunded = round((float) $lockedOrder->refunds()->sum('amount'), 2);
             $refundableBalance = round(max(0, (float) $lockedOrder->grand_total - $alreadyRefunded), 2);
@@ -197,15 +232,19 @@ class PosReturnService
             }
 
             $newRefundTotal = round($alreadyRefunded + $refundAmount, 2);
-            $newPaymentStatus = $newRefundTotal >= (float) $lockedOrder->grand_total
-                ? Order::PAYMENT_STATUS_REFUNDED
-                : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
+            $newPaymentStatus = $lockedOrder->payment_status;
 
-            $lockedOrder->update([
-                'refund_total' => $newRefundTotal,
-                'refunded_at' => now(),
-                'payment_status' => $newPaymentStatus,
-            ]);
+            if ($refundAmount > 0) {
+                $newPaymentStatus = $newRefundTotal >= (float) $lockedOrder->grand_total
+                    ? Order::PAYMENT_STATUS_REFUNDED
+                    : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED;
+
+                $lockedOrder->update([
+                    'refund_total' => $newRefundTotal,
+                    'refunded_at' => now(),
+                    'payment_status' => $newPaymentStatus,
+                ]);
+            }
 
             $this->profitService->refreshOrderTotals($lockedOrder);
             $this->growthAttributionService->refreshOrderAttribution((int) $lockedOrder->id);
