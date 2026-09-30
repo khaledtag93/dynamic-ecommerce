@@ -91,8 +91,8 @@ class AnalyticsRealizedPurchaseReconciliationTest extends TestCase
         $this->assertStringContainsString('DRY-RUN complete', $dryRun);
         $this->assertStringContainsString('changed=3', $dryRun);
         $this->assertStringContainsString('creates=1', $dryRun);
-        $this->assertStringContainsString('updates=1', $dryRun);
-        $this->assertStringContainsString('deletes=1', $dryRun);
+        $this->assertStringContainsString('updates=2', $dryRun);
+        $this->assertStringContainsString('deletes=0', $dryRun);
         $this->assertStringContainsString('duplicate-events=1', $dryRun);
         $this->assertStringContainsString('applied=0', $dryRun);
 
@@ -123,7 +123,11 @@ class AnalyticsRealizedPurchaseReconciliationTest extends TestCase
 
         $this->assertTrue($staleEvent->occurred_at->equalTo($staleDate));
 
-        $this->assertSame(0, $this->purchaseEvents($refunded)->count());
+        $refundedEvent = $this->purchaseEvents($refunded)->sole();
+        $this->assertSame(0.0, (float) data_get($refundedEvent->meta, 'grand_total'));
+        $this->assertFalse((bool) data_get($refundedEvent->meta, 'counts_as_purchase', true));
+        $this->assertSame(10.0, (float) data_get($refundedEvent->meta, 'line_items.0.realized_cogs'));
+        $this->assertSame(-10.0, (float) data_get($refundedEvent->meta, 'line_items.0.profit_total'));
 
         $missingEvent = $this->purchaseEvents($missing)->sole();
         $this->assertSame(40.0, (float) data_get($missingEvent->meta, 'grand_total'));
