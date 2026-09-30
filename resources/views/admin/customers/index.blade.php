@@ -6,6 +6,11 @@
 <x-admin.page-header :kicker="__('People & access')" :title="__('Customers')" :description="__('Review registered users, search quickly, and control who gets admin access with safer role management.')" />
 
 <div class="admin-page-shell" data-live-list>
+@php
+    $customerRevenueDisplay = collect($stats['revenue_by_currency'] ?? [])
+        ->map(fn (array $row) => $row['currency'].' '.number_format((float) $row['amount'], 2))
+        ->implode(' · ');
+@endphp
 <div class="row g-3 mb-4">
     @foreach([
         ['label' => __('Total users'), 'value' => $stats['total'], 'copy' => __('All registered accounts in the platform.'), 'icon' => 'mdi-account-group-outline'],
@@ -13,7 +18,7 @@
         ['label' => __('Admins'), 'value' => $stats['admins'], 'copy' => __('Users with admin dashboard access.'), 'icon' => 'mdi-shield-account-outline'],
         ['label' => __('Buyers'), 'value' => $stats['buyers'], 'copy' => __('Accounts that have at least one order.'), 'icon' => 'mdi-cart-check'],
         ['label' => __('Repeat buyers'), 'value' => $stats['repeat_buyers'], 'copy' => __('Customers with two or more orders.'), 'icon' => 'mdi-account-sync-outline'],
-        ['label' => __('Customer revenue'), 'value' => 'EGP '.number_format($stats['revenue'], 2), 'copy' => __('Gross order value linked to registered accounts.'), 'icon' => 'mdi-cash-multiple'],
+        ['label' => __('Customer revenue'), 'value' => $customerRevenueDisplay !== '' ? $customerRevenueDisplay : '—', 'copy' => __('Realized customer revenue grouped by currency.'), 'icon' => 'mdi-cash-multiple'],
     ] as $card)
         <div class="col-md-6 col-xl">
             <x-admin.stat-card
@@ -57,6 +62,18 @@
                     <option value="repeat" @selected($value === 'repeat')>{{ __('Repeat buyers') }}</option>
                     <option value="high_value" @selected($value === 'high_value')>{{ __('Highest spend first') }}</option>
                 </select>
+            </div>
+            <div>
+                <label class="form-label fw-semibold" for="customerValueCurrency">{{ __('Spend currency') }}</label>
+                <select id="customerValueCurrency" name="value_currency" class="form-select" data-live-filter-control>
+                    <option value="">{{ __('Select currency') }}</option>
+                    @foreach($valueCurrencies as $currency)
+                        <option value="{{ $currency }}" @selected($valueCurrency === $currency)>{{ $currency }}</option>
+                    @endforeach
+                </select>
+                @if($rankingRequiresCurrency)
+                    <div class="form-text text-warning">{{ __('Choose a currency to rank customer spend safely.') }}</div>
+                @endif
             </div>
             <div>
                 <label class="form-label fw-semibold" for="customerPerPage">{{ __('Per page') }}</label>
