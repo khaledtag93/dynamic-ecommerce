@@ -296,8 +296,16 @@ class OrderActionService
 
             $lockedOrder->update($updates);
 
+            if ($newStatus === Order::STATUS_COMPLETED) {
+                $this->profitService->refreshOrderTotals($lockedOrder);
+            }
+
             $freshOrder = $lockedOrder->fresh(['user']);
             $this->analyticsTracker->syncRealizedPurchase($freshOrder);
+
+            if ($newStatus === Order::STATUS_COMPLETED) {
+                $this->growthAttributionService->refreshOrderAttribution((int) $freshOrder->id);
+            }
 
             $this->orderNotificationService->notifyStatusUpdated($freshOrder);
 
