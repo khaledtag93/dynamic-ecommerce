@@ -142,14 +142,21 @@ class AdminCustomerLiveListTest extends TestCase
 
         $index = $this->actingAs($owner)->get(route('admin.customers.index'));
 
-        $index
-            ->assertOk()
-            ->assertViewHas('stats', function (array $stats): bool {
-                $rows = collect($stats['revenue_by_currency'] ?? []);
+        $index->assertOk();
 
-                return (float) data_get($rows->firstWhere('currency', 'EGP'), 'amount', -1) === 150.0
-                    && (float) data_get($rows->firstWhere('currency', 'USD'), 'amount', -1) === 1010.0;
-            })
+        $revenueRows = collect($index->viewData('stats')['revenue_by_currency'] ?? []);
+        $this->assertSame(
+            150.0,
+            (float) data_get($revenueRows->firstWhere('currency', 'EGP'), 'amount', -1),
+            'Unexpected EGP customer revenue rows: '.json_encode($revenueRows->values()->all())
+        );
+        $this->assertSame(
+            1010.0,
+            (float) data_get($revenueRows->firstWhere('currency', 'USD'), 'amount', -1),
+            'Unexpected USD customer revenue rows: '.json_encode($revenueRows->values()->all())
+        );
+
+        $index
             ->assertSee('EGP 100.00 · USD 10.00')
             ->assertSee('EGP 50.00 · USD 1,000.00');
 
