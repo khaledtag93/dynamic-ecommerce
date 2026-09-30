@@ -310,12 +310,12 @@ class AnalyticsController extends Controller
 
     protected function offersHaveEconomicData(array $drilldown): bool
     {
-        $discounted = (array) data_get($drilldown, 'discounted_orders', []);
+        $discounted = data_get($drilldown, 'discounted_orders');
 
-        return (int) ($discounted['orders_count'] ?? 0) > 0
-            || abs((float) ($discounted['revenue_gross'] ?? 0)) > 0.00001
-            || abs((float) ($discounted['discount_total'] ?? 0)) > 0.00001
-            || abs((float) ($discounted['profit_total'] ?? 0)) > 0.00001;
+        return (int) data_get($discounted, 'orders_count', 0) > 0
+            || abs((float) data_get($discounted, 'revenue_gross', 0)) > 0.00001
+            || abs((float) data_get($discounted, 'discount_total', 0)) > 0.00001
+            || abs((float) data_get($discounted, 'profit_total', 0)) > 0.00001;
     }
 
     protected function buildProductUiState(array $drilldown): array
