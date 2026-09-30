@@ -486,6 +486,11 @@ class ReturnRequestService
                 ]);
             }
 
+            $order = Order::query()
+                ->whereKey($locked->order_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             $exchangeOrder = null;
             if ($exchangeOrderId) {
                 if ((int) $exchangeOrderId === (int) $locked->order_id) {
@@ -531,8 +536,6 @@ class ReturnRequestService
                     ]);
                 }
             }
-
-            $order = $locked->order()->firstOrFail();
 
             foreach ($locked->items()
                 ->with('orderItem')

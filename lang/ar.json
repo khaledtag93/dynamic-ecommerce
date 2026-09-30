@@ -3487,6 +3487,7 @@
     "Refund amount": "مبلغ الاسترداد",
     "Refund amount cannot exceed the value of received items approved for refund (:amount).": "لا يمكن أن يتجاوز مبلغ الاسترداد قيمة الأصناف المستلمة والمعتمدة للاسترداد (:amount).",
     "Refund amount is explicit and uses the canonical order refund ledger. An exchange order is required when received items are approved for exchange.": "يتم تسجيل مبلغ الاسترداد بشكل صريح في سجل استردادات الطلب. ويجب ربط طلب استبدال عندما تكون هناك أصناف مستلمة ومعتمدة للاستبدال.",
+    "Linking an exchange order records replacement fulfillment only. Settle any price difference through explicit payment or refund workflows.": "ربط طلب الاستبدال يسجل تنفيذ الاستبدال فقط. يجب تسوية أي فرق في السعر من خلال مسار دفع أو استرداد صريح.",
     "Refund History": "سجل المرتجعات",
     "Refund linked to :order": "استرداد مرتبط بالطلب :order",
     "Refund Policy": "سياسة الاسترجاع",

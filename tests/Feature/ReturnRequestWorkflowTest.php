@@ -1435,6 +1435,45 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame(100.0, (float) $fresh->refunds->sum('amount'));
     }
 
+    public function test_exchange_link_does_not_silently_settle_replacement_price_difference(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 150);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+        $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
+
+        $this->assertSame(0.0, (float) $order->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame(150.0, (float) $exchangeOrder->fresh()->grand_total);
+        $this->assertSame(0.0, (float) $exchangeOrder->fresh()->refund_total);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $exchangeOrder->fresh()->payment_status);
+        $this->assertSame(150.0, (float) $exchangeOrder->payments()->where('status', Payment::STATUS_PAID)->sum('amount'));
+        $this->assertDatabaseCount('order_refunds', 0);
+    }
+
     public function test_customer_can_create_return_through_live_endpoint(): void
     {
         $customer = User::factory()->create();

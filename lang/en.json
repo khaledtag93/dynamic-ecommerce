@@ -3455,6 +3455,7 @@
     "Mark received": "Mark received",
     "Complete return": "Complete return",
     "Refund amount is explicit and uses the canonical order refund ledger. An exchange order is required when received items are approved for exchange.": "Refund amount is explicit and uses the canonical order refund ledger. An exchange order is required when received items are approved for exchange.",
+    "Linking an exchange order records replacement fulfillment only. Settle any price difference through explicit payment or refund workflows.": "Linking an exchange order records replacement fulfillment only. Settle any price difference through explicit payment or refund workflows.",
     "Refund amount": "Refund amount",
     "Exchange order ID (optional)": "Exchange order ID (optional)",
     "Return lifecycle closed": "Return lifecycle closed",
