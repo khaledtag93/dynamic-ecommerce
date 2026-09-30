@@ -462,6 +462,17 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(40.0, (float) $row->realized_cogs);
         $this->assertSame(-40.0, (float) $row->profit_total);
         $this->assertNull($row->gross_margin_percent);
+
+        $owner = $this->createSuperAdmin();
+        Cache::flush();
+
+        $this->actingAs($owner)
+            ->get(route('admin.analytics.products.show', [
+                'product' => $product,
+                'range' => 'today',
+            ]))
+            ->assertOk()
+            ->assertViewHas('trust', fn ($trust) => data_get($trust, 'has_data') === true);
     }
 
     public function test_variant_profitability_uses_net_physical_return_quantity(): void
