@@ -184,6 +184,36 @@ class AdminCustomerLiveListTest extends TestCase
             ->assertSee('USD 10.00');
     }
 
+    public function test_customer_profile_orders_follow_business_time_not_insert_id(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $owner = $this->createSuperAdmin();
+        $customer = User::factory()->create([
+            'name' => 'Chronology Customer',
+            'email' => 'chronology@example.test',
+            'role_as' => 0,
+        ]);
+
+        $newer = $this->orderFor($customer, 'CHRONO-NEW', 100);
+        $newer->update([
+            'placed_at' => now()->subDay()->setTime(12, 0),
+            'created_at' => now()->subDay()->setTime(12, 0),
+        ]);
+
+        $olderInsertedLater = $this->orderFor($customer, 'CHRONO-OLD', 50);
+        $olderInsertedLater->update([
+            'placed_at' => now()->subDays(10)->setTime(12, 0),
+            'created_at' => now(),
+        ]);
+
+        $response = $this->actingAs($owner)->get(route('admin.customers.show', $customer));
+
+        $response
+            ->assertOk()
+            ->assertSeeInOrder(['CHRONO-NEW', 'CHRONO-OLD'])
+            ->assertSee($newer->placed_at->format('d M Y'));
+    }
+
     private function orderFor(User $user, string $number, float $total, string $currency = 'EGP'): Order
     {
         return Order::create([
