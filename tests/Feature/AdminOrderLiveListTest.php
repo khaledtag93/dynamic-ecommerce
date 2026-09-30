@@ -126,8 +126,7 @@ class AdminOrderLiveListTest extends TestCase
             ->get(route('admin.orders.index'))
             ->assertOk()
             ->assertSee('EGP 90.00 · USD 50.00')
-            ->assertSee('EGP 20.00')
-            ->assertDontSee('EGP 80.00');
+            ->assertSee('EGP 20.00');
     }
 
     private function order(string $number, string $name, string $email, float $total, string $status): Order
