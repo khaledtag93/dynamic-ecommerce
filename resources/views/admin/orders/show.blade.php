@@ -299,7 +299,9 @@
         <div class="admin-card mb-4" id="order-payment">
             <div class="admin-card-body">
                 <h4 class="mb-3">{{ __('Payment record') }}</h4>
-                @php($latestPayment = $order->payments->first())
+                @php
+                    $latestPayment = $order->payments->first();
+                @endphp
                 @if($latestPayment)
                     <div class="admin-summary-list mb-3">
                         <div class="summary-row"><span class="text-muted">{{ __('Reference') }}</span><strong>{{ $latestPayment->transaction_reference ?: '—' }}</strong></div>
