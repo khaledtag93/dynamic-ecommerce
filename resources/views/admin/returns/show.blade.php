@@ -151,7 +151,7 @@
                     @php($hasExchangeItems = $returnRequest->items->contains(fn ($item) => $item->requested_resolution === \App\Models\ReturnRequestItem::RESOLUTION_EXCHANGE && (int) $item->received_quantity > 0))
                     <h4 class="mb-2">{{ __('Complete return') }}</h4>
                     <p class="text-muted small mb-1">{{ __('Refund amount is explicit and uses the canonical order refund ledger. An exchange order is required when received items are approved for exchange.') }}</p>
-                    <p class="text-muted small">{{ __('Linking an exchange order records replacement fulfillment only. Settle any price difference through explicit payment or refund workflows.') }}</p>
+                    <p class="text-muted small">{{ __('Linking an exchange order records the replacement linkage only. Settle any price difference through explicit payment or refund workflows.') }}</p>
                     <form method="POST" action="{{ route('admin.returns.complete', $returnRequest) }}" data-submit-loading data-return-complete-form data-return-currency="{{ $returnRequest->order?->currency ?? 'EGP' }}">
                         @csrf
                         @method('PATCH')

@@ -6,6 +6,7 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\ReturnRequest;
 use App\Services\Analytics\AnalyticsTracker;
 use App\Services\Growth\GrowthAttributionService;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +23,6 @@ class OrderActionService
         protected ProfitService $profitService,
         protected PaymentService $paymentService,
         protected GrowthAttributionService $growthAttributionService,
-        protected OrderRevenueAllocationService $orderRevenueAllocationService,
     ) {
     }
 
@@ -38,6 +38,15 @@ class OrderActionService
             // inventory more than once.
             if ($lockedOrder->status === Order::STATUS_CANCELLED) {
                 return $lockedOrder->fresh(['items', 'refunds', 'user']);
+            }
+
+            if (ReturnRequest::query()
+                ->where('exchange_order_id', $lockedOrder->id)
+                ->where('status', ReturnRequest::STATUS_COMPLETED)
+                ->exists()) {
+                throw ValidationException::withMessages([
+                    'status' => __('An order linked to a completed exchange cannot be cancelled without reversing the exchange first.'),
+                ]);
             }
 
             if (! $lockedOrder->canTransitionTo(Order::STATUS_CANCELLED)) {
@@ -418,7 +427,7 @@ class OrderActionService
                 ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
                 ->sum('amount'), 2);
             $exchangeCompensation = round(
-                $this->orderRevenueAllocationService->completedExchangeCompensationCents($lockedOrder) / 100,
+                app(OrderRevenueAllocationService::class)->completedExchangeCompensationCents($lockedOrder) / 100,
                 2
             );
             $refundableBalance = round(max(

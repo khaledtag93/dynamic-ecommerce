@@ -1538,6 +1538,53 @@ class ReturnRequestWorkflowTest extends TestCase
         $this->assertSame(1, (int) $originalProduct->fresh()->quantity);
     }
 
+    public function test_completed_exchange_replacement_order_cannot_be_cancelled_without_reversal(): void
+    {
+        $customer = User::factory()->create();
+        $manager = User::factory()->create();
+        $product = $this->makeProduct(0);
+        $order = $this->makeDeliveredPaidOrder($customer, 100);
+        $exchangeOrder = $this->makeExchangeOrder($customer, 0);
+        $exchangeOrder->update([
+            'status' => Order::STATUS_PROCESSING,
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+            'delivery_status' => Order::DELIVERY_STATUS_PENDING,
+            'delivered_at' => null,
+        ]);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 1,
+            'line_total' => 100,
+            'profit_amount' => 60,
+        ]);
+
+        $service = app(ReturnRequestService::class);
+        $return = $service->createForCustomer($order, $customer, [[
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'reason_code' => ReturnRequestItem::REASON_WRONG_ITEM,
+            'requested_resolution' => ReturnRequestItem::RESOLUTION_EXCHANGE,
+        ]]);
+        $returnItem = $return->items()->firstOrFail();
+        $service->approve($return, [$returnItem->id => 1], null, $manager);
+        $service->receive($return->fresh(), [$returnItem->id => 1], [$returnItem->id => 0], $manager);
+        $service->complete($return->fresh(), 0, $exchangeOrder->id, null, $manager);
+
+        try {
+            app(OrderActionService::class)->cancel($exchangeOrder->fresh(), 'Cancel replacement after exchange.', $manager->id);
+            $this->fail('A replacement order linked to a completed exchange must not be cancelled without an exchange reversal workflow.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+
+        $this->assertSame(Order::STATUS_PROCESSING, $exchangeOrder->fresh()->status);
+        $this->assertSame($exchangeOrder->id, $return->fresh()->exchange_order_id);
+    }
+
     public function test_exchange_link_does_not_silently_settle_replacement_price_difference(): void
     {
         $customer = User::factory()->create();
