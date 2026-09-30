@@ -117,17 +117,21 @@ class AnalyticsController extends Controller
             $couponRows = $this->analyticsRevenueService->couponPerformance($from, $to);
 
             $discountedOrders = Order::query()
-                ->where('status', Order::STATUS_COMPLETED)
-                ->whereIn('payment_status', [
-                    Order::PAYMENT_STATUS_PAID,
-                    Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
-                    Order::PAYMENT_STATUS_REFUNDED,
-                ])
+                ->commerciallyRealized()
                 ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
                 ->where('discount_total', '>', 0)
-                ->selectRaw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN 1 ELSE 0 END) as orders_count")
-                ->selectRaw("SUM(CASE WHEN payment_status != '".Order::PAYMENT_STATUS_REFUNDED."' THEN discount_total ELSE 0 END) as discount_total")
+                ->selectRaw('COUNT(*) as orders_count')
+                ->selectRaw('SUM(discount_total) as discount_total')
                 ->selectRaw('SUM(grand_total - refund_total) as revenue_gross')
+                ->selectRaw('SUM(profit_total) as profit_total')
+                ->first();
+
+            $refundedDiscountLosses = Order::query()
+                ->where('status', Order::STATUS_COMPLETED)
+                ->where('payment_status', Order::PAYMENT_STATUS_REFUNDED)
+                ->whereBetween(DB::raw('DATE(COALESCE(placed_at, created_at))'), [$from->toDateString(), $to->toDateString()])
+                ->where('discount_total', '>', 0)
+                ->selectRaw('COUNT(*) as orders_count')
                 ->selectRaw('SUM(profit_total) as profit_total')
                 ->first();
 
@@ -143,6 +147,7 @@ class AnalyticsController extends Controller
             return [
                 'coupon_rows' => $couponRows,
                 'discounted_orders' => $discountedOrders,
+                'refunded_discount_losses' => $refundedDiscountLosses,
                 'active_promotions' => $activePromotions,
                 'top_discounted_product' => $topDiscountedProduct,
             ];
@@ -312,10 +317,13 @@ class AnalyticsController extends Controller
     {
         $discounted = data_get($drilldown, 'discounted_orders');
 
+        $refundedLosses = data_get($drilldown, 'refunded_discount_losses');
+
         return (int) data_get($discounted, 'orders_count', 0) > 0
             || abs((float) data_get($discounted, 'revenue_gross', 0)) > 0.00001
             || abs((float) data_get($discounted, 'discount_total', 0)) > 0.00001
-            || abs((float) data_get($discounted, 'profit_total', 0)) > 0.00001;
+            || abs((float) data_get($discounted, 'profit_total', 0)) > 0.00001
+            || abs((float) data_get($refundedLosses, 'profit_total', 0)) > 0.00001;
     }
 
     protected function buildProductUiState(array $drilldown): array
