@@ -219,7 +219,13 @@ class AnalyticsController extends Controller
     protected function buildProductTrust(array $drilldown): array
     {
         $daily = collect($drilldown['daily'] ?? []);
-        $hasData = $daily->isNotEmpty() && $daily->sum(fn ($row) => (int) data_get($row, 'views', 0) + (int) data_get($row, 'purchases', 0)) > 0;
+        $hasData = $daily->isNotEmpty() && $daily->contains(
+            fn ($row) => (int) data_get($row, 'views', 0) > 0
+                || (int) data_get($row, 'purchases', 0) > 0
+                || abs((float) data_get($row, 'revenue_gross', 0)) > 0.00001
+                || abs((float) data_get($row, 'realized_cogs', 0)) > 0.00001
+                || abs((float) data_get($row, 'profit_total', 0)) > 0.00001
+        );
         $lastSyncAt = $daily->max('stat_date');
 
         return [
