@@ -394,6 +394,60 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertNull($row->gross_margin_percent);
     }
 
+    public function test_variant_profitability_uses_net_physical_return_quantity(): void
+    {
+        $product = $this->createAnalyticsProduct();
+        $order = Order::query()->create([
+            'order_number' => 'PRODUCT-PARTIAL-RETURN-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'grand_total' => 200,
+            'subtotal' => 200,
+            'refund_total' => 100,
+            'discount_total' => 0,
+            'customer_name' => 'Partial Return Customer',
+            'customer_email' => 'variant-partial-return@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test address',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+        ]);
+        $item = $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => 100,
+            'unit_cost' => 40,
+            'quantity' => 2,
+            'line_total' => 200,
+            'profit_amount' => 120,
+        ]);
+        $refund = OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => 100,
+            'reason' => 'Physical partial return',
+            'processed_at' => now(),
+        ]);
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refund->id,
+            'order_id' => $order->id,
+            'order_item_id' => $item->id,
+            'quantity' => 1,
+            'amount' => 100,
+            'restocked' => true,
+        ]);
+
+        $row = app(\App\Services\Analytics\AnalyticsRevenueService::class)
+            ->topVariantsForProduct($product, now()->startOfDay(), now()->endOfDay(), 8)
+            ->sole();
+
+        $this->assertSame(1, (int) $row->quantity);
+        $this->assertSame(100.0, (float) $row->realized_revenue);
+        $this->assertSame(40.0, (float) $row->realized_cogs);
+        $this->assertSame(60.0, (float) $row->profit_total);
+        $this->assertSame(60.0, (float) $row->gross_margin_percent);
+    }
+
     public function test_variant_profitability_separates_revenue_leader_from_profit_leader_and_weights_margin(): void
     {
         $owner = $this->createSuperAdmin();
