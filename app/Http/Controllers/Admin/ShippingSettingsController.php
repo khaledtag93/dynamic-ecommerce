@@ -259,8 +259,8 @@ class ShippingSettingsController extends Controller
                 'integer',
                 Rule::exists('shipping_methods', 'id')->where(fn ($query) => $query->where('type', ShippingMethod::TYPE_SHIPPING)),
             ],
-            'amount' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
-            'free_shipping_threshold' => ['nullable', 'numeric', 'gt:0', 'max:9999999999.99'],
+            'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
+            'free_shipping_threshold' => ['nullable', 'numeric', 'decimal:0,2', 'gt:0', 'max:9999999999.99'],
             'threshold_basis' => [
                 Rule::requiredIf($threshold !== null && $threshold !== ''),
                 'nullable',

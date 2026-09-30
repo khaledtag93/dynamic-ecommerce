@@ -74,6 +74,23 @@ class ShippingEngineTest extends TestCase
         $this->assertSame(50.0, $quote['free_shipping_remaining']);
     }
 
+    public function test_after_discount_threshold_is_exact_at_cent_boundary(): void
+    {
+        [, $method] = $this->configureRate(
+            city: 'Giza',
+            amount: 15,
+            threshold: 0.20,
+            basis: ShippingRate::BASIS_AFTER_DISCOUNTS,
+        );
+
+        $quote = app(ShippingService::class)->quote($method->code, 'Giza', 'Egypt', 0.30, 0.10);
+
+        $this->assertTrue($quote['free_shipping_qualified']);
+        $this->assertSame(0.0, $quote['amount']);
+        $this->assertSame(0.20, $quote['threshold_basis_amount']);
+        $this->assertSame(0.0, $quote['free_shipping_remaining']);
+    }
+
     public function test_pickup_is_zero_and_does_not_require_zone_or_rate(): void
     {
         $pickup = ShippingMethod::query()
@@ -214,6 +231,35 @@ class ShippingEngineTest extends TestCase
         $this->actingAs($cashier)
             ->get(route('admin.settings.shipping.methods'))
             ->assertForbidden();
+    }
+
+    public function test_shipping_rate_rejects_money_over_precision(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+
+        $operations = $this->staffWithRole('operations_manager');
+        [$zone, $method, $rate] = $this->configureRate(
+            city: 'Cairo',
+            amount: 10,
+            threshold: 100,
+            basis: ShippingRate::BASIS_BEFORE_DISCOUNTS,
+        );
+
+        $this->actingAs($operations)
+            ->post(route('admin.settings.shipping.rates.upsert'), [
+                'shipping_zone_id' => $zone->id,
+                'shipping_method_id' => $method->id,
+                'amount' => '10.001',
+                'free_shipping_threshold' => '100.001',
+                'threshold_basis' => ShippingRate::BASIS_BEFORE_DISCOUNTS,
+                'is_active' => '1',
+            ])
+            ->assertSessionHasErrors(['amount', 'free_shipping_threshold']);
+
+        $rate->refresh();
+
+        $this->assertSame('10.00', $rate->amount);
+        $this->assertSame('100.00', $rate->free_shipping_threshold);
     }
 
     public function test_city_cannot_be_assigned_to_two_zones_in_same_country(): void

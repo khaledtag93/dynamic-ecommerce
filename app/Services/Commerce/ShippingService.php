@@ -71,19 +71,22 @@ class ShippingService
             ]);
         }
 
-        $basisAmount = $rate->threshold_basis === ShippingRate::BASIS_AFTER_DISCOUNTS
-            ? max(0, $subtotal - $discount)
-            : $subtotal;
-
-        $threshold = $rate->free_shipping_threshold !== null
-            ? (float) $rate->free_shipping_threshold
+        $subtotalCents = $this->moneyToCents($subtotal);
+        $discountCents = $this->moneyToCents($discount);
+        $basisAmountCents = $rate->threshold_basis === ShippingRate::BASIS_AFTER_DISCOUNTS
+            ? max(0, $subtotalCents - $discountCents)
+            : max(0, $subtotalCents);
+        $thresholdCents = $rate->free_shipping_threshold !== null
+            ? $this->moneyToCents($rate->free_shipping_threshold)
             : null;
 
-        $qualified = $threshold !== null && $basisAmount >= $threshold;
-        $amount = $qualified ? 0.0 : (float) $rate->amount;
-        $remaining = $threshold !== null ? max(0, $threshold - $basisAmount) : null;
-        $progress = $threshold !== null && $threshold > 0
-            ? min(100, (int) round(($basisAmount / $threshold) * 100))
+        $qualified = $thresholdCents !== null && $basisAmountCents >= $thresholdCents;
+        $amountCents = $qualified ? 0 : $this->moneyToCents($rate->amount);
+        $remainingCents = $thresholdCents !== null
+            ? max(0, $thresholdCents - $basisAmountCents)
+            : null;
+        $progress = $thresholdCents !== null && $thresholdCents > 0
+            ? min(100, (int) round(($basisAmountCents / $thresholdCents) * 100))
             : null;
 
         return [
@@ -98,13 +101,13 @@ class ShippingService
             'zone_name_snapshot' => $zone->name,
             'zone_name_ar_snapshot' => $zone->name_ar,
             'rate_id' => $rate->id,
-            'amount' => round($amount, 2),
-            'configured_amount' => round((float) $rate->amount, 2),
-            'free_shipping_threshold' => $threshold,
+            'amount' => $this->centsToMoney($amountCents),
+            'configured_amount' => $this->centsToMoney($this->moneyToCents($rate->amount)),
+            'free_shipping_threshold' => $thresholdCents !== null ? $this->centsToMoney($thresholdCents) : null,
             'threshold_basis' => $rate->threshold_basis,
-            'threshold_basis_amount' => round($basisAmount, 2),
+            'threshold_basis_amount' => $this->centsToMoney($basisAmountCents),
             'free_shipping_qualified' => $qualified,
-            'free_shipping_remaining' => $remaining !== null ? round($remaining, 2) : null,
+            'free_shipping_remaining' => $remainingCents !== null ? $this->centsToMoney($remainingCents) : null,
             'free_shipping_progress' => $progress,
             'eta_min_days' => $method->eta_min_days,
             'eta_max_days' => $method->eta_max_days,
@@ -153,6 +156,16 @@ class ShippingService
         return Str::of($value)->squish()->lower()->value();
     }
 
+    private function moneyToCents(float|int|string|null $amount): int
+    {
+        return (int) round(((float) ($amount ?? 0)) * 100, 0, PHP_ROUND_HALF_UP);
+    }
+
+    private function centsToMoney(int $cents): float
+    {
+        return round($cents / 100, 2);
+    }
+
     private function pickupQuote(ShippingMethod $method, float $subtotal, float $discount): array
     {
         return [
@@ -171,7 +184,7 @@ class ShippingService
             'configured_amount' => 0.0,
             'free_shipping_threshold' => null,
             'threshold_basis' => null,
-            'threshold_basis_amount' => round(max(0, $subtotal - $discount), 2),
+            'threshold_basis_amount' => $this->centsToMoney(max(0, $this->moneyToCents($subtotal) - $this->moneyToCents($discount))),
             'free_shipping_qualified' => false,
             'free_shipping_remaining' => null,
             'free_shipping_progress' => null,
