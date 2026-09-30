@@ -359,6 +359,52 @@ class PaymobGatewayService
         return $amountCents;
     }
 
+    protected function assertCheckoutIntegrity(Order $order, ?Payment $payment = null): string
+    {
+        $orderCurrency = strtoupper(trim((string) ($order->currency ?: 'EGP')));
+        $gatewayCurrency = strtoupper(trim((string) ($this->currency ?: 'EGP')));
+        $paymentCurrency = $payment
+            ? strtoupper(trim((string) ($payment->currency ?: $orderCurrency)))
+            : $orderCurrency;
+        $orderAmountCents = $this->amountCentsFromOrder($order);
+        $paymentAmountCents = $payment
+            ? (int) round(((float) $payment->amount) * 100)
+            : $orderAmountCents;
+
+        $integrityValid = $orderCurrency !== ''
+            && $gatewayCurrency !== ''
+            && hash_equals($orderCurrency, $gatewayCurrency)
+            && (! $payment || (
+                (int) $payment->order_id === (int) $order->id
+                && $paymentCurrency !== ''
+                && hash_equals($orderCurrency, $paymentCurrency)
+                && $paymentAmountCents === $orderAmountCents
+            ));
+
+        if (! $integrityValid) {
+            $diagnostics = [
+                'order_id' => (int) $order->id,
+                'payment_id' => $payment?->id,
+                'order_currency' => $orderCurrency,
+                'payment_currency' => $paymentCurrency,
+                'gateway_currency' => $gatewayCurrency,
+                'order_amount_cents' => $orderAmountCents,
+                'payment_amount_cents' => $paymentAmountCents,
+                'payment_order_id' => $payment?->order_id,
+            ];
+
+            $this->logWarning('Paymob checkout blocked because local payment details do not match gateway configuration.', $diagnostics);
+
+            throw new PaymobCheckoutException(
+                'Paymob checkout integrity preflight failed.',
+                $diagnostics,
+                __('Online payment configuration does not match this order. Please choose another payment method or contact support.')
+            );
+        }
+
+        return $orderCurrency;
+    }
+
     protected function splitCustomerName(?string $fullName): array
     {
         $fullName = trim((string) $fullName);
@@ -458,20 +504,21 @@ class PaymobGatewayService
 
     public function registerOrder(Order $order, string $authToken): int
     {
+        $currency = $this->assertCheckoutIntegrity($order);
         $amountCents = $this->amountCentsFromOrder($order);
 
         $this->logInfo('Paymob register order started', [
             'local_order_id' => $order->id,
             'order_number' => $order->order_number ?? null,
             'amount_cents' => $amountCents,
-            'currency' => $this->currency,
+            'currency' => $currency,
         ]);
 
         $response = $this->post('ecommerce/orders', [
             'auth_token' => $authToken,
             'delivery_needed' => false,
             'amount_cents' => $amountCents,
-            'currency' => $this->currency,
+            'currency' => $currency,
             'merchant_order_id' => (string) $order->id,
             'items' => [],
         ]);
@@ -494,6 +541,7 @@ class PaymobGatewayService
 
     public function generatePaymentKey(Order $order, string $authToken, int $paymobOrderId): string
     {
+        $currency = $this->assertCheckoutIntegrity($order);
         $amountCents = $this->amountCentsFromOrder($order);
 
         [$firstName, $lastName] = $this->splitCustomerName($order->customer_name);
@@ -521,7 +569,7 @@ class PaymobGatewayService
             'integration_id' => (int) $this->integrationId,
             'iframe_id' => $this->iframeId,
             'amount_cents' => $amountCents,
-            'currency' => $this->currency,
+            'currency' => $currency,
             'billing_data' => $billingData,
         ]);
 
@@ -531,7 +579,7 @@ class PaymobGatewayService
             'expiration' => 3600,
             'order_id' => $paymobOrderId,
             'billing_data' => $billingData,
-            'currency' => $this->currency,
+            'currency' => $currency,
             'integration_id' => (int) $this->integrationId,
             'lock_order_when_paid' => true,
         ]);
@@ -553,6 +601,8 @@ class PaymobGatewayService
 
     protected function createUnifiedIntention(Order $order): array
     {
+        $currency = $this->assertCheckoutIntegrity($order);
+
         if (! $this->isUnifiedConfigured()) {
             throw new RuntimeException('Paymob Unified Checkout is not fully configured.');
         }
@@ -562,7 +612,7 @@ class PaymobGatewayService
 
         $payload = [
             'amount' => $amountCents,
-            'currency' => $this->currency,
+            'currency' => $currency,
             'payment_methods' => [(int) $this->integrationId],
             'items' => [[
                 'name' => 'Order ' . ($order->order_number ?: $order->id),
@@ -600,7 +650,7 @@ class PaymobGatewayService
             'order_number' => $order->order_number,
             'integration_id' => (int) $this->integrationId,
             'amount_cents' => $amountCents,
-            'currency' => $this->currency,
+            'currency' => $currency,
         ]);
 
         $response = $this->client()
@@ -749,6 +799,8 @@ class PaymobGatewayService
 
     public function checkoutUrl(Order $order, ?Payment $payment = null): string
     {
+        $this->assertCheckoutIntegrity($order, $payment);
+
         $this->logInfo('Paymob checkout flow started', [
             'local_order_id' => $order->id,
             'order_number' => $order->order_number ?? null,
