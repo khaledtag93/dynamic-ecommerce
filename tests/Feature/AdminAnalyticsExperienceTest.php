@@ -74,6 +74,51 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(1, substr_count($html, 'id="analytics-panel-drilldowns"'));
     }
 
+    public function test_analytics_overview_does_not_hide_loss_only_refunded_activity(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $product = $this->createAnalyticsProduct();
+
+        AnalyticsEvent::query()->create([
+            'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+            'entity_type' => AnalyticsEvent::ENTITY_ORDER,
+            'entity_id' => 'loss-only-refund',
+            'session_id' => null,
+            'meta' => [
+                'counts_as_purchase' => false,
+                'grand_total' => 0,
+                'line_items' => [[
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'sku' => $product->sku,
+                    'quantity' => 0,
+                    'realized_revenue' => 0,
+                    'realized_cogs' => 40,
+                    'profit_total' => -40,
+                ]],
+            ],
+            'occurred_at' => now(),
+        ]);
+
+        Cache::flush();
+
+        $response = $this->actingAs($owner)
+            ->get(route('admin.analytics.index', ['range' => 'today']));
+
+        $response
+            ->assertOk()
+            ->assertViewHas('snapshot', fn ($snapshot) =>
+                (int) data_get($snapshot, 'current.totals.orders_count', -1) === 0
+                && (float) data_get($snapshot, 'current.totals.revenue_gross', -1) === 0.0
+                && collect(data_get($snapshot, 'current.top_products', []))
+                    ->contains(fn ($row) => (float) data_get($row, 'profit_total', 0) === -40.0)
+            )
+            ->assertViewHas('uiState', fn ($state) =>
+                data_get($state, 'empty') === false
+                && data_get($state, 'show_drilldowns') === true
+            );
+    }
+
     public function test_growth_analytics_does_not_repeat_the_same_signal_layer(): void
     {
         $owner = $this->createSuperAdmin();
