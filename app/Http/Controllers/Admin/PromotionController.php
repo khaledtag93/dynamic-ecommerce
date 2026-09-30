@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\PromotionRule;
+use Brick\Math\BigDecimal;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -106,9 +107,18 @@ class PromotionController extends Controller
             'discount_value' => [
                 'nullable',
                 'numeric',
+                'decimal:0,2',
                 'min:0',
+                'max:9999999999.99',
                 function (string $attribute, mixed $value, \Closure $fail) use ($request) {
-                    if (in_array($request->input('type'), ['order_percentage', 'category_percentage'], true) && (float) $value > 100) {
+                    if (! is_numeric($value)) {
+                        return;
+                    }
+
+                    if (
+                        in_array($request->input('type'), ['order_percentage', 'category_percentage'], true)
+                        && BigDecimal::of((string) $value)->compareTo('100.00') > 0
+                    ) {
                         $fail(__('Percentage promotions cannot exceed 100%.'));
                     }
                 },
@@ -120,7 +130,7 @@ class PromotionController extends Controller
             ],
             'buy_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
             'get_quantity' => [Rule::requiredIf($request->input('type') === 'buy_x_get_y'), 'nullable', 'integer', 'min:1'],
-            'min_subtotal' => ['nullable', 'numeric', 'min:0'],
+            'min_subtotal' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'priority' => ['nullable', 'integer', 'min:0'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
