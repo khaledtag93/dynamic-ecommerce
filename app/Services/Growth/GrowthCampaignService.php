@@ -1277,9 +1277,10 @@ class GrowthCampaignService
             $ordersByUser = Order::query()
                 ->commerciallyRealized()
                 ->whereIn('user_id', $userIds)
-                ->whereBetween('created_at', [$firstSentAt, $lastWindowEnd])
-                ->orderBy('created_at')
-                ->get(['user_id', 'created_at', 'grand_total', 'refund_total'])
+                ->whereBetween(DB::raw('COALESCE(placed_at, created_at)'), [$firstSentAt, $lastWindowEnd])
+                ->orderByRaw('COALESCE(placed_at, created_at)')
+                ->orderBy('id')
+                ->get(['user_id', 'placed_at', 'created_at', 'grand_total', 'refund_total'])
                 ->groupBy('user_id');
         }
 
@@ -1296,9 +1297,13 @@ class GrowthCampaignService
 
                 $windowEnd = $delivery->sent_at->copy()->addHours($windowHours);
                 $matchingOrders = collect($ordersByUser->get($delivery->user_id, []))
-                    ->filter(fn (Order $order) => $order->created_at
-                        && $order->created_at->greaterThanOrEqualTo($delivery->sent_at)
-                        && $order->created_at->lessThanOrEqualTo($windowEnd));
+                    ->filter(function (Order $order) use ($delivery, $windowEnd): bool {
+                        $occurredAt = $order->placed_at ?: $order->created_at;
+
+                        return $occurredAt
+                            && $occurredAt->greaterThanOrEqualTo($delivery->sent_at)
+                            && $occurredAt->lessThanOrEqualTo($windowEnd);
+                    });
 
                 if ($matchingOrders->isNotEmpty()) {
                     $converted++;
