@@ -113,9 +113,25 @@ class AdminAnalyticsExperienceTest extends TestCase
                 && collect(data_get($snapshot, 'current.top_products', []))
                     ->contains(fn ($row) => (float) data_get($row, 'profit_total', 0) === -40.0)
             )
+            ->assertViewHas('trust', fn ($trust) => data_get($trust, 'has_data') === true)
             ->assertViewHas('uiState', fn ($state) =>
                 data_get($state, 'empty') === false
                 && data_get($state, 'show_drilldowns') === true
+            );
+    }
+
+    public function test_analytics_overview_trust_reports_no_data_without_events_or_aggregates(): void
+    {
+        $owner = $this->createSuperAdmin();
+        Cache::flush();
+
+        $this->actingAs($owner)
+            ->get(route('admin.analytics.index', ['range' => 'today']))
+            ->assertOk()
+            ->assertViewHas('trust', fn ($trust) => data_get($trust, 'has_data') === false)
+            ->assertViewHas('uiState', fn ($state) =>
+                data_get($state, 'empty') === true
+                && data_get($state, 'show_drilldowns') === false
             );
     }
 
