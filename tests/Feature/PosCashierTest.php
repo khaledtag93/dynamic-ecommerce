@@ -116,6 +116,9 @@ class PosCashierTest extends TestCase
             'POS cash shift opened.',
             'This cash shift cannot be closed by the current cashier.',
             'POS cash shift closed.',
+            'Cash amount must use at most two decimal places.',
+            'Cash amount cannot be negative.',
+            'Cash amount exceeds the supported monetary range.',
         ] as $message) {
             $this->assertArrayHasKey($message, $arabic);
             $this->assertNotSame('', trim((string) $arabic[$message]));
@@ -575,6 +578,130 @@ class PosCashierTest extends TestCase
         ])->assertSessionHas('success');
 
         $this->assertDatabaseCount('orders', 1);
+    }
+
+    public function test_cash_shift_rejects_overprecision_opening_and_closing_cash(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.shifts.open'), [
+                'opening_cash' => '100.009',
+            ])
+            ->assertSessionHasErrors('opening_cash');
+
+        $this->assertDatabaseCount('pos_cash_shifts', 0);
+
+        $shift = app(PosCashShiftService::class)->openShift($admin, '100.10');
+
+        $this->actingAs($admin)
+            ->post(route('admin.pos.shifts.close', $shift), [
+                'closing_cash_counted' => '100.109',
+            ])
+            ->assertSessionHasErrors('closing_cash_counted');
+
+        $this->assertNull($shift->fresh()->closed_at);
+        $this->assertNull($shift->fresh()->closing_cash_counted);
+    }
+
+    public function test_cash_shift_reconciliation_uses_exact_cents_for_split_sales_refunds_and_variance(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $shiftService = app(PosCashShiftService::class);
+        $shift = $shiftService->openShift($admin, '0.10');
+
+        $first = Order::query()->create([
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'order_number' => 'POS-SHIFT-EXACT-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+            'currency' => 'EGP',
+            'subtotal' => '0.10',
+            'discount_total' => '0.00',
+            'shipping_total' => '0.00',
+            'tax_total' => '0.00',
+            'grand_total' => '0.10',
+            'refund_total' => '0.10',
+            'customer_name' => 'Exact Shift Customer',
+            'customer_email' => 'exact-shift-1@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'POS counter',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+            'meta' => [
+                'cashier_user_id' => $admin->id,
+                'pos_cash_shift_id' => $shift->id,
+            ],
+        ]);
+
+        $second = Order::query()->create([
+            'sales_channel' => Order::SALES_CHANNEL_POS,
+            'order_number' => 'POS-SHIFT-EXACT-002',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+            'currency' => 'EGP',
+            'subtotal' => '0.20',
+            'discount_total' => '0.00',
+            'shipping_total' => '0.00',
+            'tax_total' => '0.00',
+            'grand_total' => '0.20',
+            'refund_total' => '0.00',
+            'customer_name' => 'Exact Shift Customer',
+            'customer_email' => 'exact-shift-2@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'POS counter',
+            'shipping_city' => 'Cairo',
+            'placed_at' => now(),
+            'meta' => [
+                'cashier_user_id' => $admin->id,
+                'pos_cash_shift_id' => $shift->id,
+            ],
+        ]);
+
+        $orderItem = $first->items()->create([
+            'product_name' => 'Exact Cash Return Item',
+            'unit_price' => '0.10',
+            'unit_cost' => '0.05',
+            'quantity' => 1,
+            'line_total' => '0.10',
+            'profit_amount' => '0.05',
+        ]);
+
+        $refund = OrderRefund::query()->create([
+            'order_id' => $first->id,
+            'amount' => '0.10',
+            'reason' => 'Exact cash return',
+            'processed_by' => $admin->id,
+            'processed_at' => now(),
+        ]);
+
+        PosReturnItem::query()->create([
+            'order_refund_id' => $refund->id,
+            'order_id' => $first->id,
+            'order_item_id' => $orderItem->id,
+            'quantity' => 1,
+            'amount' => '0.10',
+            'restocked' => false,
+        ]);
+
+        $summary = $shiftService->summary($shift->fresh());
+
+        $this->assertSame(0.10, $summary['opening_cash']);
+        $this->assertSame(0.30, $summary['cash_sales']);
+        $this->assertSame(0.10, $summary['cash_refunds']);
+        $this->assertSame(0.30, $summary['expected_cash']);
+
+        $closed = $shiftService->closeShift($shift, $admin, '0.20');
+
+        $this->assertSame('0.30', $closed->expected_cash);
+        $this->assertSame('0.20', $closed->closing_cash_counted);
+        $this->assertSame('-0.10', $closed->cash_variance);
     }
 
     public function test_cash_shift_reconciliation_records_expected_cash_and_variance(): void

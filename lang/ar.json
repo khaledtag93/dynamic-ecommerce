@@ -5996,6 +5996,9 @@
     "Refund amount must be greater than zero.": "يجب أن يكون مبلغ الاسترداد أكبر من صفر.",
     "Refund amount exceeds the supported monetary range.": "مبلغ الاسترداد يتجاوز النطاق المالي المدعوم.",
     "Refund amount cannot be negative.": "لا يمكن أن يكون مبلغ الاسترداد سالبًا.",
+    "Cash amount must use at most two decimal places.": "يجب ألا يتجاوز مبلغ النقد منزلتين عشريتين.",
+    "Cash amount cannot be negative.": "لا يمكن أن يكون مبلغ النقد سالبًا.",
+    "Cash amount exceeds the supported monetary range.": "مبلغ النقد يتجاوز النطاق المالي المدعوم.",
     "This order cannot be refunded in its current state.": "لا يمكن استرداد هذا الطلب في حالته الحالية.",
     "Refund amount must be within the remaining refundable balance.": "يجب ألا يتجاوز مبلغ الاسترداد الرصيد المتبقي القابل للاسترداد."
 }

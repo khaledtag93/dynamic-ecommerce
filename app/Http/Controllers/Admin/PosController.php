@@ -187,13 +187,13 @@ class PosController extends Controller
     public function openShift(Request $request)
     {
         $data = $request->validate([
-            'opening_cash' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+            'opening_cash' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'opening_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $this->posCashShiftService->openShift(
             $request->user(),
-            (float) $data['opening_cash'],
+            $data['opening_cash'],
             $data['opening_notes'] ?? null,
         );
 
@@ -203,14 +203,14 @@ class PosController extends Controller
     public function closeShift(Request $request, PosCashShift $posCashShift)
     {
         $data = $request->validate([
-            'closing_cash_counted' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+            'closing_cash_counted' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'closing_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $closed = $this->posCashShiftService->closeShift(
             $posCashShift,
             $request->user(),
-            (float) $data['closing_cash_counted'],
+            $data['closing_cash_counted'],
             $data['closing_notes'] ?? null,
         );
 
