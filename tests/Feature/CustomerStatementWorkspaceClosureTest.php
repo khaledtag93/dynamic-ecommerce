@@ -101,6 +101,15 @@ class CustomerStatementWorkspaceClosureTest extends TestCase
         $this->assertTrue($bounded['truncated']);
     }
 
+    public function test_statement_currency_totals_group_by_the_selected_alias_for_strict_mysql(): void
+    {
+        $service = file_get_contents(app_path('Services/Commerce/CustomerAccountStatementService.php'));
+
+        $this->assertSame(3, substr_count($service, "->groupBy('statement_currency')"));
+        $this->assertStringNotContainsString('->groupByRaw("COALESCE(NULLIF(orders.currency', $service);
+        $this->assertStringNotContainsString('->groupByRaw("COALESCE(NULLIF(payments.currency', $service);
+    }
+
     public function test_statement_print_and_export_use_explicit_row_bounds(): void
     {
         $controller = file_get_contents(app_path('Http/Controllers/Admin/CustomerController.php'));

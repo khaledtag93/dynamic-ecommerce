@@ -129,7 +129,7 @@ class CustomerAccountStatementService
             $rows = $this->orderScope($customer, $from, $to)
                 ->selectRaw("COALESCE(NULLIF(orders.currency, ''), 'EGP') AS statement_currency")
                 ->selectRaw('SUM(orders.grand_total) AS statement_total')
-                ->groupByRaw("COALESCE(NULLIF(orders.currency, ''), 'EGP')")
+                ->groupBy('statement_currency')
                 ->get();
 
             $this->mergeCurrencyTotals($totals, $rows, 'order_value');
@@ -139,7 +139,7 @@ class CustomerAccountStatementService
             $rows = $this->paymentScope($customer, $from, $to)
                 ->selectRaw("COALESCE(NULLIF(payments.currency, ''), NULLIF(orders.currency, ''), 'EGP') AS statement_currency")
                 ->selectRaw('SUM(payments.amount) AS statement_total')
-                ->groupByRaw("COALESCE(NULLIF(payments.currency, ''), NULLIF(orders.currency, ''), 'EGP')")
+                ->groupBy('statement_currency')
                 ->get();
 
             $this->mergeCurrencyTotals($totals, $rows, 'payments_captured');
@@ -149,7 +149,7 @@ class CustomerAccountStatementService
             $rows = $this->refundScope($customer, $from, $to)
                 ->selectRaw("COALESCE(NULLIF(orders.currency, ''), 'EGP') AS statement_currency")
                 ->selectRaw('SUM(order_refunds.amount) AS statement_total')
-                ->groupByRaw("COALESCE(NULLIF(orders.currency, ''), 'EGP')")
+                ->groupBy('statement_currency')
                 ->get();
 
             $this->mergeCurrencyTotals($totals, $rows, 'refunds_processed');
