@@ -306,8 +306,8 @@ class PosCashierTest extends TestCase
         $this->assertStringContainsString('for="posReturnNotes"', $saleView);
         $this->assertStringContainsString('id="posReturnNotes" type="text" name="notes"', $saleView);
 
-        $this->assertStringContainsString("'opening_cash' => ['required', 'numeric', 'min:0', 'max:999999999.99']", $controller);
-        $this->assertStringContainsString("'closing_cash_counted' => ['required', 'numeric', 'min:0', 'max:999999999.99']", $controller);
+        $this->assertStringContainsString("'opening_cash' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99']", $controller);
+        $this->assertStringContainsString("'closing_cash_counted' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99']", $controller);
         $this->assertStringContainsString("'cash_received' => ['nullable', 'numeric', 'min:0', 'max:999999999.99']", $controller);
         $this->assertStringContainsString("'discount_reason' => ['required', 'string', 'max:255']", $controller);
         $this->assertStringContainsString("'reason' => ['required', 'string', 'max:255']", $controller);

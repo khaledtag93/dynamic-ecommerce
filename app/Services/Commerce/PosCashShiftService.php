@@ -129,7 +129,7 @@ class PosCashShiftService
             ]);
         }
 
-        if ($decimal->compareTo('9999999999.99') > 0) {
+        if ($decimal->compareTo('999999999.99') > 0) {
             throw ValidationException::withMessages([
                 $field => __('Cash amount exceeds the supported monetary range.'),
             ]);
