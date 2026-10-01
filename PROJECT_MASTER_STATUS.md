@@ -3,14 +3,14 @@
 ## LATEST VERIFIED STATE — 2026-10-01
 
 - Branch: `sec03-framework-upgrade`.
-- Latest verified application / CI revision: `13c20685c36d5276bf64e46a9ecfa075ad73a12e`.
-- Hardening CI #2425 is Green on that exact application SHA. The Payment Captured Summary money integrity checkpoint is `13c20685`; primary exact-money revision `94cb9b30` also passed CI #2424 before QAS exposed the strict-MySQL grouping defect.
-- Latest verified QAS application revision is `13c20685c36d5276bf64e46a9ecfa075ad73a12e`. Final QAS promotion from `94cb9b30` completed successfully with application/static HTTP 200, maintenance OFF, no pending migrations, scheduler + queue worker healthy, failed jobs 0 and strict ops health Green.
+- Latest verified application / CI revision: `3ed0bfda62f9004eb2b0f8addb7390850c3aa5c5`.
+- Hardening CI #2427 is Green on that exact application SHA. The Order Cash Summary money integrity checkpoint is `3ed0bfda`.
+- Latest verified QAS application revision is `3ed0bfda62f9004eb2b0f8addb7390850c3aa5c5`. QAS promotion from `13c20685` completed successfully with application/static HTTP 200, maintenance OFF, no pending migrations, scheduler + queue worker healthy, failed jobs 0 and strict ops health Green.
 - Order Discount Line-Profit Integrity is source/CI closed: discounted merchandise revenue is allocated in exact cents across lines before authoritative COGS, POS net lines are not discounted twice, and historical discounted rows can be audited/repaired with bounded dry-run/apply command `commerce:reconcile-order-line-profit`.
 - Offer analytics now separates commercially realized promotion performance from fully-refunded discounted losses. Fully-refunded orders do not rank as coupon performance but their negative profit remains visible as separate loss evidence.
 - Paymob checkout preflight is source/CI closed for order/payment/gateway currency and amount consistency before provider initiation.
 - Customer order chronology and Growth experiment attribution now use business time rather than mutable update timestamps.
-- Exchange/Replacement, Returns/Refunds/POS, Order Cash Summary, Customer Value Currency, Sales COGS/Lot provenance, Purchasing/Inventory, Supplier Operational AP and Payroll integrity remain closed at their recorded scopes unless a reproduced defect reopens them.
+- Exchange/Replacement, Returns/Refunds/POS, Customer Value Currency, Sales COGS/Lot provenance, Purchasing/Inventory, Supplier Operational AP and Payroll integrity remain closed at their recorded scopes unless a reproduced defect reopens them. Order Cash Summary was reopened by a reproduced QAS defect and is reclosed at the explicit checkpoint below.
 - Refund Component Allocation Integrity is closed for source + full CI + deployed-QAS runtime evidence. Refund ledger rows persist explicit merchandise/shipping/tax/payment-excess allocation; `refund_total` remains all cash returned while `commercial_refund_total` excludes payment-excess returns from realized commercial revenue. Legacy rows preserve merchandise-first compatibility.
 - QAS refund-ledger reconciliation dry-run scanned 1 candidate with `changed=0`, `commercial-refund-snapshot-changes=0`, `payment-status-changes=0`, `applied=0`. Transaction-wrapped QAS refund smoke passed automatic allocation, component bounds, payment-excess isolation, realized revenue, allocation reload and rollback cleanup.
 - Shipping Money Boundaries are closed for source + full CI + deployed-QAS runtime evidence: admin shipping rate/threshold inputs reject monetary over-precision, threshold math uses exact cents, and exact-threshold / one-cent-below behavior is deterministic across explicit before/after-discount policies.
