@@ -15,6 +15,20 @@ class OrderWorkspaceClosureTest extends TestCase
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
     }
 
+    public function test_order_cash_summary_keeps_exact_money_and_strict_mysql_grouping_contract(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/OrderController.php'));
+
+        $this->assertStringContainsString("UPPER(COALESCE(NULLIF(TRIM(payments.currency), '')", $controller);
+        $this->assertStringContainsString("UPPER(COALESCE(NULLIF(TRIM(orders.currency), ''), 'EGP'))", $controller);
+        $this->assertSame(2, substr_count($controller, "->groupBy('statement_currency')"));
+        $this->assertSame(2, substr_count($controller, "->orderBy('statement_currency')"));
+        $this->assertStringContainsString('BigDecimal::of', $controller);
+        $this->assertStringContainsString("->toScale(2, RoundingMode::Unnecessary)", $controller);
+        $this->assertStringNotContainsString('round((float) ($capturedByCurrency', $controller);
+        $this->assertStringNotContainsString('round((float) ($refundsByCurrency', $controller);
+    }
+
     public function test_customer_order_cancel_live_action_resets_confirmation_and_pending_state(): void
     {
         $view = file_get_contents(resource_path('views/frontend/orders/show.blade.php'));

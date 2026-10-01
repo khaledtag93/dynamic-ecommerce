@@ -79,57 +79,80 @@ class AdminOrderLiveListTest extends TestCase
             ->assertDontSee('data-live-filter', false);
     }
 
-    public function test_order_finance_cards_use_payment_ledger_and_keep_currencies_separate(): void
+    public function test_order_finance_cards_use_exact_ledger_money_and_normalized_currencies(): void
     {
         $owner = $this->createSuperAdmin();
 
-        $egpOrder = $this->order('LEDGER-EGP', 'EGP Customer', 'egp@example.test', 100, Order::STATUS_COMPLETED);
+        $egpOrder = $this->order('LEDGER-EGP', 'EGP Customer', 'egp@example.test', '1.00', Order::STATUS_COMPLETED);
         $egpOrder->update([
             'currency' => 'EGP',
             'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
-            'refund_total' => 20,
+            'refund_total' => '0.25',
         ]);
         Payment::query()->create([
             'order_id' => $egpOrder->id,
             'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
             'provider' => 'bank',
             'status' => Payment::STATUS_PAID,
-            'transaction_reference' => 'PAY-EGP-110',
-            'amount' => 110,
+            'transaction_reference' => 'PAY-EGP-100',
+            'amount' => '1.00',
             'currency' => 'EGP',
             'paid_at' => now(),
         ]);
         OrderRefund::query()->create([
             'order_id' => $egpOrder->id,
-            'amount' => 20,
-            'reason' => 'Ledger-backed refund',
+            'amount' => '0.25',
+            'reason' => 'Ledger-backed EGP refund',
             'processed_at' => now(),
         ]);
 
-        $usdOrder = $this->order('LEDGER-USD', 'USD Customer', 'usd@example.test', 50, Order::STATUS_COMPLETED);
-        $usdOrder->update([
+        $legacyUsdOrder = $this->order('LEDGER-USD-LEGACY', 'Legacy USD', 'legacy-usd@example.test', '0.10', Order::STATUS_COMPLETED);
+        $legacyUsdOrder->update([
             'currency' => 'USD',
             'payment_status' => Order::PAYMENT_STATUS_PAID,
         ]);
         Payment::query()->create([
-            'order_id' => $usdOrder->id,
+            'order_id' => $legacyUsdOrder->id,
             'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
             'provider' => 'bank',
             'status' => Payment::STATUS_PAID,
-            'transaction_reference' => 'PAY-USD-50',
-            'amount' => 50,
-            'currency' => 'USD',
+            'transaction_reference' => 'PAY-USD-010-BLANK',
+            'amount' => '0.10',
+            'currency' => '',
             'paid_at' => now(),
+        ]);
+
+        $lowercaseUsdOrder = $this->order('LEDGER-USD-LOWER', 'Lower USD', 'lower-usd@example.test', '0.20', Order::STATUS_COMPLETED);
+        $lowercaseUsdOrder->update([
+            'currency' => 'USD',
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'refund_total' => '0.10',
+        ]);
+        Payment::query()->create([
+            'order_id' => $lowercaseUsdOrder->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'provider' => 'bank',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'PAY-USD-020-LOWER',
+            'amount' => '0.20',
+            'currency' => 'usd',
+            'paid_at' => now(),
+        ]);
+        OrderRefund::query()->create([
+            'order_id' => $lowercaseUsdOrder->id,
+            'amount' => '0.10',
+            'reason' => 'Ledger-backed USD refund',
+            'processed_at' => now(),
         ]);
 
         $this->actingAs($owner)
             ->get(route('admin.orders.index'))
             ->assertOk()
-            ->assertSee('EGP 90.00 · USD 50.00')
-            ->assertSee('EGP 20.00');
+            ->assertSee('EGP 0.75 · USD 0.20')
+            ->assertSee('EGP 0.25 · USD 0.10');
     }
 
-    private function order(string $number, string $name, string $email, float $total, string $status): Order
+    private function order(string $number, string $name, string $email, float|int|string $total, string $status): Order
     {
         return Order::create([
             'order_number' => $number,

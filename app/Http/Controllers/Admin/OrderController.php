@@ -10,6 +10,8 @@ use App\Services\Commerce\AdminActivityLogService;
 use App\Services\Commerce\OrderActionService;
 use App\Services\Commerce\RefundAllocationService;
 use App\Services\Commerce\StoreSettingsService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -92,25 +94,27 @@ class OrderController extends Controller
             ]);
         }
 
-        $currencyExpression = "COALESCE(NULLIF(payments.currency, ''), NULLIF(orders.currency, ''), 'EGP')";
+        $currencyExpression = "UPPER(COALESCE(NULLIF(TRIM(payments.currency), ''), NULLIF(TRIM(orders.currency), ''), 'EGP'))";
         $capturedByCurrency = DB::table('payments')
             ->join('orders', 'orders.id', '=', 'payments.order_id')
             ->whereIn('payments.status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
             ->selectRaw($currencyExpression.' AS statement_currency')
             ->selectRaw('SUM(payments.amount) AS statement_total')
-            ->groupByRaw($currencyExpression)
+            ->groupBy('statement_currency')
+            ->orderBy('statement_currency')
             ->get()
-            ->keyBy(fn ($row) => strtoupper((string) $row->statement_currency));
+            ->keyBy(fn ($row) => (string) $row->statement_currency);
 
-        $orderCurrencyExpression = "COALESCE(NULLIF(orders.currency, ''), 'EGP')";
+        $orderCurrencyExpression = "UPPER(COALESCE(NULLIF(TRIM(orders.currency), ''), 'EGP'))";
         $refundsByCurrency = DB::table('order_refunds')
             ->join('orders', 'orders.id', '=', 'order_refunds.order_id')
             ->where('order_refunds.amount', '>', 0)
             ->selectRaw($orderCurrencyExpression.' AS statement_currency')
             ->selectRaw('SUM(order_refunds.amount) AS statement_total')
-            ->groupByRaw($orderCurrencyExpression)
+            ->groupBy('statement_currency')
+            ->orderBy('statement_currency')
             ->get()
-            ->keyBy(fn ($row) => strtoupper((string) $row->statement_currency));
+            ->keyBy(fn ($row) => (string) $row->statement_currency);
 
         $currencies = $capturedByCurrency->keys()
             ->merge($refundsByCurrency->keys())
@@ -119,18 +123,22 @@ class OrderController extends Controller
             ->values();
 
         $netCollectedByCurrency = $currencies->map(function (string $currency) use ($capturedByCurrency, $refundsByCurrency): array {
-            $captured = round((float) ($capturedByCurrency->get($currency)?->statement_total ?? 0), 2);
-            $refunded = round((float) ($refundsByCurrency->get($currency)?->statement_total ?? 0), 2);
+            $captured = BigDecimal::of((string) ($capturedByCurrency->get($currency)?->statement_total ?? '0'))
+                ->toScale(2, RoundingMode::Unnecessary);
+            $refunded = BigDecimal::of((string) ($refundsByCurrency->get($currency)?->statement_total ?? '0'))
+                ->toScale(2, RoundingMode::Unnecessary);
 
             return [
                 'currency' => $currency,
-                'amount' => round($captured - $refunded, 2),
+                'amount' => (string) $captured->minus($refunded)
+                    ->toScale(2, RoundingMode::Unnecessary),
             ];
         });
 
         $refundTotalsByCurrency = $currencies->map(fn (string $currency): array => [
             'currency' => $currency,
-            'amount' => round((float) ($refundsByCurrency->get($currency)?->statement_total ?? 0), 2),
+            'amount' => (string) BigDecimal::of((string) ($refundsByCurrency->get($currency)?->statement_total ?? '0'))
+                ->toScale(2, RoundingMode::Unnecessary),
         ]);
 
         $totalOrders = Order::count();
