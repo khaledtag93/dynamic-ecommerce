@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Services\Commerce\PaymentService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -64,20 +66,20 @@ class PaymentController extends Controller
             ]);
         }
 
+        $currencyExpression = "UPPER(COALESCE(NULLIF(TRIM(payments.currency), ''), NULLIF(TRIM(orders.currency), ''), 'EGP'))";
         $capturedByCurrency = Payment::query()
-            ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
-            ->selectRaw('currency, SUM(amount) AS captured_amount')
-            ->groupBy('currency')
-            ->orderBy('currency')
+            ->join('orders', 'orders.id', '=', 'payments.order_id')
+            ->whereIn('payments.status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
+            ->selectRaw($currencyExpression.' AS statement_currency')
+            ->selectRaw('SUM(payments.amount) AS captured_amount')
+            ->groupByRaw($currencyExpression)
+            ->orderByRaw($currencyExpression)
             ->get()
-            ->map(function ($row): array {
-                $currency = strtoupper(trim((string) ($row->currency ?: 'EGP')));
-
-                return [
-                    'currency' => $currency,
-                    'amount' => round((float) $row->captured_amount, 2),
-                ];
-            })
+            ->map(fn ($row): array => [
+                'currency' => (string) $row->statement_currency,
+                'amount' => (string) BigDecimal::of((string) $row->captured_amount)
+                    ->toScale(2, RoundingMode::Unnecessary),
+            ])
             ->values();
 
         $stats = $queueStats + [

@@ -103,9 +103,11 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString("__('Merchant settlement')", $view);
         $this->assertStringContainsString("__('Not tracked in Flowra V1')", $view);
         $this->assertStringNotContainsString("__('Paid amount')", $index);
-        $this->assertStringContainsString("->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])", $controller);
-        $this->assertStringContainsString("selectRaw('currency, SUM(amount) AS captured_amount')", $controller);
-        $this->assertStringContainsString("->groupBy('currency')", $controller);
+        $this->assertStringContainsString("->whereIn('payments.status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])", $controller);
+        $this->assertStringContainsString("NULLIF(TRIM(payments.currency), '')", $controller);
+        $this->assertStringContainsString("NULLIF(TRIM(orders.currency), '')", $controller);
+        $this->assertStringContainsString("SUM(payments.amount) AS captured_amount", $controller);
+        $this->assertStringContainsString("->groupByRaw(\$currencyExpression)", $controller);
         $this->assertStringContainsString("'captured_by_currency' => \$capturedByCurrency", $controller);
         $this->assertStringContainsString("\$stats['captured_by_currency']", $index);
         $this->assertStringNotContainsString("\$stats['paid_amount']", $index);
@@ -149,6 +151,76 @@ class PaymentWorkspaceClosureTest extends TestCase
 
                 return $stats['paid'] === 0
                     && (float) data_get($egp, 'amount', 0) === 100.0;
+            });
+    }
+
+    public function test_captured_amount_normalizes_currency_fallback_and_keeps_exact_decimal_sum(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        $legacyCurrencyOrder = Order::query()->create([
+            'order_number' => 'CAPTURE-CURRENCY-LEGACY-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'grand_total' => '0.10',
+            'refund_total' => '0.00',
+            'currency' => 'USD',
+            'customer_name' => 'Legacy Currency',
+            'customer_email' => 'legacy-currency@example.test',
+            'customer_phone' => '01000000001',
+            'shipping_address_line_1' => '1 Test Street',
+            'shipping_city' => 'Cairo',
+        ]);
+
+        $lowercaseCurrencyOrder = Order::query()->create([
+            'order_number' => 'CAPTURE-CURRENCY-LOWER-001',
+            'status' => Order::STATUS_COMPLETED,
+            'payment_status' => Order::PAYMENT_STATUS_PAID,
+            'payment_method' => Order::PAYMENT_METHOD_ONLINE,
+            'grand_total' => '0.20',
+            'refund_total' => '0.00',
+            'currency' => 'USD',
+            'customer_name' => 'Lowercase Currency',
+            'customer_email' => 'lowercase-currency@example.test',
+            'customer_phone' => '01000000002',
+            'shipping_address_line_1' => '2 Test Street',
+            'shipping_city' => 'Cairo',
+        ]);
+
+        Payment::query()->create([
+            'order_id' => $legacyCurrencyOrder->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'CAPTURE-CURRENCY-LEGACY-PAY-001',
+            'amount' => '0.10',
+            'currency' => '',
+            'paid_at' => now(),
+        ]);
+
+        Payment::query()->create([
+            'order_id' => $lowercaseCurrencyOrder->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'CAPTURE-CURRENCY-LOWER-PAY-001',
+            'amount' => '0.20',
+            'currency' => 'usd',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('admin.payments.index'))
+            ->assertOk()
+            ->assertViewHas('stats', function (array $stats): bool {
+                $usdRows = $stats['captured_by_currency']
+                    ->where('currency', 'USD')
+                    ->values();
+
+                return $usdRows->count() === 1
+                    && data_get($usdRows->first(), 'amount') === '0.30'
+                    && $stats['captured_by_currency']->where('currency', 'EGP')->isEmpty();
             });
     }
 
