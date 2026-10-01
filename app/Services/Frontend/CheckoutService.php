@@ -14,6 +14,8 @@ use App\Services\Commerce\PaymentService;
 use App\Services\Commerce\ProfitService;
 use App\Services\Commerce\ShippingService;
 use App\Services\Commerce\StockReservationService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -77,22 +79,26 @@ class CheckoutService
             $paymentMethod = (string) ($data['payment_method'] ?? Order::PAYMENT_METHOD_COD);
             $deliveryMethod = (string) ($data['delivery_method'] ?? Order::DELIVERY_METHOD_STANDARD);
 
+            $subtotalCents = max(0, $this->moneyToCents($summary['subtotal']));
+            $discountCents = min(
+                $subtotalCents,
+                max(0, $this->moneyToCents($summary['discount']))
+            );
+            $taxCents = max(0, $this->moneyToCents($summary['tax']));
+
             $shippingQuote = $this->shippingService->quote(
                 $deliveryMethod,
                 (string) ($data['shipping_city'] ?? ''),
                 (string) ($data['shipping_country'] ?? ''),
-                (float) $summary['subtotal'],
-                (float) $summary['discount'],
+                $this->centsToFloat($subtotalCents),
+                $this->centsToFloat($discountCents),
             );
 
-            $shippingTotal = (float) $shippingQuote['amount'];
-            $grandTotal = round(max(
+            $shippingCents = max(0, $this->moneyToCents($shippingQuote['amount']));
+            $grandTotalCents = max(
                 0,
-                (float) $summary['subtotal']
-                    + $shippingTotal
-                    + (float) $summary['tax']
-                    - (float) $summary['discount']
-            ), 2);
+                $subtotalCents + $shippingCents + $taxCents - $discountCents
+            );
 
             $order = Order::create([
                 'user_id' => $user->id,
@@ -110,11 +116,11 @@ class CheckoutService
                     ? now()->addDays((int) $shippingQuote['eta_max_days'])->toDateString()
                     : null,
                 'currency' => 'EGP',
-                'subtotal' => $summary['subtotal'],
-                'discount_total' => $summary['discount'],
-                'shipping_total' => $shippingTotal,
-                'tax_total' => $summary['tax'],
-                'grand_total' => $grandTotal,
+                'subtotal' => $this->centsToMoney($subtotalCents),
+                'discount_total' => $this->centsToMoney($discountCents),
+                'shipping_total' => $this->centsToMoney($shippingCents),
+                'tax_total' => $this->centsToMoney($taxCents),
+                'grand_total' => $this->centsToMoney($grandTotalCents),
                 'notes' => $data['notes'] ?? null,
 
                 'customer_name' => $data['customer_name'],
@@ -137,7 +143,7 @@ class CheckoutService
                 'billing_country' => $billingSameAsShipping ? ($data['shipping_country'] ?? 'Egypt') : ($data['billing_country'] ?? 'Egypt'),
 
                 'coupon_code' => $coupon?->code,
-                'coupon_snapshot' => $coupon ? $this->couponService->couponSnapshot($coupon, (float) $summary['subtotal']) : null,
+                'coupon_snapshot' => $coupon ? $this->couponService->couponSnapshot($coupon, $this->centsToFloat($subtotalCents)) : null,
 
                 'meta' => [
                     'items_count' => $summary['items_count'],
@@ -217,6 +223,27 @@ class CheckoutService
         });
     }
 
+
+    private function moneyToCents(mixed $amount): int
+    {
+        return BigDecimal::of((string) $amount)
+            ->multipliedBy('100')
+            ->toScale(0, RoundingMode::HalfUp)
+            ->toInt();
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        $sign = $cents < 0 ? '-' : '';
+        $absolute = abs($cents);
+
+        return $sign.intdiv($absolute, 100).'.'.str_pad((string) ($absolute % 100), 2, '0', STR_PAD_LEFT);
+    }
+
+    private function centsToFloat(int $cents): float
+    {
+        return $cents / 100;
+    }
 
     protected function hasRecentOrderPlacedNotification(User $user, int $orderId): bool
     {

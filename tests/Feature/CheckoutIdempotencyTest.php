@@ -80,6 +80,82 @@ class CheckoutIdempotencyTest extends TestCase
         $this->assertSame(3, (int) $product->fresh()->quantity);
     }
 
+    public function test_cart_summary_caps_stacked_discounts_to_exact_subtotal(): void
+    {
+        $couponService = Mockery::mock(CouponService::class);
+        $couponService->shouldReceive('resolveDiscountSummary')->once()->andReturn([
+            'coupon' => null,
+            'discount' => '0.20',
+            'label' => 'Exact coupon',
+            'code' => 'EXACT20',
+        ]);
+
+        $promotionEngine = Mockery::mock(PromotionEngine::class);
+        $promotionEngine->shouldReceive('resolve')->once()->andReturn([
+            'discount' => '0.20',
+            'label' => 'Exact promotion',
+            'rule' => null,
+        ]);
+
+        $cartService = new CartService(
+            $couponService,
+            $promotionEngine,
+            app(InventoryAvailabilityService::class)
+        );
+
+        $item = new CartItem([
+            'unit_price' => '0.10',
+            'quantity' => 3,
+        ]);
+
+        $summary = $cartService->summary(collect([$item]));
+
+        $this->assertSame(0.30, $summary['subtotal']);
+        $this->assertSame(0.20, $summary['coupon_discount']);
+        $this->assertSame(0.10, $summary['promotion_discount']);
+        $this->assertSame(0.30, $summary['discount']);
+        $this->assertSame(0.0, $summary['total']);
+    }
+
+    public function test_checkout_persists_exact_cent_cart_and_payment_totals(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProduct(5);
+
+        $this->actingAs($user);
+
+        CartItem::query()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'sku' => $product->sku,
+            'unit_price' => '0.10',
+            'quantity' => 3,
+            'meta' => ['product_slug' => $product->slug],
+        ]);
+
+        $order = app(CheckoutService::class)->place([
+            'customer_name' => 'Exact Cent Checkout',
+            'customer_email' => 'exact-cent-checkout@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Exact Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+            'billing_same_as_shipping' => true,
+            'payment_method' => Order::PAYMENT_METHOD_COD,
+            'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+        ], $user);
+
+        $fresh = $order->fresh(['payments', 'items']);
+
+        $this->assertSame('0.30', $fresh->subtotal);
+        $this->assertSame('0.00', $fresh->discount_total);
+        $this->assertSame('0.00', $fresh->shipping_total);
+        $this->assertSame('0.30', $fresh->grand_total);
+        $this->assertSame('0.30', $fresh->payments->firstOrFail()->amount);
+        $this->assertSame('0.30', $fresh->items->firstOrFail()->line_total);
+    }
+
     public function test_checkout_snapshots_inventory_valuation_cost_for_cogs(): void
     {
         $user = User::factory()->create();

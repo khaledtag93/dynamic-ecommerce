@@ -8,6 +8,8 @@ use App\Models\ProductVariant;
 use App\Services\Commerce\CouponService;
 use App\Services\Commerce\InventoryAvailabilityService;
 use App\Services\Commerce\PromotionEngine;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -58,30 +60,42 @@ class CartService
     public function summary(?\Illuminate\Support\Collection $items = null): array
     {
         $items ??= $this->items();
-        $subtotal = (float) $items->sum(fn ($item) => $item->line_total);
+        $subtotalCents = (int) $items->sum(
+            fn ($item) => $this->moneyToCents($item->unit_price) * (int) $item->quantity
+        );
         $count = (int) $items->sum('quantity');
-        $shipping = 0.00;
-        $tax = 0.00;
+        $shippingCents = 0;
+        $taxCents = 0;
+        $subtotal = $this->centsToFloat($subtotalCents);
+
         $couponSummary = $this->couponService->resolveDiscountSummary($subtotal);
-        $couponDiscount = (float) ($couponSummary['discount'] ?? 0);
+        $couponDiscountCents = min(
+            $subtotalCents,
+            max(0, $this->moneyToCents($couponSummary['discount'] ?? 0))
+        );
+
         $promotionSummary = $this->promotionEngine->resolve($items, $subtotal);
-        $promotionDiscount = (float) ($promotionSummary['discount'] ?? 0);
-        $discount = $couponDiscount + $promotionDiscount;
+        $promotionDiscountCents = min(
+            max(0, $subtotalCents - $couponDiscountCents),
+            max(0, $this->moneyToCents($promotionSummary['discount'] ?? 0))
+        );
+        $discountCents = $couponDiscountCents + $promotionDiscountCents;
+        $totalCents = max(0, $subtotalCents + $shippingCents + $taxCents - $discountCents);
 
         return [
             'items' => $items,
             'items_count' => $count,
-            'subtotal' => round($subtotal, 2),
-            'shipping' => $shipping,
-            'tax' => $tax,
-            'discount' => round($discount, 2),
+            'subtotal' => $subtotal,
+            'shipping' => $this->centsToFloat($shippingCents),
+            'tax' => $this->centsToFloat($taxCents),
+            'discount' => $this->centsToFloat($discountCents),
             'coupon' => $couponSummary['coupon'],
-            'coupon_discount' => round($couponDiscount, 2),
+            'coupon_discount' => $this->centsToFloat($couponDiscountCents),
             'coupon_code' => $couponSummary['code'],
             'coupon_label' => $couponSummary['label'],
-            'promotion_discount' => round($promotionDiscount, 2),
+            'promotion_discount' => $this->centsToFloat($promotionDiscountCents),
             'promotion_label' => $promotionSummary['label'],
-            'total' => round(max(0, $subtotal + $shipping + $tax - $discount), 2),
+            'total' => $this->centsToFloat($totalCents),
         ];
     }
 
@@ -281,6 +295,19 @@ class CartService
                 'quantity' => min($guestItem->quantity, max(1, $availableStock)),
             ]);
         }
+    }
+
+    private function moneyToCents(mixed $amount): int
+    {
+        return BigDecimal::of((string) $amount)
+            ->multipliedBy('100')
+            ->toScale(0, RoundingMode::HalfUp)
+            ->toInt();
+    }
+
+    private function centsToFloat(int $cents): float
+    {
+        return $cents / 100;
     }
 
     protected function ensureOwns(CartItem $item): void
