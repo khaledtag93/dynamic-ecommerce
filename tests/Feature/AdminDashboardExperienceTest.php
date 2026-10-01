@@ -47,6 +47,44 @@ class AdminDashboardExperienceTest extends TestCase
             ->assertSee('UX-UNPAID');
     }
 
+    public function test_dashboard_financial_kpis_keep_currencies_separate(): void
+    {
+        $owner = $this->createSuperAdmin();
+
+        foreach ([
+            ['DASH-EGP-014', 'EGP', '0.14'],
+            ['DASH-EGP-015', 'EGP', '0.15'],
+            ['DASH-USD-200', 'USD', '2.00'],
+        ] as [$number, $currency, $total]) {
+            Order::create([
+                'order_number' => $number,
+                'currency' => $currency,
+                'grand_total' => $total,
+                'subtotal' => $total,
+                'discount_total' => '0.00',
+                'shipping_total' => '0.00',
+                'tax_total' => '0.00',
+                'customer_name' => 'Dashboard currency test',
+                'customer_email' => strtolower($number).'@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => '1 Test Street',
+                'shipping_city' => 'Cairo',
+            ]);
+        }
+
+        $this->actingAs($owner)->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertViewHas('kpiCards', fn ($cards) =>
+                $cards[0]['value'] === 'EGP 0.29 · USD 2.00'
+                && $cards[1]['value'] === '3'
+                && $cards[3]['value'] === 'EGP 0.15 · USD 2.00'
+            )
+            ->assertSee('EGP 0.14')
+            ->assertSee('EGP 0.15')
+            ->assertSee('USD 2.00')
+            ->assertDontSee('EGP 2.29');
+    }
+
     public function test_dashboard_low_stock_snapshot_includes_variant_inventory(): void
     {
         $owner = $this->createSuperAdmin();

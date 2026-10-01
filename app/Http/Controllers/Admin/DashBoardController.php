@@ -10,6 +10,8 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Commerce\InventoryAvailabilityService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Http\Request;
 
 class DashBoardController extends Controller
@@ -82,24 +84,55 @@ class DashBoardController extends Controller
         $kpiCards = [];
 
         if ($can('orders.view')) {
-            $period = Order::query()
+            $currencyExpression = "UPPER(COALESCE(NULLIF(TRIM(currency), ''), 'EGP'))";
+            $periodByCurrency = Order::query()
                 ->whereBetween('created_at', [now()->subDays(29)->startOfDay(), now()])
+                ->selectRaw($currencyExpression.' as statement_currency')
                 ->selectRaw('COUNT(*) as orders_count, COALESCE(SUM(grand_total), 0) as order_value')
                 ->selectRaw(
                     'COALESCE(SUM(CASE WHEN payment_status IN (?, ?) THEN 1 ELSE 0 END), 0) as paid_orders',
                     [Order::PAYMENT_STATUS_PAID, Order::PAYMENT_STATUS_PARTIALLY_REFUNDED]
                 )
-                ->first();
+                ->groupBy('statement_currency')
+                ->orderBy('statement_currency')
+                ->get();
 
-            $ordersCount = (int) $period->orders_count;
-            $orderValue = (float) $period->order_value;
-            $paidShare = $ordersCount > 0 ? ((int) $period->paid_orders / $ordersCount) * 100 : 0;
+            $ordersCount = (int) $periodByCurrency->sum(fn ($row) => (int) $row->orders_count);
+            $paidOrders = (int) $periodByCurrency->sum(fn ($row) => (int) $row->paid_orders);
+            $paidShare = $ordersCount > 0 ? ($paidOrders / $ordersCount) * 100 : 0;
+
+            $grossOrderValue = $periodByCurrency->isEmpty()
+                ? 'EGP 0.00'
+                : $periodByCurrency
+                    ->map(fn ($row) => $this->formatCurrencyMoney(
+                        (string) $row->statement_currency,
+                        (string) $row->order_value
+                    ))
+                    ->implode(' · ');
+
+            $averageOrderValue = $periodByCurrency->isEmpty()
+                ? 'EGP 0.00'
+                : $periodByCurrency
+                    ->map(function ($row): string {
+                        $average = BigDecimal::of((string) $row->order_value)
+                            ->dividedBy(
+                                (string) max(1, (int) $row->orders_count),
+                                2,
+                                RoundingMode::HalfUp
+                            );
+
+                        return $this->formatCurrencyMoney(
+                            (string) $row->statement_currency,
+                            (string) $average
+                        );
+                    })
+                    ->implode(' · ');
 
             $kpiCards = [
-                ['label' => __('Gross order value'), 'value' => 'EGP ' . number_format($orderValue, 2), 'copy' => __('Order value across all statuses in the last 30 days.'), 'icon' => 'mdi-cash-multiple'],
+                ['label' => __('Gross order value'), 'value' => $grossOrderValue, 'copy' => __('Order value across all statuses in the last 30 days.'), 'icon' => 'mdi-cash-multiple'],
                 ['label' => __('Orders'), 'value' => number_format($ordersCount), 'copy' => __('Orders created in the last 30 days.'), 'icon' => 'mdi-cart-outline'],
                 ['label' => __('Paid order share'), 'value' => number_format($paidShare, 1) . '%', 'copy' => __('Paid orders as a share of recent orders.'), 'icon' => 'mdi-chart-line'],
-                ['label' => __('Average order value'), 'value' => 'EGP ' . number_format($ordersCount > 0 ? $orderValue / $ordersCount : 0, 2), 'copy' => __('Average basket size for the recent window.'), 'icon' => 'mdi-basket-outline'],
+                ['label' => __('Average order value'), 'value' => $averageOrderValue, 'copy' => __('Average basket size for the recent window.'), 'icon' => 'mdi-basket-outline'],
             ];
         }
 
@@ -142,6 +175,20 @@ class DashBoardController extends Controller
             'hasRecentActivity',
             'hasWorkspaces',
         ));
+    }
+
+    private function formatCurrencyMoney(string $currency, mixed $value): string
+    {
+        $currency = strtoupper(trim($currency)) ?: 'EGP';
+        $numeric = is_numeric($value) ? (string) $value : '0';
+        $money = (string) BigDecimal::of($numeric)->toScale(2, RoundingMode::HalfUp);
+        [$whole, $fraction] = array_pad(explode('.', $money, 2), 2, '00');
+
+        $negative = str_starts_with($whole, '-');
+        $digits = ltrim($whole, '-');
+        $grouped = preg_replace('/\B(?=(\d{3})+(?!\d))/', ',', $digits) ?? $digits;
+
+        return $currency.' '.($negative ? '-' : '').$grouped.'.'.$fraction;
     }
 
     protected function likePattern(string $value): string

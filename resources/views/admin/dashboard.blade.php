@@ -125,7 +125,7 @@
                                             <td><a href="{{ route('admin.orders.show', $order) }}" class="fw-semibold">{{ $order->order_number }}</a></td>
                                             <td>{{ $order->customer_name }}</td>
                                             <td><span class="badge admin-status-badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span></td>
-                                            <td class="fw-semibold text-nowrap">EGP {{ number_format($order->grand_total, 2) }}</td>
+                                            <td class="fw-semibold text-nowrap">{{ strtoupper(trim((string) $order->currency)) ?: 'EGP' }} {{ number_format($order->grand_total, 2) }}</td>
                                         </tr>
                                     @empty
                                         <tr><td colspan="4" class="text-center text-muted py-4">{{ __('No orders yet.') }}</td></tr>
