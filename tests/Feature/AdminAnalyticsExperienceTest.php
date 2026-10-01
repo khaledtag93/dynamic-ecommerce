@@ -483,6 +483,53 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame(55.56, (float) $row->gross_margin_percent);
     }
 
+    public function test_product_variant_analytics_preserves_exact_money(): void
+    {
+        $product = $this->createAnalyticsProduct();
+
+        foreach ([
+            ['VAR-EXACT-010', '0.10', '0.03', '0.07'],
+            ['VAR-EXACT-020', '0.20', '0.06', '0.14'],
+        ] as [$number, $revenue, $cost, $profit]) {
+            $order = Order::query()->create([
+                'order_number' => $number,
+                'status' => Order::STATUS_COMPLETED,
+                'payment_status' => Order::PAYMENT_STATUS_PAID,
+                'grand_total' => $revenue,
+                'subtotal' => $revenue,
+                'refund_total' => '0.00',
+                'discount_total' => '0.00',
+                'customer_name' => 'Variant Exact Customer',
+                'customer_email' => strtolower($number).'@example.test',
+                'customer_phone' => '01000000000',
+                'shipping_address_line_1' => 'Test address',
+                'shipping_city' => 'Cairo',
+                'placed_at' => now(),
+            ]);
+
+            $order->items()->create([
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'sku' => $product->sku,
+                'unit_price' => $revenue,
+                'unit_cost' => $cost,
+                'quantity' => 1,
+                'line_total' => $revenue,
+                'profit_amount' => $profit,
+            ]);
+        }
+
+        $row = app(\App\Services\Analytics\AnalyticsRevenueService::class)
+            ->topVariantsForProduct($product, now()->startOfDay(), now()->endOfDay(), 8)
+            ->sole();
+
+        $this->assertSame('0.30', $row->revenue_gross);
+        $this->assertSame('0.30', $row->realized_revenue);
+        $this->assertSame('0.09', $row->realized_cogs);
+        $this->assertSame('0.21', $row->profit_total);
+        $this->assertSame(70.0, (float) $row->gross_margin_percent);
+    }
+
     public function test_variant_profitability_retains_fully_refunded_non_restocked_loss_without_counting_quantity(): void
     {
         $product = $this->createAnalyticsProduct();
@@ -1031,6 +1078,53 @@ class AdminAnalyticsExperienceTest extends TestCase
         }
     }
 
+    public function test_product_and_category_analytics_preserve_exact_money_from_daily_aggregates(): void
+    {
+        $product = $this->createAnalyticsProduct();
+
+        foreach ([
+            [now()->subDay(), '0.10', '0.03', '0.07'],
+            [now(), '0.20', '0.06', '0.14'],
+        ] as [$date, $revenue, $cogs, $profit]) {
+            AnalyticsProductDailyStat::query()->create([
+                'stat_date' => $date->toDateString(),
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'product_slug' => $product->slug,
+                'category_id' => $product->category_id,
+                'views' => 2,
+                'add_to_cart_count' => 1,
+                'purchases' => 1,
+                'purchased_quantity' => 1,
+                'revenue_gross' => $revenue,
+                'realized_cogs' => $cogs,
+                'profit_total' => $profit,
+                'conversion_rate' => '0.5000',
+                'aggregated_at' => now(),
+            ]);
+        }
+
+        $service = app(AnalyticsDashboardService::class);
+        $from = now()->subDay()->startOfDay();
+        $to = now()->endOfDay();
+        $totals = data_get($service->buildProductDrilldown($product, $from, $to), 'totals');
+        $snapshot = $service->buildSnapshot($from, $to);
+        $productRow = collect(data_get($snapshot, 'current.top_products'))->sole();
+        $categoryRow = collect(data_get($snapshot, 'current.top_categories'))->sole();
+
+        $this->assertSame('0.30', $totals['revenue_gross']);
+        $this->assertSame('0.09', $totals['realized_cogs']);
+        $this->assertSame('0.21', $totals['profit_total']);
+        $this->assertSame('0.15', $totals['average_revenue_per_purchase']);
+
+        foreach ([$productRow, $categoryRow] as $row) {
+            $this->assertSame('0.30', $row->revenue_gross);
+            $this->assertSame('0.09', $row->realized_cogs);
+            $this->assertSame('0.21', $row->profit_total);
+            $this->assertSame(70.0, (float) $row->gross_margin_percent);
+        }
+    }
+
     public function test_analytics_summary_preserves_exact_money_from_daily_aggregates(): void
     {
         foreach ([
@@ -1074,6 +1168,81 @@ class AdminAnalyticsExperienceTest extends TestCase
         $this->assertSame('0.00', data_get($comparison, 'revenue_gross.previous'));
         $this->assertSame('0.30', data_get($comparison, 'revenue_gross.delta'));
         $this->assertSame('0.15', data_get($comparison, 'average_order_value.current'));
+    }
+
+    public function test_product_and_category_analytics_preserve_exact_money_from_raw_events(): void
+    {
+        $product = $this->createAnalyticsProduct();
+        $from = now()->subDay()->startOfDay();
+        $to = now()->endOfDay();
+
+        AnalyticsDailyStat::query()->create([
+            'stat_date' => $from->toDateString(),
+            'product_views' => 0,
+            'cart_views' => 0,
+            'add_to_cart_count' => 0,
+            'remove_from_cart_count' => 0,
+            'checkout_starts' => 0,
+            'purchases' => 0,
+            'orders_count' => 0,
+            'sessions_count' => 0,
+            'users_count' => 0,
+            'revenue_gross' => '0.00',
+            'discount_total' => '0.00',
+            'shipping_total' => '0.00',
+            'average_order_value' => '0.00',
+            'cart_abandonment_rate' => '0.0000',
+            'checkout_completion_rate' => '0.0000',
+            'view_to_cart_rate' => '0.0000',
+            'view_to_purchase_rate' => '0.0000',
+            'meta' => ['restatement_requested_at' => now()->toIso8601String()],
+            'aggregated_at' => now(),
+        ]);
+
+        foreach ([
+            ['raw-product-exact-1', now()->subDay(), '0.10', '0.03', '0.07'],
+            ['raw-product-exact-2', now(), '0.20', '0.06', '0.14'],
+        ] as [$entityId, $occurredAt, $revenue, $cogs, $profit]) {
+            AnalyticsEvent::query()->create([
+                'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+                'entity_type' => AnalyticsEvent::ENTITY_ORDER,
+                'entity_id' => $entityId,
+                'session_id' => $entityId,
+                'meta' => [
+                    'counts_as_purchase' => true,
+                    'grand_total' => $revenue,
+                    'discount_total' => '0.00',
+                    'shipping_total' => '0.00',
+                    'line_items' => [[
+                        'product_id' => $product->id,
+                        'quantity' => 1,
+                        'line_total' => $revenue,
+                        'realized_revenue' => $revenue,
+                        'realized_cogs' => $cogs,
+                        'profit_total' => $profit,
+                    ]],
+                ],
+                'occurred_at' => $occurredAt,
+            ]);
+        }
+
+        $service = app(AnalyticsDashboardService::class);
+        $totals = data_get($service->buildProductDrilldown($product, $from, $to), 'totals');
+        $snapshot = $service->buildSnapshot($from, $to);
+        $productRow = collect(data_get($snapshot, 'current.top_products'))->sole();
+        $categoryRow = collect(data_get($snapshot, 'current.top_categories'))->sole();
+
+        $this->assertSame('0.30', $totals['revenue_gross']);
+        $this->assertSame('0.09', $totals['realized_cogs']);
+        $this->assertSame('0.21', $totals['profit_total']);
+        $this->assertSame('0.15', $totals['average_revenue_per_purchase']);
+
+        foreach ([$productRow, $categoryRow] as $row) {
+            $this->assertSame('0.30', $row->revenue_gross);
+            $this->assertSame('0.09', $row->realized_cogs);
+            $this->assertSame('0.21', $row->profit_total);
+            $this->assertSame(70.0, (float) $row->gross_margin_percent);
+        }
     }
 
     public function test_analytics_summary_preserves_exact_money_from_raw_events(): void

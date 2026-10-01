@@ -7,6 +7,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Services\Commerce\OrderRevenueAllocationService;
 use App\Services\Commerce\ProfitService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -120,26 +122,22 @@ class AnalyticsRevenueService
                         );
                         $economics = $this->profitService->calculateOrderItemEconomics(
                             $item,
-                            $realizedRevenueCents / 100
+                            $this->centsToMoney($realizedRevenueCents)
                         );
 
                         $buckets[$key]['quantity'] += (int) ($quantities[(int) $item->id] ?? 0);
                         $buckets[$key]['revenue_cents'] += $realizedRevenueCents;
-                        $buckets[$key]['cogs_cents'] += (int) round(
-                            ((float) $economics['realized_cogs']) * 100
-                        );
-                        $buckets[$key]['profit_cents'] += (int) round(
-                            ((float) $economics['profit_total']) * 100
-                        );
+                        $buckets[$key]['cogs_cents'] += $this->moneyToCents($economics['realized_cogs']);
+                        $buckets[$key]['profit_cents'] += $this->moneyToCents($economics['profit_total']);
                     }
                 }
             });
 
         return collect($buckets)
             ->map(function (array $row): object {
-                $revenue = round($row['revenue_cents'] / 100, 2);
-                $cogs = round($row['cogs_cents'] / 100, 2);
-                $profit = round($row['profit_cents'] / 100, 2);
+                $revenue = $this->centsToMoney($row['revenue_cents']);
+                $cogs = $this->centsToMoney($row['cogs_cents']);
+                $profit = $this->centsToMoney($row['profit_cents']);
 
                 return (object) [
                     'product_variant_id' => $row['product_variant_id'],
@@ -149,8 +147,8 @@ class AnalyticsRevenueService
                     'realized_revenue' => $revenue,
                     'realized_cogs' => $cogs,
                     'profit_total' => $profit,
-                    'gross_margin_percent' => $revenue > 0
-                        ? round(($profit / $revenue) * 100, 2)
+                    'gross_margin_percent' => $row['revenue_cents'] > 0
+                        ? round(($row['profit_cents'] / $row['revenue_cents']) * 100, 2)
                         : null,
                 ];
             })
@@ -212,6 +210,21 @@ class AnalyticsRevenueService
             'quantity' => $row['quantity'],
             'revenue_gross' => round($row['revenue_cents'] / 100, 2),
         ];
+    }
+
+    private function moneyToCents(mixed $value): int
+    {
+        $numeric = is_numeric($value) ? (string) $value : '0';
+
+        return BigDecimal::of($numeric)
+            ->multipliedBy('100')
+            ->toInt();
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        return (string) BigDecimal::of((string) $cents)
+            ->dividedBy('100', 2, RoundingMode::Unnecessary);
     }
 
     protected function economicOrdersQuery(Carbon $from, Carbon $to): Builder
