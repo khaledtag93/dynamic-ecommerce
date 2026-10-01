@@ -274,7 +274,7 @@ class OrderActionService
                 $codPayment = $activeCodPayments->first();
 
                 if (
-                    round((float) $codPayment->amount, 2) !== round((float) $lockedOrder->grand_total, 2)
+                    $this->moneyToCents($codPayment->amount) !== $this->moneyToCents($lockedOrder->grand_total)
                     || strtoupper((string) $codPayment->currency) !== strtoupper((string) $lockedOrder->currency)
                 ) {
                     throw ValidationException::withMessages([
@@ -357,12 +357,14 @@ class OrderActionService
             ]);
         }
 
-        $paidTotal = round((float) $paidPayments->sum(fn (Payment $payment) => (float) $payment->amount), 2);
+        $paidTotalCents = (int) $paidPayments->sum(
+            fn (Payment $payment) => $this->moneyToCents($payment->amount)
+        );
         $currencyMismatch = $paidPayments->contains(
             fn (Payment $payment) => strtoupper((string) $payment->currency) !== strtoupper((string) $order->currency)
         );
 
-        if ($currencyMismatch || $paidTotal !== round((float) $order->grand_total, 2)) {
+        if ($currencyMismatch || $paidTotalCents !== $this->moneyToCents($order->grand_total)) {
             throw ValidationException::withMessages([
                 'status' => __('Paid payment ledger must exactly match this order total and currency before fulfillment can continue.'),
             ]);

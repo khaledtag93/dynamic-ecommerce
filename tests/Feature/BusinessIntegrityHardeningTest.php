@@ -1439,6 +1439,43 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
     }
 
+    public function test_non_cod_split_paid_ledger_matches_order_in_exact_cents(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 0.30);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+
+        $first = $this->makePayment($order, Payment::STATUS_PAID);
+        $first->update(['amount' => '0.10']);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'PAY-SPLIT-'.Str::upper(Str::random(10)),
+            'amount' => '0.20',
+            'currency' => 'EGP',
+            'paid_at' => now(),
+        ]);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class),
+            app(PaymentService::class),
+            app(GrowthAttributionService::class)
+        );
+
+        $updated = $service->updateStatus($order, Order::STATUS_PROCESSING);
+
+        $this->assertSame(Order::STATUS_PROCESSING, $updated->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $updated->payment_status);
+    }
+
     public function test_order_completion_refreshes_final_profit_analytics_and_growth_attribution(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PAID, 100);
@@ -1590,6 +1627,32 @@ class BusinessIntegrityHardeningTest extends TestCase
             ->where('entity_type', AnalyticsEvent::ENTITY_ORDER)
             ->where('entity_id', (string) $order->id)
             ->count());
+    }
+
+    public function test_cod_completion_matches_payment_and_order_in_exact_cents(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 0.30);
+        $payment = $this->makePayment($order, Payment::STATUS_PENDING);
+
+        $notifications = Mockery::mock(OrderNotificationService::class)->shouldIgnoreMissing();
+        $service = new OrderActionService(
+            $notifications,
+            app(InventoryService::class),
+            app(StockReservationService::class),
+            app(CouponService::class),
+            app(AnalyticsTracker::class),
+            app(ProfitService::class),
+            app(PaymentService::class),
+            app(GrowthAttributionService::class)
+        );
+
+        $service->updateStatus($order, Order::STATUS_PROCESSING);
+        $completed = $service->updateStatus($order->fresh(), Order::STATUS_COMPLETED);
+
+        $this->assertSame(Order::STATUS_COMPLETED, $completed->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $completed->payment_status);
+        $this->assertSame('0.30', $payment->fresh()->amount);
+        $this->assertSame(Payment::STATUS_PAID, $payment->fresh()->status);
     }
 
     public function test_cancellation_is_blocked_after_shipping_starts_without_restock(): void
