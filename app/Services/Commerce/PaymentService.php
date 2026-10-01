@@ -7,6 +7,8 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\OrderPaymentStatusUpdatedNotification;
 use App\Services\Payments\PaymobGatewayService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -382,16 +384,16 @@ class PaymentService
             ];
 
             if ($lockedOrder && $status === Payment::STATUS_PAID) {
-                $projectedPaidTotal = $this->projectedPaidTotal($lockedOrder, $lockedPayment);
-                $orderTotal = round((float) $lockedOrder->grand_total, 2);
+                $projectedPaidTotalCents = $this->projectedPaidTotalCents($lockedOrder, $lockedPayment);
+                $orderTotalCents = $this->moneyToCents($lockedOrder->grand_total);
 
-                if ($projectedPaidTotal > $orderTotal) {
+                if ($projectedPaidTotalCents > $orderTotalCents) {
                     $exception = [
                         'code' => 'payment_overcapture',
                         'payment_id' => $lockedPayment->id,
                         'transaction_id' => $incomingTransactionId,
-                        'projected_paid_total' => $projectedPaidTotal,
-                        'order_total' => $orderTotal,
+                        'projected_paid_total' => $projectedPaidTotalCents / 100,
+                        'order_total' => $orderTotalCents / 100,
                         'at' => now()->toIso8601String(),
                         'refund_required' => true,
                     ];
@@ -776,9 +778,9 @@ class PaymentService
         }
     }
 
-    public function reconcileProviderReversalEvidence(Order $order, float $canonicalRefundTotal, ?int $actorId = null): void
+    public function reconcileProviderReversalEvidence(Order $order, int|float|string $canonicalRefundTotal, ?int $actorId = null): void
     {
-        $canonicalRefundCents = max(0, (int) round($canonicalRefundTotal * 100));
+        $canonicalRefundCents = max(0, $this->moneyToCents($canonicalRefundTotal));
         if ($canonicalRefundCents < 1) {
             return;
         }
@@ -849,22 +851,22 @@ class PaymentService
     {
         // Refund records are the authoritative refund ledger. The denormalized
         // order snapshot must always be derived from this ledger.
-        $refundTotal = round((float) $order->refunds()->sum('amount'), 2);
+        $refundTotalCents = (int) $order->refunds()
+            ->get(['amount'])
+            ->sum(fn ($refund) => $this->moneyToCents($refund->amount));
 
-        if ($refundTotal > 0) {
+        if ($refundTotalCents > 0) {
             $order->unsetRelation('refunds');
-            $commercialRefundTotal = round(
-                $this->refundAllocationService->commercialRefundTotalCents($order) / 100,
-                2
-            );
-            $capturedTotal = round((float) $order->payments()
+            $commercialRefundTotalCents = $this->refundAllocationService->commercialRefundTotalCents($order);
+            $capturedTotalCents = (int) $order->payments()
                 ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
-                ->sum('amount'), 2);
+                ->get(['amount'])
+                ->sum(fn (Payment $payment) => $this->moneyToCents($payment->amount));
 
             return [
-                'refund_total' => $refundTotal,
-                'commercial_refund_total' => $commercialRefundTotal,
-                'payment_status' => $capturedTotal > 0 && $refundTotal >= $capturedTotal
+                'refund_total' => $this->centsToMoney($refundTotalCents),
+                'commercial_refund_total' => $this->centsToMoney($commercialRefundTotalCents),
+                'payment_status' => $capturedTotalCents > 0 && $refundTotalCents >= $capturedTotalCents
                     ? Order::PAYMENT_STATUS_REFUNDED
                     : Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
             ];
@@ -874,20 +876,20 @@ class PaymentService
 
         if ($payments->isEmpty()) {
             return [
-                'refund_total' => 0.0,
-                'commercial_refund_total' => 0.0,
+                'refund_total' => '0.00',
+                'commercial_refund_total' => '0.00',
                 'payment_status' => (string) $order->payment_status,
             ];
         }
 
-        $paidTotal = round((float) $payments
+        $paidTotalCents = (int) $payments
             ->where('status', Payment::STATUS_PAID)
-            ->sum(fn (Payment $payment) => (float) $payment->amount), 2);
-        $orderTotal = round((float) $order->grand_total, 2);
+            ->sum(fn (Payment $payment) => $this->moneyToCents($payment->amount));
+        $orderTotalCents = $this->moneyToCents($order->grand_total);
 
         $status = match (true) {
-            $paidTotal >= $orderTotal && $orderTotal > 0 => Order::PAYMENT_STATUS_PAID,
-            $paidTotal > 0 => Order::PAYMENT_STATUS_PENDING,
+            $paidTotalCents >= $orderTotalCents && $orderTotalCents > 0 => Order::PAYMENT_STATUS_PAID,
+            $paidTotalCents > 0 => Order::PAYMENT_STATUS_PENDING,
             $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_REFUNDED) => Order::PAYMENT_STATUS_REFUNDED,
             $payments->contains(fn (Payment $payment) => in_array($payment->status, [Payment::STATUS_PENDING, Payment::STATUS_AUTHORIZED], true)) => Order::PAYMENT_STATUS_PENDING,
             $payments->contains(fn (Payment $payment) => $payment->status === Payment::STATUS_FAILED) => Order::PAYMENT_STATUS_FAILED,
@@ -895,8 +897,8 @@ class PaymentService
         };
 
         return [
-            'refund_total' => 0.0,
-            'commercial_refund_total' => 0.0,
+            'refund_total' => '0.00',
+            'commercial_refund_total' => '0.00',
             'payment_status' => $status,
         ];
     }
@@ -911,7 +913,7 @@ class PaymentService
 
             $snapshot = $this->inspectOrderPaymentSync($lockedOrder);
             $lockedOrder->update($snapshot);
-            $this->reconcileProviderReversalEvidence($lockedOrder, (float) ($snapshot['refund_total'] ?? 0));
+            $this->reconcileProviderReversalEvidence($lockedOrder, $snapshot['refund_total'] ?? '0.00');
         });
     }
 
@@ -1003,24 +1005,24 @@ class PaymentService
             ->first();
     }
 
-    protected function projectedPaidTotal(Order $order, Payment $payment): float
+    protected function projectedPaidTotalCents(Order $order, Payment $payment): int
     {
-        $otherPaidTotal = $order->payments()
+        $otherPaidTotalCents = (int) $order->payments()
             ->where('id', '!=', $payment->id)
             ->where('status', Payment::STATUS_PAID)
             ->lockForUpdate()
             ->get(['id', 'amount'])
-            ->sum(fn (Payment $paidPayment) => (float) $paidPayment->amount);
+            ->sum(fn (Payment $paidPayment) => $this->moneyToCents($paidPayment->amount));
 
-        return round((float) $otherPaidTotal + (float) $payment->amount, 2);
+        return $otherPaidTotalCents + $this->moneyToCents($payment->amount);
     }
 
     protected function assertCaptureWithinOrderTotal(Order $order, Payment $payment): void
     {
-        $projectedPaidTotal = $this->projectedPaidTotal($order, $payment);
-        $orderTotal = round((float) $order->grand_total, 2);
+        $projectedPaidTotalCents = $this->projectedPaidTotalCents($order, $payment);
+        $orderTotalCents = $this->moneyToCents($order->grand_total);
 
-        if ($projectedPaidTotal > $orderTotal) {
+        if ($projectedPaidTotalCents > $orderTotalCents) {
             throw ValidationException::withMessages([
                 'status' => __('Captured payments cannot exceed the order total. Review existing paid payments before recording another capture.'),
             ]);
@@ -1049,6 +1051,22 @@ class PaymentService
             Payment::STATUS_PAID, Payment::STATUS_REFUNDED => false,
             default => false,
         };
+    }
+
+    private function moneyToCents(mixed $amount): int
+    {
+        return BigDecimal::of((string) $amount)
+            ->multipliedBy('100')
+            ->toScale(0, RoundingMode::HalfUp)
+            ->toInt();
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        $sign = $cents < 0 ? '-' : '';
+        $absolute = abs($cents);
+
+        return $sign.intdiv($absolute, 100).'.'.str_pad((string) ($absolute % 100), 2, '0', STR_PAD_LEFT);
     }
 
     protected function pushPaymentEvent(array $meta, string $event, string $message): array

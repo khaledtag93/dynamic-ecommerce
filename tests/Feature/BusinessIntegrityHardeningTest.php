@@ -1322,6 +1322,38 @@ class BusinessIntegrityHardeningTest extends TestCase
         $this->assertNull($second->fresh()->paid_at);
     }
 
+    public function test_manual_payment_capture_accepts_exact_split_cents(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 0.30);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'MANUAL-EXACT-10',
+            'amount' => '0.10',
+            'currency' => $order->currency,
+            'paid_at' => now(),
+        ]);
+
+        $second = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+            'status' => Payment::STATUS_PENDING,
+            'transaction_reference' => 'MANUAL-EXACT-20',
+            'amount' => '0.20',
+            'currency' => $order->currency,
+        ]);
+
+        app(PaymentService::class)->updateStatus($second, Payment::STATUS_PAID, [
+            'bank_transfer_reference' => 'BANK-EXACT-20',
+        ]);
+
+        $this->assertSame(Payment::STATUS_PAID, $second->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+    }
+
     public function test_gateway_overcapture_is_recorded_but_blocks_fulfillment(): void
     {
         $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 100);
@@ -1404,6 +1436,44 @@ class BusinessIntegrityHardeningTest extends TestCase
         $synced = $order->fresh();
         $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $synced->payment_status);
         $this->assertSame(110.0, (float) $synced->refund_total);
+    }
+
+    public function test_gateway_capture_exact_split_cents_does_not_flag_overcapture(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 0.30);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_ONLINE]);
+
+        Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PAID,
+            'transaction_reference' => 'GATEWAY-EXACT-10',
+            'amount' => '0.10',
+            'currency' => $order->currency,
+            'paid_at' => now()->subMinute(),
+        ]);
+
+        $second = Payment::query()->create([
+            'order_id' => $order->id,
+            'method' => Order::PAYMENT_METHOD_ONLINE,
+            'provider' => 'test',
+            'status' => Payment::STATUS_PENDING,
+            'transaction_reference' => 'GATEWAY-EXACT-20',
+            'amount' => '0.20',
+            'currency' => $order->currency,
+        ]);
+
+        app(PaymentService::class)->markAsPaid($second, [
+            'transaction_id' => 'GATEWAY-EXACT-PAID-20',
+            'provider_status' => 'paid',
+            'hmac_valid' => true,
+        ]);
+
+        $this->assertSame(Payment::STATUS_PAID, $second->fresh()->status);
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertNull(data_get($order->fresh()->meta, 'payment_overcapture'));
+        $this->assertNull(data_get($second->fresh()->meta, 'payment_overcapture'));
     }
 
     public function test_non_cod_fulfillment_requires_paid_ledger_evidence(): void
@@ -1885,6 +1955,44 @@ class BusinessIntegrityHardeningTest extends TestCase
         $fresh = $order->fresh();
         $this->assertSame(0.0, (float) $fresh->refund_total);
         $this->assertSame(Order::PAYMENT_STATUS_PAID, $fresh->payment_status);
+    }
+
+    public function test_payment_sync_uses_exact_cents_for_split_capture_and_refund_ledgers(): void
+    {
+        $order = $this->makeOrder(Order::PAYMENT_STATUS_PENDING, 0.30);
+        $order->update(['payment_method' => Order::PAYMENT_METHOD_BANK_TRANSFER]);
+
+        foreach (['0.10', '0.20'] as $index => $amount) {
+            Payment::query()->create([
+                'order_id' => $order->id,
+                'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+                'provider' => 'test',
+                'status' => Payment::STATUS_PAID,
+                'transaction_reference' => 'SYNC-EXACT-'.($index + 1),
+                'amount' => $amount,
+                'currency' => $order->currency,
+                'paid_at' => now(),
+            ]);
+        }
+
+        app(PaymentService::class)->syncOrderPaymentStatus($order);
+
+        $this->assertSame(Order::PAYMENT_STATUS_PAID, $order->fresh()->payment_status);
+        $this->assertSame('0.00', $order->fresh()->refund_total);
+
+        foreach (['0.10', '0.20'] as $index => $amount) {
+            $order->refunds()->create([
+                'amount' => $amount,
+                'reason' => 'Exact-cent sync refund '.($index + 1),
+                'processed_at' => now(),
+            ]);
+        }
+
+        app(PaymentService::class)->syncOrderPaymentStatus($order->fresh());
+
+        $fresh = $order->fresh();
+        $this->assertSame(Order::PAYMENT_STATUS_REFUNDED, $fresh->payment_status);
+        $this->assertSame('0.30', $fresh->refund_total);
     }
 
     public function test_online_reservation_uses_fefo_and_release_restores_original_lots(): void
