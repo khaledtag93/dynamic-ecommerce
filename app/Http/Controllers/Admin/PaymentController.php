@@ -72,8 +72,8 @@ class PaymentController extends Controller
             ->whereIn('payments.status', [Payment::STATUS_PAID, Payment::STATUS_REFUNDED])
             ->selectRaw($currencyExpression.' AS statement_currency')
             ->selectRaw('SUM(payments.amount) AS captured_amount')
-            ->groupByRaw($currencyExpression)
-            ->orderByRaw($currencyExpression)
+            ->groupBy('statement_currency')
+            ->orderBy('statement_currency')
             ->get()
             ->map(fn ($row): array => [
                 'currency' => (string) $row->statement_currency,

@@ -107,7 +107,7 @@ class PaymentWorkspaceClosureTest extends TestCase
         $this->assertStringContainsString("NULLIF(TRIM(payments.currency), '')", $controller);
         $this->assertStringContainsString("NULLIF(TRIM(orders.currency), '')", $controller);
         $this->assertStringContainsString("SUM(payments.amount) AS captured_amount", $controller);
-        $this->assertStringContainsString("->groupByRaw(\$currencyExpression)", $controller);
+        $this->assertStringContainsString("->groupBy('statement_currency')", $controller);
         $this->assertStringContainsString("'captured_by_currency' => \$capturedByCurrency", $controller);
         $this->assertStringContainsString("\$stats['captured_by_currency']", $index);
         $this->assertStringNotContainsString("\$stats['paid_amount']", $index);
