@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Services\Auth\AuthorizationService;
 use App\Services\Commerce\CustomerAccountStatementService;
 use App\Services\Commerce\AdminActivityLogService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -97,7 +99,7 @@ class CustomerController extends Controller
                 ->selectRaw('user_id, '.$currencyExpression.' as statement_currency')
                 ->selectRaw('SUM(grand_total) as gross_total, SUM(COALESCE(commercial_refund_total, refund_total)) as commercial_refund_total')
                 ->groupBy('user_id')
-                ->groupByRaw($currencyExpression)
+                ->groupBy('statement_currency')
                 ->orderBy('statement_currency')
                 ->get()
                 ->groupBy('user_id');
@@ -106,7 +108,10 @@ class CustomerController extends Controller
             $rows = collect($spendRowsByUser->get($user->id, collect()))
                 ->map(fn ($row): array => [
                     'currency' => (string) $row->statement_currency,
-                    'amount' => round(max(0, (float) $row->gross_total - (float) $row->commercial_refund_total), 2),
+                    'amount' => $this->centsToMoney(max(
+                        0,
+                        $this->moneyToCents($row->gross_total) - $this->moneyToCents($row->commercial_refund_total),
+                    )),
                 ])
                 ->values()
                 ->all();
@@ -146,12 +151,12 @@ class CustomerController extends Controller
                 ->whereNotNull('user_id')
                 ->selectRaw($currencyExpression.' as currency')
                 ->selectRaw('SUM(grand_total - COALESCE(commercial_refund_total, refund_total)) as statement_total')
-                ->groupByRaw($currencyExpression)
+                ->groupBy('currency')
                 ->orderBy('currency')
                 ->get()
                 ->map(fn ($row): array => [
                     'currency' => (string) $row->currency,
-                    'amount' => round((float) $row->statement_total, 2),
+                    'amount' => $this->canonicalMoney($row->statement_total),
                 ])
                 ->values(),
         ];
@@ -178,23 +183,23 @@ class CustomerController extends Controller
         $spendByCurrency = (clone $realizedOrders)
             ->selectRaw($currencyExpression.' as currency')
             ->selectRaw('COUNT(*) as orders_count, SUM(grand_total) as gross_total, SUM(refund_total) as refund_total, SUM(COALESCE(commercial_refund_total, refund_total)) as commercial_refund_total')
-            ->groupByRaw($currencyExpression)
+            ->groupBy('currency')
             ->orderBy('currency')
             ->get()
             ->map(function ($row): array {
-                $gross = round((float) $row->gross_total, 2);
-                $refunds = round((float) $row->refund_total, 2);
-                $commercialRefunds = round((float) $row->commercial_refund_total, 2);
-                $net = round(max(0, $gross - $commercialRefunds), 2);
+                $grossCents = $this->moneyToCents($row->gross_total);
+                $refundCents = $this->moneyToCents($row->refund_total);
+                $commercialRefundCents = $this->moneyToCents($row->commercial_refund_total);
+                $netCents = max(0, $grossCents - $commercialRefundCents);
                 $count = (int) $row->orders_count;
 
                 return [
                     'currency' => (string) $row->currency,
                     'orders_count' => $count,
-                    'gross_total' => $gross,
-                    'refund_total' => $refunds,
-                    'net_total' => $net,
-                    'average_order_value' => $count > 0 ? round($net / $count, 2) : 0.0,
+                    'gross_total' => $this->centsToMoney($grossCents),
+                    'refund_total' => $this->centsToMoney($refundCents),
+                    'net_total' => $this->centsToMoney($netCents),
+                    'average_order_value' => $this->averageMoney($netCents, $count),
                 ];
             })
             ->values();
@@ -277,6 +282,38 @@ class CustomerController extends Controller
             'X-Statement-Matching-Rows' => (string) $statement['matching_count'],
             'X-Statement-Truncated' => $statement['truncated'] ? '1' : '0',
         ]);
+    }
+
+    private function canonicalMoney(mixed $amount): string
+    {
+        return (string) BigDecimal::of((string) ($amount ?? '0'))
+            ->toScale(2, RoundingMode::Unnecessary);
+    }
+
+    private function moneyToCents(mixed $amount): int
+    {
+        return BigDecimal::of($this->canonicalMoney($amount))
+            ->multipliedBy('100')
+            ->toInt();
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        return (string) BigDecimal::of((string) $cents)
+            ->dividedBy('100', 2, RoundingMode::Unnecessary);
+    }
+
+    private function averageMoney(int $totalCents, int $count): string
+    {
+        if ($count <= 0) {
+            return '0.00';
+        }
+
+        $averageCents = BigDecimal::of((string) $totalCents)
+            ->dividedBy((string) $count, 0, RoundingMode::HalfUp)
+            ->toInt();
+
+        return $this->centsToMoney($averageCents);
     }
 
     private function csvSafeText(mixed $value): string

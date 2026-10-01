@@ -18,6 +18,15 @@ class CustomerWorkspaceClosureTest extends TestCase
         $this->assertStringNotContainsString('"%{$search}%"', $controller);
     }
 
+    public function test_customer_commercial_kpis_group_by_selected_aliases_for_strict_mysql(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/Admin/CustomerController.php'));
+
+        $this->assertSame(1, substr_count($controller, "->groupBy('statement_currency')"));
+        $this->assertSame(2, substr_count($controller, "->groupBy('currency')"));
+        $this->assertStringNotContainsString('->groupByRaw($currencyExpression)', $controller);
+    }
+
     public function test_customer_list_filters_have_explicit_labels(): void
     {
         $view = file_get_contents(resource_path('views/admin/customers/index.blade.php'));

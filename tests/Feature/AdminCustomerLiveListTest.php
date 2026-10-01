@@ -146,13 +146,13 @@ class AdminCustomerLiveListTest extends TestCase
 
         $revenueRows = collect($index->viewData('stats')['revenue_by_currency'] ?? []);
         $this->assertSame(
-            150.0,
-            (float) data_get($revenueRows->firstWhere('currency', 'EGP'), 'amount', -1),
+            '150.00',
+            data_get($revenueRows->firstWhere('currency', 'EGP'), 'amount'),
             'Unexpected EGP customer revenue rows: '.json_encode($revenueRows->values()->all())
         );
         $this->assertSame(
-            1010.0,
-            (float) data_get($revenueRows->firstWhere('currency', 'USD'), 'amount', -1),
+            '1010.00',
+            data_get($revenueRows->firstWhere('currency', 'USD'), 'amount'),
             'Unexpected USD customer revenue rows: '.json_encode($revenueRows->values()->all())
         );
 
@@ -182,6 +182,60 @@ class AdminCustomerLiveListTest extends TestCase
             ->assertSee('EGP 100.00 · USD 10.00')
             ->assertSee('EGP 0.00 · USD 0.00')
             ->assertSee('USD 10.00');
+    }
+
+    public function test_customer_commercial_kpis_preserve_exact_cents_and_half_up_average(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $owner = $this->createSuperAdmin();
+
+        $customer = User::factory()->create([
+            'name' => 'Exact Cent Customer',
+            'email' => 'exact-cent-customer@example.test',
+            'role_as' => 0,
+        ]);
+
+        $orders = [
+            $this->orderFor($customer, 'KPI-001', '0.01'),
+            $this->orderFor($customer, 'KPI-002', '0.02'),
+            $this->orderFor($customer, 'KPI-003', '0.03'),
+            $this->orderFor($customer, 'KPI-004', '0.14'),
+        ];
+
+        $orders[3]->update([
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'refund_total' => '0.10',
+            'commercial_refund_total' => '0.10',
+        ]);
+
+        $profile = $this->actingAs($owner)->get(route('admin.customers.show', $customer));
+        $profile->assertOk();
+
+        $egp = collect($profile->viewData('summary')['spend_by_currency'] ?? [])
+            ->firstWhere('currency', 'EGP');
+
+        $this->assertNotNull($egp);
+        $this->assertSame('0.20', $egp['gross_total']);
+        $this->assertSame('0.10', $egp['refund_total']);
+        $this->assertSame('0.10', $egp['net_total']);
+        $this->assertSame('0.03', $egp['average_order_value']);
+        $profile->assertSee('EGP 0.03');
+
+        $index = $this->actingAs($owner)->get(route('admin.customers.index'));
+        $index->assertOk();
+
+        $listedCustomer = $index->viewData('users')->getCollection()->firstWhere('id', $customer->id);
+        $listedEgp = collect($listedCustomer?->realized_spend_by_currency ?? [])
+            ->firstWhere('currency', 'EGP');
+
+        $this->assertNotNull($listedEgp);
+        $this->assertSame('0.10', $listedEgp['amount']);
+
+        $revenueEgp = collect($index->viewData('stats')['revenue_by_currency'] ?? [])
+            ->firstWhere('currency', 'EGP');
+
+        $this->assertNotNull($revenueEgp);
+        $this->assertSame('0.10', $revenueEgp['amount']);
     }
 
     public function test_customer_profile_orders_follow_business_time_not_insert_id(): void
@@ -214,7 +268,7 @@ class AdminCustomerLiveListTest extends TestCase
             ->assertSee($newer->placed_at->format('d M Y'));
     }
 
-    private function orderFor(User $user, string $number, float $total, string $currency = 'EGP'): Order
+    private function orderFor(User $user, string $number, float|string $total, string $currency = 'EGP'): Order
     {
         return Order::create([
             'user_id' => $user->id,
