@@ -329,7 +329,7 @@ class PosController extends Controller
                 PosService::DISCOUNT_TYPE_FIXED,
                 PosService::DISCOUNT_TYPE_PERCENT,
             ])],
-            'discount_value' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+            'discount_value' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:999999999.99'],
             'discount_reason' => ['required', 'string', 'max:255'],
         ]);
 
@@ -337,7 +337,7 @@ class PosController extends Controller
             $posCart,
             $posCartItem,
             $data['discount_type'],
-            (float) $data['discount_value'],
+            $data['discount_value'],
             $data['discount_reason'],
             (int) $request->user()->id,
         );
@@ -367,14 +367,14 @@ class PosController extends Controller
                 PosService::DISCOUNT_TYPE_FIXED,
                 PosService::DISCOUNT_TYPE_PERCENT,
             ])],
-            'discount_value' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+            'discount_value' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:999999999.99'],
             'discount_reason' => ['required', 'string', 'max:255'],
         ]);
 
         $this->posService->updateCartDiscount(
             $posCart,
             $data['discount_type'],
-            (float) $data['discount_value'],
+            $data['discount_value'],
             $data['discount_reason'],
             (int) $request->user()->id,
         );
@@ -439,7 +439,7 @@ class PosController extends Controller
                     Order::PAYMENT_METHOD_POS_CARD,
                 ]),
             ],
-            'cash_received' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
+            'cash_received' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
             'customer_name' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);

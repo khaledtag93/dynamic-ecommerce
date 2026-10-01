@@ -13,6 +13,8 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\Analytics\AnalyticsTracker;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -51,45 +53,43 @@ class PosService
     {
         $cart->loadMissing(['items.product', 'items.variant']);
 
-        $subtotal = 0.0;
-        $lineDiscountTotal = 0.0;
+        $subtotalCents = 0;
+        $lineDiscountTotalCents = 0;
         $lines = [];
 
         foreach ($cart->items as $item) {
-            $gross = round((float) $item->unit_price * (int) $item->quantity, 2);
-            $discount = $this->discountAmount(
+            $grossCents = $this->moneyToCents($item->unit_price) * (int) $item->quantity;
+            $discountCents = $this->discountCents(
                 $item->discount_type,
                 $item->discount_value,
-                $gross
+                $grossCents
             );
-            $net = round(max(0, $gross - $discount), 2);
+            $netCents = max(0, $grossCents - $discountCents);
 
-            $subtotal += $gross;
-            $lineDiscountTotal += $discount;
+            $subtotalCents += $grossCents;
+            $lineDiscountTotalCents += $discountCents;
             $lines[$item->id] = [
-                'gross_total' => $gross,
-                'discount_total' => $discount,
-                'net_total' => $net,
+                'gross_total' => $this->centsToFloat($grossCents),
+                'discount_total' => $this->centsToFloat($discountCents),
+                'net_total' => $this->centsToFloat($netCents),
             ];
         }
 
-        $subtotal = round($subtotal, 2);
-        $lineDiscountTotal = round($lineDiscountTotal, 2);
-        $afterLineDiscounts = round(max(0, $subtotal - $lineDiscountTotal), 2);
-        $orderDiscountTotal = $this->discountAmount(
+        $afterLineDiscountsCents = max(0, $subtotalCents - $lineDiscountTotalCents);
+        $orderDiscountTotalCents = $this->discountCents(
             $cart->discount_type,
             $cart->discount_value,
-            $afterLineDiscounts
+            $afterLineDiscountsCents
         );
-        $discountTotal = round($lineDiscountTotal + $orderDiscountTotal, 2);
-        $grandTotal = round(max(0, $subtotal - $discountTotal), 2);
+        $discountTotalCents = min($subtotalCents, $lineDiscountTotalCents + $orderDiscountTotalCents);
+        $grandTotalCents = max(0, $subtotalCents - $discountTotalCents);
 
         return [
-            'subtotal' => $subtotal,
-            'line_discount_total' => $lineDiscountTotal,
-            'order_discount_total' => $orderDiscountTotal,
-            'discount_total' => $discountTotal,
-            'grand_total' => $grandTotal,
+            'subtotal' => $this->centsToFloat($subtotalCents),
+            'line_discount_total' => $this->centsToFloat($lineDiscountTotalCents),
+            'order_discount_total' => $this->centsToFloat($orderDiscountTotalCents),
+            'discount_total' => $this->centsToFloat($discountTotalCents),
+            'grand_total' => $this->centsToFloat($grandTotalCents),
             'items_count' => (int) $cart->items->sum('quantity'),
             'lines_count' => $cart->items->count(),
             'lines' => $lines,
@@ -168,17 +168,28 @@ class PosService
     public function updateCartDiscount(
         PosCart $cart,
         string $type,
-        float $value,
+        int|float|string $value,
         string $reason,
         int $cashierUserId
     ): PosCart {
         return DB::transaction(function () use ($cart, $type, $value, $reason, $cashierUserId) {
             $lockedCart = $this->lockOpenCart($cart, $cashierUserId);
             $lockedCart->load(['items.product', 'items.variant']);
-            $summary = $this->summary($lockedCart);
-            $eligibleTotal = round(max(0, $summary['subtotal'] - $summary['line_discount_total']), 2);
+            $eligibleTotalCents = 0;
 
-            $this->discountAmount($type, $value, $eligibleTotal, true);
+            foreach ($lockedCart->items as $item) {
+                $grossCents = $this->moneyToCents($item->unit_price) * (int) $item->quantity;
+                $lineDiscountCents = $this->discountCents(
+                    $item->discount_type,
+                    $item->discount_value,
+                    $grossCents
+                );
+                $eligibleTotalCents += max(0, $grossCents - $lineDiscountCents);
+            }
+
+            $normalizedValue = $this->normalizeDiscountValue($value);
+
+            $this->discountCents($type, $normalizedValue, $eligibleTotalCents, true);
             $reason = trim($reason);
 
             if ($reason === '') {
@@ -189,7 +200,7 @@ class PosService
 
             $lockedCart->update([
                 'discount_type' => $type,
-                'discount_value' => round($value, 2),
+                'discount_value' => $normalizedValue,
                 'discount_reason' => $reason,
             ]);
 
@@ -204,7 +215,7 @@ class PosService
                 $updated,
                 [
                     'discount_type' => $type,
-                    'discount_value' => round($value, 2),
+                    'discount_value' => (float) $normalizedValue,
                     'discount_amount' => $updatedSummary['order_discount_total'],
                     'discount_reason' => $reason,
                 ]
@@ -247,7 +258,7 @@ class PosService
         PosCart $cart,
         PosCartItem $item,
         string $type,
-        float $value,
+        int|float|string $value,
         string $reason,
         int $cashierUserId
     ): PosCartItem {
@@ -265,8 +276,9 @@ class PosService
                 ]);
             }
 
-            $gross = round((float) $lockedItem->unit_price * (int) $lockedItem->quantity, 2);
-            $this->discountAmount($type, $value, $gross, true);
+            $grossCents = $this->moneyToCents($lockedItem->unit_price) * (int) $lockedItem->quantity;
+            $normalizedValue = $this->normalizeDiscountValue($value);
+            $discountCents = $this->discountCents($type, $normalizedValue, $grossCents, true);
             $reason = trim($reason);
 
             if ($reason === '') {
@@ -277,11 +289,9 @@ class PosService
 
             $lockedItem->update([
                 'discount_type' => $type,
-                'discount_value' => round($value, 2),
+                'discount_value' => $normalizedValue,
                 'discount_reason' => $reason,
             ]);
-
-            $discountAmount = $this->discountAmount($type, $value, $gross);
 
             $this->activityLogService->log(
                 'pos',
@@ -294,8 +304,8 @@ class PosService
                     'product_id' => $lockedItem->product_id,
                     'product_variant_id' => $lockedItem->product_variant_id,
                     'discount_type' => $type,
-                    'discount_value' => round($value, 2),
-                    'discount_amount' => $discountAmount,
+                    'discount_value' => (float) $normalizedValue,
+                    'discount_amount' => $this->centsToFloat($discountCents),
                     'discount_reason' => $reason,
                 ]
             );
@@ -447,7 +457,7 @@ class PosService
                 ]);
             }
 
-            $unitPrice = round((float) ($variant?->current_price ?? $product->current_price), 2);
+            $unitPrice = $this->currentPriceMoney($product, $variant);
 
             if ($cartItem) {
                 $cartItem->update([
@@ -517,7 +527,7 @@ class PosService
                 'variant_name' => $lockedVariant?->variant_name,
                 'sku' => $lockedVariant?->sku ?? $lockedProduct->sku,
                 'barcode' => $lockedVariant?->barcode ?? $lockedProduct->barcode,
-                'unit_price' => round((float) ($lockedVariant?->current_price ?? $lockedProduct->current_price), 2),
+                'unit_price' => $this->currentPriceMoney($lockedProduct, $lockedVariant),
                 'quantity' => $newQuantity,
             ];
 
@@ -590,7 +600,7 @@ class PosService
             }
 
             $lockedItem->update([
-                'unit_price' => round((float) ($variant?->current_price ?? $product->current_price), 2),
+                'unit_price' => $this->currentPriceMoney($product, $variant),
                 'quantity' => $newQuantity,
             ]);
 
@@ -879,9 +889,9 @@ class PosService
 
             $hasDiscounts = (
                 $lockedCart->discount_type
-                && (float) $lockedCart->discount_value > 0
+                && $this->discountValueIsPositive($lockedCart->discount_value)
             ) || $items->contains(
-                fn (PosCartItem $item) => $item->discount_type && (float) $item->discount_value > 0
+                fn (PosCartItem $item) => $item->discount_type && $this->discountValueIsPositive($item->discount_value)
             );
 
             if ($hasDiscounts) {
@@ -909,9 +919,9 @@ class PosService
                 ->keyBy('id');
 
             $prepared = [];
-            $subtotal = 0.0;
-            $lineDiscountTotal = 0.0;
-            $costTotal = 0.0;
+            $subtotalCents = 0;
+            $lineDiscountTotalCents = 0;
+            $costTotalCents = 0;
 
             foreach ($items as $item) {
                 $product = $products->get($item->product_id);
@@ -928,91 +938,89 @@ class PosService
                     ]);
                 }
 
-                $unitPrice = round((float) ($variant?->current_price ?? $product->current_price), 2);
-                $unitCost = round((float) ($variant?->inventory_cost_price ?? $variant?->cost_price ?? $product->inventory_cost_price ?? $product->cost_price ?? 0), 2);
-                $grossLineTotal = round($unitPrice * $quantity, 2);
-                $lineDiscount = $this->discountAmount(
+                $unitPriceCents = $this->moneyToCents($this->currentPriceMoney($product, $variant));
+                $unitCostCents = $this->moneyToCents(
+                    $variant?->inventory_cost_price
+                        ?? $variant?->cost_price
+                        ?? $product->inventory_cost_price
+                        ?? $product->cost_price
+                        ?? 0
+                );
+                $grossLineTotalCents = $unitPriceCents * $quantity;
+                $lineDiscountCents = $this->discountCents(
                     $item->discount_type,
                     $item->discount_value,
-                    $grossLineTotal,
+                    $grossLineTotalCents,
                     true
                 );
-                $netBeforeOrder = round(max(0, $grossLineTotal - $lineDiscount), 2);
-                $lineCost = round($unitCost * $quantity, 2);
+                $netBeforeOrderCents = max(0, $grossLineTotalCents - $lineDiscountCents);
+                $lineCostCents = $unitCostCents * $quantity;
 
                 $prepared[] = [
                     'item' => $item,
                     'product' => $product,
                     'variant' => $variant,
                     'quantity' => $quantity,
-                    'unitPrice' => $unitPrice,
-                    'unitCost' => $unitCost,
-                    'grossLineTotal' => $grossLineTotal,
-                    'lineDiscount' => $lineDiscount,
-                    'netBeforeOrder' => $netBeforeOrder,
-                    'orderDiscountShare' => 0.0,
-                    'discountTotal' => $lineDiscount,
-                    'lineTotal' => $netBeforeOrder,
-                    'lineCost' => $lineCost,
+                    'unitPriceCents' => $unitPriceCents,
+                    'unitCostCents' => $unitCostCents,
+                    'grossLineTotalCents' => $grossLineTotalCents,
+                    'lineDiscountCents' => $lineDiscountCents,
+                    'netBeforeOrderCents' => $netBeforeOrderCents,
+                    'orderDiscountShareCents' => 0,
+                    'discountTotalCents' => $lineDiscountCents,
+                    'lineTotalCents' => $netBeforeOrderCents,
+                    'lineCostCents' => $lineCostCents,
                 ];
 
-                $subtotal += $grossLineTotal;
-                $lineDiscountTotal += $lineDiscount;
-                $costTotal += $lineCost;
+                $subtotalCents += $grossLineTotalCents;
+                $lineDiscountTotalCents += $lineDiscountCents;
+                $costTotalCents += $lineCostCents;
             }
 
-            $subtotal = round($subtotal, 2);
-            $lineDiscountTotal = round($lineDiscountTotal, 2);
-            $costTotal = round($costTotal, 2);
-            $afterLineDiscounts = round(max(0, $subtotal - $lineDiscountTotal), 2);
-            $orderDiscountTotal = $this->discountAmount(
+            $afterLineDiscountsCents = max(0, $subtotalCents - $lineDiscountTotalCents);
+            $orderDiscountTotalCents = $this->discountCents(
                 $lockedCart->discount_type,
                 $lockedCart->discount_value,
-                $afterLineDiscounts,
+                $afterLineDiscountsCents,
                 true
             );
 
-            if ($orderDiscountTotal > 0 && $afterLineDiscounts > 0) {
+            if ($orderDiscountTotalCents > 0 && $afterLineDiscountsCents > 0) {
                 $eligibleIndexes = array_values(array_filter(
                     array_keys($prepared),
-                    fn (int $index) => $prepared[$index]['netBeforeOrder'] > 0
+                    fn (int $index) => $prepared[$index]['netBeforeOrderCents'] > 0
                 ));
-                $remaining = $orderDiscountTotal;
+                $remainingCents = $orderDiscountTotalCents;
                 $lastEligibleIndex = $eligibleIndexes ? end($eligibleIndexes) : null;
 
                 foreach ($eligibleIndexes as $index) {
                     if ($index === $lastEligibleIndex) {
-                        $share = round($remaining, 2);
+                        $shareCents = $remainingCents;
                     } else {
-                        $share = round(
-                            $orderDiscountTotal
-                                * ($prepared[$index]['netBeforeOrder'] / $afterLineDiscounts),
-                            2
-                        );
+                        $shareCents = BigDecimal::of((string) $orderDiscountTotalCents)
+                            ->multipliedBy((string) $prepared[$index]['netBeforeOrderCents'])
+                            ->dividedBy((string) $afterLineDiscountsCents, 0, RoundingMode::HalfUp)
+                            ->toInt();
                     }
 
-                    $share = round(min(
-                        $prepared[$index]['netBeforeOrder'],
-                        max(0, $share)
-                    ), 2);
+                    $shareCents = min(
+                        $prepared[$index]['netBeforeOrderCents'],
+                        max(0, $shareCents)
+                    );
 
-                    $prepared[$index]['orderDiscountShare'] = $share;
-                    $prepared[$index]['discountTotal'] = round(
-                        $prepared[$index]['lineDiscount'] + $share,
-                        2
-                    );
-                    $prepared[$index]['lineTotal'] = round(
-                        max(0, $prepared[$index]['netBeforeOrder'] - $share),
-                        2
-                    );
-                    $remaining = round(max(0, $remaining - $share), 2);
+                    $prepared[$index]['orderDiscountShareCents'] = $shareCents;
+                    $prepared[$index]['discountTotalCents'] =
+                        $prepared[$index]['lineDiscountCents'] + $shareCents;
+                    $prepared[$index]['lineTotalCents'] =
+                        max(0, $prepared[$index]['netBeforeOrderCents'] - $shareCents);
+                    $remainingCents = max(0, $remainingCents - $shareCents);
                 }
             }
 
-            $grandTotal = round(array_sum(array_column($prepared, 'lineTotal')), 2);
-            $discountTotal = round(max(0, $subtotal - $grandTotal), 2);
-            $cashReceived = null;
-            $changeDue = 0.0;
+            $grandTotalCents = array_sum(array_column($prepared, 'lineTotalCents'));
+            $discountTotalCents = max(0, $subtotalCents - $grandTotalCents);
+            $cashReceivedCents = null;
+            $changeDueCents = 0;
 
             if ($paymentMethod === Order::PAYMENT_METHOD_POS_CASH) {
                 if (! array_key_exists('cash_received', $data) || $data['cash_received'] === null || $data['cash_received'] === '') {
@@ -1021,15 +1029,15 @@ class PosService
                     ]);
                 }
 
-                $cashReceived = round((float) $data['cash_received'], 2);
+                $cashReceivedCents = $this->cashInputToCents($data['cash_received']);
 
-                if ($cashReceived < $grandTotal) {
+                if ($cashReceivedCents < $grandTotalCents) {
                     throw ValidationException::withMessages([
                         'cash_received' => __('Cash received cannot be less than the sale total.'),
                     ]);
                 }
 
-                $changeDue = round($cashReceived - $grandTotal, 2);
+                $changeDueCents = $cashReceivedCents - $grandTotalCents;
             }
 
             $orderNumber = 'POS-' . now()->format('Ymd-His') . '-' . Str::upper(Str::random(4));
@@ -1063,13 +1071,13 @@ class PosService
                 'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
                 'delivered_at' => now(),
                 'currency' => 'EGP',
-                'subtotal' => $subtotal,
-                'discount_total' => $discountTotal,
+                'subtotal' => $this->centsToMoney($subtotalCents),
+                'discount_total' => $this->centsToMoney($discountTotalCents),
                 'shipping_total' => 0,
                 'tax_total' => 0,
-                'grand_total' => $grandTotal,
-                'cost_total' => $costTotal,
-                'profit_total' => round($grandTotal - $costTotal, 2),
+                'grand_total' => $this->centsToMoney($grandTotalCents),
+                'cost_total' => $this->centsToMoney($costTotalCents),
+                'profit_total' => $this->centsToMoney($grandTotalCents - $costTotalCents),
                 'notes' => $data['notes'] ?? null,
                 'customer_name' => $customerName,
                 'customer_email' => $customerEmail,
@@ -1094,17 +1102,17 @@ class PosService
                     'pos_cash_shift_id' => $cashShift?->id,
                     'customer_user_id' => $customer?->id,
                     'pos' => [
-                        'cash_received' => $cashReceived,
-                        'change_due' => $changeDue,
+                        'cash_received' => $cashReceivedCents === null ? null : $this->centsToFloat($cashReceivedCents),
+                        'change_due' => $this->centsToFloat($changeDueCents),
                         'discounts' => [
-                            'line_discount_total' => $lineDiscountTotal,
+                            'line_discount_total' => $this->centsToFloat($lineDiscountTotalCents),
                             'order_discount' => [
                                 'type' => $lockedCart->discount_type,
                                 'value' => (float) $lockedCart->discount_value,
-                                'amount' => $orderDiscountTotal,
+                                'amount' => $this->centsToFloat($orderDiscountTotalCents),
                                 'reason' => $lockedCart->discount_reason,
                             ],
-                            'discount_total' => $discountTotal,
+                            'discount_total' => $this->centsToFloat($discountTotalCents),
                         ],
                     ],
                 ],
@@ -1126,11 +1134,11 @@ class PosService
                     'variant_name' => $variant?->variant_name,
                     'sku' => $variant?->sku ?? $product->sku,
                     'image' => $variant?->image ?? $product->main_image_url,
-                    'unit_price' => $line['unitPrice'],
-                    'unit_cost' => $line['unitCost'],
+                    'unit_price' => $this->centsToMoney($line['unitPriceCents']),
+                    'unit_cost' => $this->centsToMoney($line['unitCostCents']),
                     'quantity' => $line['quantity'],
-                    'line_total' => $line['lineTotal'],
-                    'profit_amount' => round($line['lineTotal'] - $line['lineCost'], 2),
+                    'line_total' => $this->centsToMoney($line['lineTotalCents']),
+                    'profit_amount' => $this->centsToMoney($line['lineTotalCents'] - $line['lineCostCents']),
                     'expires_at' => $variant?->expiration_date ?? $product->expiration_date,
                     'meta' => [
                         'sales_channel' => Order::SALES_CHANNEL_POS,
@@ -1141,10 +1149,10 @@ class PosService
                                 'type' => $cartItem->discount_type,
                                 'value' => (float) $cartItem->discount_value,
                                 'reason' => $cartItem->discount_reason,
-                                'line_amount' => $line['lineDiscount'],
-                                'order_share' => $line['orderDiscountShare'],
-                                'total_amount' => $line['discountTotal'],
-                                'gross_line_total' => $line['grossLineTotal'],
+                                'line_amount' => $this->centsToFloat($line['lineDiscountCents']),
+                                'order_share' => $this->centsToFloat($line['orderDiscountShareCents']),
+                                'total_amount' => $this->centsToFloat($line['discountTotalCents']),
+                                'gross_line_total' => $this->centsToFloat($line['grossLineTotalCents']),
                             ],
                         ],
                     ],
@@ -1158,7 +1166,7 @@ class PosService
                     [
                         'order_id' => $order->id,
                         'reason' => 'POS sale completed',
-                        'unit_cost' => $line['unitCost'],
+                        'unit_cost' => $this->centsToMoney($line['unitCostCents']),
                         'expiration_date' => $variant?->expiration_date ?? $product->expiration_date,
                         'meta' => [
                             'order_number' => $order->order_number,
@@ -1177,7 +1185,7 @@ class PosService
                 'provider' => $paymentMethod === Order::PAYMENT_METHOD_POS_CARD ? 'card_terminal' : 'cash_register',
                 'status' => Payment::STATUS_PAID,
                 'transaction_reference' => 'POSPAY-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(5)),
-                'amount' => $grandTotal,
+                'amount' => $this->centsToMoney($grandTotalCents),
                 'currency' => 'EGP',
                 'paid_at' => now(),
                 'notes' => $paymentMethod === Order::PAYMENT_METHOD_POS_CARD
@@ -1187,9 +1195,9 @@ class PosService
                     'sales_channel' => Order::SALES_CHANNEL_POS,
                     'cashier_user_id' => $cashierUserId,
                     'pos_cart_id' => $lockedCart->id,
-                    'cash_received' => $cashReceived,
-                    'change_due' => $changeDue,
-                    'discount_total' => $discountTotal,
+                    'cash_received' => $cashReceivedCents === null ? null : $this->centsToFloat($cashReceivedCents),
+                    'change_due' => $this->centsToFloat($changeDueCents),
+                    'discount_total' => $this->centsToFloat($discountTotalCents),
                 ],
             ]);
 
@@ -1213,63 +1221,74 @@ class PosService
                 [
                     'pos_cart_id' => $lockedCart->id,
                     'payment_method' => $paymentMethod,
-                    'subtotal' => $subtotal,
-                    'discount_total' => $discountTotal,
-                    'grand_total' => $grandTotal,
+                    'subtotal' => $this->centsToFloat($subtotalCents),
+                    'discount_total' => $this->centsToFloat($discountTotalCents),
+                    'grand_total' => $this->centsToFloat($grandTotalCents),
                     'items_count' => (int) $items->sum('quantity'),
-                    'change_due' => $changeDue,
+                    'change_due' => $this->centsToFloat($changeDueCents),
                 ]
             );
 
             return [
                 'order' => $order->fresh(['items', 'payments']),
                 'created' => true,
-                'change_due' => $changeDue,
+                'change_due' => $this->centsToFloat($changeDueCents),
             ];
         });
     }
 
-    protected function discountAmount(
+    protected function discountCents(
         ?string $type,
         mixed $value,
-        float $eligibleTotal,
+        int $eligibleCents,
         bool $strict = false
-    ): float {
-        $eligibleTotal = round(max(0, $eligibleTotal), 2);
-        $value = round(max(0, (float) $value), 2);
+    ): int {
+        $eligibleCents = max(0, $eligibleCents);
+        $valueDecimal = BigDecimal::of($this->normalizeDiscountValue($value));
 
-        if (! $type || $value <= 0) {
-            return 0.0;
+        if (! $type || $valueDecimal->compareTo('0.00') <= 0) {
+            return 0;
         }
 
-        if ($strict && $eligibleTotal <= 0) {
+        if ($strict && $eligibleCents <= 0) {
             throw ValidationException::withMessages([
                 'discount_value' => __('There is no eligible POS total left to discount.'),
             ]);
         }
 
-        if ($eligibleTotal <= 0) {
-            return 0.0;
+        if ($eligibleCents <= 0) {
+            return 0;
         }
 
         if ($type === self::DISCOUNT_TYPE_FIXED) {
-            if ($strict && $value > $eligibleTotal) {
+            $valueCents = $valueDecimal->multipliedBy('100')->toInt();
+
+            if ($strict && $valueCents > $eligibleCents) {
                 throw ValidationException::withMessages([
                     'discount_value' => __('Discount amount cannot exceed the current eligible total.'),
                 ]);
             }
 
-            return round(min($eligibleTotal, $value), 2);
+            return min($eligibleCents, $valueCents);
         }
 
         if ($type === self::DISCOUNT_TYPE_PERCENT) {
-            if ($strict && $value > 100) {
+            if ($strict && $valueDecimal->compareTo('100.00') > 0) {
                 throw ValidationException::withMessages([
                     'discount_value' => __('Discount percentage cannot exceed 100%.'),
                 ]);
             }
 
-            return round($eligibleTotal * min(100, $value) / 100, 2);
+            $percent = $valueDecimal->compareTo('100.00') > 0
+                ? BigDecimal::of('100.00')
+                : $valueDecimal;
+
+            $discountCents = BigDecimal::of((string) $eligibleCents)
+                ->multipliedBy($percent)
+                ->dividedBy('100', 0, RoundingMode::HalfUp)
+                ->toInt();
+
+            return min($eligibleCents, max(0, $discountCents));
         }
 
         if ($strict) {
@@ -1278,7 +1297,110 @@ class PosService
             ]);
         }
 
-        return 0.0;
+        return 0;
+    }
+
+    private function normalizeDiscountValue(mixed $value): string
+    {
+        try {
+            $decimal = BigDecimal::of((string) $value)
+                ->toScale(2, RoundingMode::Unnecessary);
+        } catch (\Throwable) {
+            throw ValidationException::withMessages([
+                'discount_value' => __('Discount value must use at most two decimal places.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('0.00') < 0) {
+            throw ValidationException::withMessages([
+                'discount_value' => __('Discount value cannot be negative.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('999999999.99') > 0) {
+            throw ValidationException::withMessages([
+                'discount_value' => __('Discount value exceeds the supported monetary range.'),
+            ]);
+        }
+
+        return (string) $decimal;
+    }
+
+    private function cashInputToCents(mixed $amount): int
+    {
+        try {
+            $decimal = BigDecimal::of((string) $amount)
+                ->toScale(2, RoundingMode::Unnecessary);
+        } catch (\Throwable) {
+            throw ValidationException::withMessages([
+                'cash_received' => __('Cash received must use at most two decimal places.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('0.00') < 0) {
+            throw ValidationException::withMessages([
+                'cash_received' => __('Cash received cannot be negative.'),
+            ]);
+        }
+
+        if ($decimal->compareTo('999999999.99') > 0) {
+            throw ValidationException::withMessages([
+                'cash_received' => __('Cash received exceeds the supported monetary range.'),
+            ]);
+        }
+
+        return $decimal->multipliedBy('100')->toInt();
+    }
+
+    private function currentPriceMoney(Product $product, ?ProductVariant $variant): string
+    {
+        if ($variant) {
+            if ($variant->sale_price !== null && BigDecimal::of((string) $variant->sale_price)->compareTo('0.00') > 0) {
+                return (string) $variant->sale_price;
+            }
+
+            if ($variant->price !== null && BigDecimal::of((string) $variant->price)->compareTo('0.00') > 0) {
+                return (string) $variant->price;
+            }
+
+            return '0.00';
+        }
+
+        if ($product->sale_price !== null && BigDecimal::of((string) $product->sale_price)->compareTo('0.00') > 0) {
+            return (string) $product->sale_price;
+        }
+
+        if ($product->base_price !== null && BigDecimal::of((string) $product->base_price)->compareTo('0.00') > 0) {
+            return (string) $product->base_price;
+        }
+
+        return '0.00';
+    }
+
+    private function moneyToCents(mixed $amount): int
+    {
+        return BigDecimal::of((string) $amount)
+            ->toScale(2, RoundingMode::Unnecessary)
+            ->multipliedBy('100')
+            ->toInt();
+    }
+
+    private function centsToMoney(int $cents): string
+    {
+        $sign = $cents < 0 ? '-' : '';
+        $absolute = abs($cents);
+
+        return $sign.intdiv($absolute, 100).'.'.str_pad((string) ($absolute % 100), 2, '0', STR_PAD_LEFT);
+    }
+
+    private function centsToFloat(int $cents): float
+    {
+        return $cents / 100;
+    }
+
+    private function discountValueIsPositive(mixed $value): bool
+    {
+        return BigDecimal::of((string) $value)->compareTo('0') > 0;
     }
 
     protected function lockOpenCart(PosCart $cart, int $cashierUserId): PosCart

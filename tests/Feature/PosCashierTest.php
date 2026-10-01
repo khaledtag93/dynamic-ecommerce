@@ -308,7 +308,8 @@ class PosCashierTest extends TestCase
 
         $this->assertStringContainsString("'opening_cash' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99']", $controller);
         $this->assertStringContainsString("'closing_cash_counted' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99']", $controller);
-        $this->assertStringContainsString("'cash_received' => ['nullable', 'numeric', 'min:0', 'max:999999999.99']", $controller);
+        $this->assertStringContainsString("'cash_received' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99']", $controller);
+        $this->assertStringContainsString("'discount_value' => ['required', 'numeric', 'decimal:0,2', 'gt:0', 'max:999999999.99']", $controller);
         $this->assertStringContainsString("'discount_reason' => ['required', 'string', 'max:255']", $controller);
         $this->assertStringContainsString("'reason' => ['required', 'string', 'max:255']", $controller);
     }
@@ -1289,6 +1290,89 @@ class PosCashierTest extends TestCase
         $this->assertFalse($cashier->fresh()->hasPermission('pos.discount'));
         $this->assertNull($item->fresh()->discount_type);
         $this->assertNull($cart->fresh()->discount_type);
+    }
+
+    public function test_pos_money_inputs_reject_overprecision_before_sale_mutation(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('POS Money Precision Guard', '6224000000031', 2, false, 1.00, 0.40);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin);
+        app(PosCashShiftService::class)->openShift($admin, '0.00');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+
+        $item = PosCartItem::query()->where('pos_cart_id', $cart->id)->firstOrFail();
+
+        $this->patch(route('admin.pos.items.discount.update', ['posCart' => $cart->id, 'posCartItem' => $item->id]), [
+            'discount_type' => PosService::DISCOUNT_TYPE_FIXED,
+            'discount_value' => '0.009',
+            'discount_reason' => 'Invalid precision',
+        ])->assertSessionHasErrors('discount_value');
+
+        $this->patch(route('admin.pos.discount.update', $cart), [
+            'discount_type' => PosService::DISCOUNT_TYPE_FIXED,
+            'discount_value' => '0.009',
+            'discount_reason' => 'Invalid precision',
+        ])->assertSessionHasErrors('discount_value');
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => '1.009',
+        ])->assertSessionHasErrors('cash_received');
+
+        $this->assertNull($item->fresh()->discount_type);
+        $this->assertNull($cart->fresh()->discount_type);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertSame(2, (int) $product->fresh()->quantity);
+        $this->assertSame(PosCart::STATUS_OPEN, $cart->fresh()->status);
+    }
+
+    public function test_pos_checkout_uses_exact_cents_for_percentage_discount_allocation_and_change(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $firstProduct = $this->product('POS Exact Ten Cents', '6224000000032', 2, false, 0.10, 0.04);
+        $secondProduct = $this->product('POS Exact Twenty Cents', '6224000000033', 2, false, 0.20, 0.08);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin);
+        app(PosCashShiftService::class)->openShift($admin, '0.00');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $firstProduct->barcode])
+            ->assertSessionHas('success');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $secondProduct->barcode])
+            ->assertSessionHas('success');
+
+        $this->patch(route('admin.pos.discount.update', $cart), [
+            'discount_type' => PosService::DISCOUNT_TYPE_PERCENT,
+            'discount_value' => '5.00',
+            'discount_reason' => 'Exact cents regression',
+        ])->assertSessionHas('success');
+
+        $summary = app(PosService::class)->summary($cart->fresh(['items.product', 'items.variant']));
+        $this->assertSame(0.30, $summary['subtotal']);
+        $this->assertSame(0.02, $summary['order_discount_total']);
+        $this->assertSame(0.28, $summary['grand_total']);
+
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => '0.30',
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $firstItem = $order->items()->where('product_id', $firstProduct->id)->firstOrFail();
+        $secondItem = $order->items()->where('product_id', $secondProduct->id)->firstOrFail();
+        $payment = Payment::query()->where('order_id', $order->id)->firstOrFail();
+
+        $this->assertSame('0.30', $order->subtotal);
+        $this->assertSame('0.02', $order->discount_total);
+        $this->assertSame('0.28', $order->grand_total);
+        $this->assertSame('0.09', $firstItem->line_total);
+        $this->assertSame('0.19', $secondItem->line_total);
+        $this->assertSame('0.28', $payment->amount);
+        $this->assertSame(0.02, (float) data_get($order->meta, 'pos.change_due'));
+        $this->assertSame(0.02, (float) data_get($order->meta, 'pos.discounts.order_discount.amount'));
     }
 
     public function test_pos_line_and_sale_discounts_flow_into_order_payment_profit_and_change(): void
