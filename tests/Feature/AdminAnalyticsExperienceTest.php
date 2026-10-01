@@ -1031,6 +1031,84 @@ class AdminAnalyticsExperienceTest extends TestCase
         }
     }
 
+    public function test_analytics_summary_preserves_exact_money_from_daily_aggregates(): void
+    {
+        foreach ([
+            [now()->subDay(), '0.10', '0.01', '0.03'],
+            [now(), '0.20', '0.02', '0.04'],
+        ] as [$date, $revenue, $discount, $shipping]) {
+            AnalyticsDailyStat::query()->create([
+                'stat_date' => $date->toDateString(),
+                'product_views' => 1,
+                'cart_views' => 1,
+                'add_to_cart_count' => 1,
+                'remove_from_cart_count' => 0,
+                'checkout_starts' => 1,
+                'purchases' => 1,
+                'orders_count' => 1,
+                'sessions_count' => 1,
+                'users_count' => 1,
+                'revenue_gross' => $revenue,
+                'discount_total' => $discount,
+                'shipping_total' => $shipping,
+                'average_order_value' => $revenue,
+                'cart_abandonment_rate' => 0,
+                'checkout_completion_rate' => 1,
+                'view_to_cart_rate' => 1,
+                'view_to_purchase_rate' => 1,
+                'aggregated_at' => now(),
+            ]);
+        }
+
+        $snapshot = app(AnalyticsDashboardService::class)
+            ->buildSnapshot(now()->subDay()->startOfDay(), now()->endOfDay());
+        $totals = data_get($snapshot, 'current.totals');
+        $comparison = data_get($snapshot, 'comparison');
+
+        $this->assertSame('0.30', $totals['revenue_gross']);
+        $this->assertSame('0.30', $totals['realized_revenue']);
+        $this->assertSame('0.03', $totals['discount_total']);
+        $this->assertSame('0.07', $totals['shipping_total']);
+        $this->assertSame('0.15', $totals['average_order_value']);
+        $this->assertSame('0.30', data_get($comparison, 'revenue_gross.current'));
+        $this->assertSame('0.00', data_get($comparison, 'revenue_gross.previous'));
+        $this->assertSame('0.30', data_get($comparison, 'revenue_gross.delta'));
+        $this->assertSame('0.15', data_get($comparison, 'average_order_value.current'));
+    }
+
+    public function test_analytics_summary_preserves_exact_money_from_raw_events(): void
+    {
+        foreach ([
+            ['raw-exact-1', '0.10', '0.01', '0.03'],
+            ['raw-exact-2', '0.20', '0.02', '0.04'],
+        ] as [$entityId, $revenue, $discount, $shipping]) {
+            AnalyticsEvent::query()->create([
+                'event_type' => AnalyticsEvent::EVENT_PURCHASE_SUCCESS,
+                'entity_type' => AnalyticsEvent::ENTITY_ORDER,
+                'entity_id' => $entityId,
+                'session_id' => $entityId,
+                'meta' => [
+                    'counts_as_purchase' => true,
+                    'grand_total' => $revenue,
+                    'discount_total' => $discount,
+                    'shipping_total' => $shipping,
+                ],
+                'occurred_at' => now(),
+            ]);
+        }
+
+        $totals = data_get(
+            app(AnalyticsDashboardService::class)->buildSnapshot(now()->startOfDay(), now()->endOfDay()),
+            'current.totals'
+        );
+
+        $this->assertSame('0.30', $totals['revenue_gross']);
+        $this->assertSame('0.30', $totals['realized_revenue']);
+        $this->assertSame('0.03', $totals['discount_total']);
+        $this->assertSame('0.07', $totals['shipping_total']);
+        $this->assertSame('0.15', $totals['average_order_value']);
+    }
+
     public function test_offers_analytics_uses_one_summary_layer_before_kpis(): void
     {
         $owner = $this->createSuperAdmin();

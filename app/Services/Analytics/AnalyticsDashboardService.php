@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
@@ -253,9 +255,9 @@ class AnalyticsDashboardService
             'orders_count' => (int) $dailyStats->sum('orders_count'),
             'sessions_count' => (int) $dailyStats->sum('sessions_count'),
             'users_count' => (int) $dailyStats->sum('users_count'),
-            'revenue_gross' => (float) $dailyStats->sum('revenue_gross'),
-            'discount_total' => (float) $dailyStats->sum('discount_total'),
-            'shipping_total' => (float) $dailyStats->sum('shipping_total'),
+            'revenue_gross' => $this->sumMoney($dailyStats->pluck('revenue_gross')),
+            'discount_total' => $this->sumMoney($dailyStats->pluck('discount_total')),
+            'shipping_total' => $this->sumMoney($dailyStats->pluck('shipping_total')),
         ];
 
         return $this->appendDerivedMetrics($totals);
@@ -283,9 +285,9 @@ class AnalyticsDashboardService
             'orders_count' => $countedPurchaseEvents->count(),
             'sessions_count' => (int) $events->pluck('session_id')->filter()->unique()->count(),
             'users_count' => (int) $events->pluck('user_id')->filter()->unique()->count(),
-            'revenue_gross' => (float) $purchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0)),
-            'discount_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'discount_total', 0)),
-            'shipping_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'shipping_total', 0)),
+            'revenue_gross' => $this->sumMoney($purchaseEvents->map(fn (AnalyticsEvent $event) => data_get($event->meta, 'grand_total', 0))),
+            'discount_total' => $this->sumMoney($countedPurchaseEvents->map(fn (AnalyticsEvent $event) => data_get($event->meta, 'discount_total', 0))),
+            'shipping_total' => $this->sumMoney($countedPurchaseEvents->map(fn (AnalyticsEvent $event) => data_get($event->meta, 'shipping_total', 0))),
         ];
 
         return $this->appendDerivedMetrics($totals);
@@ -295,8 +297,11 @@ class AnalyticsDashboardService
     {
         // revenue_gross is a legacy storage key. Since realized purchase events are
         // restated after refunds, its semantic value is realized revenue.
-        $totals['realized_revenue'] = (float) ($totals['revenue_gross'] ?? 0);
-        $totals['average_order_value'] = $totals['orders_count'] > 0 ? $totals['realized_revenue'] / $totals['orders_count'] : 0;
+        $totals['realized_revenue'] = $this->money($totals['revenue_gross'] ?? 0);
+        $totals['average_order_value'] = $totals['orders_count'] > 0
+            ? (string) BigDecimal::of($totals['realized_revenue'])
+                ->dividedBy((string) $totals['orders_count'], 2, RoundingMode::HalfUp)
+            : '0.00';
         $totals['conversion_rate'] = $totals['sessions_count'] > 0 ? $totals['purchases'] / $totals['sessions_count'] : 0;
         $totals['cart_abandonment_rate'] = $totals['add_to_cart_count'] > 0
             ? max(0, ($totals['add_to_cart_count'] - $totals['purchases']) / $totals['add_to_cart_count'])
@@ -372,9 +377,9 @@ class AnalyticsDashboardService
                     'orders_count' => $countedPurchaseEvents->count(),
                     'sessions_count' => (int) $rows->pluck('session_id')->filter()->unique()->count(),
                     'users_count' => (int) $rows->pluck('user_id')->filter()->unique()->count(),
-                    'revenue_gross' => (float) $purchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'grand_total', 0)),
-                    'discount_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'discount_total', 0)),
-                    'shipping_total' => (float) $countedPurchaseEvents->sum(fn (AnalyticsEvent $event) => (float) data_get($event->meta, 'shipping_total', 0)),
+                    'revenue_gross' => $this->sumMoney($purchaseEvents->map(fn (AnalyticsEvent $event) => data_get($event->meta, 'grand_total', 0))),
+                    'discount_total' => $this->sumMoney($countedPurchaseEvents->map(fn (AnalyticsEvent $event) => data_get($event->meta, 'discount_total', 0))),
+                    'shipping_total' => $this->sumMoney($countedPurchaseEvents->map(fn (AnalyticsEvent $event) => data_get($event->meta, 'shipping_total', 0))),
                 ]);
             })
             ->values();
@@ -772,6 +777,28 @@ class AnalyticsDashboardService
         ];
     }
 
+    private function money(mixed $value): string
+    {
+        $numeric = is_numeric($value) ? (string) $value : '0';
+
+        return (string) BigDecimal::of($numeric)->toScale(2, RoundingMode::HalfUp);
+    }
+
+    private function sumMoney(iterable $values): string
+    {
+        $total = BigDecimal::of('0');
+
+        foreach ($values as $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $total = $total->plus((string) $value);
+        }
+
+        return (string) $total->toScale(2, RoundingMode::HalfUp);
+    }
+
     protected function buildComparison(array $currentTotals, array $previousTotals): array
     {
         $keys = [
@@ -787,8 +814,27 @@ class AnalyticsDashboardService
         ];
 
         $comparison = [];
+        $moneyKeys = ['revenue_gross', 'average_order_value'];
 
         foreach ($keys as $key) {
+            if (in_array($key, $moneyKeys, true)) {
+                $current = BigDecimal::of($this->money($currentTotals[$key] ?? 0));
+                $previous = BigDecimal::of($this->money($previousTotals[$key] ?? 0));
+                $delta = $current->minus($previous)->toScale(2, RoundingMode::HalfUp);
+                $deltaRate = $previous->compareTo('0.00') > 0
+                    ? (float) (string) $delta->dividedBy($previous, 8, RoundingMode::HalfUp)
+                    : ($current->compareTo('0.00') > 0 ? 1 : 0);
+
+                $comparison[$key] = [
+                    'current' => (string) $current,
+                    'previous' => (string) $previous,
+                    'delta' => (string) $delta,
+                    'delta_rate' => $deltaRate,
+                ];
+
+                continue;
+            }
+
             $current = (float) ($currentTotals[$key] ?? 0);
             $previous = (float) ($previousTotals[$key] ?? 0);
             $delta = $current - $previous;
