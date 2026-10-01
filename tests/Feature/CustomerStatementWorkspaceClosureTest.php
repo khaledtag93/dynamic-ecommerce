@@ -55,7 +55,7 @@ class CustomerStatementWorkspaceClosureTest extends TestCase
         $egp = $statement['totals_by_currency']->firstWhere('currency', 'EGP');
 
         $this->assertNotNull($egp);
-        $this->assertSame(130.0, $egp['order_value']);
+        $this->assertSame('130.00', $egp['order_value']);
     }
 
     public function test_statement_paginates_rows_but_keeps_full_database_summary(): void
@@ -87,7 +87,7 @@ class CustomerStatementWorkspaceClosureTest extends TestCase
 
         $egp = $statement['totals_by_currency']->firstWhere('currency', 'EGP');
         $this->assertNotNull($egp);
-        $this->assertSame(550.0, $egp['order_value']);
+        $this->assertSame('550.00', $egp['order_value']);
 
         $bounded = $service->buildBounded($customer, [
             'type' => 'order',

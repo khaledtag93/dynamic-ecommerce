@@ -7,6 +7,8 @@ use App\Models\OrderRefund;
 use App\Models\Payment;
 use App\Models\ReturnRequest;
 use App\Models\User;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -166,13 +168,13 @@ class CustomerAccountStatementService
             if (! isset($totals[$currency])) {
                 $totals[$currency] = [
                     'currency' => $currency,
-                    'order_value' => 0.0,
-                    'payments_captured' => 0.0,
-                    'refunds_processed' => 0.0,
+                    'order_value' => '0.00',
+                    'payments_captured' => '0.00',
+                    'refunds_processed' => '0.00',
                 ];
             }
 
-            $totals[$currency][$field] = round((float) $row->statement_total, 2);
+            $totals[$currency][$field] = $this->canonicalMoney($row->statement_total);
         }
     }
 
@@ -427,7 +429,7 @@ class CustomerAccountStatementService
             'type_label' => __('Order placed'),
             'reference' => $order->order_number,
             'status_label' => $order->status_label,
-            'amount' => (float) $order->grand_total,
+            'amount' => $this->canonicalMoney($order->grand_total),
             'currency' => $order->currency ?: 'EGP',
             'occurred_at' => $order->placed_at ?: $order->created_at,
             'details' => __('Payment: :payment · Delivery: :delivery', [
@@ -445,7 +447,7 @@ class CustomerAccountStatementService
             'type_label' => __('Payment captured'),
             'reference' => $payment->transaction_reference ?: ($payment->order?->order_number ?? '#'.$payment->id),
             'status_label' => $payment->status_label,
-            'amount' => (float) $payment->amount,
+            'amount' => $this->canonicalMoney($payment->amount),
             'currency' => $payment->currency ?: ($payment->order?->currency ?? 'EGP'),
             'occurred_at' => $payment->paid_at,
             'details' => trim(($payment->method_label ?: __('Payment')).($payment->order ? ' · '.$payment->order->order_number : '')),
@@ -462,7 +464,7 @@ class CustomerAccountStatementService
             'type_label' => __('Refund processed'),
             'reference' => $returnReference ?: ($refund->order?->order_number ?? '#'.$refund->id),
             'status_label' => __('Processed'),
-            'amount' => (float) $refund->amount,
+            'amount' => $this->canonicalMoney($refund->amount),
             'currency' => $refund->order?->currency ?: 'EGP',
             'occurred_at' => $refund->processed_at ?: $refund->created_at,
             'details' => $refund->reason ?: __('Refund linked to :order', [
@@ -489,6 +491,12 @@ class CustomerAccountStatementService
                 : __('Return request'),
             'url' => route('admin.returns.show', $returnRequest),
         ];
+    }
+
+    private function canonicalMoney(mixed $value): string
+    {
+        return (string) BigDecimal::of((string) ($value ?? '0'))
+            ->toScale(2, RoundingMode::Unnecessary);
     }
 
     private function includesType(string $filterType, string $candidate): bool

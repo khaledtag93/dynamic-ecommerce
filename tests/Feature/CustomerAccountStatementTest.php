@@ -150,6 +150,67 @@ class CustomerAccountStatementTest extends TestCase
         $this->assertStringContainsString('customer-statement-'.$customer->id, (string) $export->headers->get('content-disposition'));
     }
 
+    public function test_statement_preserves_exact_decimal_money_for_totals_movements_and_csv(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $customer = User::factory()->create(['role_as' => 0]);
+
+        $firstOrder = $this->orderFor($customer, 'STAT-CENTS-010', '0.10', 'EGP');
+        $secondOrder = $this->orderFor($customer, 'STAT-CENTS-020', '0.20', 'EGP');
+
+        foreach ([[$firstOrder, '0.10'], [$secondOrder, '0.20']] as [$order, $amount]) {
+            Payment::query()->create([
+                'order_id' => $order->id,
+                'method' => Order::PAYMENT_METHOD_ONLINE,
+                'status' => Payment::STATUS_PAID,
+                'amount' => $amount,
+                'currency' => 'EGP',
+                'paid_at' => now(),
+            ]);
+        }
+
+        OrderRefund::query()->create([
+            'order_id' => $secondOrder->id,
+            'amount' => '0.10',
+            'reason' => 'Exact-cent statement regression',
+            'processed_by' => $admin->id,
+            'processed_at' => now(),
+        ]);
+
+        $statement = app(\App\Services\Commerce\CustomerAccountStatementService::class)->build($customer, [
+            'date_from' => now()->subDay()->toDateString(),
+            'date_to' => now()->toDateString(),
+        ]);
+
+        $egp = $statement['totals_by_currency']->firstWhere('currency', 'EGP');
+        $this->assertNotNull($egp);
+        $this->assertSame('0.30', $egp['order_value']);
+        $this->assertSame('0.30', $egp['payments_captured']);
+        $this->assertSame('0.10', $egp['refunds_processed']);
+
+        $movements = $statement['movements']->getCollection();
+        $this->assertEqualsCanonicalizing(
+            ['0.10', '0.20'],
+            $movements->where('type', 'order')->pluck('amount')->all(),
+        );
+        $this->assertEqualsCanonicalizing(
+            ['0.10', '0.20'],
+            $movements->where('type', 'payment')->pluck('amount')->all(),
+        );
+        $this->assertSame('0.10', $movements->firstWhere('type', 'refund')['amount']);
+
+        $csv = $this->actingAs($admin)
+            ->get(route('admin.customers.statement.export', [
+                'user' => $customer,
+                'date_from' => now()->subDay()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ]))
+            ->streamedContent();
+
+        $this->assertStringContainsString(',0.10,EGP,', $csv);
+        $this->assertStringContainsString(',0.20,EGP,', $csv);
+    }
+
     public function test_statement_csv_neutralizes_formula_capable_text_cells(): void
     {
         $admin = $this->createSuperAdmin();
@@ -209,8 +270,8 @@ class CustomerAccountStatementTest extends TestCase
         $this->assertSame(1, $statement['counts']['refunds']);
         $this->assertSame(1, $statement['matching_count']);
         $this->assertSame(1, $statement['movements']->count());
-        $this->assertSame(10.0, $statement['totals_by_currency']->firstWhere('currency', 'EGP')['refunds_processed']);
-        $this->assertSame(10.0, (float) data_get($statement['movements']->getCollection()->first(), 'amount'));
+        $this->assertSame('10.00', $statement['totals_by_currency']->firstWhere('currency', 'EGP')['refunds_processed']);
+        $this->assertSame('10.00', data_get($statement['movements']->getCollection()->first(), 'amount'));
     }
 
     public function test_payment_movements_require_captured_status_even_when_paid_at_is_present(): void
@@ -260,7 +321,7 @@ class CustomerAccountStatementTest extends TestCase
 
         $egp = $statement['totals_by_currency']->firstWhere('currency', 'EGP');
         $this->assertNotNull($egp);
-        $this->assertSame(120.0, $egp['payments_captured']);
+        $this->assertSame('120.00', $egp['payments_captured']);
         $this->assertSame(1, $statement['counts']['payments']);
     }
 
@@ -305,7 +366,7 @@ class CustomerAccountStatementTest extends TestCase
             ->assertRedirect(route('frontend.home'));
     }
 
-    private function orderFor(User $customer, string $number, float $total, string $currency): Order
+    private function orderFor(User $customer, string $number, float|string $total, string $currency): Order
     {
         return Order::query()->create([
             'user_id' => $customer->id,

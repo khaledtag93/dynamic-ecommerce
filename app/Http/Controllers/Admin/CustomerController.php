@@ -264,7 +264,7 @@ class CustomerController extends Controller
                     $this->csvSafeText($movement['type_label']),
                     $this->csvSafeText($movement['reference']),
                     $this->csvSafeText($movement['status_label']),
-                    $movement['amount'] === null ? '' : number_format((float) $movement['amount'], 2, '.', ''),
+                    $movement['amount'] === null ? '' : $movement['amount'],
                     $this->csvSafeText($movement['currency'] ?? ''),
                     $this->csvSafeText($movement['details']),
                 ]);
