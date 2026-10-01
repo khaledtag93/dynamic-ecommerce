@@ -1244,9 +1244,14 @@ class PosService
         bool $strict = false
     ): int {
         $eligibleCents = max(0, $eligibleCents);
+
+        if (! $type || $value === null || $value === '') {
+            return 0;
+        }
+
         $valueDecimal = BigDecimal::of($this->normalizeDiscountValue($value));
 
-        if (! $type || $valueDecimal->compareTo('0.00') <= 0) {
+        if ($valueDecimal->compareTo('0.00') <= 0) {
             return 0;
         }
 
