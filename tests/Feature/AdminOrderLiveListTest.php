@@ -152,6 +152,41 @@ class AdminOrderLiveListTest extends TestCase
             ->assertSee('EGP 0.25 · USD 0.10');
     }
 
+    public function test_order_rows_render_the_orders_normalized_currency_for_total_refund_and_net_paid(): void
+    {
+        $owner = $this->createSuperAdmin();
+        $order = $this->order(
+            'ROW-CURRENCY-USD',
+            'USD Row Customer',
+            'usd-row@example.test',
+            '3.00',
+            Order::STATUS_COMPLETED
+        );
+        $order->update([
+            'currency' => 'usd',
+            'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+            'refund_total' => '1.00',
+        ]);
+
+        $url = route('admin.orders.index', ['search' => 'ROW-CURRENCY-USD']);
+
+        $this->actingAs($owner)
+            ->get($url)
+            ->assertOk()
+            ->assertSee('USD 3.00')
+            ->assertSee('Refunded: USD 1.00')
+            ->assertSee('Net paid: USD 2.00')
+            ->assertDontSee('EGP 3.00');
+
+        $this->withHeader('X-Live-List', '1')
+            ->get($url)
+            ->assertOk()
+            ->assertSee('USD 3.00')
+            ->assertSee('Refunded: USD 1.00')
+            ->assertSee('Net paid: USD 2.00')
+            ->assertDontSee('EGP 3.00');
+    }
+
     private function order(string $number, string $name, string $email, float|int|string $total, string $status): Order
     {
         return Order::create([

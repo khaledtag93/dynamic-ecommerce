@@ -72,6 +72,7 @@
                     </thead>
                     <tbody>
                         @foreach($orders as $order)
+                            @php($orderCurrency = strtoupper(trim((string) $order->currency)) ?: 'EGP')
                             <tr>
                                 <td>
                                     <div class="fw-bold">{{ $order->order_number }}</div>
@@ -103,12 +104,12 @@
                                 <td>
                                     <span class="badge admin-status-badge {{ $order->payment_status_badge_class }}">{{ $order->payment_status_label }}</span>
                                     @if((float) $order->refund_total > 0)
-                                        <div class="text-muted small mt-2">{{ __('Refunded') }}: EGP {{ number_format($order->refund_total, 2) }}</div>
+                                        <div class="text-muted small mt-2">{{ __('Refunded') }}: {{ $orderCurrency }} {{ number_format($order->refund_total, 2) }}</div>
                                     @endif
-                                    <div class="text-muted small mt-1">{{ __('Net paid') }}: EGP {{ number_format(max(0, (float) $order->grand_total - (float) $order->refund_total), 2) }}</div>
+                                    <div class="text-muted small mt-1">{{ __('Net paid') }}: {{ $orderCurrency }} {{ number_format(max(0, (float) $order->grand_total - (float) $order->refund_total), 2) }}</div>
                                 </td>
                                 <td>{{ $order->items_count }}</td>
-                                <td class="fw-bold">EGP {{ number_format($order->grand_total, 2) }}</td>
+                                <td class="fw-bold">{{ $orderCurrency }} {{ number_format($order->grand_total, 2) }}</td>
                                 <td>
                                     <div>{{ optional($order->placed_at)->format('d M Y') ?: $order->created_at->format('d M Y') }}</div>
                                     <div class="text-muted small">{{ $order->created_at->format('h:i A') }}</div>
