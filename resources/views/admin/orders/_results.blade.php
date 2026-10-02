@@ -106,7 +106,7 @@
                                     @if((float) $order->refund_total > 0)
                                         <div class="text-muted small mt-2">{{ __('Refunded') }}: {{ $orderCurrency }} {{ number_format($order->refund_total, 2) }}</div>
                                     @endif
-                                    <div class="text-muted small mt-1">{{ __('Net paid') }}: {{ $orderCurrency }} {{ number_format(max(0, (float) $order->grand_total - (float) $order->refund_total), 2) }}</div>
+                                    <div class="text-muted small mt-1">{{ __('Net paid') }}: {{ $orderCurrency }} {{ number_format((float) $order->row_net_paid, 2) }}</div>
                                 </td>
                                 <td>{{ $order->items_count }}</td>
                                 <td class="fw-bold">{{ $orderCurrency }} {{ number_format($order->grand_total, 2) }}</td>

@@ -58,6 +58,13 @@ class OrderController extends Controller
 
         $orders = Order::query()
             ->withCount('items')
+            ->withSum([
+                'payments as captured_total' => fn ($query) => $query->whereIn('status', [
+                    Payment::STATUS_PAID,
+                    Payment::STATUS_REFUNDED,
+                ]),
+            ], 'amount')
+            ->withSum('refunds as recorded_refund_total', 'amount')
             ->when($filters['search'], function ($query) use ($like) {
                 $query->where(function ($innerQuery) use ($like) {
                     $innerQuery
@@ -78,6 +85,23 @@ class OrderController extends Controller
             ->when($sortColumn !== 'created_at', fn ($query) => $query->orderByDesc('created_at'))
             ->paginate($filters['per_page'])
             ->withQueryString();
+
+        $orders->getCollection()->each(function (Order $order): void {
+            $captured = BigDecimal::of((string) ($order->captured_total ?? '0'))
+                ->toScale(2, RoundingMode::HalfUp);
+            $refunded = BigDecimal::of((string) ($order->recorded_refund_total ?? '0'))
+                ->toScale(2, RoundingMode::HalfUp);
+            $netPaid = $captured->minus($refunded);
+
+            if ($netPaid->isLessThan('0')) {
+                $netPaid = BigDecimal::of('0.00');
+            }
+
+            $order->setAttribute(
+                'row_net_paid',
+                (string) $netPaid->toScale(2, RoundingMode::Unnecessary)
+            );
+        });
 
         $queueStats = [
             'needs_action' => Order::whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING])->count(),

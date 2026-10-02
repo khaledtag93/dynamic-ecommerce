@@ -152,20 +152,43 @@ class AdminOrderLiveListTest extends TestCase
             ->assertSee('EGP 0.25 · USD 0.10');
     }
 
-    public function test_order_rows_render_the_orders_normalized_currency_for_total_refund_and_net_paid(): void
+    public function test_order_rows_use_normalized_currency_and_ledger_backed_net_paid(): void
     {
         $owner = $this->createSuperAdmin();
         $order = $this->order(
             'ROW-CURRENCY-USD',
             'USD Row Customer',
             'usd-row@example.test',
-            '3.00',
+            '0.30',
             Order::STATUS_COMPLETED
         );
         $order->update([
             'currency' => 'usd',
             'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
-            'refund_total' => '1.00',
+            'refund_total' => '0.10',
+        ]);
+
+        foreach ([
+            ['ROW-USD-010', '0.10'],
+            ['ROW-USD-020', '0.20'],
+        ] as [$reference, $amount]) {
+            Payment::query()->create([
+                'order_id' => $order->id,
+                'method' => Order::PAYMENT_METHOD_BANK_TRANSFER,
+                'provider' => 'bank',
+                'status' => Payment::STATUS_PAID,
+                'transaction_reference' => $reference,
+                'amount' => $amount,
+                'currency' => 'usd',
+                'paid_at' => now(),
+            ]);
+        }
+
+        OrderRefund::query()->create([
+            'order_id' => $order->id,
+            'amount' => '0.10',
+            'reason' => 'Row currency refund',
+            'processed_at' => now(),
         ]);
 
         $url = route('admin.orders.index', ['search' => 'ROW-CURRENCY-USD']);
@@ -173,18 +196,36 @@ class AdminOrderLiveListTest extends TestCase
         $this->actingAs($owner)
             ->get($url)
             ->assertOk()
-            ->assertSee('USD 3.00')
-            ->assertSee('Refunded: USD 1.00')
-            ->assertSee('Net paid: USD 2.00')
-            ->assertDontSee('EGP 3.00');
+            ->assertSee('USD 0.30')
+            ->assertSee('Refunded: USD 0.10')
+            ->assertSee('Net paid: USD 0.20')
+            ->assertDontSee('EGP 0.30');
 
         $this->withHeader('X-Live-List', '1')
             ->get($url)
             ->assertOk()
-            ->assertSee('USD 3.00')
-            ->assertSee('Refunded: USD 1.00')
-            ->assertSee('Net paid: USD 2.00')
-            ->assertDontSee('EGP 3.00');
+            ->assertSee('USD 0.30')
+            ->assertSee('Refunded: USD 0.10')
+            ->assertSee('Net paid: USD 0.20')
+            ->assertDontSee('EGP 0.30');
+
+        $unpaid = $this->order(
+            'ROW-NET-UNPAID',
+            'Unpaid Row Customer',
+            'unpaid-row@example.test',
+            '4.00',
+            Order::STATUS_PENDING
+        );
+        $unpaid->update([
+            'currency' => 'USD',
+            'payment_status' => Order::PAYMENT_STATUS_UNPAID,
+        ]);
+
+        $this->get(route('admin.orders.index', ['search' => 'ROW-NET-UNPAID']))
+            ->assertOk()
+            ->assertSee('USD 4.00')
+            ->assertSee('Net paid: USD 0.00')
+            ->assertDontSee('Net paid: USD 4.00');
     }
 
     private function order(string $number, string $name, string $email, float|int|string $total, string $status): Order
