@@ -1,5 +1,17 @@
 # MASTER PROJECT STATUS
 
+## LATEST VERIFIED STATE — 2026-10-14
+
+- Working branch: `sec03-framework-upgrade`; verified application/CI/QAS SHA `c4801411`.
+- Hardening CI https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38578100532 Green (889 tests / 18,015 assertions). QAS deployed application and static assets HTTP 200; maintenance OFF; strict operations health Green; zero failed jobs.
+- October 14 Workforce 500 evidence: `employee_attendance_breaks` was absent on QAS despite original migration marked Ran. Backed up the QAS DB, restored schema using a guarded, idempotent migration, and passed live read-only attendance/schedule relation smoke.
+- Admin Sidebar contrast and hover/active/keyboard states now follow the configurable white-label sidebar palette with RTL-safe current-page indication.
+- Authenticated QAS Workforce browser and sidebar visual review remain explicitly pending; any lost historical break entries were not recreated. Production unchanged.
+- Detailed checkpoint: `docs/QAS_WORKFORCE_SIDEBAR_RECOVERY_CHECKPOINT_2026-10-14.md`.
+- Next: targeted QAS browser acceptance, then resume remaining genuinely unclosed monetary/accounting audit. OPS-01 / PAY-01 / OPS-02 / Production queue-scheduler gates remain open.
+
+### Historical checkpoints below
+
 ## LATEST VERIFIED STATE — 2026-10-02
 
 - Branch: `sec03-framework-upgrade`.

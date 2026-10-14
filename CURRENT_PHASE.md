@@ -1,5 +1,24 @@
 # CURRENT PHASE
 
+## LATEST CONTINUATION CHECKPOINT — 2026-10-14
+
+> This section is authoritative. The 2026-10-02 financial-integrity checkpoint below remains historical.
+
+- Active branch: `sec03-framework-upgrade`.
+- **Latest verified application, CI and QAS SHA:** `c4801411`.
+- **Hardening CI** https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38578100532 **Green**: 889 PHPUnit tests, 18,015 assertions, fresh MySQL migration, Blade/config, browser interactions, frontend audit baseline and build.
+- **QAS deployed `c4801411`**: application/static HTTP 200, maintenance OFF, new Workforce recovery migration Ran, Scheduler/Queue strict health Green, zero failed jobs.
+- **Workforce 500 root cause confirmed in QAS log:** table `employee_attendance_breaks` was absent while its original migration was recorded as Ran. The new idempotent recovery migration restored its original table structure. Read-only QAS smoke passed table/columns, attendance relations and schedule relations.
+- **White-label-aware sidebar clarity source/QAS deployed:** higher-contrast hover, active page, group indicator, RTL logical active rail, keyboard focus; uses existing Brand & Identity sidebar/primary colors.
+- **QAS backup before schema recovery:** `deploy_backups/qas_before_workforce_schema_repair_20261014_135752.sql` (server only, not committed).
+- **Open acceptance:** authenticated browser review of My time clock / Work schedule / Attendance in EN/AR, plus current white-label theme/mobile/RTL hover/active appearance. Schema repair alone does not recover any missing historical break rows. Cause of table disappearance is not yet confirmed.
+- **Production unchanged.** OPS-01, PAY-01, OPS-02 and Production scheduler/queue gates remain open.
+- Detailed evidence: `docs/QAS_WORKFORCE_SIDEBAR_RECOVERY_CHECKPOINT_2026-10-14.md`.
+
+**Immediate next action:** complete targeted authenticated QAS Workforce page and sidebar visual acceptance, fix only reproduced defects, then resume the remaining genuine monetary/accounting integrity audit from verified application SHA `c4801411`. Do not reopen previously closed financial boundaries without evidence.
+
+### Historical checkpoints below
+
 ## LATEST CONTINUATION CHECKPOINT — 2026-10-02
 
 > This section is authoritative for continuation. Older checkpoints below are historical and must not override this state.
