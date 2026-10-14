@@ -66,6 +66,7 @@ class WorkforceScopedAccessTest extends TestCase
             'manager_employee_profile_id' => $outsider->id,
         ])->assertForbidden();
 
+        $this->get(route('admin.workforce.leave-types.index'))->assertForbidden();
         $this->get(route('admin.workforce.leave-types.create'))->assertForbidden();
         $this->get(route('admin.workforce.leave.adjustment'))->assertForbidden();
         $this->get(route('admin.workforce.payroll.index'))->assertForbidden();

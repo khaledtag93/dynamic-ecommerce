@@ -18,6 +18,7 @@ class LeaveTypeController extends Controller
 
     public function index()
     {
+        $this->access->assertOrgAdmin(request()->user());
         $types = EmployeeLeaveType::query()
             ->withCount(['requests', 'adjustments'])
             ->orderBy('name')

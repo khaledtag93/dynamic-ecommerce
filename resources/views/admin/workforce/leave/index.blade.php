@@ -5,7 +5,9 @@
 @section('content')
 <div class="admin-page-shell" data-live-list>
     <x-admin.page-header :kicker="__('Workforce')" :title="__('Leave review')" :description="__('Review employee leave requests while keeping balances and work schedules consistent.')">
+        @if(auth()->user()?->hasPermission('workforce.scope.all'))
         <a href="{{ route('admin.workforce.leave-types.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-format-list-bulleted-type"></i><span>{{ __('Leave types') }}</span></a>
+        @endif
         @if(auth()->user()?->hasPermission('workforce.scope.all'))
             <a href="{{ route('admin.workforce.leave.adjustment') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-scale-balance"></i><span>{{ __('Balance adjustment') }}</span></a>
         @endif
