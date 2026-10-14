@@ -58,4 +58,10 @@ Expose settings through Admin → Workforce → Settings (not the White Label pa
 - **W-SCHED-05a** configurable Workforce Settings/policy versioning and shift templates, **05b** roster instances and bulk/individual assignment + publication notifications, **05c** staff-facing schedule and conflict-driven change flow, **05d** live presence and supervisor exceptions, **05e** break policy/planned slots/reminders/variance, **05f** team coverage reporting.
 - **W-PAY-06** end-to-end leave/schedule/attendance/break-to-payroll reconciliation and locked snapshots.
 
+### Industry benchmark references (official documentation)
+
+- Deputy: [Creating shifts on your schedule](https://help.deputy.com/hc/en-au/articles/4688731978639-Creating-shifts-on-your-schedule) explains open shifts without named employees, claim and approval behavior, and shift offers.
+- When I Work: [Publishing the Schedule](https://help.wheniwork.com/articles/publishing-the-schedule-computer/) documents publish-and-notify as a distinct step and targeted notifications; [Scheduling OpenShifts](https://help.wheniwork.com/articles/scheduling-an-openshift-computer/) includes shift template selection, eligibility, paid/unpaid breaks and manager approval.
+- NICE CXone: [Agent Unavailable Time Report](https://help.nice-incontact.com/content/reporting/prebuiltreports/prebuiltreportsstandard/agentunavailabletimereport.htm) distinguishes time in configurable unavailable states. These are product behavior references, not licenses or code to copy.
+
 For each coherent slice: inspect → implement → tests (including denial/edge conditions) → CI Green → DB backup and QAS smoke → checkpoint. Do not deploy new workflow behaviour to Production before controlled acceptance.

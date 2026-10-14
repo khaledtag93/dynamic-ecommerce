@@ -1,15 +1,24 @@
 # CURRENT PHASE
 
+## LATEST VERIFIED QAS CHECKPOINT — 2026-10-14 (W-ORG-01a Reporting Hierarchy Foundation)
+
+- Branch `sec03-framework-upgrade`, **QAS application SHA `bedb9fc0`**, Hardening CI https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38595362470 **Green** (901 tests / 18,150 assertions).
+- Non-destructive migration `2026_10_14_170000_add_employee_reporting_manager` Ran [20]. Employee profiles have optional direct reporting manager; manager candidate authorization, no self/cycles, audited assignment and EN/AR employee form. No existing employee data assigned automatically.
+- QAS app/static HTTP 200, maintenance OFF, strict Scheduler + Queue healthy, failed jobs 0; read-only DB smoke `ORG_SCHEMA=PASS`, employee count 1, assigned manager count 0; pre-migration DB backup retained privately.
+- Official evidence: `docs/QAS_WORKFORCE_ORG_01A_CHECKPOINT_2026-10-14.md`.
+- **NOT DONE:** W-ORG-01b *employee-scoped* authorization, assigned leave approval and notifications, secured documents, shift template/roster/live status/break policy systems. No Production changes.
+- **Next implementation boundary:** W-ORG-01b scoped employee data access, then W-LEAVE-02/W-APP-03/W-DOC-04, followed by versioned configurable Workforce Settings and W-SCHED-05a…05f. Authenticated QAS manager selector visual acceptance remains open.
+
 ## CURRENT ACTIVE WORKSTREAM — 2026-10-14 (Workforce Enterprise E2E Review)
 
 - **Additional scheduling/break operations design:** `docs/WORKFORCE_SCHEDULING_BREAK_OPERATIONS_ARCHITECTURE_2026-10-14.md`. Source review confirms no reusable shift templates/rosters, no separate Ready/Not Ready operational presence, no planned break quotas/windows/reminders, and current shift grace 5 minutes is hard-coded. Planned Workforce Settings must expose editable versioned tenant/branch/team policies rather than hardcoding business rules.
-- **First implementation boundary W-ORG-01a in progress:** reporting-manager schema, form, relationship service, cycle guards, audited assignments and tests. Separate W-ORG-01b employee-scoped authorization, approvals and document access **remain pending**. Do not represent hierarchy foundation as full workflow authorization.
+- **W-ORG-01a delivered on QAS:** optional direct reporting manager, relationship traversal, cycle guards, audited changes and tests. Separate W-ORG-01b scoped authorization, leave approvals, and document access **remain pending**; hierarchy alone does not confer approval privileges.
 
 - User observed two Draft shifts in admin Scheduled Shifts but no shifts in My Schedule. **Confirmed expected existing behavior:** My Schedule displays Published shifts only. Improved publishing clarity is included in W-SCHED-05.
 - Comprehensive code-grounded audit: `docs/WORKFORCE_ENTERPRISE_E2E_AUDIT_2026-10-14.md`.
-- Priority gaps: no manager-reporting hierarchy; globally privileged managers can act across all leave requests; leave annual entitlement confused with per-request duration; leave requests Pending even with insufficient annual entitlement until approval; no private employee/leave multi-attachments or assigned approver notifications; leave approval currently blocks even overlapping Draft shifts; UTC/local-day business policy needs deliberate alignment.
+- Priority gaps: hierarchy is now modeled but globally privileged managers can still act across all leave requests until W-ORG-01b/W-APP-03; leave annual entitlement confused with per-request duration; leave requests Pending even with insufficient annual entitlement until approval; no private employee/leave multi-attachments or assigned approver notifications; leave approval currently blocks even overlapping Draft shifts; UTC/local-day business policy needs deliberate alignment.
 - **Execution order:** W-ORG-01 hierarchy and employee-scoped authorization → W-LEAVE-02 leave policy/calendar engine → W-APP-03 assigned approvals/delegation and notifications → W-DOC-04 secure multi-file attachments → W-SCHED-05 schedule/attendance/leave consistency → W-PAY-06 payroll policy/integration and full UAT.
-- **Status:** audit and planning only; no HR schema/code/migration deployed in this new workstream; QAS app last verified `a83bc8f0`; last official docs checkpoint remains below. Production unchanged.
+- **Status:** Enterprise E2E architecture audited; W-ORG-01a foundation shipped to QAS at `bedb9fc0`. Planning-only components: scheduling templates/rosters, break quota/notifications, leave routing and sensitive documents. Production unchanged.
 
 ## LATEST CONTINUATION CHECKPOINT — 2026-10-14 (Workforce Timezone & Attendance UX)
 
