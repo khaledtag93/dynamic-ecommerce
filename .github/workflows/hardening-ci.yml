@@ -152,6 +152,12 @@ jobs:
       - name: Test shared browser interactions
         run: npm run test:ui
 
+      - name: Workforce QAS fixture and role contract (offline)
+        run: |
+          php -l ops/qa/worg01b_personas.php
+          node --check ops/qa/worg01b_browser_login_diagnostic.cjs
+          node --test tests/browser/workforce-qa-contract.test.cjs
+
       - name: Verify QAS acceptance runner fails closed without fixtures
         run: |
           node --check tests/browser/workforce-authenticated-readonly.cjs

@@ -2,7 +2,8 @@
 
 /**
  * W-ORG-01b QAS-only, synthetic Workforce persona fixture manager.
- * Modes: --preflight (read-only), --seed (seven accounts), --cleanup (exact IDs).
+ * Modes: --preflight, --verify-auth, --seed, --cleanup-dry-run, --cleanup.
+ * Cleanup refuses untracked related rows and reconciles exact-ID deletions.
  * Never execute against production. Keep the generated JSON manifest private.
  */
 declare(strict_types=1);
@@ -11,7 +12,11 @@ if (PHP_SAPI !== 'cli') {
     exit(2);
 }
 
-$root = dirname(__DIR__, 3);
+$root = dirname(__DIR__, 2);
+if (! is_file($root.'/vendor/autoload.php') || ! is_file($root.'/bootstrap/app.php')) {
+    fwrite(STDERR, 'BLOCKED: QAS fixture runner must reside under the Laravel app root'.PHP_EOL);
+    exit(2);
+}
 require $root.'/vendor/autoload.php';
 $app = require $root.'/bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
@@ -32,7 +37,7 @@ function qaStop(string $reason): never
 }
 
 $mode = $argv[1] ?? '--preflight';
-if (! in_array($mode, ['--preflight', '--seed', '--cleanup'], true)) {
+if (! in_array($mode, ['--preflight', '--verify-auth', '--seed', '--cleanup-dry-run', '--cleanup'], true)) {
     qaStop('unknown mode');
 }
 
@@ -79,6 +84,7 @@ foreach ($neededTables as $table) {
 
 $privateDir = storage_path('app/private');
 $manifestPath = $privateDir.'/worg01b-personas-manifest.json';
+$pendingManifestPath = $manifestPath.'.pending';
 $roleIds = Role::query()->whereIn('slug', array_unique(array_values($roles)))->pluck('id', 'slug')->all();
 foreach (array_unique(array_values($roles)) as $role) {
     if (! isset($roleIds[$role])) {
@@ -129,7 +135,39 @@ if ($mode === '--preflight') {
     exit(0);
 }
 
+if ($mode === '--verify-auth') {
+    if (! is_file($manifestPath)) {
+        qaStop('authentication check manifest missing');
+    }
+    $known = json_decode(file_get_contents($manifestPath), true, 512, JSON_THROW_ON_ERROR);
+    if (($known['environment'] ?? '') !== 'qas'
+        || ($known['fixture_namespace'] ?? '') !== 'QA-WORG01B') {
+        qaStop('authentication manifest is not QAS-only');
+    }
+    $valid = 0;
+    foreach ($roles as $key => $role) {
+        $item = $known['personas'][$key] ?? null;
+        if (! $item || ($item['email'] ?? null) !== $emails[$key]) {
+            qaStop('synthetic persona identity mismatch');
+        }
+        $user = User::query()->where('email', $emails[$key])->first();
+        if (! $user || (int) $user->role_as !== 1
+            || ! $user->hasRole($role)
+            || ! \Illuminate\Support\Facades\Hash::check($item['password'], $user->password)) {
+            qaStop('synthetic login credential or role mismatch for '.$key);
+        }
+        $valid++;
+    }
+    echo 'QA_CREDENTIAL_HASHES_VERIFIED='.$valid.PHP_EOL;
+    echo 'QA_USER_ROLES_VERIFIED='.$valid.PHP_EOL;
+    echo 'NO_PLAINTEXT_SECRETS_PRINTED=YES'.PHP_EOL;
+    exit(0);
+}
+
 if ($mode === '--seed') {
+    if (is_file($pendingManifestPath)) {
+        qaStop('pending fixture escrow exists; verify database and recover it before another seed');
+    }
     if (is_file($manifestPath)) {
         qaStop('fixture manifest already exists; cleanup required before another seed');
     }
@@ -158,7 +196,7 @@ if ($mode === '--seed') {
         'created_row_ids' => [],
     ];
     try {
-        DB::transaction(function () use (&$manifest, $roles, $codes, $emails, $roleIds, $manifestPath): void {
+        DB::transaction(function () use (&$manifest, $roles, $codes, $emails, $roleIds, $pendingManifestPath): void {
             $profiles = [];
             $userIds = [];
             foreach ($roles as $key => $slug) {
@@ -237,23 +275,96 @@ if ($mode === '--seed') {
             ];
 
             $encoded = json_encode($manifest, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
-            if (file_put_contents($manifestPath, $encoded, LOCK_EX) === false) {
-                throw new RuntimeException('cannot write private fixture manifest');
+            if (file_put_contents($pendingManifestPath, $encoded, LOCK_EX) === false) {
+                throw new RuntimeException('cannot write private fixture escrow');
             }
-            @chmod($manifestPath, 0600);
+            if (! chmod($pendingManifestPath, 0600)) {
+                throw new RuntimeException('private fixture escrow permissions could not be restricted');
+            }
         }, 1);
     } catch (Throwable $exception) {
-        if (is_file($manifestPath)) {
-            @unlink($manifestPath);
+        if (is_file($pendingManifestPath)) {
+            @unlink($pendingManifestPath);
         }
-        qaStop('seed transaction failed: '.$exception->getMessage());
+        qaStop('seed transaction failed; inspect private server logs, do not repeat seed blindly');
     }
 
+    // If final rename fails after SQL COMMIT, preserve .pending for manual recovery.
+    if (! rename($pendingManifestPath, $manifestPath)) {
+        qaStop('database committed but fixture escrow is pending; recover before proceeding');
+    }
     echo 'QA_PERSONAS_CREATED=7'.PHP_EOL;
     echo 'QA_ATTENDANCE_CREATED=2'.PHP_EOL;
     echo 'QA_LEAVE_REQUESTS_CREATED=2'.PHP_EOL;
     echo 'QA_PRIVATE_MANIFEST_READY=YES'.PHP_EOL;
     exit(0);
+}
+
+/**
+ * Fail-closed impact assessment: all ID-bound rows must be accounted for,
+ * including FK references created later by browser tests.
+ * Emits aggregate counts only; never dumps user data or credentials.
+ */
+function qaCleanupImpact(array $ids, string $expectedDb): array
+{
+    $blocks = [];
+    $counts = [];
+    foreach (['users', 'employee_profiles', 'employee_attendance_sessions',
+        'employee_leave_requests', 'employee_leave_types'] as $table) {
+        $tracked = array_values(array_unique(array_map('intval', $ids[$table] ?? [])));
+        if (! $tracked || in_array(0, $tracked, true)) {
+            qaStop('cleanup manifest missing valid tracked IDs for '.$table);
+        }
+        $actual = DB::table($table)->whereIn('id', $tracked)->count();
+        $counts[$table] = ['tracked' => count($tracked), 'found' => $actual];
+        if ($actual !== count($tracked)) {
+            $blocks[] = 'tracked row count mismatch in '.$table;
+        }
+    }
+
+    // FK inventory catches unexpected children without assuming which Workforce
+    // features will be exercised during authenticated role acceptance.
+    $refs = DB::table('information_schema.KEY_COLUMN_USAGE')
+        ->where('REFERENCED_TABLE_SCHEMA', $expectedDb)
+        ->whereIn('REFERENCED_TABLE_NAME', array_keys($counts))
+        ->get(['TABLE_NAME', 'COLUMN_NAME', 'REFERENCED_TABLE_NAME']);
+    foreach ($refs as $ref) {
+        $table = (string) $ref->TABLE_NAME;
+        $column = (string) $ref->COLUMN_NAME;
+        $target = (string) $ref->REFERENCED_TABLE_NAME;
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column)) {
+            $blocks[] = 'referencing schema missing for '.$table;
+            continue;
+        }
+        $related = DB::table($table)->whereIn($column, $ids[$target]);
+        if ($table === 'role_user' && $column === 'user_id') {
+            $total = (clone $related)->count();
+            $counts['role_user_memberships'] = $total;
+            if ($total !== count($ids['users'])) {
+                $blocks[] = 'unexpected QA role membership count';
+            }
+            continue;
+        }
+        // Rows explicitly recorded in the fixture manifest are expected;
+        // untracked references to fixture IDs must never be silently deleted.
+        if (isset($ids[$table]) && Schema::hasColumn($table, 'id')) {
+            $related->whereNotIn('id', $ids[$table]);
+        }
+        $extra = $related->count();
+        if ($extra > 0) {
+            $counts['untracked_'.$table.'_'.$column] = $extra;
+            $blocks[] = 'untracked dependent rows in '.$table.' / '.$column;
+        }
+    }
+    // Eloquent sessions may use a user_id without a declared FK.
+    if (Schema::hasTable('sessions') && Schema::hasColumn('sessions', 'user_id')) {
+        $remainingSessions = DB::table('sessions')->whereIn('user_id', $ids['users'])->count();
+        $counts['qa_sessions'] = $remainingSessions;
+        if ($remainingSessions > 0) {
+            $blocks[] = 'QA sessions must expire or be cleared through approved session management';
+        }
+    }
+    return ['status' => $blocks === [] ? 'READY' : 'BLOCKED', 'counts' => $counts, 'blocks' => $blocks];
 }
 
 if (! is_file($manifestPath)) {
@@ -278,7 +389,23 @@ foreach ($codes as $key => $code) {
     }
 }
 $ids = $manifest['created_row_ids'];
-DB::transaction(function () use ($ids): void {
+$impact = qaCleanupImpact($ids, $expectedDb);
+echo 'QA_CLEANUP_IMPACT='.json_encode($impact, JSON_THROW_ON_ERROR).PHP_EOL;
+if ($mode === '--cleanup-dry-run') {
+    exit($impact['status'] === 'READY' ? 0 : 2);
+}
+if ($impact['status'] !== 'READY') {
+    qaStop('cleanup stopped due to untracked dependencies or manifest drift');
+}
+$baseline = [];
+foreach (array_keys($impact['counts']) as $table) {
+    if (in_array($table, ['users', 'employee_profiles', 'employee_attendance_sessions',
+        'employee_leave_requests', 'employee_leave_types'], true)) {
+        $baseline[$table] = DB::table($table)->count();
+    }
+}
+$baseline['role_user'] = DB::table('role_user')->count();
+DB::transaction(function () use ($ids, $baseline): void {
     EmployeeLeaveRequest::query()->whereIn('id', $ids['employee_leave_requests'])->delete();
     EmployeeAttendanceSession::query()->whereIn('id', $ids['employee_attendance_sessions'])->delete();
     EmployeeLeaveType::query()->whereIn('id', $ids['employee_leave_types'])->delete();
@@ -287,7 +414,17 @@ DB::transaction(function () use ($ids): void {
     EmployeeProfile::query()->whereIn('id', $ids['employee_profiles'])->delete();
     DB::table('role_user')->whereIn('user_id', $ids['users'])->delete();
     User::query()->whereIn('id', $ids['users'])->delete();
+    foreach ($baseline as $table => $before) {
+        $deleted = $table === 'role_user' ? count($ids['users']) : count($ids[$table]);
+        if (DB::table($table)->count() !== $before - $deleted) {
+            throw new RuntimeException('cleanup row count reconciliation failed for '.$table);
+        }
+    }
 }, 1);
-@unlink($manifestPath);
+// Remove the private manifest only after the DB transaction committed successfully.
+if (! unlink($manifestPath)) {
+    qaStop('cleanup committed but private manifest could not be removed; manual reconciliation required');
+}
 echo 'QA_CLEANUP_COMPLETE=YES'.PHP_EOL;
 echo 'QA_PERSONAS_REMAINING='.User::query()->whereIn('email', array_values($emails))->count().PHP_EOL;
+echo 'QA_PROFILES_REMAINING='.EmployeeProfile::query()->whereIn('employee_code', array_values($codes))->count().PHP_EOL;
