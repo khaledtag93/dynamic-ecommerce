@@ -122,3 +122,10 @@
 - Keep product owner involvement primarily for business policy decisions, usability judgments, legally regulated signoff and final acceptance, with documented exceptions for account authorization and true external-provider confirmations.
 - Never close a phase based only on CI Green, a page HTTP 200, migration success or test count. Closure requires evidence for business outcomes and applicable QAS/role/visual checks on the exact revision.
 - Follow the authoritative [assistant-led QA and acceptance charter](docs/ASSISTANT_LED_QA_AND_ACCEPTANCE_CHARTER_2026-10-14.md). It governs testing responsibilities, status truth, safety, fixtures, evidence and defect management for all coherent slices. Do not rewrite completed work without an observed defect.
+
+### 25) One-click Next Step & Tool-First Collaboration
+- For long collaborative Flowra development sessions, end each meaningful checkpoint with **one clearly labeled actionable next step**; when the chat UI supports interactive controls, provide a clickable next-step action that submits the precise continuation instruction. Otherwise provide a short copy-ready instruction.
+- Make next-action prompts specific: identify the current verified commit, workstream, target environment, verification gates and what must remain untouched. Do not present a decorative/inert button or imply it schedules independent background work.
+- Favor purpose-built capabilities when genuinely beneficial: copy-ready full-file code blocks, linked evidence and diffs, searchable source/connected tools, automated tests, screenshots/visual review, browser automation where actually available, and progress/checkpoint documents. Use tools for real output rather than UI novelty.
+- Preserve a tight **one coherent slice per continuation**, with options only when there is an actual user decision. Never replace assistant-led execution with a button that makes the owner manually do the technical work.
+- If a capability is unavailable, blocked or unsafe, say so and give the next safe action instead of implying the button can bypass the blocker.

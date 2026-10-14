@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## PARTIAL QAS BROWSER ACCEPTANCE — 2026-10-14
+
+- Read-only Chrome/Playwright guest acceptance against deployed `a62ad480`: **4/4 PASS** (unauthenticated Workforce redirect + Arabic RTL login on desktop/mobile). Portable runner `tests/browser/workforce-guest-smoke.cjs`; documented evidence `docs/WORG01B_BROWSER_ACCEPTANCE_2026-10-14.md`.
+- Authenticated cross-team role matrix has **not** run on QAS. No demo users or test HR records created. QAS backup execution was blocked by a safety check; temporary server-side setup scripts removed. W-ORG-01b remains OPEN for full QAS browser role acceptance.
+- Owner's preferred working convention: one clickable, real next-step action when the chat UI supports it; project rule 25. Process/docs only; Production unchanged.
+
 ## PROJECT-WIDE ASSISTANT-LED QA AGREEMENT — 2026-10-14
 
 - The assistant takes the lead on repeatable unit/integration, permissions, business E2E, CI, QAS backend and browser automation whenever connected, capable tooling/test personas allow. The owner focuses on policy/product judgment and final targeted acceptance.

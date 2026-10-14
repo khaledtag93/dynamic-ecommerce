@@ -1,5 +1,11 @@
 # CURRENT PHASE
 
+## ACTIVE CONTINUATION / UI PREFERENCE — 2026-10-14
+
+- The owner explicitly prefers a **clickable next-action control** at the end of meaningful development checkpoints (similar to the earlier ICA collaboration), with the exact next instruction embedded. Use it when the current chat interface supports a working action; otherwise give a copy-ready instruction. This is an interaction preference, not a substitute for executing assistant-led tests.
+- Project-wide rule: `PROJECT_RULES.md` section 25, charter: `docs/ASSISTANT_LED_QA_AND_ACCEPTANCE_CHARTER_2026-10-14.md`.
+- W-ORG-01b: QAS application last proven `a62ad480`, CI 905 tests/18,188 assertions Green. **Actual Playwright guest-only QAS smoke 4/4 PASS** on desktop/mobile with RTL login; portable source `tests/browser/workforce-guest-smoke.cjs`, evidence `docs/WORG01B_BROWSER_ACCEPTANCE_2026-10-14.md`. Authenticated multi-persona authorization remains OPEN/BLOCKED: QAS demo users were **not created**, since the pre-fixture backup attempt was blocked by a safety check. Temporary remote fixture scripts were cleaned. Do not close W-ORG-01b or insert fixtures without a verified approved backup/rollback path.
+
 ## STANDING QUALITY AGREEMENT — 2026-10-14 (All Flowra Modules)
 
 - **Assistant-led testing is the default:** inspect → define scenarios → implement/regression tests → CI Green → QAS backend/API + authenticated browser automation where available → locale/responsive/accessibility evidence → fix/retest → recorded acceptance before CLOSED.

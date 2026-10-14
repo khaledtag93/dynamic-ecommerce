@@ -72,6 +72,12 @@ Checkpoint format:
 
 Store the ledger/checkpoint under `docs/`; link or summarize it in `CURRENT_PHASE.md` and `PROJECT_MASTER_STATUS.md` when status changes. Do not substitute chat claims for repository evidence.
 
+## Interaction and continuation convention
+
+- Finish a completed work/checkpoint with a compact **next-action control** when supported, prefilled with the concrete next slice and any outstanding gates. Otherwise give the exact copy-ready next-step instruction.
+- The button only sends a new turn after the user clicks; it never creates a background run or attests that a test has passed. Keep user decisions separate from routine assistant-led testing work.
+- Use rich controls only when they make collaboration easier; prioritize test execution, exact paths/commits, readable code artifacts and clear evidence over decoration.
+
 ## Current first application of this charter
 
 - W-ORG-01b Workforce scope application was deployed to QAS at `a62ad480` with Green CI (905 tests / 18,188 assertions), but **authenticated cross-persona browser QAS acceptance remains outstanding**, because QAS currently has only one employee profile.
