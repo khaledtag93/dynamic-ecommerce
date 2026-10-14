@@ -1,5 +1,15 @@
 # CURRENT PHASE
 
+## LATEST QAS SQL EXPORT EVIDENCE — 2026-10-14
+
+- **GitHub evidence:** `docs/QAS_WORG01B_EXPORT_EVIDENCE_2026-10-14.md`; recorded on source checkpoint after `56c0ebc7`. Original sensitive SQL dump remains solely in the owner's local Downloads directory, not GitHub or chat.
+- **Owner-local export checked:** `u637857322_v42_rehearsal.sql`, **7,306,278 bytes**, **20,069 lines**, SHA-256 `65a626a55fb7188715194fc7b0084e68a03469a6f2749db174e39b3976e42d3f` verified twice and saved to a local `.sha256` sidecar. phpMyAdmin header, UTF-8, 101 unique created tables, 192 INSERT statements, 11/11 expected Workforce tables and transaction markers confirmed by static inspection. **Restore unverified.**
+- **QAS deployment-script mapping:** `deploy-qas.sh` expects `DB_DATABASE=u637857322_v42_rehearsal`, requires staging APP_ENV and checks `SELECT DATABASE()` equals expected; **current live runtime mapping not freshly revalidated**.
+- **Previous CI:** run `38614394503` was Green on `56c0ebc7` (previously 907 passing tests/18,230 assertions). QAS SSH remains blocked by safety control, and Desktop Commander local file/process access timed out on the latest continuation despite listed online. **No workaround attempted, no new QAS accounts or writes; W-ORG-01b OPEN/BLOCKED.** Production unchanged.
+- **Next allowed action:** restore Desktop Commander response and establish an expressly approved QAS admin access method permitted by safety checks, verify live database identity read-only, then execute seven persona acceptance tests and evidence/cleanup. Do not require another export of existing garbage data; isolated restore drill is deferred per owner decision.
+
+
+
 ## CURRENT OWNER DECISION — DISPOSABLE QAS ONE-PASS TESTING (2026-10-14)
 
 - QAS is a temporary test environment: existing QAS records are expendable; the owner accepts their loss. Avoid repeated screenshots/manual confirmation for routine harmless steps. No authorization to touch Production or other environments.
