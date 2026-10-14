@@ -1,5 +1,18 @@
 # MASTER PROJECT STATUS
 
+## LATEST VERIFIED STATE — 2026-10-14 (Workforce Timezone & Attendance UX)
+
+- Branch `sec03-framework-upgrade`; verified application, Hardening CI and deployed QAS SHA `a83bc8f0` (https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38587254674) Green, 896 tests / 18,108 assertions.
+- QAS app/static HTTP 200, maintenance OFF, `2026_10_14_150000_add_attendance_session_void_audit` Ran, operations strict health Green, failed jobs 0.
+- Workforce timestamp display now uses local `Africa/Cairo` by deployment config and UTC canonical storage; local input conversion protects corrections/schedules, local-day filters account for timezone/DST; Arabic dates show dd/mm/yyyy HH:mm, active net/break display refreshes, original/approved time clarified.
+- Attendance sessions support audited manager-only Void with non-destructive history, approval/pending/open/payroll guards, future-payroll exclusion and activity log. No actual QAS sessions were voided in tests.
+- Original QAS attendance timestamps verified unchanged via read-only smoke; UTC 14:35 displayed as Cairo 17:35. QAS pre-migration DB backup preserved.
+- Manual EN/AR/RTL/mobile authenticated visual acceptance remains open. Existing payroll UTC period boundaries were not redefined; local-day accounting policy would need separate work.
+- Details: `docs/QAS_WORKFORCE_TIMEZONE_ATTENDANCE_UX_CHECKPOINT_2026-10-14.md`.
+- Production unchanged. Resume verified financial audit after QAS visual acceptance, and retain OPS-01/PAY-01/OPS-02/Production scheduler+queue release gates.
+
+### Historical checkpoints below
+
 ## LATEST VERIFIED STATE — 2026-10-14
 
 - Working branch: `sec03-framework-upgrade`; verified application/CI/QAS SHA `c4801411`.

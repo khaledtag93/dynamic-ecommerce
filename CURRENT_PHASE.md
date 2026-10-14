@@ -1,5 +1,23 @@
 # CURRENT PHASE
 
+## LATEST CONTINUATION CHECKPOINT — 2026-10-14 (Workforce Timezone & Attendance UX)
+
+> This is the current application/QAS state; subsequent October 14 schema-recovery and October 2 financial checkpoints below are historical.
+
+- Branch: `sec03-framework-upgrade`. **Verified application/CI/QAS commit: `a83bc8f0`**.
+- **Hardening CI:** https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38587254674 — Green, **896 tests / 18,108 assertions**; schema migrations, Blade/config, PHP, reviewed npm audit, browser interactions and frontend build passed.
+- **QAS READY:** deployed `a83bc8f0`, app/static HTTP 200, maintenance OFF, migration `2026_10_14_150000_add_attendance_session_void_audit` Ran, strict Scheduler/Queue health Green, failed jobs 0.
+- **Workforce timezone UX:** UTC stored canonically; `WORKFORCE_TIMEZONE` default `Africa/Cairo`; local display and local form input conversion for attendance/scheduling/corrections; readable RTL dates, explicit original vs approved time, live browser-only net/break display, local-day filters.
+- **Audited Attendance Void:** manager permission, required explanation, immutable original attendance, no deletion; blocks active/pending-correction/previously voided rows and any overlapping employee payroll snapshot; voided rows excluded from future payroll and active attendance counts.
+- **Verified live QAS read-only smoke:** timezone UTC vs Africa/Cairo, previous `14:35 UTC → 17:35 Cairo`; three existing session rows intact, no rows voided, void columns present; pre-deploy private DB backup preserved at `deploy_backups/qas_before_attendance_timezone_void_20261014_151347.sql`.
+- **Production unchanged**. Detailed evidence: `docs/QAS_WORKFORCE_TIMEZONE_ATTENDANCE_UX_CHECKPOINT_2026-10-14.md`.
+- **Remaining acceptance:** manual authenticated EN/AR/RTL/mobile UI review, open counter, correction forms and demo-only Void; no user records have been modified during validation. Existing Payroll periods still use UTC date clipping and are not silently reallocated to Cairo local days; any change requires explicit payroll policy/reconciliation.
+- OPS-01/PAY-01/OPS-02/Production scheduler-queue remain open.
+
+**Next action:** finish authenticated QAS visual acceptance and only then resume the first genuinely unclosed monetary/accounting boundary from SHA `a83bc8f0`.
+
+### Historical checkpoints below
+
 ## LATEST CONTINUATION CHECKPOINT — 2026-10-14
 
 > This section is authoritative. The 2026-10-02 financial-integrity checkpoint below remains historical.
