@@ -1,5 +1,14 @@
 # CURRENT PHASE
 
+## LATEST W-ORG-01b — ONE-PASS ACCEPTANCE READINESS REVIEW (2026-10-14)
+
+- **Source baseline** `28c4bf44` on `sec03-framework-upgrade`; GitHub Hardening [run 38632785294](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38632785294) **SUCCESS**. This is isolated CI; **no authenticated QAS execution**.
+- **Three local QA files reviewed in full READ-ONLY**: modified `ops/qa/worg01b_personas.php`, modified `tests/browser/workforce-authenticated-readonly.cjs`, untracked `ops/qa/worg01b_browser_login_diagnostic.cjs`. PHP and Node syntax PASS; local hashes recorded in `docs/WORG01B_QAS_ONE_PASS_READINESS_2026-10-14.md`. **Do not stage, reset, rewrite or claim these files deployed** without a new explicit development scope.
+- **Confirmed blocker B1:** `ops/qa/worg01b_personas.php` line 14 computes `dirname(__DIR__, 3)`, which points to the workspace/parent instead of Laravel root; should use **two** levels before any seed. Additional readiness gaps: GET-only browser coverage (no forbidden mutations), first-page pagination false negatives, private manifest secure transfer from QAS host to external test device, cleanup relationship/baseline proof and crash consistency.
+- **Safe repo-only fix:** added `/storage/app/private/` to `.gitignore`; `git check-ignore -v --no-index storage/app/private/worg01b-personas-manifest.json` PASS. No private file was read or committed. Application code in the three local QA scripts was not modified.
+- **Remote safety stop unchanged:** new public key registered at Hostinger per owner, but authorized post-registration SSH verification was blocked by tool safety checks before execution. **No alternate SSH/CI/browser/phpMyAdmin workaround.** Live QAS APP_ENV, `SELECT DATABASE()`, deployed source SHA and persona logins remain **UNVERIFIED**; zero new QAS or Production changes.
+- **Execution plan:** `docs/WORG01B_QAS_ONE_PASS_READINESS_2026-10-14.md` documents stage gates: approved access → targeted QA helper fixes + Green CI / deployment check → runtime QAS read-only identity → 7 synthetic fixtures + private exact-ID manifest → 28 EN/AR desktop/mobile login journeys, scoped read and forbidden write assertions → reconciliation/cleanup → closure decision. **W-ORG-01b OPEN/BLOCKED.**
+
 ## LATEST W-ORG-01b — HOSTINGER KEY ADDED / AUTH CHECK TOOL-BLOCKED (2026-10-14)
 
 - Owner confirms successfully registering the **NEW** Hostinger SSH public key `flowra-qas-2026-10-14` via **Add SSH key**, after the prior screenshot showed only `Default-1` (legacy key). The local new public key still matches ED25519 fingerprint `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8`; Windows private-file permissions remain restricted.

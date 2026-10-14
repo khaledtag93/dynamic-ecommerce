@@ -27,6 +27,8 @@
 /public/storage
 /storage/app/livewire-tmp/
 /storage/app/public/
+# Sensitive QAS fixture manifest / credentials: never version-control
+/storage/app/private/
 
 # Local/dev artifacts
 .phpunit.result.cache
