@@ -5307,5 +5307,18 @@
     "Refund amount exceeds the supported monetary range.": "Refund amount exceeds the supported monetary range.",
     "Refund amount cannot be negative.": "Refund amount cannot be negative.",
     "This order cannot be refunded in its current state.": "This order cannot be refunded in its current state.",
-    "Refund amount must be within the remaining refundable balance.": "Refund amount must be within the remaining refundable balance."
+    "Refund amount must be within the remaining refundable balance.": "Refund amount must be within the remaining refundable balance.",
+    "Work timezone": "Work timezone",
+    "Original time": "Original time",
+    "Approved time": "Approved time",
+    "The unchanged original clock-in and clock-out timestamps.": "The unchanged original clock-in and clock-out timestamps.",
+    "Approved corrections determine the times used for payroll.": "Approved corrections determine the times used for payroll.",
+    "Live estimate until clock-out": "Live estimate until clock-out",
+    "Excluded from payroll": "Excluded from payroll",
+    "Void this attendance session? The original record will be preserved and excluded from future payroll.": "Void this attendance session? The original record will be preserved and excluded from future payroll.",
+    "Reason for voiding": "Reason for voiding",
+    "Required audit reason": "Required audit reason",
+    "Void session": "Void session",
+    "Enter your local work time; we store UTC.": "Enter your local work time; we store UTC.",
+    "All time clock entries are displayed in your work timezone.": "All time clock entries are displayed in your work timezone."
 }
