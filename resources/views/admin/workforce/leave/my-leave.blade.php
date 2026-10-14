@@ -100,7 +100,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-semibold" for="leaveEndsOn">{{ __('Ends on') }}</label>
-                                        <input id="leaveEndsOn" type="date" name="ends_on" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" aria-describedby="leaveEndHelp">
+                                        <input id="leaveEndsOn" type="date" name="ends_on" aria-required="true" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" aria-describedby="leaveEndHelp">
                                         <div id="leaveEndHelp" class="form-text">{{ __('Leave end is calculated for fixed duration. Otherwise select an end date.') }}</div>
                                         @error('ends_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
@@ -172,6 +172,7 @@
     const update = () => {
         const fixed = type.selectedOptions[0]?.dataset.durationMode === 'fixed';
         end.required = !fixed;
+        end.setAttribute('aria-required', String(!fixed));
         end.readOnly = fixed;
         if (fixed) end.value = '';
     };
