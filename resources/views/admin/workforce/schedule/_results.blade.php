@@ -52,8 +52,8 @@
                                 @if($shift->employee?->job_title)<div class="text-muted small">{{ $shift->employee->job_title }}</div>@endif
                             </td>
                             <td>
-                                <div class="fw-semibold">{{ $shift->starts_at->format('d M Y') }}</div>
-                                <div>{{ $shift->starts_at->format('H:i') }} → {{ $shift->ends_at->format('H:i') }}</div>
+                                <div class="fw-semibold">{{ \App\Support\WorkforceClock::local($shift->starts_at, 'd/m/Y') }}</div>
+                                <div>{{ \App\Support\WorkforceClock::local($shift->starts_at, 'H:i') }} → {{ \App\Support\WorkforceClock::local($shift->ends_at, 'H:i') }}</div>
                                 <div class="text-muted small">{{ __(':hours h :minutes m', ['hours' => $scheduledHours, 'minutes' => $scheduledRemainder]) }}</div>
                             </td>
                             <td>{{ $shift->location ?: '—' }}</td>
@@ -62,8 +62,8 @@
                             </td>
                             <td>
                                 @if($attendance)
-                                    <div class="fw-semibold">{{ $attendance->effectiveClockInAt()->format('H:i') }} → {{ $attendance->effectiveClockOutAt()?->format('H:i') ?: __('Open now') }}</div>
-                                    <div class="text-muted small">{{ $attendance->effectiveClockInAt()->format('d M Y') }}</div>
+                                    <div class="fw-semibold">{{ \App\Support\WorkforceClock::local($attendance->effectiveClockInAt(), 'H:i') }} → {{ \App\Support\WorkforceClock::local($attendance->effectiveClockOutAt(), 'H:i') ?: __('Open now') }}</div>
+                                    <div class="text-muted small">{{ \App\Support\WorkforceClock::local($attendance->effectiveClockInAt(), 'd/m/Y') }}</div>
                                     @if($attendance->hasApprovedCorrection())
                                         <span class="badge admin-status-badge badge-soft-success mt-1">{{ __('Corrected') }}</span>
                                     @endif

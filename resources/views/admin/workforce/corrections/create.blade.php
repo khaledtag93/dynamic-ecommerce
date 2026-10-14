@@ -13,21 +13,21 @@
             <div class="admin-card">
                 <div class="admin-card-body">
                     <div class="admin-inline-label">{{ __('Recorded attendance') }}</div>
-                    <h4 class="mb-3">{{ $session->clock_in_at->format('d M Y') }}</h4>
+                    <h4 class="mb-3">{{ \App\Support\WorkforceClock::local($session->clock_in_at, 'd/m/Y') }}</h4>
 
                     <div class="mb-3">
                         <div class="text-muted small">{{ __('Recorded clock-in') }}</div>
-                        <div class="fw-semibold">{{ $session->clock_in_at->format('d M Y H:i') }}</div>
+                        <div class="fw-semibold">{{ \App\Support\WorkforceClock::local($session->clock_in_at, 'd/m/Y H:i') }}</div>
                     </div>
                     <div class="mb-3">
                         <div class="text-muted small">{{ __('Recorded clock-out') }}</div>
-                        <div class="fw-semibold">{{ $session->clock_out_at?->format('d M Y H:i') ?: '—' }}</div>
+                        <div class="fw-semibold">{{ \App\Support\WorkforceClock::local($session->clock_out_at, 'd/m/Y H:i') ?: '—' }}</div>
                     </div>
 
                     @if($session->hasApprovedCorrection())
                         <hr>
                         <div class="admin-inline-label">{{ __('Current effective attendance') }}</div>
-                        <div class="fw-semibold">{{ $session->effectiveClockInAt()->format('d M Y H:i') }} → {{ $session->effectiveClockOutAt()?->format('d M Y H:i') }}</div>
+                        <div class="fw-semibold">{{ \App\Support\WorkforceClock::local($session->effectiveClockInAt(), 'd/m/Y H:i') }} → {{ \App\Support\WorkforceClock::local($session->effectiveClockOutAt(), 'd/m/Y H:i') }}</div>
                         <div class="section-note">{{ __('The original record above remains unchanged.') }}</div>
                     @endif
                 </div>
@@ -48,17 +48,18 @@
                     @else
                         <form method="POST" action="{{ route('admin.workforce.corrections.store', $session) }}" data-submit-loading>
                             @csrf
+                            <div class="small text-muted mb-3">{{ __('Work timezone') }}: <bdi dir="ltr">{{ \App\Support\WorkforceClock::timezone() }}</bdi> — {{ __('Enter your local work time; we store UTC.') }}</div>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold" for="correctionClockIn">{{ __('Corrected clock-in') }}</label>
                                     <input id="correctionClockIn" type="datetime-local" name="requested_clock_in_at" aria-required="true" class="form-control @error('requested_clock_in_at') is-invalid @enderror"
-                                           value="{{ old('requested_clock_in_at', $session->effectiveClockInAt()->format('Y-m-d\TH:i')) }}" required>
+                                           value="{{ old('requested_clock_in_at', \App\Support\WorkforceClock::input($session->effectiveClockInAt())) }}" required>
                                     @error('requested_clock_in_at')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold" for="correctionClockOut">{{ __('Corrected clock-out') }}</label>
                                     <input id="correctionClockOut" type="datetime-local" name="requested_clock_out_at" aria-required="true" class="form-control @error('requested_clock_out_at') is-invalid @enderror"
-                                           value="{{ old('requested_clock_out_at', $session->effectiveClockOutAt()?->format('Y-m-d\TH:i')) }}" required>
+                                           value="{{ old('requested_clock_out_at', \App\Support\WorkforceClock::input($session->effectiveClockOutAt())) }}" required>
                                     @error('requested_clock_out_at')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-12">

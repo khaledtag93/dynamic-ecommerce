@@ -23,6 +23,7 @@
             </div>
         </div>
     @else
+        <div class="mb-3 small text-muted">{{ __('Work timezone') }}: <bdi dir="ltr">{{ \App\Support\WorkforceClock::timezone() }}</bdi> · {{ __('All time clock entries are displayed in your work timezone.') }}</div>
         <div class="row g-4">
             <div class="col-xl-5">
                 <div class="admin-card h-100">
@@ -44,13 +45,13 @@
                             <div class="admin-card-body">
                                 @if($employee->openAttendanceSession)
                                     <div class="admin-stat-label">{{ __('Current session started') }}</div>
-                                    <div class="admin-stat-value fs-3">{{ $employee->openAttendanceSession->clock_in_at->format('H:i') }}</div>
-                                    <div class="text-muted small">{{ $employee->openAttendanceSession->clock_in_at->format('d M Y') }}</div>
+                                    <div class="admin-stat-value fs-3">{{ \App\Support\WorkforceClock::local($employee->openAttendanceSession->clock_in_at, 'H:i') }}</div>
+                                    <div class="text-muted small">{{ \App\Support\WorkforceClock::local($employee->openAttendanceSession->clock_in_at, 'd/m/Y') }}</div>
 
                                     @if($employee->openAttendanceSession->openBreak)
                                         <div class="mt-3 p-3 rounded border">
                                             <div class="fw-semibold">{{ __('Break in progress') }}</div>
-                                            <div class="text-muted small">{{ __('Started at :time', ['time' => $employee->openAttendanceSession->openBreak->starts_at->format('H:i')]) }}</div>
+                                            <div class="text-muted small">{{ __('Started at :time', ['time' => \App\Support\WorkforceClock::local($employee->openAttendanceSession->openBreak->starts_at, 'H:i')]) }}</div>
                                         </div>
                                     @endif
                                 @else
@@ -127,23 +128,34 @@
                                             $netHours = intdiv($net, 60);
                                             $netMinutes = $net % 60;
                                             $breakMinutes = $session->breakMinutes();
+                                            $closedBreakMinutes = (int) $session->breaks->filter(fn ($b) => $b->ends_at !== null)->sum(fn ($b) => $b->durationMinutes());
+                                            $openBreak = $session->breaks->first(fn ($b) => $b->ends_at === null);
                                         @endphp
                                         <tr>
                                             <td>
-                                                <div>{{ $session->clock_in_at->format('d M Y H:i') }}</div>
-                                                <div class="text-muted small">→ {{ $session->clock_out_at?->format('d M Y H:i') ?: __('Open now') }}</div>
+                                                <div>{{ \App\Support\WorkforceClock::local($session->clock_in_at, 'd/m/Y H:i') }}</div>
+                                                <div class="text-muted small">→ {{ \App\Support\WorkforceClock::local($session->clock_out_at, 'd/m/Y H:i') ?: __('Open now') }}</div>
                                             </td>
                                             <td>
-                                                <div class="{{ $session->hasApprovedCorrection() ? 'fw-semibold' : '' }}">{{ $session->effectiveClockInAt()->format('d M Y H:i') }}</div>
-                                                <div class="text-muted small">→ {{ $session->effectiveClockOutAt()?->format('d M Y H:i') ?: __('Open now') }}</div>
+                                                <div class="{{ $session->hasApprovedCorrection() ? 'fw-semibold' : '' }}">{{ \App\Support\WorkforceClock::local($session->effectiveClockInAt(), 'd/m/Y H:i') }}</div>
+                                                <div class="text-muted small">→ {{ \App\Support\WorkforceClock::local($session->effectiveClockOutAt(), 'd/m/Y H:i') ?: __('Open now') }}</div>
                                                 @if($session->hasApprovedCorrection())
                                                     <span class="badge admin-status-badge badge-soft-success mt-1">{{ __('Corrected') }}</span>
                                                 @endif
                                             </td>
                                             <td>{{ __(':minutes min', ['minutes' => $breakMinutes]) }}</td>
-                                            <td>{{ __(':hours h :minutes m', ['hours' => $netHours, 'minutes' => $netMinutes]) }}</td>
                                             <td>
-                                                @if($session->isOpen())
+                                                @if($session->isOpen() && ! $session->isVoided())
+                                                    <strong data-workforce-live-net data-start="{{ $session->effectiveClockInAt()->getTimestamp() }}" data-closed-break="{{ $closedBreakMinutes }}" data-open-break="{{ $openBreak?->starts_at?->getTimestamp() ?? '' }}" data-net-template="{{ __(':hours h :minutes m') }}">{{ __(':hours h :minutes m', ['hours' => $netHours, 'minutes' => $netMinutes]) }}</strong>
+                                                    <div class="small text-muted">{{ __('Live estimate until clock-out') }}</div>
+                                                @else
+                                                    {{ __(':hours h :minutes m', ['hours' => $netHours, 'minutes' => $netMinutes]) }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($session->isVoided())
+                                                    <span class="badge admin-status-badge badge-soft-danger">{{ __('Voided') }}</span>
+                                                @elseif($session->isOpen())
                                                     <span class="text-muted small">{{ __('Available after clock-out') }}</span>
                                                 @elseif($session->pendingCorrection)
                                                     <span class="badge admin-status-badge badge-soft-warning">{{ __('Pending review') }}</span>
@@ -165,3 +177,7 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+    <script defer src="{{ asset('admin/js/workforce-clock.js') }}?v={{ @filemtime(public_path('admin/js/workforce-clock.js')) ?: 1 }}"></script>
+@endpush

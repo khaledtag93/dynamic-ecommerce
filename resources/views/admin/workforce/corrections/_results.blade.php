@@ -36,21 +36,21 @@
                             <td>
                                 <div class="fw-bold">{{ $correction->employee?->user?->name ?: __('Missing account') }}</div>
                                 <div class="text-muted small">{{ $correction->employee?->employee_code ?: '—' }}@if($correction->employee?->department) · {{ $correction->employee->department }}@endif</div>
-                                <div class="text-muted small">{{ $correction->created_at?->format('d M Y H:i') }}</div>
+                                <div class="text-muted small">{{ \App\Support\WorkforceClock::local($correction->created_at, 'd/m/Y H:i') }}</div>
                             </td>
                             <td>
-                                <div>{{ $correction->previous_clock_in_at->format('d M Y H:i') }}</div>
-                                <div class="text-muted small">→ {{ $correction->previous_clock_out_at?->format('d M Y H:i') ?: '—' }}</div>
+                                <div>{{ \App\Support\WorkforceClock::local($correction->previous_clock_in_at, 'd/m/Y H:i') }}</div>
+                                <div class="text-muted small">→ {{ \App\Support\WorkforceClock::local($correction->previous_clock_out_at, 'd/m/Y H:i') ?: '—' }}</div>
                             </td>
                             <td>
-                                <div class="fw-semibold">{{ $correction->requested_clock_in_at->format('d M Y H:i') }}</div>
-                                <div class="text-muted small">→ {{ $correction->requested_clock_out_at?->format('d M Y H:i') ?: '—' }}</div>
+                                <div class="fw-semibold">{{ \App\Support\WorkforceClock::local($correction->requested_clock_in_at, 'd/m/Y H:i') }}</div>
+                                <div class="text-muted small">→ {{ \App\Support\WorkforceClock::local($correction->requested_clock_out_at, 'd/m/Y H:i') ?: '—' }}</div>
                             </td>
                             <td style="min-width: 220px">{{ $correction->reason }}</td>
                             <td>
                                 <span class="badge admin-status-badge {{ $statusClass }}">{{ \App\Models\EmployeeAttendanceCorrection::statusOptions()[$correction->status] ?? \Illuminate\Support\Str::headline($correction->status) }}</span>
                                 @if($correction->reviewed_at)
-                                    <div class="text-muted small mt-1">{{ $correction->reviewed_at->format('d M Y H:i') }}</div>
+                                    <div class="text-muted small mt-1">{{ \App\Support\WorkforceClock::local($correction->reviewed_at, 'd/m/Y H:i') }}</div>
                                     @if($correction->reviewedBy)<div class="text-muted small">{{ $correction->reviewedBy->name }}</div>@endif
                                 @endif
                                 @if($correction->review_notes)<div class="text-muted small mt-1">{{ $correction->review_notes }}</div>@endif

@@ -3183,6 +3183,8 @@ select option {
             }
         }
 
+        .workforce-time { white-space: nowrap; font-variant-numeric: tabular-nums; unicode-bidi: isolate; }
+        .workforce-time bdi { direction: ltr; }
         .admin-section-nav { display: none; margin: 0 0 1.5rem; }
         .admin-sections-ready .admin-section-nav { display: block; }
         .admin-section-tabs { display: flex; gap: .5rem; overflow-x: auto; padding: .35rem; border: 1px solid var(--admin-border); border-radius: 1rem; background: var(--admin-surface); scrollbar-width: thin; }

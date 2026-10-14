@@ -18,17 +18,18 @@
         @error('employee_profile_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
+    <div class="col-12 small text-muted">{{ __('Work timezone') }}: <bdi dir="ltr">{{ \App\Support\WorkforceClock::timezone() }}</bdi> — {{ __('Enter your local work time; we store UTC.') }}</div>
     <div class="col-lg-3">
         <label class="form-label fw-semibold" for="shiftStartsAt">{{ __('Starts at') }}</label>
         <input id="shiftStartsAt" type="datetime-local" name="starts_at" aria-required="true" class="form-control @error('starts_at') is-invalid @enderror"
-               value="{{ old('starts_at', $shift->starts_at?->format('Y-m-d\TH:i')) }}" required @disabled($shift->isCancelled())>
+               value="{{ old('starts_at', \App\Support\WorkforceClock::input($shift->starts_at)) }}" required @disabled($shift->isCancelled())>
         @error('starts_at')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
     <div class="col-lg-3">
         <label class="form-label fw-semibold" for="shiftEndsAt">{{ __('Ends at') }}</label>
         <input id="shiftEndsAt" type="datetime-local" name="ends_at" aria-required="true" class="form-control @error('ends_at') is-invalid @enderror"
-               value="{{ old('ends_at', $shift->ends_at?->format('Y-m-d\TH:i')) }}" required @disabled($shift->isCancelled())>
+               value="{{ old('ends_at', \App\Support\WorkforceClock::input($shift->ends_at)) }}" required @disabled($shift->isCancelled())>
         @error('ends_at')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 

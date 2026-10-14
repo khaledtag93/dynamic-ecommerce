@@ -43,6 +43,7 @@
                         <option value="">{{ __('All sessions') }}</option>
                         <option value="open" @selected($filters['status'] === 'open')>{{ __('Open') }}</option>
                         <option value="closed" @selected($filters['status'] === 'closed')>{{ __('Closed') }}</option>
+                        <option value="voided" @selected($filters['status'] === 'voided')>{{ __('Voided') }}</option>
                     </select>
                 </div>
                 <div>
@@ -76,4 +77,5 @@
 
 @push('scripts')
     <script defer src="{{ asset('admin/js/live-list.js') }}"></script>
+    <script defer src="{{ asset('admin/js/workforce-clock.js') }}?v={{ @filemtime(public_path('admin/js/workforce-clock.js')) ?: 1 }}"></script>
 @endpush

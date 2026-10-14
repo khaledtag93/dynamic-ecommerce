@@ -36,7 +36,7 @@
                             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                                 <div>
                                     <div class="admin-inline-label">{{ $shift->starts_at->format('l') }}</div>
-                                    <h3 class="mb-1">{{ $shift->starts_at->format('d M Y') }}</h3>
+                                    <h3 class="mb-1">{{ \App\Support\WorkforceClock::local($shift->starts_at, 'd/m/Y') }}</h3>
                                 </div>
                                 <span class="badge admin-status-badge {{ $current ? 'badge-soft-success' : 'badge-soft-secondary' }}">{{ $current ? __('Current shift') : __('Upcoming') }}</span>
                             </div>
@@ -44,7 +44,7 @@
                             <div class="d-flex align-items-center gap-3 mb-3">
                                 <span class="admin-stat-icon"><i class="mdi mdi-clock-outline"></i></span>
                                 <div>
-                                    <div class="fw-bold fs-5">{{ $shift->starts_at->format('H:i') }} → {{ $shift->ends_at->format('H:i') }}</div>
+                                    <div class="fw-bold fs-5">{{ \App\Support\WorkforceClock::local($shift->starts_at, 'H:i') }} → {{ \App\Support\WorkforceClock::local($shift->ends_at, 'H:i') }}</div>
                                     <div class="text-muted small">{{ __(':hours h :minutes m', ['hours' => $hours, 'minutes' => $remainder]) }}</div>
                                 </div>
                             </div>

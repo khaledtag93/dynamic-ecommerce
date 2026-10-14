@@ -61,7 +61,7 @@ class WorkforceSchedulingTest extends TestCase
             ->assertOk()
             ->assertSee('Front Store')
             ->assertSee('Morning handover')
-            ->assertSee('26 Sep 2026');
+            ->assertSee('26/09/2026');
     }
 
     public function test_draft_shift_is_hidden_from_employee_schedule_until_published(): void

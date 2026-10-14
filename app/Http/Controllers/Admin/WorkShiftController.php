@@ -57,8 +57,8 @@ class WorkShiftController extends Controller
             })
             ->when($filters['status'], fn ($query, $value) => $query->where('status', $value))
             ->when($filters['department'], fn ($query, $value) => $query->whereHas('employee', fn ($employeeQuery) => $employeeQuery->where('department', $value)))
-            ->when($filters['date_from'], fn ($query, $value) => $query->where('ends_at', '>=', $value.' 00:00:00'))
-            ->when($filters['date_to'], fn ($query, $value) => $query->where('starts_at', '<=', $value.' 23:59:59'))
+            ->when($filters['date_from'], fn ($query, $value) => $query->where('ends_at', '>=', \App\Support\WorkforceClock::localDayUtcBounds($value)[0]))
+            ->when($filters['date_to'], fn ($query, $value) => $query->where('starts_at', '<', \App\Support\WorkforceClock::localDayUtcBounds($value)[1]))
             ->orderByRaw("CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END")
             ->orderBy('starts_at')
             ->paginate($filters['per_page'])
@@ -73,7 +73,8 @@ class WorkShiftController extends Controller
         $stats = [
             'today' => EmployeeWorkShift::query()
                 ->where('status', EmployeeWorkShift::STATUS_PUBLISHED)
-                ->whereDate('starts_at', today())
+                ->where('starts_at', '>=', \App\Support\WorkforceClock::localDayUtcBounds(\App\Support\WorkforceClock::today())[0])
+                ->where('starts_at', '<', \App\Support\WorkforceClock::localDayUtcBounds(\App\Support\WorkforceClock::today())[1])
                 ->count(),
             'upcoming_7d' => EmployeeWorkShift::query()
                 ->where('status', EmployeeWorkShift::STATUS_PUBLISHED)
@@ -168,7 +169,7 @@ class WorkShiftController extends Controller
 
     private function validatedShift(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'employee_profile_id' => ['required', 'integer', Rule::exists('employee_profiles', 'id')],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after:starts_at'],
@@ -179,6 +180,12 @@ class WorkShiftController extends Controller
             'location' => ['nullable', 'string', 'max:160'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
+        $data['starts_at'] = \App\Support\WorkforceClock::fromLocal($data['starts_at'], 'starts_at');
+        $data['ends_at'] = \App\Support\WorkforceClock::fromLocal($data['ends_at'], 'ends_at');
+        if ($data['ends_at'] <= $data['starts_at']) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['ends_at' => __('Shift end must be after shift start.')]);
+        }
+        return $data;
     }
 
     private function schedulableEmployees(?int $includeEmployeeId = null)
@@ -214,6 +221,7 @@ class WorkShiftController extends Controller
         $maximumEnd = $shifts->max('ends_at')->copy()->addDay();
 
         $sessions = EmployeeAttendanceSession::query()
+            ->whereNull('voided_at')
             ->with(['breaks', 'approvedCorrection'])
             ->whereIn('employee_profile_id', $employeeIds)
             ->whereBetween('clock_in_at', [$minimumStart, $maximumEnd])

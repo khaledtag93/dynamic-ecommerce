@@ -38,6 +38,10 @@ class AttendanceCorrectionService
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if ($lockedSession->isVoided()) {
+                throw ValidationException::withMessages(['correction' => __('Voided attendance cannot be corrected.')]);
+            }
+
             if ($lockedSession->isOpen()) {
                 throw ValidationException::withMessages([
                     'correction' => __('Clock out before requesting a correction for this attendance session.'),
@@ -132,6 +136,11 @@ class AttendanceCorrectionService
                 throw ValidationException::withMessages([
                     'correction' => __('Only pending correction requests can be reviewed.'),
                 ]);
+            }
+
+            $session = EmployeeAttendanceSession::query()->whereKey($locked->employee_attendance_session_id)->lockForUpdate()->firstOrFail();
+            if ($session->isVoided()) {
+                throw ValidationException::withMessages(['correction' => __('Voided attendance cannot be corrected.')]);
             }
 
             $locked->update([

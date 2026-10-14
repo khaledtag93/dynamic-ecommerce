@@ -23,7 +23,7 @@ class AttendanceCorrectionController extends Controller
             403
         );
 
-        abort_if($employeeAttendanceSession->isOpen(), 422);
+        abort_if($employeeAttendanceSession->isOpen() || $employeeAttendanceSession->isVoided(), 422);
 
         $employeeAttendanceSession->load(['approvedCorrection', 'pendingCorrection', 'breaks']);
 
@@ -40,11 +40,17 @@ class AttendanceCorrectionController extends Controller
             'reason' => ['required', 'string', 'max:2000'],
         ]);
 
+        $utcClockIn = \App\Support\WorkforceClock::fromLocal($data['requested_clock_in_at'], 'requested_clock_in_at');
+        $utcClockOut = \App\Support\WorkforceClock::fromLocal($data['requested_clock_out_at'], 'requested_clock_out_at');
+        if ($utcClockOut <= $utcClockIn) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['requested_clock_out_at' => __('Corrected clock-out must be after corrected clock-in.')]);
+        }
+
         $this->correctionService->request(
             $request->user(),
             $employeeAttendanceSession,
-            $data['requested_clock_in_at'],
-            $data['requested_clock_out_at'],
+            $utcClockIn,
+            $utcClockOut,
             $data['reason'],
         );
 

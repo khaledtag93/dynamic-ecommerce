@@ -17,6 +17,7 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         $status = (string) $request->string('status');
+        $workforceClock = \App\Support\WorkforceClock::class;
         $date = trim((string) $request->string('date'));
 
         if ($date !== '' && ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
@@ -25,7 +26,7 @@ class AttendanceController extends Controller
 
         $filters = [
             'search' => mb_substr(trim((string) $request->string('search')), 0, 100),
-            'status' => in_array($status, ['open', 'closed'], true) ? $status : '',
+            'status' => in_array($status, ['open', 'closed', 'voided'], true) ? $status : '',
             'date' => $date,
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
         ];
@@ -45,9 +46,13 @@ class AttendanceController extends Controller
                         });
                 });
             })
-            ->when($filters['status'] === 'open', fn ($query) => $query->whereNull('clock_out_at'))
-            ->when($filters['status'] === 'closed', fn ($query) => $query->whereNotNull('clock_out_at'))
-            ->when($filters['date'], fn ($query, $value) => $query->whereDate('clock_in_at', $value))
+            ->when($filters['status'] === 'open', fn ($query) => $query->whereNull('clock_out_at')->whereNull('voided_at'))
+            ->when($filters['status'] === 'closed', fn ($query) => $query->whereNotNull('clock_out_at')->whereNull('voided_at'))
+            ->when($filters['status'] === 'voided', fn ($query) => $query->whereNotNull('voided_at'))
+            ->when($filters['date'], function ($query, $value) use ($workforceClock) {
+                [$from, $to] = $workforceClock::localDayUtcBounds($value);
+                $query->where('clock_in_at', '>=', $from)->where('clock_in_at', '<', $to);
+            })
             ->latest('clock_in_at')
             ->paginate($filters['per_page'])
             ->withQueryString();
@@ -57,13 +62,24 @@ class AttendanceController extends Controller
         }
 
         $stats = [
-            'open_now' => EmployeeAttendanceSession::whereNull('clock_out_at')->count(),
-            'clock_ins_today' => EmployeeAttendanceSession::whereDate('clock_in_at', today())->count(),
-            'completed_today' => EmployeeAttendanceSession::whereDate('clock_in_at', today())->whereNotNull('clock_out_at')->count(),
+            'open_now' => EmployeeAttendanceSession::whereNull('clock_out_at')->whereNull('voided_at')->count(),
+            'clock_ins_today' => EmployeeAttendanceSession::whereNull('voided_at')->where('clock_in_at', '>=', $workforceClock::localDayUtcBounds($workforceClock::today())[0])->where('clock_in_at', '<', $workforceClock::localDayUtcBounds($workforceClock::today())[1])->count(),
+            'completed_today' => EmployeeAttendanceSession::whereNull('voided_at')->where('clock_in_at', '>=', $workforceClock::localDayUtcBounds($workforceClock::today())[0])->where('clock_in_at', '<', $workforceClock::localDayUtcBounds($workforceClock::today())[1])->whereNotNull('clock_out_at')->count(),
             'employees' => EmployeeProfile::count(),
         ];
 
         return view('admin.workforce.attendance.index', compact('sessions', 'filters', 'stats'));
+    }
+
+    public function voidSession(Request $request, EmployeeAttendanceSession $employeeAttendanceSession, \App\Services\Workforce\AttendanceVoidService $service)
+    {
+        $data = $request->validate([
+            'void_reason' => ['required', 'string', 'min:10', 'max:2000'],
+        ]);
+        $service->void($employeeAttendanceSession, $request->user(), $data['void_reason']);
+
+        return redirect()->route('admin.workforce.attendance.index')
+            ->with('success', __('Attendance session voided without deleting its history.'));
     }
 
     public function timeClock(Request $request)

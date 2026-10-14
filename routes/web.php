@@ -571,6 +571,8 @@ Route::prefix('admin')
             Route::get('/workforce/payroll/compensation', [CompensationController::class, 'index'])->name('workforce.payroll.compensation.index');
         });
 
+        Route::middleware('permission:workforce.manage')->post('/workforce/attendance/{employeeAttendanceSession}/void', [AttendanceController::class, 'voidSession'])->name('workforce.attendance.void');
+
         Route::middleware('permission:workforce.manage')->controller(EmployeeController::class)->group(function () {
             Route::get('/workforce/employees/create', 'create')->name('workforce.employees.create');
             Route::post('/workforce/employees', 'store')->name('workforce.employees.store');

@@ -16,11 +16,15 @@ class EmployeeAttendanceSession extends Model
         'source',
         'clock_in_notes',
         'clock_out_notes',
+        'voided_at',
+        'voided_by_user_id',
+        'void_reason',
     ];
 
     protected $casts = [
         'clock_in_at' => 'datetime',
         'clock_out_at' => 'datetime',
+        'voided_at' => 'datetime',
     ];
 
     public function employee()
@@ -57,6 +61,16 @@ class EmployeeAttendanceSession extends Model
         return $this->hasOne(EmployeeAttendanceCorrection::class, 'employee_attendance_session_id')
             ->where('status', EmployeeAttendanceCorrection::STATUS_PENDING)
             ->latestOfMany();
+    }
+
+    public function isVoided(): bool
+    {
+        return $this->voided_at !== null;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->whereNull('voided_at');
     }
 
     public function isOpen(): bool

@@ -392,6 +392,7 @@ class PayrollService
         $endExclusive = $period->ends_on->copy()->addDay()->startOfDay();
 
         $openAttendance = EmployeeAttendanceSession::query()
+            ->whereNull('voided_at')
             ->whereIn('employee_profile_id', $employeeIds)
             ->whereNull('clock_out_at')
             ->where('clock_in_at', '<', $endExclusive)
@@ -407,7 +408,8 @@ class PayrollService
             ->whereNull('ends_at')
             ->where('starts_at', '<', $endExclusive)
             ->whereHas('attendanceSession', function ($query) use ($start, $employeeIds) {
-                $query->whereIn('employee_profile_id', $employeeIds)
+                $query->whereNull('voided_at')
+                    ->whereIn('employee_profile_id', $employeeIds)
                     ->where(function ($session) use ($start) {
                     $session->whereNull('clock_out_at')
                         ->orWhere('clock_out_at', '>=', $start);
@@ -422,6 +424,7 @@ class PayrollService
         }
 
         $pendingCorrection = EmployeeAttendanceSession::query()
+            ->whereNull('voided_at')
             ->whereIn('employee_profile_id', $employeeIds)
             ->where('clock_in_at', '<', $endExclusive)
             ->where('clock_out_at', '>=', $start)
@@ -458,6 +461,7 @@ class PayrollService
         $endExclusive = $period->ends_on->copy()->addDay()->startOfDay();
 
         $sessions = EmployeeAttendanceSession::query()
+            ->whereNull('voided_at')
             ->with(['breaks', 'approvedCorrection'])
             ->where('employee_profile_id', $employee->id)
             ->where('clock_in_at', '<', $endExclusive->copy()->addDays(2))

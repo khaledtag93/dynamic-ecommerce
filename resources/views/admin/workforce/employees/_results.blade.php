@@ -39,7 +39,7 @@
                             <td>{{ $employee->department ?: '—' }}</td>
                             <td>
                                 <div class="fw-semibold">{{ \App\Models\EmployeeProfile::employmentTypeOptions()[$employee->employment_type] ?? \Illuminate\Support\Str::headline($employee->employment_type) }}</div>
-                                <div class="text-muted small">{{ $employee->hire_date ? __('Since :date', ['date' => $employee->hire_date->format('d M Y')]) : __('Hire date not set') }}</div>
+                                <div class="text-muted small">{{ $employee->hire_date ? __('Since :date', ['date' => \App\Support\WorkforceClock::local($employee->hire_date, 'd/m/Y')]) : __('Hire date not set') }}</div>
                             </td>
                             <td>
                                 @php($statusClass = match($employee->status) {
@@ -53,7 +53,7 @@
                             <td>
                                 @if($employee->openAttendanceSession)
                                     <span class="badge admin-status-badge badge-soft-success">{{ __('Clocked in') }}</span>
-                                    <div class="text-muted small mt-1">{{ $employee->openAttendanceSession->clock_in_at->format('d M Y H:i') }}</div>
+                                    <div class="text-muted small mt-1">{{ \App\Support\WorkforceClock::local($employee->openAttendanceSession->clock_in_at, 'd/m/Y H:i') }}</div>
                                 @else
                                     <span class="badge admin-status-badge badge-soft-secondary">{{ __('Clocked out') }}</span>
                                 @endif
