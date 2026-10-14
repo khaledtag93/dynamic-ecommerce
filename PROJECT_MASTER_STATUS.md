@@ -1,5 +1,12 @@
 # MASTER PROJECT STATUS
 
+## PROJECT-WIDE ASSISTANT-LED QA AGREEMENT — 2026-10-14
+
+- The assistant takes the lead on repeatable unit/integration, permissions, business E2E, CI, QAS backend and browser automation whenever connected, capable tooling/test personas allow. The owner focuses on policy/product judgment and final targeted acceptance.
+- Exact PASS/FAIL/BLOCKED evidence is mandatory for each scope; no CI-only or HTTP-only closures. Use isolated demo datasets and role/tenant boundaries; never treat real QAS personal or financial records as disposable.
+- Standing charter: `docs/ASSISTANT_LED_QA_AND_ACCEPTANCE_CHARTER_2026-10-14.md`, incorporated into `PROJECT_RULES.md`, `TEST_PLAN.md` and `CURRENT_PHASE.md`.
+- **Status:** process/documentation only. Last deployed QAS app remains `a62ad480`; W-ORG-01b authenticated multi-persona browser acceptance is still pending. Production unchanged.
+
 ## LATEST VERIFIED STATE — 2026-10-14 (Workforce Team-Scoped Authorization)
 
 - Branch `sec03-framework-upgrade`; verified code, Hardening CI and QAS SHA `a62ad480`, CI https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38599716356 **Green: 905 tests, 18,188 assertions**.

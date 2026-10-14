@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## STANDING QUALITY AGREEMENT — 2026-10-14 (All Flowra Modules)
+
+- **Assistant-led testing is the default:** inspect → define scenarios → implement/regression tests → CI Green → QAS backend/API + authenticated browser automation where available → locale/responsive/accessibility evidence → fix/retest → recorded acceptance before CLOSED.
+- Owner primarily validates business policy and product experience; do not assign routine page-by-page technical testing to the owner. If browser tools/test personas are unavailable, mark specific checks BLOCKED rather than claiming acceptance.
+- Canonical charter: `docs/ASSISTANT_LED_QA_AND_ACCEPTANCE_CHARTER_2026-10-14.md`; integrated with `PROJECT_RULES.md` and `TEST_PLAN.md`.
+- This is a **documentation/process agreement only**; the latest QAS app remains `a62ad480`, W-ORG-01b authenticated multi-persona browser acceptance still OPEN, and Production unchanged.
+
 ## LATEST VERIFIED QAS CHECKPOINT — 2026-10-14 (W-ORG-01b Security Scope)
 
 - **Verified application/CI/QAS SHA `a62ad480`** on branch `sec03-framework-upgrade`. Hardening CI https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38599716356 **Green, 905 tests / 18,188 assertions**.

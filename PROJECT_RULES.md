@@ -113,3 +113,12 @@
 - Work in coherent, reviewable batches; use focused reads and bounded tool output, then verify the latest batch HEAD in CI. Save meaningful decisions, defects and next actions to the repository as work progresses.
 - Record source, CI, QAS and Production state separately at each checkpoint. During a long session, give concise progress updates. Before changing chat, provide a self-contained handoff pointing to the current commit and `docs/NEW_CHAT_HANDOFF_2026-09-26.md`.
 - A chat handoff or an asynchronous CI run never counts as acceptance; record the actual result before changing a closure status.
+
+### 24) Assistant-led Testing and Business-Flow Acceptance — Standing Agreement
+- Make automated testing and QAS verification the **default responsibility of the assistant**, not a repetitive task delegated to the product owner. This applies to every current and future Flowra module, including Admin, Storefront, POS, Workforce, HR, Payroll, financial flows and SaaS.
+- Before implementation, define representative end-to-end scenarios and failure paths. Implement and run unit/integration/regression, permission/ownership, data-integrity, cross-module and CI checks, followed by QAS smoke and authorized browser automation whenever usable.
+- Set up safe, isolated **demo personas and datasets** for realistic employee/manager/finance/customer/tenant scenarios; never treat live user, medical, salary or real-payment data as disposable test fixtures.
+- Use authenticated browser automation (e.g. Playwright, where available), screenshots and role-specific journeys for QAS EN/AR, RTL, mobile and interactive acceptance. If necessary tools, test accounts or visual access are missing, clearly report BLOCKED rather than claim PASS; request only the smallest targeted owner check.
+- Keep product owner involvement primarily for business policy decisions, usability judgments, legally regulated signoff and final acceptance, with documented exceptions for account authorization and true external-provider confirmations.
+- Never close a phase based only on CI Green, a page HTTP 200, migration success or test count. Closure requires evidence for business outcomes and applicable QAS/role/visual checks on the exact revision.
+- Follow the authoritative [assistant-led QA and acceptance charter](docs/ASSISTANT_LED_QA_AND_ACCEPTANCE_CHARTER_2026-10-14.md). It governs testing responsibilities, status truth, safety, fixtures, evidence and defect management for all coherent slices. Do not rewrite completed work without an observed defect.

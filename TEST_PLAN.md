@@ -1,5 +1,11 @@
 # Test Plan
 
+## Execution ownership and acceptance standard (2026-10-14)
+
+This test plan is extended by the standing [Assistant-led QA & Acceptance Charter](docs/ASSISTANT_LED_QA_AND_ACCEPTANCE_CHARTER_2026-10-14.md). The assistant is responsible for running and reporting automated tests, CI, QAS backend/API and available authenticated browser journeys as far as tools and test access permit; the product owner is **not** the default manual tester for every page. Keep unexecuted or unavailable test types explicitly BLOCKED, not PASS.
+
+Applies across all Flowra Admin, Storefront, POS, workforce/HR/payroll, financial and future SaaS areas. Every slice needs an E2E scenario matrix with expected vs actual results, persona/role, EN/AR/RTL where applicable, evidence, exact source/QAS SHAs and defects.
+
 ## Critical business flows
 
 ### 1. Catalog
@@ -45,4 +51,4 @@
 6. Permissions
 
 ## Rule
-No move to the next phase before the critical flows above are manually validated on the active baseline.
+No move to the next phase before applicable critical flows have been **executed and verified** on the active baseline, using automated QAS/browser checks wherever feasible and a clearly documented human acceptance check only where necessary. CI-only PASS is not QAS acceptance; record any BLOCKED checks explicitly.
