@@ -43,3 +43,24 @@ For actual QAS seeding, isolate accounts with the reserved test email domain `@f
 7. Mark W-ORG-01b CLOSED only once all applicable role/business acceptance gates are actually proven and agreed.
 
 **Status:** QAS authenticated role acceptance OPEN/BLOCKED. Production unchanged.
+
+## Continuation: controlled connection preflight and evidence
+
+Date: 2026-10-14. Starting checkpoint: `e38215a9`.
+
+| Gate | Check | Evidence | Result |
+| --- | --- | --- | --- |
+| Source integrity | Local `sec03-framework-upgrade` at `e38215a9`, clean and tracking `origin` | Local Git status, head and history | PASS |
+| CI for current checkpoint | Hardening run `38607965110`: completed / success | GitHub Actions result | PASS |
+| Authorized local execution device | Desktop Commander `DESKTOP-KOG45HP` online | Connected device status | PASS |
+| Authorized QAS SSH channel | One standard read-only SSH connection preflight, remote command `true` | Remote tool returned `This tool call was blocked by OpenAI's safety checks` | BLOCKED |
+| Pre-fixture backup | Cannot create or inspect a fresh dump through the blocked channel | Prior `7,065,795`-byte dump is pre-deploy, not a restore-tested pre-fixture snapshot | BLOCKED |
+| Isolated restore rehearsal | No approved access / current dump | Not executed | BLOCKED |
+| QAS role personas | Seven test identities | None created on QAS | BLOCKED |
+| Authenticated QAS browser role matrix | ROLE-01…ROLE-06 | Not executed; no test accounts available | BLOCKED |
+| Public guest browser smoke | Chrome/Playwright desktop + mobile guest redirect and Arabic RTL | Repeat of `tests/browser/workforce-guest-smoke.cjs`, 4/4 cases PASS; screenshots updated locally | PASS (guest-only) |
+| Fixture cleanup | Synthetic QAS records inserted by this pass | Zero records inserted, therefore cleanup **not applicable** | N/A |
+
+**Safety stop applied:** no second route/tool/credential workaround was attempted after the blocked SSH preflight. No QAS database writes, accounts, fixture IDs, migrations, deploy or Production change occurred. The previous CI `907 passed / 18,230 assertions` remains valid *only for isolated automated tests*, not authenticated QAS acceptance.
+
+**Closure decision:** **DO NOT CLOSE W-ORG-01b**. Resume on an expressly approved QAS access path; independently verify a current backup and isolated restore before any seed, then execute the seven authenticated personas and record role-by-role PASS/FAIL and targeted fixture cleanup.
