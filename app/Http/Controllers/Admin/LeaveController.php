@@ -9,6 +9,7 @@ use App\Models\EmployeeLeaveType;
 use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
 use App\Services\Workforce\LeaveApprovalRoutingService;
+use App\Services\Workforce\LeaveApprovalReadinessService;
 use App\Services\Workforce\LeaveBalanceService;
 use App\Services\Workforce\LeaveRequestService;
 use App\Services\Workforce\WorkforceAccessService;
@@ -23,6 +24,7 @@ class LeaveController extends Controller
         protected LeaveRequestService $leaveRequestService,
         protected WorkforceAccessService $access,
         protected LeaveApprovalRoutingService $approvalRouting,
+        protected LeaveApprovalReadinessService $approvalReadiness,
     ) {
     }
 
@@ -163,8 +165,14 @@ class LeaveController extends Controller
             $requests->getCollection()->pluck('employee')->filter(),
         );
 
+        $reviewReadiness = $this->approvalReadiness->forPage(
+            $request->user(),
+            $requests->getCollection(),
+            $reviewableEmployeeIds,
+        );
+
         if ($request->header('X-Live-List') === '1') {
-            return response()->view('admin.workforce.leave._results', compact('requests', 'filters', 'scheduleConflicts', 'reviewableEmployeeIds'));
+            return response()->view('admin.workforce.leave._results', compact('requests', 'filters', 'scheduleConflicts', 'reviewableEmployeeIds', 'reviewReadiness'));
         }
 
         $stats = [
@@ -185,6 +193,7 @@ class LeaveController extends Controller
             'filters',
             'scheduleConflicts',
             'reviewableEmployeeIds',
+            'reviewReadiness',
             'stats',
             'leaveTypes',
         ));

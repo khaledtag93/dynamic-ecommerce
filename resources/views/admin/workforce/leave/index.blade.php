@@ -13,7 +13,7 @@
         @endif
         <a href="{{ route('admin.workforce.schedule.index') }}" class="btn btn-light border btn-text-icon"><i class="mdi mdi-calendar-multiselect-outline"></i><span>{{ __('Work schedule') }}</span></a>
     </x-admin.page-header>
-    <p class="text-muted small mb-3">{{ __('Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.') }}</p>
+    <p class="text-muted small mb-3">{{ __('Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.') }} {{ __('Readiness figures cover only the currently displayed, permission-scoped page; they are not organization-wide totals.') }}</p>
 
     <div class="row g-3 mb-4">
         @foreach([

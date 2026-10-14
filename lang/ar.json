@@ -6078,5 +6078,11 @@
     "Historical policy details unavailable": "تفاصيل السياسة التاريخية غير متاحة",
     "Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled.": "تؤثر تعديلات السياسة على الطلبات الجديدة. تظل تواريخ الطلبات الحالية وأيامها المسجلة ونسخ السياسات المحفوظة دون تغيير. جدولة سريان السياسة بالتاريخ غير مفعلة.",
     "Awaiting an eligible reviewer": "بانتظار مراجع لديه الصلاحية",
-    "Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.": "تظهر إجراءات المراجعة فقط عندما يسمح بها نطاق صلاحياتك في الموظفين. لا يوجد تفويض أو تصعيد تلقائي مفعّل."
+    "Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.": "تظهر إجراءات المراجعة فقط عندما يسمح بها نطاق صلاحياتك في الموظفين. لا يوجد تفويض أو تصعيد تلقائي مفعّل.",
+    "Pending on this page": "الطلبات المعلقة في هذه الصفحة",
+    "You can review": "يمكنك مراجعتها",
+    "Another reviewer is eligible": "يوجد مراجع آخر مؤهل",
+    "No eligible reviewer currently": "لا يوجد مراجع مؤهل حاليًا",
+    "Reviewer routing needs attention": "توجيه المراجعة يحتاج مراجعة الإعدادات",
+    "Readiness figures cover only the currently displayed, permission-scoped page; they are not organization-wide totals.": "إحصائيات جاهزية المراجعة تخص الصفحة المعروضة ضمن صلاحياتك فقط، وليست إجمالي المؤسسة."
 }

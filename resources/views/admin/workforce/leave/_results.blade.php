@@ -11,6 +11,16 @@
             @endif
         </div>
 
+        <div class="text-muted small mb-3" role="status" aria-live="polite">
+            {{ __('Pending on this page') }}:
+            {{ array_sum($reviewReadiness['counts']) }}
+            · {{ __('You can review') }}: {{ $reviewReadiness['counts']['mine'] }}
+            · {{ __('Another reviewer is eligible') }}: {{ $reviewReadiness['counts']['other'] }}
+            · {{ __('No eligible reviewer currently') }}: {{ $reviewReadiness['counts']['unassigned'] }}
+            @if($reviewReadiness['counts']['configuration'] > 0)
+                · {{ __('Reviewer routing needs attention') }}: {{ $reviewReadiness['counts']['configuration'] }}
+            @endif
+        </div>
         <div class="table-responsive">
             <table class="table admin-table align-middle mb-0">
                 <thead>
@@ -69,7 +79,7 @@
                                 @if($leave->reviewedBy)<div class="text-muted small">{{ $leave->reviewedBy->name }}</div>@endif
                             </td>
                             <td style="min-width: 260px">
-                                @if($leave->isPending() && in_array((int) $leave->employee_profile_id, $reviewableEmployeeIds, true))
+                                @if($leave->isPending() && ($reviewReadiness['states'][(int)$leave->id] ?? null) === 'mine')
                                     <form method="POST" action="{{ route('admin.workforce.leave.approve', $leave) }}" class="mb-2" data-submit-loading>
                                         @csrf
                                         @method('PATCH')
@@ -83,7 +93,15 @@
                                         <button class="btn btn-sm btn-outline-danger w-100" data-loading-text="{{ __('Rejecting...') }}">{{ __('Reject') }}</button>
                                     </form>
                                 @else
-                                    <span class="text-muted small">{{ $leave->isPending() ? __('Awaiting an eligible reviewer') : __('Review complete') }}</span>
+                                    @if(!$leave->isPending())
+                                        <span class="text-muted small">{{ __('Review complete') }}</span>
+                                    @elseif(($reviewReadiness['states'][(int)$leave->id] ?? null) === 'unassigned')
+                                        <span class="text-warning small">{{ __('No eligible reviewer currently') }}</span>
+                                    @elseif(($reviewReadiness['states'][(int)$leave->id] ?? null) === 'other')
+                                        <span class="text-muted small">{{ __('Another reviewer is eligible') }}</span>
+                                    @else
+                                        <span class="text-muted small">{{ __('Reviewer routing needs attention') }}</span>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

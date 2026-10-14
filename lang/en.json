@@ -5370,5 +5370,11 @@
     "Historical policy details unavailable": "Historical policy details unavailable",
     "Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled.": "Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled.",
     "Awaiting an eligible reviewer": "Awaiting an eligible reviewer",
-    "Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.": "Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured."
+    "Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.": "Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.",
+    "Pending on this page": "Pending on this page",
+    "You can review": "You can review",
+    "Another reviewer is eligible": "Another reviewer is eligible",
+    "No eligible reviewer currently": "No eligible reviewer currently",
+    "Reviewer routing needs attention": "Reviewer routing needs attention",
+    "Readiness figures cover only the currently displayed, permission-scoped page; they are not organization-wide totals.": "Readiness figures cover only the currently displayed, permission-scoped page; they are not organization-wide totals."
 }

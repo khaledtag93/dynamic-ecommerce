@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ROADMAP — W-APP-03b PENDING APPROVAL READINESS (2026-10-15)
+
+- From `afbdcbb4` and [CI #38653785977](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38653785977) GREEN, adds a read-only per-page Pending Leave readiness result with four scoped states: own-actionable, another eligible reviewer, no eligible reviewer, or routing needs attention.
+- Existing Leave review UI and X-Live-List partial show **only current permission-scoped page** counts. No reviewer names exposed; no new assignment, delegation, escalation, approval policy or DB migrations. W-ORG-01b QAS remains OPEN/DEFERRED.
+- Eight feature regressions prepared for self-review/cross-team denial, missing or inactive manager, invalid mode, legacy org admin, live pagination and terminal transitions. Local syntax/JSON/diff PASS; full isolated CI **PENDING**. `docs/WAPP03B_PENDING_REVIEW_READINESS_2026-10-15.md`.
+
 ## ROADMAP — W-APP-03 REVIEWER ELIGIBILITY FOUNDATION (2026-10-15)
 
 - Following `afe65e66` / [CI #38651633408](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38651633408) GREEN, W-APP-03 introduces a shared scoped leave approval routing gate to synchronize existing HTTP review checks, domain-service enforcement and approval-button eligibility. Default stays `scoped`, compatible with historical decisions.
