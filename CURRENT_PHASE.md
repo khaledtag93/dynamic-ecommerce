@@ -1,5 +1,14 @@
 # CURRENT PHASE
 
+## CURRENT W-ORG-01b CHECKPOINT — SSH KEY ROTATION STAGED (2026-10-14)
+
+- **CI:** source baseline `ac621f4d`, Hardening run [38622853104](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38622853104) GREEN, **907 tests / 18,230 assertions** (including seven isolated Workforce personas). QAS authenticated role acceptance remains untested.
+- **Diagnosis corrected:** prior Windows PowerShell `ssh-keygen -y -P ''` failed due to empty argument handling (`Too many arguments`), **not proven key corruption**. A corrected **local-only** public key extraction test succeeded. Windows ssh-agent also holds the old identity, but remote SSH login remains unverified.
+- **Preventative key rotation:** because old private key material appeared in earlier tool output, the old identity is treated as potentially compromised. A **new** Ed25519 dedicated QAS identity was staged locally as `~/.ssh/id_ed25519_flowra_qas_20261014` and `.pub`, with Windows ACL limited to the owner, Administrators and SYSTEM. The new public fingerprint is `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8`; public key copied to the owner's clipboard (private never displayed). **NOT YET REGISTERED IN HOSTINGER**. Existing old key/agent/hosting configuration untouched.
+- Owner step: Hostinger `tag-marketplace.com > Advanced > SSH Access > SSH keys > Add SSH key`; name `flowra-qas-2026-10-14` and paste the **public** key from Windows clipboard. No secret sharing. Verify new key only via permitted access; after authorized success, separately revoke old possibly exposed identity. Full instructions: `docs/QAS_SSH_KEY_ROTATION_2026-10-14.md`.
+- Pre-existing local modifications **left untouched and unstaged**: `ops/qa/worg01b_personas.php`, `tests/browser/workforce-authenticated-readonly.cjs`, untracked `ops/qa/worg01b_browser_login_diagnostic.cjs`. PHP and Node syntax passed. **Do not reset/rebase/overwrite these pending changes.**
+- **Security boundary:** no remote SSH login, DB runtime check, fixture creation, cleanup, deployment, or Production change was performed in this step. A platform safety restriction must never be bypassed. **W-ORG-01b remains OPEN/BLOCKED** until an approved new SSH identity authenticates, QAS runtime DB is checked read-only, and seven role journeys pass with evidence.
+
 ## LATEST SSH STATUS EVIDENCE — 2026-10-14
 
 - Owner hPanel screenshot for **Websites > tag-marketplace.com > Advanced > SSH Access** visibly shows **SSH status ACTIVE**. This establishes enabled hosting SSH service; **it does not establish successful account login**. The SSH details section in the screenshot is cut off.
