@@ -10,6 +10,7 @@ use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
 use App\Services\Workforce\LeaveBalanceService;
 use App\Services\Workforce\LeaveRequestService;
+use App\Services\Workforce\WorkforceAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
@@ -19,6 +20,7 @@ class LeaveController extends Controller
     public function __construct(
         protected LeaveBalanceService $balanceService,
         protected LeaveRequestService $leaveRequestService,
+        protected WorkforceAccessService $access,
     ) {
     }
 
@@ -98,7 +100,7 @@ class LeaveController extends Controller
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
         ];
 
-        $requests = EmployeeLeaveRequest::query()
+        $requests = $this->access->restrictForeignKey(EmployeeLeaveRequest::query(), $request->user())
             ->with(['employee.user', 'leaveType', 'reviewedBy'])
             ->when($filters['search'], function ($query, $search) {
                 $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
@@ -130,10 +132,10 @@ class LeaveController extends Controller
         }
 
         $stats = [
-            'pending' => EmployeeLeaveRequest::where('status', EmployeeLeaveRequest::STATUS_PENDING)->count(),
-            'approved' => EmployeeLeaveRequest::where('status', EmployeeLeaveRequest::STATUS_APPROVED)->count(),
-            'rejected' => EmployeeLeaveRequest::where('status', EmployeeLeaveRequest::STATUS_REJECTED)->count(),
-            'current' => EmployeeLeaveRequest::query()
+            'pending' => $this->access->restrictForeignKey(EmployeeLeaveRequest::query(), $request->user())->where('status', EmployeeLeaveRequest::STATUS_PENDING)->count(),
+            'approved' => $this->access->restrictForeignKey(EmployeeLeaveRequest::query(), $request->user())->where('status', EmployeeLeaveRequest::STATUS_APPROVED)->count(),
+            'rejected' => $this->access->restrictForeignKey(EmployeeLeaveRequest::query(), $request->user())->where('status', EmployeeLeaveRequest::STATUS_REJECTED)->count(),
+            'current' => $this->access->restrictForeignKey(EmployeeLeaveRequest::query(), $request->user())
                 ->where('status', EmployeeLeaveRequest::STATUS_APPROVED)
                 ->whereDate('starts_on', '<=', today())
                 ->whereDate('ends_on', '>=', today())
@@ -153,6 +155,7 @@ class LeaveController extends Controller
 
     public function approve(Request $request, EmployeeLeaveRequest $employeeLeaveRequest)
     {
+        $this->access->assertReviewer($request->user(), (int) $employeeLeaveRequest->employee_profile_id);
         $data = $request->validate([
             'review_notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -170,6 +173,7 @@ class LeaveController extends Controller
 
     public function reject(Request $request, EmployeeLeaveRequest $employeeLeaveRequest)
     {
+        $this->access->assertReviewer($request->user(), (int) $employeeLeaveRequest->employee_profile_id);
         $data = $request->validate([
             'review_notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -187,6 +191,7 @@ class LeaveController extends Controller
 
     public function adjustmentForm()
     {
+        $this->access->assertOrgAdmin(request()->user());
         return view('admin.workforce.leave.adjustment', [
             'employees' => EmployeeProfile::query()->with('user')->orderBy('employee_code')->get(),
             'leaveTypes' => EmployeeLeaveType::query()->where('is_active', true)->orderBy('name')->get(),
@@ -201,6 +206,7 @@ class LeaveController extends Controller
 
     public function adjustBalance(Request $request)
     {
+        $this->access->assertOrgAdmin($request->user());
         $data = $request->validate([
             'employee_profile_id' => ['required', 'integer', Rule::exists('employee_profiles', 'id')],
             'employee_leave_type_id' => ['required', 'integer', Rule::exists('employee_leave_types', 'id')],

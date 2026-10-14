@@ -48,6 +48,7 @@
         @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
+    @if(auth()->user()?->hasPermission('workforce.scope.all'))
     <div class="col-md-4">
         <label class="form-label fw-semibold" for="employeeReportingManager">{{ __('Direct manager') }}</label>
         <select id="employeeReportingManager" name="manager_employee_profile_id"
@@ -63,6 +64,7 @@
         @error('manager_employee_profile_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
         <div class="section-note">{{ __('Reporting managers must be active and authorized. Changes are audited.') }}</div>
     </div>
+    @endif
     <div class="col-md-4">
         <label class="form-label fw-semibold" for="employeeEmploymentType">{{ __('Employment type') }}</label>
         <select id="employeeEmploymentType" name="employment_type" aria-required="true" class="form-select @error('employment_type') is-invalid @enderror" required>

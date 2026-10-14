@@ -6,11 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeAttendanceCorrection;
 use App\Models\EmployeeAttendanceSession;
 use App\Services\Workforce\AttendanceCorrectionService;
+use App\Services\Workforce\WorkforceAccessService;
 use Illuminate\Http\Request;
 
 class AttendanceCorrectionController extends Controller
 {
-    public function __construct(protected AttendanceCorrectionService $correctionService)
+    public function __construct(protected AttendanceCorrectionService $correctionService, protected WorkforceAccessService $access)
     {
     }
 
@@ -69,7 +70,7 @@ class AttendanceCorrectionController extends Controller
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
         ];
 
-        $corrections = EmployeeAttendanceCorrection::query()
+        $corrections = $this->access->restrictForeignKey(EmployeeAttendanceCorrection::query(), $request->user())
             ->with(['employee.user', 'attendanceSession', 'reviewedBy'])
             ->when($filters['search'], function ($query, $search) {
                 $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
@@ -98,10 +99,10 @@ class AttendanceCorrectionController extends Controller
         }
 
         $stats = [
-            'pending' => EmployeeAttendanceCorrection::where('status', EmployeeAttendanceCorrection::STATUS_PENDING)->count(),
-            'approved' => EmployeeAttendanceCorrection::where('status', EmployeeAttendanceCorrection::STATUS_APPROVED)->count(),
-            'rejected' => EmployeeAttendanceCorrection::where('status', EmployeeAttendanceCorrection::STATUS_REJECTED)->count(),
-            'total' => EmployeeAttendanceCorrection::count(),
+            'pending' => $this->access->restrictForeignKey(EmployeeAttendanceCorrection::query(), $request->user())->where('status', EmployeeAttendanceCorrection::STATUS_PENDING)->count(),
+            'approved' => $this->access->restrictForeignKey(EmployeeAttendanceCorrection::query(), $request->user())->where('status', EmployeeAttendanceCorrection::STATUS_APPROVED)->count(),
+            'rejected' => $this->access->restrictForeignKey(EmployeeAttendanceCorrection::query(), $request->user())->where('status', EmployeeAttendanceCorrection::STATUS_REJECTED)->count(),
+            'total' => $this->access->restrictForeignKey(EmployeeAttendanceCorrection::query(), $request->user())->count(),
         ];
 
         return view('admin.workforce.corrections.index', compact('corrections', 'filters', 'stats'));
@@ -109,6 +110,7 @@ class AttendanceCorrectionController extends Controller
 
     public function approve(Request $request, EmployeeAttendanceCorrection $employeeAttendanceCorrection)
     {
+        $this->access->assertReviewer($request->user(), (int) $employeeAttendanceCorrection->employee_profile_id);
         $data = $request->validate([
             'review_notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -126,6 +128,7 @@ class AttendanceCorrectionController extends Controller
 
     public function reject(Request $request, EmployeeAttendanceCorrection $employeeAttendanceCorrection)
     {
+        $this->access->assertReviewer($request->user(), (int) $employeeAttendanceCorrection->employee_profile_id);
         $data = $request->validate([
             'review_notes' => ['nullable', 'string', 'max:2000'],
         ]);

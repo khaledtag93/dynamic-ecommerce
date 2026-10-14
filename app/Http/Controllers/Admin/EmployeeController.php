@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeProfile;
 use App\Models\User;
 use App\Services\Workforce\ReportingHierarchyService;
+use App\Services\Workforce\WorkforceAccessService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
 {
-    public function __construct(private ReportingHierarchyService $reportingHierarchy)
+    public function __construct(private ReportingHierarchyService $reportingHierarchy, private WorkforceAccessService $access)
     {
     }
 
@@ -35,7 +36,7 @@ class EmployeeController extends Controller
             'per_page' => max(15, min(100, (int) $request->integer('per_page', 15))),
         ];
 
-        $employees = EmployeeProfile::query()
+        $employees = $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())
             ->with(['user.roles', 'openAttendanceSession'])
             ->when($filters['search'], function ($query) use ($like) {
                 $query->where(function ($inner) use ($like) {
@@ -62,13 +63,13 @@ class EmployeeController extends Controller
         }
 
         $stats = [
-            'total' => EmployeeProfile::count(),
-            'active' => EmployeeProfile::where('status', EmployeeProfile::STATUS_ACTIVE)->count(),
-            'on_leave' => EmployeeProfile::where('status', EmployeeProfile::STATUS_ON_LEAVE)->count(),
-            'clocked_in' => EmployeeProfile::whereHas('openAttendanceSession')->count(),
+            'total' => $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())->count(),
+            'active' => $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())->where('status', EmployeeProfile::STATUS_ACTIVE)->count(),
+            'on_leave' => $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())->where('status', EmployeeProfile::STATUS_ON_LEAVE)->count(),
+            'clocked_in' => $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())->whereHas('openAttendanceSession')->count(),
         ];
 
-        $departments = EmployeeProfile::query()
+        $departments = $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())
             ->whereNotNull('department')
             ->where('department', '!=', '')
             ->distinct()
@@ -85,6 +86,7 @@ class EmployeeController extends Controller
 
     public function create()
     {
+        $this->access->assertOrgAdmin(request()->user());
         $candidateUsers = User::query()
             ->where('role_as', 1)
             ->whereDoesntHave('employeeProfile')
@@ -100,6 +102,7 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
+        $this->access->assertOrgAdmin($request->user());
         $data = $this->validateEmployee($request);
 
         $managerId = $data['manager_employee_profile_id'] ?? null;
@@ -120,6 +123,7 @@ class EmployeeController extends Controller
 
     public function edit(EmployeeProfile $employeeProfile)
     {
+        $this->access->assertManage(request()->user(), $employeeProfile);
         $employeeProfile->load(['user.roles', 'openAttendanceSession', 'reportingManager.user']);
 
         return view('admin.workforce.employees.edit', [
@@ -130,6 +134,12 @@ class EmployeeController extends Controller
 
     public function update(Request $request, EmployeeProfile $employeeProfile)
     {
+        $this->access->assertManage($request->user(), $employeeProfile);
+        if (!$this->access->isOrganizationAdmin($request->user())) {
+            abort_if($request->filled('manager_employee_profile_id') &&
+                (int) $request->input('manager_employee_profile_id') !== (int) $employeeProfile->manager_employee_profile_id, 403);
+            $request->merge(['manager_employee_profile_id' => $employeeProfile->manager_employee_profile_id]);
+        }
         $data = $this->validateEmployee($request, $employeeProfile);
         unset($data['user_id']);
         $managerId = $data['manager_employee_profile_id'] ?? null;

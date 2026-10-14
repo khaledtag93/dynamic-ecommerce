@@ -6,11 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\EmployeeAttendanceSession;
 use App\Models\EmployeeProfile;
 use App\Services\Workforce\AttendanceService;
+use App\Services\Workforce\WorkforceAccessService;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
-    public function __construct(protected AttendanceService $attendanceService)
+    public function __construct(protected AttendanceService $attendanceService, protected WorkforceAccessService $access)
     {
     }
 
@@ -31,7 +32,7 @@ class AttendanceController extends Controller
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
         ];
 
-        $sessions = EmployeeAttendanceSession::query()
+        $sessions = $this->access->restrictForeignKey(EmployeeAttendanceSession::query(), $request->user())
             ->with(['employee.user', 'breaks', 'approvedCorrection', 'pendingCorrection'])
             ->when($filters['search'], function ($query, $search) {
                 $escapedSearch = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
@@ -62,10 +63,10 @@ class AttendanceController extends Controller
         }
 
         $stats = [
-            'open_now' => EmployeeAttendanceSession::whereNull('clock_out_at')->whereNull('voided_at')->count(),
-            'clock_ins_today' => EmployeeAttendanceSession::whereNull('voided_at')->where('clock_in_at', '>=', $workforceClock::localDayUtcBounds($workforceClock::today())[0])->where('clock_in_at', '<', $workforceClock::localDayUtcBounds($workforceClock::today())[1])->count(),
-            'completed_today' => EmployeeAttendanceSession::whereNull('voided_at')->where('clock_in_at', '>=', $workforceClock::localDayUtcBounds($workforceClock::today())[0])->where('clock_in_at', '<', $workforceClock::localDayUtcBounds($workforceClock::today())[1])->whereNotNull('clock_out_at')->count(),
-            'employees' => EmployeeProfile::count(),
+            'open_now' => $this->access->restrictForeignKey(EmployeeAttendanceSession::query(), $request->user())->whereNull('clock_out_at')->whereNull('voided_at')->count(),
+            'clock_ins_today' => $this->access->restrictForeignKey(EmployeeAttendanceSession::query(), $request->user())->whereNull('voided_at')->where('clock_in_at', '>=', $workforceClock::localDayUtcBounds($workforceClock::today())[0])->where('clock_in_at', '<', $workforceClock::localDayUtcBounds($workforceClock::today())[1])->count(),
+            'completed_today' => $this->access->restrictForeignKey(EmployeeAttendanceSession::query(), $request->user())->whereNull('voided_at')->where('clock_in_at', '>=', $workforceClock::localDayUtcBounds($workforceClock::today())[0])->where('clock_in_at', '<', $workforceClock::localDayUtcBounds($workforceClock::today())[1])->whereNotNull('clock_out_at')->count(),
+            'employees' => $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())->count(),
         ];
 
         return view('admin.workforce.attendance.index', compact('sessions', 'filters', 'stats'));
@@ -73,6 +74,7 @@ class AttendanceController extends Controller
 
     public function voidSession(Request $request, EmployeeAttendanceSession $employeeAttendanceSession, \App\Services\Workforce\AttendanceVoidService $service)
     {
+        $this->access->assertReviewer($request->user(), (int) $employeeAttendanceSession->employee_profile_id);
         $data = $request->validate([
             'void_reason' => ['required', 'string', 'min:10', 'max:2000'],
         ]);

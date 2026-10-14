@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## ACTIVE SECURITY WORKSTREAM — W-ORG-01b (In review, NOT YET QAS DEPLOYED)
+
+- After QAS `bedb9fc0` W-ORG-01a, work on **team-scoped read and mutation authorization** began. New `WorkforceAccessService` uses employee reporting ancestry for Team Supervisors. `workforce.scope.all` is a separate explicit organization-wide permission; legacy Operations Manager and Super Admin retain authorized global access to avoid silent outages. Team Supervisor lacks that permission, and never receives payroll salary visibility by default.
+- Target Workforce endpoints for scoping: Employee Directory and employment mutations, attendance list/void, schedules and assignment, leave request review and corrections, leave-type and balance admin-only settings. Payroll compensation continues under independent `workforce.payroll.*` permissions; a broader payroll field-level/security review is a separate mandatory W-PAY-07a gate.
+- **Security acceptance:** direct links to outsiders must 403; filtered lists, counts and live fragments must not leak cross-team data; self approval refused; global organization-only actions denied to team managers. Need PHPUnit/CI Green before any deployment.
+- **New enterprise roadmap** `docs/WORKFORCE_COMPENSATION_PAYROLL_ENTERPRISE_ROADMAP_2026-10-14.md`: salary increases, earnings/deductions, rules-driven overtime/leave, bonuses, commission, profit share, compliance and configured payroll policies. Present manual payroll adjustments already exist but automatic overtime/unpaid-leave/proration explicitly do not.
+- Production untouched; current QAS app `bedb9fc0` until this workstream passes.
+
 ## LATEST VERIFIED QAS CHECKPOINT — 2026-10-14 (W-ORG-01a Reporting Hierarchy Foundation)
 
 - Branch `sec03-framework-upgrade`, **QAS application SHA `bedb9fc0`**, Hardening CI https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38595362470 **Green** (901 tests / 18,150 assertions).

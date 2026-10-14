@@ -8,6 +8,7 @@ use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
 use App\Services\Workforce\AttendanceRulesService;
 use App\Services\Workforce\WorkShiftService;
+use App\Services\Workforce\WorkforceAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
@@ -17,6 +18,7 @@ class WorkShiftController extends Controller
     public function __construct(
         protected WorkShiftService $workShiftService,
         protected AttendanceRulesService $attendanceRulesService,
+        protected WorkforceAccessService $access,
     ) {
     }
 
@@ -39,7 +41,7 @@ class WorkShiftController extends Controller
             'per_page' => max(20, min(100, (int) $request->integer('per_page', 20))),
         ];
 
-        $shifts = EmployeeWorkShift::query()
+        $shifts = $this->access->restrictForeignKey(EmployeeWorkShift::query(), $request->user())
             ->with(['employee.user'])
             ->when($filters['search'], function ($query) use ($like) {
                 $query->where(function ($inner) use ($like) {
@@ -71,21 +73,21 @@ class WorkShiftController extends Controller
         }
 
         $stats = [
-            'today' => EmployeeWorkShift::query()
+            'today' => $this->access->restrictForeignKey(EmployeeWorkShift::query(), $request->user())
                 ->where('status', EmployeeWorkShift::STATUS_PUBLISHED)
                 ->where('starts_at', '>=', \App\Support\WorkforceClock::localDayUtcBounds(\App\Support\WorkforceClock::today())[0])
                 ->where('starts_at', '<', \App\Support\WorkforceClock::localDayUtcBounds(\App\Support\WorkforceClock::today())[1])
                 ->count(),
-            'upcoming_7d' => EmployeeWorkShift::query()
+            'upcoming_7d' => $this->access->restrictForeignKey(EmployeeWorkShift::query(), $request->user())
                 ->where('status', EmployeeWorkShift::STATUS_PUBLISHED)
                 ->where('starts_at', '>=', now())
                 ->where('starts_at', '<', now()->addDays(7))
                 ->count(),
-            'draft' => EmployeeWorkShift::query()->where('status', EmployeeWorkShift::STATUS_DRAFT)->count(),
-            'published' => EmployeeWorkShift::query()->where('status', EmployeeWorkShift::STATUS_PUBLISHED)->count(),
+            'draft' => $this->access->restrictForeignKey(EmployeeWorkShift::query(), $request->user())->where('status', EmployeeWorkShift::STATUS_DRAFT)->count(),
+            'published' => $this->access->restrictForeignKey(EmployeeWorkShift::query(), $request->user())->where('status', EmployeeWorkShift::STATUS_PUBLISHED)->count(),
         ];
 
-        $departments = EmployeeProfile::query()
+        $departments = $this->access->restrictEmployees(EmployeeProfile::query(), $request->user())
             ->whereNotNull('department')
             ->where('department', '!=', '')
             ->distinct()
@@ -113,6 +115,7 @@ class WorkShiftController extends Controller
     {
         $data = $this->validatedShift($request);
         $employee = EmployeeProfile::query()->findOrFail((int) $data['employee_profile_id']);
+        $this->access->assertManage($request->user(), $employee);
 
         $shift = $this->workShiftService->create($employee, $data, $request->user());
 
@@ -123,6 +126,7 @@ class WorkShiftController extends Controller
 
     public function edit(EmployeeWorkShift $employeeWorkShift)
     {
+        $this->access->assertManage(request()->user(), (int) $employeeWorkShift->employee_profile_id);
         $employeeWorkShift->load('employee.user');
 
         return view('admin.workforce.schedule.edit', [
@@ -133,7 +137,9 @@ class WorkShiftController extends Controller
 
     public function update(Request $request, EmployeeWorkShift $employeeWorkShift)
     {
+        $this->access->assertManage($request->user(), (int) $employeeWorkShift->employee_profile_id);
         $data = $this->validatedShift($request);
+        $this->access->assertManage($request->user(), (int) $data['employee_profile_id']);
 
         $this->workShiftService->update($employeeWorkShift, $data, $request->user());
 
@@ -144,6 +150,7 @@ class WorkShiftController extends Controller
 
     public function cancel(Request $request, EmployeeWorkShift $employeeWorkShift)
     {
+        $this->access->assertManage($request->user(), (int) $employeeWorkShift->employee_profile_id);
         $this->workShiftService->cancel($employeeWorkShift, $request->user());
 
         return redirect()
@@ -190,7 +197,7 @@ class WorkShiftController extends Controller
 
     private function schedulableEmployees(?int $includeEmployeeId = null)
     {
-        return EmployeeProfile::query()
+        return $this->access->restrictEmployees(EmployeeProfile::query(), request()->user())
             ->with('user')
             ->where(function ($query) use ($includeEmployeeId) {
                 $query->where('status', EmployeeProfile::STATUS_ACTIVE);

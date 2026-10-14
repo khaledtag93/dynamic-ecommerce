@@ -59,7 +59,7 @@
                                 @endif
                             </td>
                             <td class="text-end">
-                                @if(auth()->user()?->hasPermission('workforce.manage'))
+                                @if(auth()->user()?->hasPermission('workforce.manage') && app(\App\Services\Workforce\WorkforceAccessService::class)->canManage(auth()->user(), $employee))
                                     <a href="{{ route('admin.workforce.employees.edit', $employee) }}" class="btn-table-icon btn-edit" title="{{ __('Edit employee') }}"><i class="mdi mdi-pencil-outline"></i></a>
                                 @else
                                     <span class="text-muted small">{{ __('View only') }}</span>

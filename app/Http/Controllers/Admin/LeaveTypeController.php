@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeLeaveType;
 use App\Services\Commerce\AdminActivityLogService;
+use App\Services\Workforce\WorkforceAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class LeaveTypeController extends Controller
 {
-    public function __construct(protected AdminActivityLogService $activityLogService)
+    public function __construct(protected AdminActivityLogService $activityLogService, protected WorkforceAccessService $access)
     {
     }
 
@@ -27,6 +28,7 @@ class LeaveTypeController extends Controller
 
     public function create()
     {
+        $this->access->assertOrgAdmin(request()->user());
         return view('admin.workforce.leave-types.create', [
             'leaveType' => new EmployeeLeaveType(),
         ]);
@@ -34,6 +36,7 @@ class LeaveTypeController extends Controller
 
     public function store(Request $request)
     {
+        $this->access->assertOrgAdmin($request->user());
         $data = $this->validated($request);
 
         $leaveType = EmployeeLeaveType::query()->create($data);
@@ -54,6 +57,7 @@ class LeaveTypeController extends Controller
 
     public function edit(EmployeeLeaveType $employeeLeaveType)
     {
+        $this->access->assertOrgAdmin(request()->user());
         return view('admin.workforce.leave-types.edit', [
             'leaveType' => $employeeLeaveType,
         ]);
@@ -61,6 +65,7 @@ class LeaveTypeController extends Controller
 
     public function update(Request $request, EmployeeLeaveType $employeeLeaveType)
     {
+        $this->access->assertOrgAdmin($request->user());
         $data = $this->validated($request, $employeeLeaveType);
 
         $employeeLeaveType->update($data);
