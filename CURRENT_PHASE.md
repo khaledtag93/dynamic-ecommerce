@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## CURRENT ACTIVE WORKSTREAM — 2026-10-14 (Workforce Enterprise E2E Review)
+
+- User observed two Draft shifts in admin Scheduled Shifts but no shifts in My Schedule. **Confirmed expected existing behavior:** My Schedule displays Published shifts only. Improved publishing clarity is included in W-SCHED-05.
+- Comprehensive code-grounded audit: `docs/WORKFORCE_ENTERPRISE_E2E_AUDIT_2026-10-14.md`.
+- Priority gaps: no manager-reporting hierarchy; globally privileged managers can act across all leave requests; leave annual entitlement confused with per-request duration; leave requests Pending even with insufficient annual entitlement until approval; no private employee/leave multi-attachments or assigned approver notifications; leave approval currently blocks even overlapping Draft shifts; UTC/local-day business policy needs deliberate alignment.
+- **Execution order:** W-ORG-01 hierarchy and employee-scoped authorization → W-LEAVE-02 leave policy/calendar engine → W-APP-03 assigned approvals/delegation and notifications → W-DOC-04 secure multi-file attachments → W-SCHED-05 schedule/attendance/leave consistency → W-PAY-06 payroll policy/integration and full UAT.
+- **Status:** audit and planning only; no HR schema/code/migration deployed in this new workstream; QAS app last verified `a83bc8f0`; last official docs checkpoint remains below. Production unchanged.
+
 ## LATEST CONTINUATION CHECKPOINT — 2026-10-14 (Workforce Timezone & Attendance UX)
 
 > This is the current application/QAS state; subsequent October 14 schema-recovery and October 2 financial checkpoints below are historical.
