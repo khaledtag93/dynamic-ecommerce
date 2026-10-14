@@ -1,5 +1,17 @@
 # MASTER PROJECT STATUS
 
+## LATEST VERIFIED STATE — 2026-10-14 (Workforce Team-Scoped Authorization)
+
+- Branch `sec03-framework-upgrade`; verified code, Hardening CI and QAS SHA `a62ad480`, CI https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38599716356 **Green: 905 tests, 18,188 assertions**.
+- QAS migration `2026_10_14_180000_add_workforce_scope_permissions` Ran, HTTP/static 200, maintenance OFF, queue/scheduler healthy, zero failed jobs.
+- Separate `workforce.scope.all` organization authorization for existing Operations Manager/Super Admin and scoped Team Supervisor read/write access to reporting descendants, not salary; team list/count and direct-URL guards on employees, shifts, attendance, corrections, leave; restricted global leave settings. Refuses self-review.
+- Pre-migration QAS backup retained privately; all existing employee records unchanged (QAS currently one profile). Demo-persona authenticated EN/AR/RTL acceptance remains **open**, and fine-grained payroll/HR document privacy requires further role/field/branch scope work.
+- Roadmap for pay raises, deductions, overtime, bonuses, commissions and profit sharing: `docs/WORKFORCE_COMPENSATION_PAYROLL_ENTERPRISE_ROADMAP_2026-10-14.md` (design only); current Payroll still manual adjustment foundation.
+- Detailed verified checkpoint: `docs/QAS_WORKFORCE_ORG_01B_SECURITY_SCOPE_CHECKPOINT_2026-10-14.md`. Production unchanged.
+- Next: isolated role-matrix acceptance then W-LEAVE-02/W-APP-03; enforce W-PAY-07a on salary data before enterprise payroll extension.
+
+### Historical checkpoints below
+
 ## LATEST VERIFIED STATE — 2026-10-14 (Workforce Timezone & Attendance UX)
 
 - Branch `sec03-framework-upgrade`; verified application, Hardening CI and deployed QAS SHA `a83bc8f0` (https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38587254674) Green, 896 tests / 18,108 assertions.

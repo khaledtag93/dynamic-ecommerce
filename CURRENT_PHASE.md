@@ -1,12 +1,24 @@
 # CURRENT PHASE
 
-## ACTIVE SECURITY WORKSTREAM — W-ORG-01b (In review, NOT YET QAS DEPLOYED)
+## LATEST VERIFIED QAS CHECKPOINT — 2026-10-14 (W-ORG-01b Security Scope)
+
+- **Verified application/CI/QAS SHA `a62ad480`** on branch `sec03-framework-upgrade`. Hardening CI https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38599716356 **Green, 905 tests / 18,188 assertions**.
+- QAS application/static HTTP 200, maintenance OFF, scope/role migration `2026_10_14_180000_add_workforce_scope_permissions` **Ran [21]**, Scheduler/Queue strict health Green, failed jobs 0.
+- **Team Supervisor** role manages direct/indirect reporting team only; no organization-wide Workforce access, salary or payroll data permission. Explicit `workforce.scope.all` maintains the current Operations Manager and Super Admin organization-wide access. Employee lists/stats, attendance, shifts, correction and leave review are scoped server-side; approvals of own leave/correction denied; leave policy and adjustments reserved for organization admins. Workflow details in `docs/QAS_WORKFORCE_ORG_01B_SECURITY_SCOPE_CHECKPOINT_2026-10-14.md`.
+- Live QAS read-only smoke: scope permission present; team role present but without global or payroll access, operations manager global scope present; one existing employee unchanged. Pre-deploy DB backup `deploy_backups/qas_before_workforce_scoped_access_20261014_164209.sql` held privately.
+- **Remaining manual QAS role acceptance:** add isolated Demo personas and direct-manager hierarchy to test EN/AR/RTL pages; single existing employee cannot demonstrate true cross-team UI behavior. Finance organization's payroll read access, private document classifications and tenant/branch scoping remain open security gates.
+- **Payroll/incentives roadmap** `docs/WORKFORCE_COMPENSATION_PAYROLL_ENTERPRISE_ROADMAP_2026-10-14.md` covers raises, compliant deductions, bonus/allowances, automatic overtime, commissions and profit share; do not conflate roadmap with delivered Payroll V1 manual adjustments.
+- Production unchanged. **Next:** demo-persona QAS authorization acceptance → leave-duration policy W-LEAVE-02 → assigned manager approval W-APP-03; separate W-PAY-07a payroll confidential-field scope before sensitive rollout.
+
+### Prior review below
+
+## ACTIVE SECURITY WORKSTREAM — W-ORG-01b (Completed, historical implementation notes)
 
 - After QAS `bedb9fc0` W-ORG-01a, work on **team-scoped read and mutation authorization** began. New `WorkforceAccessService` uses employee reporting ancestry for Team Supervisors. `workforce.scope.all` is a separate explicit organization-wide permission; legacy Operations Manager and Super Admin retain authorized global access to avoid silent outages. Team Supervisor lacks that permission, and never receives payroll salary visibility by default.
 - Target Workforce endpoints for scoping: Employee Directory and employment mutations, attendance list/void, schedules and assignment, leave request review and corrections, leave-type and balance admin-only settings. Payroll compensation continues under independent `workforce.payroll.*` permissions; a broader payroll field-level/security review is a separate mandatory W-PAY-07a gate.
 - **Security acceptance:** direct links to outsiders must 403; filtered lists, counts and live fragments must not leak cross-team data; self approval refused; global organization-only actions denied to team managers. Need PHPUnit/CI Green before any deployment.
 - **New enterprise roadmap** `docs/WORKFORCE_COMPENSATION_PAYROLL_ENTERPRISE_ROADMAP_2026-10-14.md`: salary increases, earnings/deductions, rules-driven overtime/leave, bonuses, commission, profit share, compliance and configured payroll policies. Present manual payroll adjustments already exist but automatic overtime/unpaid-leave/proration explicitly do not.
-- Production untouched; current QAS app `bedb9fc0` until this workstream passes.
+- Historical note at drafting time: QAS previously `bedb9fc0`. **This workstream passed and QAS is now `a62ad480`** per the latest checkpoint above.
 
 ## LATEST VERIFIED QAS CHECKPOINT — 2026-10-14 (W-ORG-01a Reporting Hierarchy Foundation)
 
