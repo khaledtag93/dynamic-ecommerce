@@ -80,7 +80,7 @@
                         @if($leaveTypes->isEmpty())
                             <div class="alert alert-warning border-0 rounded-4 mb-0">{{ __('No active leave type is available for new requests.') }}</div>
                         @else
-                            <form method="POST" action="{{ route('admin.workforce.leave.request') }}" data-submit-loading>
+                            <form id="leaveRequestForm" method="POST" action="{{ route('admin.workforce.leave.request') }}" data-submit-loading>
                                 @csrf
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold" for="leaveRequestType">{{ __('Leave type') }}</label>
@@ -110,6 +110,9 @@
                                     <textarea id="leaveReason" name="reason" rows="4" class="form-control @error('reason') is-invalid @enderror" maxlength="2000" placeholder="{{ __('Optional leave request context') }}">{{ old('reason') }}</textarea>
                                     @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
+                                <button id="leavePreviewButton" type="button" class="btn btn-outline-primary w-100 btn-text-icon mt-3"><i class="mdi mdi-calculator-variant-outline"></i><span>{{ __('Preview leave impact') }}</span></button>
+                                <div id="leavePreviewResult" class="alert alert-light border mt-3 mb-0" role="status" aria-live="polite" hidden></div>
+                                <p class="text-muted small mt-2 mb-0">{{ __('Preview is an estimate, not an approval or balance reservation. Submission and approval recheck the latest balance.') }}</p>
                                 <button class="btn btn-primary w-100 btn-text-icon mt-3" data-loading-text="{{ __('Submitting...') }}"><i class="mdi mdi-calendar-plus"></i><span>{{ __('Submit leave request') }}</span></button>
                             </form>
                         @endif
@@ -176,8 +179,91 @@
         end.readOnly = fixed;
         if (fixed) end.value = '';
     };
-    type.addEventListener('change', update);
+    const form = document.getElementById('leaveRequestForm');
+    const start = document.getElementById('leaveStartsOn');
+    const previewButton = document.getElementById('leavePreviewButton');
+    const previewResult = document.getElementById('leavePreviewResult');
+    let revision = 0;
+
+    const resetPreview = () => {
+        revision++;
+        if (previewResult) {
+            previewResult.hidden = true;
+            previewResult.textContent = '';
+        }
+    };
+    type.addEventListener('change', () => { update(); resetPreview(); });
+    start?.addEventListener('change', resetPreview);
+    end.addEventListener('change', resetPreview);
     update();
+
+    if (!form || !previewButton || !previewResult) return;
+    const labels = {
+        loading: @json(__('Calculating leave preview...')),
+        invalid: @json(__('Unable to calculate leave preview. Please check the dates.')),
+        days: @json(__('Chargeable days')),
+        period: @json(__('Leave period')),
+        available: @json(__('Currently available')),
+        pending: @json(__('Already pending')),
+        projected: @json(__('Projected before this request')),
+        after: @json(__('Projected after this request')),
+        warning: @json(__('Available balance is currently below the requested days. Final approval checks the balance again.')),
+    };
+    const number = value => Number(value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    previewButton.addEventListener('click', async () => {
+        resetPreview();
+        const current = revision;
+        previewResult.hidden = false;
+        previewResult.className = 'alert alert-light border mt-3 mb-0';
+        previewResult.textContent = labels.loading;
+        previewButton.disabled = true;
+        try {
+            const csrf = form.querySelector('input[name="_token"]')?.value;
+            if (!csrf) throw new Error('missing-csrf');
+            const params = new URLSearchParams({
+                employee_leave_type_id: type.value,
+                starts_on: start?.value ?? '',
+                ends_on: end.value,
+            });
+            const response = await fetch(@json(route('admin.workforce.leave.preview')), {
+                method: 'POST',
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: params,
+            });
+            const data = await response.json();
+            if (current !== revision) return;
+            if (!response.ok || !data.preview) {
+                const errors = Object.values(data.errors || {}).flat();
+                throw new Error(errors[0] || data.message || labels.invalid);
+            }
+            const estimate = data.preview;
+            const lines = [
+                labels.period + ': ' + estimate.starts_on + ' → ' + estimate.ends_on,
+                labels.days + ': ' + number(estimate.requested_days),
+                labels.available + ': ' + number(estimate.available),
+                labels.pending + ': ' + number(estimate.pending),
+                labels.projected + ': ' + number(estimate.projected_available),
+                labels.after + ': ' + number(estimate.projected_after_request),
+            ];
+            if (!estimate.sufficient_balance_now) lines.push(labels.warning);
+            previewResult.textContent = lines.join('\n');
+            previewResult.style.whiteSpace = 'pre-line';
+            previewResult.className = 'alert alert-info border mt-3 mb-0';
+        } catch (error) {
+            if (current !== revision) return;
+            previewResult.textContent = error instanceof Error ? error.message : labels.invalid;
+            previewResult.className = 'alert alert-warning border mt-3 mb-0';
+        } finally {
+            previewButton.disabled = false;
+        }
+    });
 })();
 </script>
 @endsection

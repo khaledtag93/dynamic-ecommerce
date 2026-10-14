@@ -546,6 +546,7 @@ Route::prefix('admin')
 
         Route::middleware('permission:workforce.clock')->controller(LeaveController::class)->group(function () {
             Route::get('/workforce/my-leave', 'myLeave')->name('workforce.my-leave');
+            Route::post('/workforce/my-leave/preview', 'previewLeave')->name('workforce.leave.preview');
             Route::post('/workforce/my-leave/request', 'requestLeave')->name('workforce.leave.request');
             Route::patch('/workforce/my-leave/{employeeLeaveRequest}/cancel', 'cancelLeave')->name('workforce.leave.cancel');
         });

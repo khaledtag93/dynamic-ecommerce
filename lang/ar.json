@@ -6006,7 +6006,7 @@
     "Cash amount cannot be negative.": "لا يمكن أن يكون مبلغ النقد سالبًا.",
     "Cash amount exceeds the supported monetary range.": "مبلغ النقد يتجاوز النطاق المالي المدعوم.",
     "This order cannot be refunded in its current state.": "لا يمكن استرداد هذا الطلب في حالته الحالية.",
-    "Refund amount must be within the remaining refundable balance.": "يجب ألا يتجاوز مبلغ الاسترداد الرصيد المتبقي القابل للاسترداد.",
+    "Refund amount must be within the remaining refundable balance.": "يجب ألا يتجاوز مبلغ الاسترداد الرصيد المتبقي القابل للاسترداد.",
     "Work timezone": "المنطقة الزمنية للعمل",
     "Original time": "الوقت الأصلي",
     "Approved time": "الوقت المعتمد",
@@ -6062,5 +6062,16 @@
     "Set the fixed leave duration in days.": "حدد عدد الأيام الثابتة للإجازة.",
     "Set a valid minimum and maximum leave duration.": "حدد حدًا أدنى وأقصى صحيحين لمدة الإجازة.",
     "Select the working weekdays explicitly.": "حدد أيام العمل الأسبوعية صراحةً.",
-    "Choose an end date for this leave type.": "اختر تاريخ النهاية لنوع الإجازة هذا."
+    "Choose an end date for this leave type.": "اختر تاريخ النهاية لنوع الإجازة هذا.",
+    "Preview leave impact": "معاينة تأثير الإجازة على الرصيد",
+    "Preview is an estimate, not an approval or balance reservation. Submission and approval recheck the latest balance.": "المعاينة تقديرية وليست موافقة أو حجزًا للرصيد. يتم التحقق مجددًا عند تقديم الطلب والموافقة عليه.",
+    "Calculating leave preview...": "جارٍ حساب معاينة الإجازة...",
+    "Unable to calculate leave preview. Please check the dates.": "تعذّر حساب المعاينة. يرجى مراجعة التواريخ.",
+    "Chargeable days": "الأيام التي ستُحتسب",
+    "Leave period": "فترة الإجازة",
+    "Currently available": "الرصيد المتاح حاليًا",
+    "Already pending": "الأيام في طلبات معلقة",
+    "Projected before this request": "الرصيد المتوقع قبل هذا الطلب",
+    "Projected after this request": "الرصيد المتوقع بعد هذا الطلب",
+    "Available balance is currently below the requested days. Final approval checks the balance again.": "الرصيد المتاح حاليًا أقل من الأيام المطلوبة. ستتم مراجعة الرصيد مرة أخرى عند الموافقة."
 }

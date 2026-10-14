@@ -57,19 +57,7 @@ class LeaveController extends Controller
 
     public function requestLeave(Request $request)
     {
-        $data = $request->validate([
-            'employee_leave_type_id' => ['required', 'integer', Rule::exists('employee_leave_types', 'id')],
-            'starts_on' => ['required', 'date'],
-            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
-            'reason' => ['nullable', 'string', 'max:2000'],
-        ]);
-
-        $type = EmployeeLeaveType::query()->findOrFail((int) $data['employee_leave_type_id']);
-        if ($type->duration_mode !== 'fixed' && empty($data['ends_on'])) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'ends_on' => __('Choose an end date for this leave type.'),
-            ]);
-        }
+        [$data, $type] = $this->validatedRequestInput($request);
 
         $this->leaveRequestService->request(
             $request->user(),
@@ -82,6 +70,43 @@ class LeaveController extends Controller
         return redirect()
             ->route('admin.workforce.my-leave')
             ->with('success', __('Leave request submitted.'));
+    }
+
+    public function previewLeave(Request $request)
+    {
+        [$data, $type] = $this->validatedRequestInput($request);
+
+        return response()->json([
+            'preview' => $this->leaveRequestService->preview(
+                $request->user(),
+                $type,
+                $data['starts_on'],
+                $data['ends_on'] ?? null,
+            ),
+        ])->header('Cache-Control', 'private, no-store');
+    }
+
+    /**
+     * Both preview and submission share exactly the same input validation.
+     * No user ID is accepted: ownership derives only from the authenticated session.
+     */
+    private function validatedRequestInput(Request $request): array
+    {
+        $data = $request->validate([
+            'employee_leave_type_id' => ['required', 'integer', Rule::exists('employee_leave_types', 'id')],
+            'starts_on' => ['required', 'date_format:Y-m-d'],
+            'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
+            'reason' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $type = EmployeeLeaveType::query()->findOrFail((int) $data['employee_leave_type_id']);
+        if ($type->duration_mode !== 'fixed' && empty($data['ends_on'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'ends_on' => __('Choose an end date for this leave type.'),
+            ]);
+        }
+
+        return [$data, $type];
     }
 
     public function cancelLeave(Request $request, EmployeeLeaveRequest $employeeLeaveRequest)

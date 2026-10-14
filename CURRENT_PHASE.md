@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## ACTIVE DEVELOPMENT — W-LEAVE-02c SELF-SERVICE POLICY PREVIEW (2026-10-15)
+
+- Starting checkpoint `6e6cb99b`: [CI #38643359924](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38643359924) **GREEN: 919 tests / 18,295 assertions**. Owner continues the roadmap; W-ORG-01b real authenticated QAS acceptance is **OPEN/DEFERRED**.
+- New read-only leave `POST /admin/workforce/my-leave/preview` under authenticated `workforce.clock`: own employee only, same validation/leave policy, active profile/type and overlap guards as real submission, shared `LeaveBalanceService` for current/projected balances. No reservation, write, approval or activity logging; insufficient available balance is a warning (same approval-stage policy).
+- Added accessible bilingual My Leave preview control, server-authoritative date/day/balance results, stale-input reset, no HTML injection, no-cache response. Existing Legacy and Fixed/Flexible modes unchanged; history and payroll not modified.
+- Eight DB-backed feature tests for permission, user isolation, no-write, Legacy/Fixed/Flexible projection, overlap, inactive profiles/types, insufficient balance and live pending updates. Local PHP lint, translations JSON and diff PASS. **New code CI pending**, source closure not yet claimed.
+- W-LEAVE-02c detailed plan: `docs/WLEAVE02C_SELF_SERVICE_PREVIEW_CHECKPOINT_2026-10-15.md`. No SSH, QAS, Production or unidentified local DB use.
+
 ## ACTIVE DEVELOPMENT — W-LEAVE-02b CONFIGURABLE LEAVE POLICY FOUNDATION (2026-10-15)
 
 - W-ORG-01b authenticated QAS acceptance remains **OPEN / DEFERRED** by owner request, not considered closed; no remote SSH attempts, no QAS/Production changes.

@@ -5307,7 +5307,7 @@
     "Refund amount exceeds the supported monetary range.": "Refund amount exceeds the supported monetary range.",
     "Refund amount cannot be negative.": "Refund amount cannot be negative.",
     "This order cannot be refunded in its current state.": "This order cannot be refunded in its current state.",
-    "Refund amount must be within the remaining refundable balance.": "Refund amount must be within the remaining refundable balance.",
+    "Refund amount must be within the remaining refundable balance.": "Refund amount must be within the remaining refundable balance.",
     "Work timezone": "Work timezone",
     "Original time": "Original time",
     "Approved time": "Approved time",
@@ -5354,5 +5354,16 @@
     "Set the fixed leave duration in days.": "Set the fixed leave duration in days.",
     "Set a valid minimum and maximum leave duration.": "Set a valid minimum and maximum leave duration.",
     "Select the working weekdays explicitly.": "Select the working weekdays explicitly.",
-    "Choose an end date for this leave type.": "Choose an end date for this leave type."
+    "Choose an end date for this leave type.": "Choose an end date for this leave type.",
+    "Preview leave impact": "Preview leave impact",
+    "Preview is an estimate, not an approval or balance reservation. Submission and approval recheck the latest balance.": "Preview is an estimate, not an approval or balance reservation. Submission and approval recheck the latest balance.",
+    "Calculating leave preview...": "Calculating leave preview...",
+    "Unable to calculate leave preview. Please check the dates.": "Unable to calculate leave preview. Please check the dates.",
+    "Chargeable days": "Chargeable days",
+    "Leave period": "Leave period",
+    "Currently available": "Currently available",
+    "Already pending": "Already pending",
+    "Projected before this request": "Projected before this request",
+    "Projected after this request": "Projected after this request",
+    "Available balance is currently below the requested days. Final approval checks the balance again.": "Available balance is currently below the requested days. Final approval checks the balance again."
 }

@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ROADMAP — W-LEAVE-02c SELF-SERVICE LEAVE PREVIEW (2026-10-15)
+
+- Following `6e6cb99b` and Green [CI #38643359924](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38643359924), W-LEAVE-02c adds a read-only, authorized employee-own policy/balance preview with current, pending and projected-after-request values; shared validation and overlap rules. Preview does not submit, approve, adjust, reserve or rewrite any historical leave/payroll record.
+- Implemented My Leave bilingual accessible control and eight feature regression tests. PHP/JSON/diff local PASS; isolated MySQL CI **PENDING**. See `docs/WLEAVE02C_SELF_SERVICE_PREVIEW_CHECKPOINT_2026-10-15.md`.
+- W-ORG-01b authenticated QAS acceptance stays **OPEN/DEFERRED** as owner requested; no SSH attempt or QAS/Production deployment.
+
 ## ROADMAP — W-LEAVE-02b OPT-IN POLICY FOUNDATION (2026-10-15)
 
 - Starting from `b1c0b24a`, W-LEAVE-02b adds **opt-in configurable leave-type fixed/flexible length and explicit working weekdays/holiday dates**, reversible migration and bilingual admin/employee UI. All existing leave types remain `legacy` and preserve prior calendar-day calculations; historical leave requests/payroll records are not changed.

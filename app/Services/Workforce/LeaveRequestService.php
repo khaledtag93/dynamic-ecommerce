@@ -33,42 +33,9 @@ class LeaveRequestService
         return DB::transaction(function () use ($user, $type, $startsOn, $endsOn, $reason) {
             $employee = $user->employeeProfile()->lockForUpdate()->first();
 
-            if (! $employee) {
-                throw ValidationException::withMessages([
-                    'leave' => __('Your employee profile is not configured yet.'),
-                ]);
-            }
-
-            if (! in_array($employee->status, [EmployeeProfile::STATUS_ACTIVE, EmployeeProfile::STATUS_ON_LEAVE], true)) {
-                throw ValidationException::withMessages([
-                    'leave' => __('Your employee status does not allow new leave requests.'),
-                ]);
-            }
-
-            if (! $type->is_active) {
-                throw ValidationException::withMessages([
-                    'employee_leave_type_id' => __('This leave type is not currently available.'),
-                ]);
-            }
-
+            $this->assertRequestEligible($employee, $type);
             [$start, $end, $days] = $this->leavePolicy->resolve($type, $startsOn, $endsOn);
-
-            $overlap = EmployeeLeaveRequest::query()
-                ->where('employee_profile_id', $employee->id)
-                ->whereIn('status', [
-                    EmployeeLeaveRequest::STATUS_PENDING,
-                    EmployeeLeaveRequest::STATUS_APPROVED,
-                ])
-                ->where('starts_on', '<=', $end->toDateString())
-                ->where('ends_on', '>=', $start->toDateString())
-                ->lockForUpdate()
-                ->exists();
-
-            if ($overlap) {
-                throw ValidationException::withMessages([
-                    'starts_on' => __('You already have a pending or approved leave request overlapping these dates.'),
-                ]);
-            }
+            $this->assertNoRequestOverlap($employee, $start->toDateString(), $end->toDateString(), true);
 
             $request = EmployeeLeaveRequest::query()->create([
                 'employee_profile_id' => $employee->id,
@@ -95,6 +62,80 @@ class LeaveRequestService
 
             return $request;
         });
+    }
+
+    /**
+     * Authenticated employee-only estimate. Performs reads only: no reservation,
+     * no new leave request, no balance adjustment and no activity log.
+     * Submission and approval always revalidate using authoritative state.
+     */
+    public function preview(User $user, EmployeeLeaveType $type, string $startsOn, ?string $endsOn): array
+    {
+        $employee = $user->employeeProfile()->first();
+        $this->assertRequestEligible($employee, $type);
+
+        [$start, $end, $days] = $this->leavePolicy->resolve($type, $startsOn, $endsOn);
+        $this->assertNoRequestOverlap($employee, $start->toDateString(), $end->toDateString());
+
+        $balance = $this->balanceService->balance($employee, $type, (int) $start->year);
+
+        return [
+            'starts_on' => $start->toDateString(),
+            'ends_on' => $end->toDateString(),
+            'requested_days' => round((float) $days, 2),
+            'available' => $balance['available'],
+            'pending' => $balance['pending'],
+            'projected_available' => $balance['projected_available'],
+            'projected_after_request' => round($balance['projected_available'] - (float) $days, 2),
+            'sufficient_balance_now' => $balance['available'] >= (float) $days,
+        ];
+    }
+
+    private function assertRequestEligible(?EmployeeProfile $employee, EmployeeLeaveType $type): void
+    {
+        if (! $employee) {
+            throw ValidationException::withMessages([
+                'leave' => __('Your employee profile is not configured yet.'),
+            ]);
+        }
+
+        if (! in_array($employee->status, [EmployeeProfile::STATUS_ACTIVE, EmployeeProfile::STATUS_ON_LEAVE], true)) {
+            throw ValidationException::withMessages([
+                'leave' => __('Your employee status does not allow new leave requests.'),
+            ]);
+        }
+
+        if (! $type->is_active) {
+            throw ValidationException::withMessages([
+                'employee_leave_type_id' => __('This leave type is not currently available.'),
+            ]);
+        }
+    }
+
+    private function assertNoRequestOverlap(
+        EmployeeProfile $employee,
+        string $startsOn,
+        string $endsOn,
+        bool $lock = false,
+    ): void {
+        $query = EmployeeLeaveRequest::query()
+            ->where('employee_profile_id', $employee->id)
+            ->whereIn('status', [
+                EmployeeLeaveRequest::STATUS_PENDING,
+                EmployeeLeaveRequest::STATUS_APPROVED,
+            ])
+            ->where('starts_on', '<=', $endsOn)
+            ->where('ends_on', '>=', $startsOn);
+
+        if ($lock) {
+            $query->lockForUpdate();
+        }
+
+        if ($query->exists()) {
+            throw ValidationException::withMessages([
+                'starts_on' => __('You already have a pending or approved leave request overlapping these dates.'),
+            ]);
+        }
     }
 
     public function approve(EmployeeLeaveRequest $request, User $reviewer, ?string $notes = null): EmployeeLeaveRequest
