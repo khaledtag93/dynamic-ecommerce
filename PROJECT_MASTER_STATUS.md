@@ -4,7 +4,7 @@
 
 - Following `afe65e66` / [CI #38651633408](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38651633408) GREEN, W-APP-03 introduces a shared scoped leave approval routing gate to synchronize existing HTTP review checks, domain-service enforcement and approval-button eligibility. Default stays `scoped`, compatible with historical decisions.
 - An optional `direct_manager` config switch is **not enabled by default**; it denies absent/inactive managers and has no escalation/fallback. Any activation remains subject to explicit business approval and future operational acceptance. No historical request, policy snapshot, leave balance or payroll rewrite.
-- Eight new regression tests prepared, PHP/JSON/diff locally PASS. Full isolated MySQL CI **PENDING**. See `docs/WAPP03_APPROVAL_ROUTING_FOUNDATION_2026-10-15.md`. W-ORG-01b QAS acceptance OPEN/DEFERRED; QAS and Production untouched.
+- Eight new regression tests **PASS** and local lint/JSON/diff PASS. Full [isolated MySQL CI #38653194254](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38653194254) on `0e44efe0` **GREEN: 941 tests / 18,529 assertions**, 8/8 new approval routing cases, 9/9 QA contracts, frontend build PASS. **W-APP-03 FOUNDATION SOURCE + CI CLOSED**, advanced routing business approvals and live QAS remain OPEN. See `docs/WAPP03_APPROVAL_ROUTING_FOUNDATION_2026-10-15.md`. W-ORG-01b QAS acceptance OPEN/DEFERRED; QAS and Production untouched.
 
 ## ROADMAP — W-LEAVE-02d HISTORICAL POLICY EVIDENCE (2026-10-15)
 

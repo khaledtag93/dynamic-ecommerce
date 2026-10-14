@@ -30,7 +30,7 @@ New `tests/Feature/WorkforceLeaveApprovalRoutingTest.php` covers:
 7. Direct service invocation cannot bypass controller reviewer authorization.
 8. Cross-team employee privacy: no unrelated reason shown and forged-ID mutation is denied.
 
-PHP lint, translation JSON parsing and Git diff checked locally before commit. Isolated GitHub MySQL + full hardening CI must be **GREEN** before asserting W-APP-03 SOURCE/CI CLOSED. Real QAS authenticated role acceptance, W-ORG-01b, remains OPEN/DEFERRED.
+Local PHP lint, EN/AR translation JSON parse and Git diff checks **PASS**. Source commit `0e44efe0` passed [isolated-MySQL CI #38653194254](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38653194254): **941 PHPUnit tests / 18,529 assertions**, including **8/8** new Approval Routing tests, **9/9** offline QAS role contracts, schema migration and frontend build **SUCCESS**. **W-APP-03 FOUNDATION SOURCE + CI CLOSED.** Real authenticated QAS acceptance, W-ORG-01b, remains **OPEN / DEFERRED**.
 
 ## Product decisions explicitly deferred
 
