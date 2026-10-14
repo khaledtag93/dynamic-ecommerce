@@ -12,8 +12,29 @@
     <link rel="stylesheet" href="{{ asset('admin/css/style.css') }}">
     <link rel="shortcut icon" href="{{ asset('admin/images/favicon.ico') }}" />
 
+    @php
+        // The white-label Admin sidebar can be light or dark. Compute accessible
+        // foreground/contrast surfaces from its configured background color.
+        $sidebarHex = ltrim((string) ($storeSettings['admin_sidebar_color'] ?? '#0b1220'), '#');
+        $sidebarHex = preg_match('/^[0-9a-fA-F]{6}$/', $sidebarHex) ? $sidebarHex : '0b1220';
+        $sidebarChannels = [
+            hexdec(substr($sidebarHex, 0, 2)) / 255,
+            hexdec(substr($sidebarHex, 2, 2)) / 255,
+            hexdec(substr($sidebarHex, 4, 2)) / 255,
+        ];
+        $sidebarLinear = array_map(
+            fn ($v) => $v <= 0.04045 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4,
+            $sidebarChannels
+        );
+        $sidebarLuminance = 0.2126 * $sidebarLinear[0] + 0.7152 * $sidebarLinear[1] + 0.0722 * $sidebarLinear[2];
+        $sidebarIsLight = $sidebarLuminance > 0.18;
+    @endphp
+
     <style>
         :root {
+            --admin-sidebar-ink: {{ $sidebarIsLight ? '#0f172a' : '#f8fafc' }};
+            --admin-sidebar-contrast: {{ $sidebarIsLight ? '#0b1220' : '#ffffff' }};
+            --admin-sidebar-active-ink: {{ $sidebarIsLight ? '#ffffff' : '#0b1220' }};
             --admin-bg: {{ $storeSettings['brand_background_color'] ?? '#f8fafc' }};
             --admin-surface: {{ $storeSettings['admin_surface_color'] ?? '#ffffff' }};
             --admin-surface-alt: {{ $storeSettings['admin_header_color'] ?? '#ffffff' }};
@@ -3174,6 +3195,100 @@ select option {
         .admin-sections-ready .admin-section-columns > [class*="col-"] { width: 100%; }
         .admin-sections-ready .admin-section-columns [data-admin-section-panel] { margin-bottom: 0 !important; }
         @media (max-width: 767.98px) { .admin-section-tabs { margin-inline: -.25rem; } .admin-section-tab { padding: .7rem .85rem; } }
+
+        /* Sidebar navigation clarity: keep white-label branding as the source
+           of truth, but make hover, keyboard focus and current page distinct
+           even when the merchant chooses similar primary/sidebar colors. */
+        .custom-sidebar .sidebar-store-title,
+        .custom-sidebar .sidebar-group-title,
+        .custom-sidebar .sidebar-group-summary,
+        .custom-sidebar .sidebar-quick-chip,
+        .custom-sidebar .nav .nav-item:not(.sidebar-current) > .nav-link,
+        .custom-sidebar .nav .nav-item:not(.sidebar-current) > .nav-link .menu-title {
+            color: var(--admin-sidebar-ink) !important;
+        }
+
+        .custom-sidebar .sidebar-store-text small,
+        .custom-sidebar .sidebar-group-arrow,
+        .custom-sidebar .nav .nav-item:not(.sidebar-current) > .nav-link .menu-icon,
+        .custom-sidebar .nav .nav-item:not(.sidebar-current) > .nav-link i {
+            color: var(--admin-sidebar-ink) !important;
+            opacity: .86;
+        }
+
+        .custom-sidebar .sidebar-group-summary:hover,
+        .custom-sidebar .sidebar-group-summary:focus-visible {
+            background: color-mix(in srgb, var(--admin-sidebar-contrast) 20%, var(--admin-sidebar)) !important;
+            border-color: color-mix(in srgb, var(--admin-sidebar-contrast) 42%, transparent) !important;
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--admin-sidebar-contrast) 15%, transparent);
+        }
+
+        .custom-sidebar .sidebar-group:has(.sidebar-current) > .sidebar-group-summary {
+            background: color-mix(in srgb, var(--admin-sidebar-contrast) 13%, var(--admin-sidebar)) !important;
+            border-inline-start: 3px solid var(--admin-primary) !important;
+            border-color: color-mix(in srgb, var(--admin-sidebar-contrast) 22%, transparent);
+        }
+
+        .custom-sidebar .sidebar-group .nav .nav-item:not(.sidebar-current) > .nav-link:hover,
+        .custom-sidebar .sidebar-group .nav .nav-item:not(.sidebar-current) > .nav-link:focus-visible {
+            background: color-mix(in srgb, var(--admin-sidebar-contrast) 22%, var(--admin-sidebar)) !important;
+            color: var(--admin-sidebar-ink) !important;
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--admin-sidebar-contrast) 40%, transparent) !important;
+        }
+
+        .custom-sidebar .nav .nav-item.sidebar-current > .nav-link,
+        .custom-sidebar .nav .nav-item.sidebar-current > .nav-link:hover {
+            background: var(--admin-sidebar-contrast) !important;
+            color: var(--admin-sidebar-active-ink) !important;
+            box-shadow: inset 0 0 0 1px var(--admin-primary), 0 6px 18px rgba(0, 0, 0, .16) !important;
+        }
+
+        .custom-sidebar .nav .nav-item.sidebar-current > .nav-link .menu-title,
+        .custom-sidebar .nav .nav-item.sidebar-current > .nav-link i,
+        .custom-sidebar .nav .nav-item.sidebar-current > .nav-link .menu-icon {
+            color: var(--admin-sidebar-active-ink) !important;
+            opacity: 1;
+        }
+
+        .custom-sidebar .nav .nav-item.sidebar-current > .nav-link::after {
+            background: transparent !important;
+        }
+
+        .custom-sidebar .nav .nav-item.sidebar-current > .nav-link::before {
+            content: '';
+            position: absolute;
+            inset-block: 10px;
+            inset-inline-start: 0;
+            width: 4px;
+            border-radius: 999px;
+            background: var(--admin-primary);
+            z-index: 3;
+        }
+
+        .custom-sidebar .sidebar-quick-chip:hover,
+        .custom-sidebar .sidebar-quick-chip:focus-visible {
+            background: color-mix(in srgb, var(--admin-sidebar-contrast) 22%, var(--admin-sidebar)) !important;
+            color: var(--admin-sidebar-ink) !important;
+            border-color: color-mix(in srgb, var(--admin-sidebar-contrast) 40%, transparent) !important;
+        }
+
+        .custom-sidebar .sidebar-quick-chip.active,
+        .custom-sidebar .sidebar-quick-chip.active:hover {
+            background: var(--admin-sidebar-contrast) !important;
+            color: var(--admin-sidebar-active-ink) !important;
+            border-color: var(--admin-primary) !important;
+        }
+
+        .custom-sidebar .sidebar-quick-chip.active i {
+            color: var(--admin-sidebar-active-ink) !important;
+        }
+
+        .custom-sidebar .nav .nav-item > .nav-link:focus-visible,
+        .custom-sidebar .sidebar-group-summary:focus-visible,
+        .custom-sidebar .sidebar-quick-chip:focus-visible {
+            outline: 3px solid var(--admin-primary) !important;
+            outline-offset: 2px;
+        }
 </style>
 
     @livewireStyles
