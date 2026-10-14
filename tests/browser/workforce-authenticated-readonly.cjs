@@ -4,8 +4,9 @@
  * W-ORG-01b authenticated QAS acceptance (GET-only).
  * No account creation, payroll edits, approvals or destructive mutations.
  *
- * Run only after authorized QAS access, verified isolated restore rehearsal,
- * and seven synthetic personas have been provisioned. Never put credentials in Git.
+ * Run only with authorized QAS access, confirmed non-Production target,
+ * an explicit disposable-QAS risk acceptance or verified backup/restore,
+ * and seven synthetic personas. Never put credentials in Git.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -44,13 +45,16 @@ function preflight() {
     throw new Error('BLOCKED: persona credentials must live outside the Git repository.');
   }
   const cfg = JSON.parse(fs.readFileSync(full, 'utf8'));
+  const protectedLane = cfg.backup_verified === true && cfg.isolated_restore_verified === true;
+  const disposableLane = cfg.qa_data_policy === 'disposable-qas' &&
+    cfg.owner_accepts_qa_data_loss === true &&
+    cfg.qas_app_database_confirmed === true;
   if (cfg.environment !== 'qas' ||
       cfg.base_url !== TARGET ||
-      cfg.backup_verified !== true ||
-      cfg.isolated_restore_verified !== true ||
       cfg.fixture_namespace !== 'QA-WORG01B' ||
-      !cfg.personas) {
-    throw new Error('BLOCKED: wrong target/namespace or backup and isolated restore prerequisites unverified.');
+      !cfg.personas ||
+      !(protectedLane || disposableLane)) {
+    throw new Error('BLOCKED: wrong QAS target/namespace or neither a verified restore nor explicit disposable-QAS risk acceptance with confirmed app DB.');
   }
   for (const key of NAMES) {
     const p = cfg.personas[key];

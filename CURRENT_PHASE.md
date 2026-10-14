@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## CURRENT OWNER DECISION — DISPOSABLE QAS ONE-PASS TESTING (2026-10-14)
+
+- QAS is a temporary test environment: existing QAS records are expendable; the owner accepts their loss. Avoid repeated screenshots/manual confirmation for routine harmless steps. No authorization to touch Production or other environments.
+- Finish **one** QAS-only phpMyAdmin SQL archive export (optional safety copy) with Structure+Data, file output, transaction, no DROP/CREATE DATABASE, then check private download filename/size/hash; do not upload SQL to Git or chat. Successful isolated restore remains *UNVERIFIED* and can be tested separately for future important-data/Production recovery planning.
+- **Blocking issue for actual QAS personas remains authorized remote admin access**: the standard SSH command was rejected by the tool safety filter. Never bypass it through another remote channel, phpMyAdmin SQL writes, or credentials pasted into chat. Confirm app-to-database mapping independently before any fixture writes/reset.
+- Authenticated browser guard accepts either existing full verified backup/restore OR explicit disposable-QAS acceptance plus read-only app DB confirmation, with seven valid synthetic accounts in an external private manifest. No QAS test accounts have been created and no authenticated QAS run has happened.
+- Current source work: `docs/QAS_BACKUP_RESTORE_AND_PERSONA_ACCEPTANCE_RUNBOOK.md`, `tests/browser/workforce-authenticated-readonly.cjs`, `docs/WORG01B_SEVEN_PERSONA_QA_MATRIX_2026-10-14.md`.
+
 ## ACTIVE W-ORG-01b CHECKPOINT — 2026-10-14 (Seven-Persona CI PASS, QAS Gate Blocked)
 
 - **Latest verified test source SHA:** `f0392366` on `sec03-framework-upgrade`. Hardening CI [run 38607285162](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38607285162) **Green: 907 tests / 18,230 assertions**; the two new seven-persona Workforce authorization regression tests PASS. This is **isolated CI MySQL** evidence, not QAS functional acceptance.

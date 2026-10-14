@@ -3,19 +3,31 @@
 - Created: 2026-10-14
 - Environment: QAS only (Hostinger / `v42.tag-marketplace.com`)
 - Project workstream: W-ORG-01b
-**Status:** documented procedure; backup and authenticated QAS acceptance NOT yet complete.
+**Status:** reusable procedure documented; first current SQL export and authenticated QAS acceptance NOT yet complete.
+
+## Fast-path for disposable QAS test data — owner policy (2026-10-14)
+
+- Owner confirmed **all existing QAS records are expendable synthetic/garbage test data**, and explicitly prefers one coordinated, low-friction testing pass rather than repeated screenshots or manual approvals for every harmless step.
+- **One-pass workflow:** confirm target is QAS, finish Custom SQL export once (optional archival safety copy), verify private download metadata and checksum locally, then use an **approved administrative access channel** to prepare seven isolated test personas, run automated role journeys, record results and clean only known fixture IDs or agree on a verified QAS-only reset after testing.
+- For this **disposable QAS workstream**, the owner does **not** require a successful isolated restore rehearsal to preserve the current expendable database contents. The restored-backup claim must remain **UNVERIFIED** until a separate restore drill actually passes; restore testing remains mandatory before a future production/important-data recovery workflow.
+- This policy change is **not** permission to modify Production, change database users/privileges, discard unrelated environments, or bypass tool safety checks. Verify app-to-DB mapping read-only before any fixture writes or reset; the presence of a second database on the same host increases the importance of target isolation.
+- Export screenshot evidence (2026-10-14): many visible tables have Structure+Data checked, **Save output to a file** selected, UTF-8, Compression=None, **Enclose export in a transaction** enabled; foreign-key-check disabling appears OFF. The image only shows a section of the options and the top of the table list. Do not claim every table or bottom option is verified.
+- **Minimal final click path:** ensure Select all tables + Structure AND Data; keep file output, UTF-8, SQL, transaction ON, CREATE TABLE/other applicable objects ON, DROP and CREATE DATABASE/USE OFF. gzip optional. Then export **once** and confirm a nonempty file; no need for repeated screenshots unless an unexpected option/error appears.
+- Stage-gate still **BLOCKED** for live QAS persona creation: the normal remote SSH administrative action was rejected by the platform's safety check. Do not route around that restriction via phpMyAdmin SQL writes, alternate remote shells or side-channel credentials. Read-only export through the owner's approved hPanel UI is allowed.
+
 
 ## Why we do this
 
 The goal is **reliable, evidence-based acceptance** of Team Supervisor/Employee/Operations/Finance authorization before closing W-ORG-01b. A database export is merely a recovery prerequisite, not the delivery objective.
 
-The five gates, in order:
+The one-pass steps for the current **disposable QAS** lane:
 
-1. Identify the *actual QAS database* and capture a fresh complete pre-fixture export.
-2. Validate the export and **successfully restore it into an isolated disposable database**, checking schema and representative row counts. Never restore into active QAS or Production during this drill.
-3. Create seven clearly namespaced synthetic test personas and representative Workforce records **only with authorized access** and an exact-ID cleanup manifest.
-4. Run authenticated role/ownership tests, direct-route denials, EN/AR/RTL desktop/mobile and applicable mutation scenarios; gather expected/actual and screenshots/traces without secrets.
-5. Verify persistent results, clean *only* demo fixture IDs after testing (or explicitly keep them with documented lifecycle), and record the closure decision.
+1. Confirm the actual QAS database; optionally capture **one fresh export** and validate its metadata/checksum before fixture writes.
+2. With approved administrative access, create seven clearly namespaced synthetic test personas and Workforce records, tracking inserted IDs and side effects.
+3. Run authenticated role/ownership checks, direct-route denials, EN/AR/RTL desktop/mobile and applicable mutation scenarios; record actual results without secrets.
+4. Verify persistence; clean fixture IDs or document a future QAS-only reset, then make the formal W-ORG-01b closure decision.
+
+**Separate protected-data lane:** verify a full isolated restore (schema, records and routines) before any risky changes to Production or important environments. This drill is recommended for developing a reliable backup SOP but is not required to preserve expendable QAS data.
 
 No CI Green, HTML 200, SQL download, or database filename is sufficient by itself for W-ORG-01b closure.
 
@@ -36,7 +48,7 @@ No CI Green, HTML 200, SQL download, or database filename is sufficient by itsel
 4. Choose a download-to-file output, not display-as-text. If compression (e.g. gzip) is offered and supported, it may help. Use a descriptive private filename such as `flowra_qas_before_worg01b_YYYYMMDD_HHMM.sql` (or `.sql.gz`).
 5. Only after reviewing settings, **Export**. Confirm the downloaded file exists and has a nonzero size. Do **not** share the SQL in chat, email or Git: it may contain employee/customer/payment-related information, hashed credentials and other sensitive data. Keep in a restricted/encrypted location.
 6. Privately record: timestamp/timezone, selected database, file extension/size, checksum (SHA-256) and approximate counts of critical tables (read-only). Do not print records/passwords.
-7. A nonempty export is **not yet a verified backup**. A second isolated restore rehearsal is mandatory.
+7. A nonempty export is **not yet restore-verified**. Run an isolated restore rehearsal before claiming the backup is fully recoverable or before using this procedure for important/Production data. On the owner's disposable QAS testing lane, this optional drill can be scheduled separately without mislabeling it PASS.
 
 **Prohibited actions in this UI:** `Import`, `Restore database`, `Drop`, `Empty`, `Delete`, privilege/password changes, or importing a dump back into the original QAS database. **No paid upgrade required at this stage.**
 
@@ -68,14 +80,14 @@ The owner shared the full list of options on the **Export** page for `u637857322
 **Verification caveats:** This list is a **planned configuration**, not yet confirmed as applied; do not mark the export as complete from the textual capture alone. Confirm that any views/routines/events/triggers actually exist and were included; some shared-host privileges may omit objects or prevent complete exports. If phpMyAdmin times out or the file is unexpectedly small, stop and investigate rather than marking backup PASS. Record private file size and checksum, then perform isolated restore and counts verification before seeding QA personas.
 
 
-## Isolated restore verification (future gate)
+## Isolated restore verification (future protected-data gate; deferred for current expendable QAS testing)
 
 - Provision a **new disposable database with a distinct name and credentials** using an approved separate environment; do not confuse this with a second schema of an existing live environment.
 - Restrict access and outbound emails/jobs/payments. Import the saved QAS SQL **only** into that disposable target via an approved tool.
 - Check expected table list/schema, migrations, table counts and a few *non-sensitive aggregate counts* against the source snapshot. Check triggers/routines/events if applicable. Document SQL-import errors and compatibility.
 - Prove the rollback path is usable; a backup is NOT ready if the full import fails or differs materially.
 - Destroy or securely retain the disposable restored copy under an agreed data-retention policy. **No production or original-QAS restore** for this test.
-- Do not mark backup gate PASS without dated evidence of an isolated successful restore.
+- Do not claim **RESTORE-VERIFIED** or **recoverable backup PASS** without dated evidence of an isolated successful restore. Current disposable-QAS testing may proceed through approved access without that claim.
 
 ## Seven-role QAS acceptance and cleanup (future gate)
 
@@ -99,7 +111,7 @@ The owner shared the full list of options on the **Export** page for `u637857322
 | --- | --- | --- |
 | QAS database identity | Authorized read-only app DB config match | NOT FULLY VERIFIED |
 | Fresh complete SQL export | Actual dated private file, table coverage, size/checksum | PENDING |
-| Isolated restore rehearsal | Separate database, import success, schema/row-count comparison | PENDING |
+| Isolated restore rehearsal | Separate database, import success, schema/row-count comparison | DEFERRED for disposable QAS; NOT VERIFIED |
 | Authorized fixture provisioning | Seven QA-only accounts + IDs/relationships, side-effect isolation | BLOCKED |
 | Authenticated QAS acceptance | EN/AR/desktop/mobile, GET + mutation checks, PASS/FAIL evidence | BLOCKED |
 | Cleanup and closure | Exact-ID cleanup/retention decision and formal gate signoff | NOT APPLICABLE YET |
