@@ -3,7 +3,7 @@
 ## ROADMAP — W-LEAVE-02b OPT-IN POLICY FOUNDATION (2026-10-15)
 
 - Starting from `b1c0b24a`, W-LEAVE-02b adds **opt-in configurable leave-type fixed/flexible length and explicit working weekdays/holiday dates**, reversible migration and bilingual admin/employee UI. All existing leave types remain `legacy` and preserve prior calendar-day calculations; historical leave requests/payroll records are not changed.
-- Source prepared with 8 feature regression cases, syntax/JSON/diff PASS; full isolated-MySQL CI **PENDING**. Evidence: `docs/WLEAVE02B_OPT_IN_POLICY_FOUNDATION_2026-10-15.md`. No QAS/Production deployment. W-ORG-01b authenticated QAS acceptance still OPEN/DEFERRED.
+- **W-LEAVE-02b SOURCE + CI CLOSED** at `933f6393`: [isolated-MySQL CI #38642738390](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38642738390) **GREEN: 919 tests / 18,295 assertions**, 8/8 new policy feature tests plus 9/9 QA contract tests. The first code CI had one old ARIA contract failure; corrected it before final Green CI. Evidence: `docs/WLEAVE02B_OPT_IN_POLICY_FOUNDATION_2026-10-15.md`. No QAS/Production deployment; W-ORG-01b authenticated QAS acceptance still OPEN/DEFERRED.
 - No unapproved company policy assumptions: yearly carryover, branch/public holiday calendars, accrual, partial days and end-of-year rules remain future policy gates.
 
 ## ROADMAP RESUMPTION — W-LEAVE-02a (2026-10-15)

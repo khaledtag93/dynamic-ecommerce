@@ -26,11 +26,11 @@ W-ORG-01b seven-persona QAS acceptance remains **OPEN / DEFERRED**. Owner chose 
 
 ### Tests and safety
 
-- New `tests/Feature/WorkforceLeavePolicyEngineTest.php` tests backward-compatible legacy counting, fixed-end tampering denial, configured Fri/weekend/holiday rollover, flexible min/max and empty-charge denial, non-working start, same-year boundary, malformed/incomplete admin configuration and non-mutation of existing historical requests.
-- Existing Workforce Leave/Attendance/Scheduling/Payroll regression remains in CI. Run full GitHub Actions isolated MySQL PHPUnit + frontend/Blade checks before SOURCE/CI closure.
+- New `tests/Feature/WorkforceLeavePolicyEngineTest.php` has **8/8 PASS** on isolated MySQL, covering backward-compatible legacy counting, fixed-end tampering denial, configured Fri/weekend/holiday rollover, flexible min/max and empty-charge denial, non-working start, same-year boundary, malformed/incomplete admin configuration and preservation of historical requests.
+- Existing Workforce Leave/Attendance/Scheduling/Payroll regression stayed GREEN. Full [GitHub CI #38642738390](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38642738390) on **`933f6393`**: **919 PHP tests PASS / 18,295 assertions**, including 8/8 new policy feature tests and 9/9 offline QA contract tests; MySQL schema migration, view/Blade checks and frontend stages SUCCESS.
 - The local Windows PHP runtime has no known safe isolated MySQL testing database. **No local PHPUnit against an unknown database; no remote SSH or QAS/Production operation.**
 - Explicit future boundaries: organization calendar/branch policy/approved holiday schedules, year-crossing, partial days, annual-balance reservations at request time, attachment requirements, policy-effective versions and historic snapshot semantics, W-APP-03 assigned approvals.
-- This slice's "SOURCE/CI CLOSED" status may be asserted only after its own new commit completes full CI successfully. QAS authenticated UX and deployed SHA stay PENDING.
+- **W-LEAVE-02b SOURCE + CI CLOSED** at `933f6393` / CI `#38642738390` GREEN. QAS authenticated UX and deployed SHA remain PENDING, W-ORG-01b stays OPEN/DEFERRED, and W-LEAVE-02 broader policy scope remains OPEN.
 
 ## Acceptance and next step
 
