@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## ACTIVE DEVELOPMENT — W-LEAVE-02a LOCAL CALENDAR CONFLICT INTEGRITY (2026-10-15)
+
+- Owner explicitly chose to **continue the Flowra roadmap and defer W-ORG-01b authenticated QAS acceptance** rather than repeat blocked SSH attempts. W-ORG-01b remains OPEN; the approved 7-persona QAS journey will resume only when authorized access is available.
+- Previous green source baseline: `bd31a74e` / [CI #38637806904](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38637806904) SUCCESS. No QAS or Production deployment.
+- Next roadmap boundary **W-LEAVE-02a (W-11)**: correct mismatch between Workforce local calendar leave dates and UTC-stored shift instants. `LeaveRequestService::approve` now uses local-day-to-UTC half-open bounds, and `WorkShiftService` computes local dates with an exclusive shift end. New feature tests cover Cairo midnight and New York spring/fall DST, including valid boundary cases.
+- **Scope remains intentionally narrow**: no business leave-day policy was invented; W-LEAVE-02 overall remains OPEN pending flexible/fixed duration, working/holiday calendars, projected balance and partial-year decisions. W-APP-03 follows after these policy foundations.
+- Local PHP lint and diff checks PASS; full MySQL-backed PHPUnit must be verified using isolated GitHub CI before claiming source closure. See `docs/WLEAVE02A_LOCAL_DAY_CONFLICT_CHECKPOINT_2026-10-15.md`.
+
 ## LATEST VERIFIED GATE STATUS — 2026-10-15 (NO QAS REMOTE EXECUTION)
 
 - Starting from the existing checkpoint `60ad98ea`, rechecked actual GitHub workflow **[38637044525](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38637044525)** associated with `60ad98ea`: **SUCCESS**; PHPUnit **907 PASS / 18,230 assertions** and offline Workforce QA contract **9/9 PASS**, both explicitly verified in workflow logs.

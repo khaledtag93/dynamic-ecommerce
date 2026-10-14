@@ -7,7 +7,8 @@ use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
 use App\Models\User;
 use App\Services\Commerce\AdminActivityLogService;
-use Carbon\Carbon;
+use App\Support\WorkforceClock;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -150,8 +151,17 @@ class WorkShiftService
         CarbonInterface|string $startsAt,
         CarbonInterface|string $endsAt,
     ): void {
-        $startDate = $startsAt instanceof CarbonInterface ? $startsAt->toDateString() : Carbon::parse($startsAt)->toDateString();
-        $endDate = $endsAt instanceof CarbonInterface ? $endsAt->toDateString() : Carbon::parse($endsAt)->toDateString();
+        // Shift timestamps are UTC instants, while leave dates denote LOCAL calendar days.
+        // Treat the shift end as exclusive: an end exactly at local midnight does
+        // not consume the next day. This also survives 23/25-hour DST dates.
+        $startUtc = $startsAt instanceof CarbonInterface
+            ? CarbonImmutable::instance($startsAt)->setTimezone('UTC')
+            : CarbonImmutable::parse($startsAt, 'UTC');
+        $endUtc = $endsAt instanceof CarbonInterface
+            ? CarbonImmutable::instance($endsAt)->setTimezone('UTC')
+            : CarbonImmutable::parse($endsAt, 'UTC');
+        $startDate = $startUtc->setTimezone(WorkforceClock::timezone())->toDateString();
+        $endDate = $endUtc->subMicrosecond()->setTimezone(WorkforceClock::timezone())->toDateString();
 
         $approvedLeave = EmployeeLeaveRequest::query()
             ->where('employee_profile_id', $employee->id)

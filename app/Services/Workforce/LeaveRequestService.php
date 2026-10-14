@@ -9,6 +9,7 @@ use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
 use App\Models\User;
 use App\Services\Commerce\AdminActivityLogService;
+use App\Support\WorkforceClock;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -119,11 +120,17 @@ class LeaveRequestService
                 ]);
             }
 
+            // Leave dates belong to the configured LOCAL calendar. Convert the
+            // inclusive leave range to a half-open UTC interval for stored shifts.
+            // Do not use UTC midnight: Cairo/DST day boundaries can differ.
+            [$startUtc] = WorkforceClock::localDayUtcBounds($locked->starts_on->format('Y-m-d'));
+            [, $endExclusiveUtc] = WorkforceClock::localDayUtcBounds($locked->ends_on->format('Y-m-d'));
+
             $conflictingShift = EmployeeWorkShift::query()
                 ->where('employee_profile_id', $employee->id)
                 ->where('status', '!=', EmployeeWorkShift::STATUS_CANCELLED)
-                ->where('starts_at', '<', $locked->ends_on->copy()->addDay()->startOfDay())
-                ->where('ends_at', '>', $locked->starts_on->copy()->startOfDay())
+                ->where('starts_at', '<', $endExclusiveUtc)
+                ->where('ends_at', '>', $startUtc)
                 ->lockForUpdate()
                 ->exists();
 

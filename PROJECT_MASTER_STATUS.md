@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ROADMAP RESUMPTION — W-LEAVE-02a (2026-10-15)
+
+- The product owner chose to resume development according to the roadmap, with **W-ORG-01b QAS persona acceptance deferred but OPEN** due to remote access safety. No SSH workaround, QAS deploy, or Production operation.
+- Beginning after verified `bd31a74e` and green [CI #38637806904](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38637806904), the W-LEAVE-02a W-11 boundary corrects local-calendar leave-vs-UTC shift conflicts at approval and shift creation/update. New Cairo midnight and New York DST feature tests; policy semantics and financial snapshots unchanged.
+- This is one bounded source slice, **not** a claim that W-LEAVE-02 or W-ORG-01b is QAS-accepted. Run isolated MySQL CI tests on the new commit; see `docs/WLEAVE02A_LOCAL_DAY_CONFLICT_CHECKPOINT_2026-10-15.md`. Fixed/flexible leave policy, holidays/workdays and annual balance decisions remain future work.
+
 ## PARTIAL QAS BROWSER ACCEPTANCE — 2026-10-14
 
 - Read-only Chrome/Playwright guest acceptance against deployed `a62ad480`: **4/4 PASS** (unauthenticated Workforce redirect + Arabic RTL login on desktop/mobile). Portable runner `tests/browser/workforce-guest-smoke.cjs`; documented evidence `docs/WORG01B_BROWSER_ACCEPTANCE_2026-10-14.md`.
