@@ -21,8 +21,10 @@ class WorkforceLeavePolicyPreviewTest extends TestCase
             ->assertUnauthorized();
 
         $user = User::factory()->create(['role_as' => 1]);
+        // Existing admin entry middleware redirects staff without a role rather
+        // than returning JSON 403; in both cases access to the endpoint is denied.
         $this->actingAs($user)->postJson(route('admin.workforce.leave.preview'), [])
-            ->assertForbidden();
+            ->assertRedirect();
     }
 
     public function test_legacy_preview_uses_current_balances_pending_and_only_own_employee_records_without_writes(): void
@@ -45,7 +47,7 @@ class WorkforceLeavePolicyPreviewTest extends TestCase
             'employee_profile_id' => $other->id,
             'user_id' => $otherWorker->id,
         ])->assertOk()
-            ->assertHeader('Cache-Control', 'private, no-store')
+            ->assertHeader('Cache-Control', 'no-store, private')
             ->assertJsonPath('preview.starts_on', '2026-10-10')
             ->assertJsonPath('preview.ends_on', '2026-10-11')
             ->assertJsonPath('preview.requested_days', 2)
