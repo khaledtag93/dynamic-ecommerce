@@ -31,10 +31,10 @@ The new `tests/Feature/WorkforceLeavePolicyPreviewTest.php` adds **8 DB-backed f
 7. Insufficient available balance warns without imposing a new submit rule.
 8. Recomputed projected balances after separate pending state changes; preview does not reserve.
 
-Local PHP lint/JSON parses/diff checks: PASS. **Full MySQL-backed tests and CI remain pending until new commit.** No local unidentified database or remote QAS executed.
+Local PHP lint, translations JSON parse and Git diff checks: PASS. Initial code CI [#38644937405](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38644937405) recorded **925 passing tests and two test-contract expectation failures** (the existing role guard redirects an unassigned staff account, and Laravel canonicalizes `Cache-Control` to `no-store, private`). The guards themselves worked; corrected only those two test expectations in `ef0d5024`. Final isolated-MySQL [CI #38645441904](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38645441904) **GREEN**: **927 tests / 18,402 assertions**, **8/8** new preview feature tests, **9/9** offline QA contract tests, passing Blade and frontend build. No local unidentified database or remote QAS executed.
 
 ### Source/CI closure gate
 
 - Run isolated GitHub Actions `hardening-ci.yml` including migrations, full PHPUnit, auth tests and frontend/Blade builds.
 - If CI fails: fix in this same slice and repeat until Green. Record precise SHA, CI run and tests/assertions only after verification.
-- Source+CI closure does not mean a live QAS acceptance; W-ORG-01b remains deferred, and future W-LEAVE-02 options (policy-effective dates, company/branch calendars, half-days, accrual and balance reservation) require explicit policy decisions.
+- **W-LEAVE-02c SOURCE + CI CLOSED** at `ef0d5024` with full run `#38645441904` SUCCESS. Source+CI closure does not mean a live QAS acceptance; W-ORG-01b remains OPEN / DEFERRED, and future W-LEAVE-02 options (policy-effective dates, company/branch calendars, half-days, accrual and balance reservation) require explicit policy decisions.

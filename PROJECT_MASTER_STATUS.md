@@ -3,7 +3,7 @@
 ## ROADMAP — W-LEAVE-02c SELF-SERVICE LEAVE PREVIEW (2026-10-15)
 
 - Following `6e6cb99b` and Green [CI #38643359924](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38643359924), W-LEAVE-02c adds a read-only, authorized employee-own policy/balance preview with current, pending and projected-after-request values; shared validation and overlap rules. Preview does not submit, approve, adjust, reserve or rewrite any historical leave/payroll record.
-- Implemented My Leave bilingual accessible control and eight feature regression tests. PHP/JSON/diff local PASS; isolated MySQL CI **PENDING**. See `docs/WLEAVE02C_SELF_SERVICE_PREVIEW_CHECKPOINT_2026-10-15.md`.
+- Implemented My Leave bilingual accessible control and 8/8 passing feature regression tests. Initial CI exposed two test-only role guard/cache header assumptions, fixed in `ef0d5024`. Full isolated MySQL [CI #38645441904](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38645441904) **GREEN: 927 tests / 18,402 assertions**, plus 9/9 QA contracts and frontend build PASS. **W-LEAVE-02c SOURCE + CI CLOSED; real QAS acceptance pending.** See `docs/WLEAVE02C_SELF_SERVICE_PREVIEW_CHECKPOINT_2026-10-15.md`.
 - W-ORG-01b authenticated QAS acceptance stays **OPEN/DEFERRED** as owner requested; no SSH attempt or QAS/Production deployment.
 
 ## ROADMAP — W-LEAVE-02b OPT-IN POLICY FOUNDATION (2026-10-15)
