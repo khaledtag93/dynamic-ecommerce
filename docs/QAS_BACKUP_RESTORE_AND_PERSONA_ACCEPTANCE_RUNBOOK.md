@@ -3,7 +3,11 @@
 - Created: 2026-10-14
 - Environment: QAS only (Hostinger / `v42.tag-marketplace.com`)
 - Project workstream: W-ORG-01b
-**Status:** reusable procedure documented; first current SQL export and authenticated QAS acceptance NOT yet complete.
+**Status:** one fresh QAS SQL export obtained and statically checked on the owner's computer; isolated restore still UNVERIFIED; authenticated QAS acceptance BLOCKED by authorized admin access.
+
+**Current authoritative evidence:** `docs/QAS_WORG01B_EXPORT_EVIDENCE_2026-10-14.md` confirms the private export, its checksum, 101 CREATE TABLE statements, 192 INSERT statements and 11/11 critical auth/Workforce tables. `deploy-qas.sh` maps QAS to `u637857322_v42_rehearsal`, but currently deployed app DB mapping has not been checked.
+
+**2026-10-14 resumed session:** local Desktop Commander successfully reconnected and the GitHub branch was fast-forwarded to `afbc5755` with pending SOP edits preserved. GitHub CI run `38617350433` succeeded. One standard read-only SSH `true` preflight on the previously configured QAS endpoint failed to complete and was terminated after approximately 61 seconds, with exit code 1. This is **not successful authorization or a verified remote session**. No alternate remote route was used or offered as a workaround. Seven QAS personas, browser role acceptance and fixture cleanup remain pending.
 
 ## Fast-path for disposable QAS test data — owner policy (2026-10-14)
 
@@ -12,7 +16,7 @@
 - For this **disposable QAS workstream**, the owner does **not** require a successful isolated restore rehearsal to preserve the current expendable database contents. The restored-backup claim must remain **UNVERIFIED** until a separate restore drill actually passes; restore testing remains mandatory before a future production/important-data recovery workflow.
 - This policy change is **not** permission to modify Production, change database users/privileges, discard unrelated environments, or bypass tool safety checks. Verify app-to-DB mapping read-only before any fixture writes or reset; the presence of a second database on the same host increases the importance of target isolation.
 - Export screenshot evidence (2026-10-14): many visible tables have Structure+Data checked, **Save output to a file** selected, UTF-8, Compression=None, **Enclose export in a transaction** enabled; foreign-key-check disabling appears OFF. The image only shows a section of the options and the top of the table list. Do not claim every table or bottom option is verified.
-- **Minimal final click path:** ensure Select all tables + Structure AND Data; keep file output, UTF-8, SQL, transaction ON, CREATE TABLE/other applicable objects ON, DROP and CREATE DATABASE/USE OFF. gzip optional. Then export **once** and confirm a nonempty file; no need for repeated screenshots unless an unexpected option/error appears.
+- **Repeatable export path:** select all tables + Structure AND Data, output file, UTF-8, SQL, transaction ON, CREATE TABLE/objects ON, DROP and CREATE DATABASE/USE OFF; gzip optional. Export once. This was completed for the 2026-10-14 baseline; repeat only before a genuinely new risk-bearing milestone.
 - Stage-gate still **BLOCKED** for live QAS persona creation: the normal remote SSH administrative action was rejected by the platform's safety check. Do not route around that restriction via phpMyAdmin SQL writes, alternate remote shells or side-channel credentials. Read-only export through the owner's approved hPanel UI is allowed.
 
 
@@ -38,7 +42,8 @@ No CI Green, HTML 200, SQL download, or database filename is sufficient by itsel
   - `u637857322_v42_rehearsal` — **40 MB** in Hostinger, DB user `u637857322_v42test`, created 2026-09-20; **expected QAS target** based on previous deployment/checkpoints, but verify the app's DB name by an authorized read-only configuration check before writes/restores.
   - `u637857322_tagmarketplace` — **9 MB**, created 2026-04-01; likely the other environment. **Do not access/mutate it for this workflow.** A name alone is not proof it is Production.
 - Select **Enter phpMyAdmin** for `u637857322_v42_rehearsal`. Check the top breadcrumb/database header matches *exactly* `u637857322_v42_rehearsal`. The **Export** tab has been reached; screenshot currently shows **Quick** selected and format **SQL**. No export has yet been demonstrated.
-- The Hostinger website, database names, sizes, menu state and backup availability were observed from owner screenshots. None of these observations proves current QAS app environment configuration, download integrity, or restore readiness.
+- The Hostinger website, database names, sizes, menu state and backup availability were observed from owner screenshots. The export was then statically inspected on the connected personal computer. These observations do not prove runtime QAS app settings or successful restore.
+- **Code-level DB mapping evidence:** `deploy-qas.sh` sets `APP_DIR=laravel_app_v42_rehearsal`, `PUBLIC_DIR=public_html/v42`, `EXPECTED_DB=u637857322_v42_rehearsal` and `HEALTHCHECK_URL=https://v42.tag-marketplace.com` (lines 18–23); before deployment it requires `APP_ENV=staging`, `APP_DEBUG=false`, `DB_DATABASE=$EXPECTED_DB` (lines 86–88) and reads `SELECT DATABASE()` to match `EXPECTED_DB` (lines 133–134). This is a strong deployment-time guard, **not a fresh read of live QAS .env today**.
 
 ## Repeatable phpMyAdmin export procedure (read-only)
 
@@ -110,10 +115,10 @@ The owner shared the full list of options on the **Export** page for `u637857322
 | Gate | Evidence needed | Current status |
 | --- | --- | --- |
 | QAS database identity | Authorized read-only app DB config match | NOT FULLY VERIFIED |
-| Fresh complete SQL export | Actual dated private file, table coverage, size/checksum | PENDING |
+| Fresh complete SQL export | Actual dated private file, table coverage, size/checksum | EXPORT FILE FOUND; STATIC CHECK PASS; restore not tested |
 | Isolated restore rehearsal | Separate database, import success, schema/row-count comparison | DEFERRED for disposable QAS; NOT VERIFIED |
 | Authorized fixture provisioning | Seven QA-only accounts + IDs/relationships, side-effect isolation | BLOCKED |
 | Authenticated QAS acceptance | EN/AR/desktop/mobile, GET + mutation checks, PASS/FAIL evidence | BLOCKED |
 | Cleanup and closure | Exact-ID cleanup/retention decision and formal gate signoff | NOT APPLICABLE YET |
 
-**Next owner action:** in phpMyAdmin Export for the QAS candidate database, select **Custom** and send a screenshot showing the newly revealed options **without clicking Export yet**. Then confirm the full structure+data export configuration and proceed carefully.
+**Next milestone:** obtain an explicitly approved remote QAS administrative channel without bypassing blocked SSH tool safety checks; confirm current runtime DB mapping by an authorized read-only check, then seed and exercise the seven personas in one controlled pass. No further phpMyAdmin export screenshots requested.

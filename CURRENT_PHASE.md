@@ -1,5 +1,14 @@
 # CURRENT PHASE
 
+## CURRENT CONTINUATION — 2026-10-14 (Desktop restored; QAS SSH preflight failed)
+
+- Desktop Commander `DESKTOP-KOG45HP` became **responsive** again after reconnect (new device registration). Local `sec03-framework-upgrade` was at `56c0ebc7` while remote GitHub was at `afbc5755`. The pending, **non-sensitive** SOP modification was protected with a file-specific Git stash, remote changes were fast-forwarded, and the stash reapplied cleanly without conflict. Branch is now based on `afbc5755`.
+- **GitHub CI now confirmed:** workflow run [38617350433](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38617350433) succeeded for `afbc5755`. Historical latest verified suite includes 907 tests / 18,230 assertions; do not misrepresent CI as authenticated QAS acceptance.
+- `deploy-qas.sh` code enforces staging env, DB name `u637857322_v42_rehearsal`, and `SELECT DATABASE()` matching before deployments. No live read of QAS `.env` or `SELECT DATABASE()` performed this pass.
+- One **unchanged standard SSH read-only `true` preflight** attempted through Desktop Commander after reconnect. The process remained pending and was stopped after approximately 61 seconds; wrapper returned `FAILED_EXIT_1`. **QAS SSH NOT VERIFIED / ADMIN ACCESS BLOCKED.** No retry through an alternate shell, PHP, DB console, CI or Hostinger path. No QAS database writes, personas, migrations, or deployment; Production untouched.
+- SQL export evidence remains recorded at `docs/QAS_WORG01B_EXPORT_EVIDENCE_2026-10-14.md`; 7,306,278 bytes, 101 tables, checksum saved in private local Downloads; no re-export performed. Isolated restore NOT verified; owner accepted disposable-QAS risk.
+- **Next gated action:** restore an explicitly approved QAS admin channel without circumventing safety restrictions, confirm the running app DB read-only, provision the seven QA-only personas with exact-ID manifest, run role EN/AR desktop/mobile acceptance, and capture PASS/FAIL and fixture lifecycle. **W-ORG-01b stays OPEN/BLOCKED.**
+
 ## LATEST QAS SQL EXPORT EVIDENCE — 2026-10-14
 
 - **GitHub evidence:** `docs/QAS_WORG01B_EXPORT_EVIDENCE_2026-10-14.md`; recorded on source checkpoint after `56c0ebc7`. Original sensitive SQL dump remains solely in the owner's local Downloads directory, not GitHub or chat.
