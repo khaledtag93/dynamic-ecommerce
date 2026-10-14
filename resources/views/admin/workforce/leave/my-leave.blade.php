@@ -73,7 +73,7 @@
                 <div class="admin-card">
                     <div class="admin-card-body">
                         <h4 class="mb-1">{{ __('Request leave') }}</h4>
-                        <p class="text-muted small">{{ __('V1 counts inclusive calendar days. Requests cannot cross calendar years.') }}</p>
+                        <p class="text-muted small">{{ __('Legacy leave types count inclusive calendar days. Fixed-duration types compute the end date on the server. Configured workday types exclude only explicitly selected weekdays and holiday dates. Requests cannot cross calendar years.') }}</p>
 
                         @error('leave')<div class="alert alert-danger border-0 rounded-4">{{ $message }}</div>@enderror
 
@@ -87,7 +87,7 @@
                                     <select id="leaveRequestType" name="employee_leave_type_id" aria-required="true" class="form-select @error('employee_leave_type_id') is-invalid @enderror" required>
                                         <option value="">{{ __('Select leave type') }}</option>
                                         @foreach($leaveTypes as $type)
-                                            <option value="{{ $type->id }}" @selected((string)old('employee_leave_type_id') === (string)$type->id)>{{ $type->displayName() }} · {{ $type->code }}</option>
+                                            <option value="{{ $type->id }}" data-duration-mode="{{ $type->duration_mode ?? 'legacy' }}" @selected((string)old('employee_leave_type_id') === (string)$type->id)>{{ $type->displayName() }} · {{ $type->code }} @if($type->duration_mode === 'fixed') · {{ $type->fixed_duration_days }} {{ __('days') }} @endif</option>
                                         @endforeach
                                     </select>
                                     @error('employee_leave_type_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -100,7 +100,8 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-semibold" for="leaveEndsOn">{{ __('Ends on') }}</label>
-                                        <input id="leaveEndsOn" type="date" name="ends_on" aria-required="true" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" required>
+                                        <input id="leaveEndsOn" type="date" name="ends_on" class="form-control @error('ends_on') is-invalid @enderror" value="{{ old('ends_on') }}" aria-describedby="leaveEndHelp">
+                                        <div id="leaveEndHelp" class="form-text">{{ __('Leave end is calculated for fixed duration. Otherwise select an end date.') }}</div>
                                         @error('ends_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
                                 </div>
@@ -163,4 +164,19 @@
         </div>
     @endif
 </div>
+<script>
+(() => {
+    const type = document.getElementById('leaveRequestType');
+    const end = document.getElementById('leaveEndsOn');
+    if (!type || !end) return;
+    const update = () => {
+        const fixed = type.selectedOptions[0]?.dataset.durationMode === 'fixed';
+        end.required = !fixed;
+        end.readOnly = fixed;
+        if (fixed) end.value = '';
+    };
+    type.addEventListener('change', update);
+    update();
+})();
+</script>
 @endsection

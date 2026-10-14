@@ -18,12 +18,24 @@ class EmployeeLeaveType extends Model
         'default_annual_entitlement_days',
         'is_active',
         'notes',
+        'duration_mode',
+        'fixed_duration_days',
+        'min_request_days',
+        'max_request_days',
+        'counting_mode',
+        'working_weekdays',
+        'holiday_dates',
     ];
 
     protected $casts = [
         'is_paid' => 'boolean',
         'is_active' => 'boolean',
         'default_annual_entitlement_days' => 'decimal:2',
+        'fixed_duration_days' => 'integer',
+        'min_request_days' => 'integer',
+        'max_request_days' => 'integer',
+        'working_weekdays' => 'array',
+        'holiday_dates' => 'array',
     ];
 
     protected static function booted(): void

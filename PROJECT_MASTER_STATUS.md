@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ROADMAP — W-LEAVE-02b OPT-IN POLICY FOUNDATION (2026-10-15)
+
+- Starting from `b1c0b24a`, W-LEAVE-02b adds **opt-in configurable leave-type fixed/flexible length and explicit working weekdays/holiday dates**, reversible migration and bilingual admin/employee UI. All existing leave types remain `legacy` and preserve prior calendar-day calculations; historical leave requests/payroll records are not changed.
+- Source prepared with 8 feature regression cases, syntax/JSON/diff PASS; full isolated-MySQL CI **PENDING**. Evidence: `docs/WLEAVE02B_OPT_IN_POLICY_FOUNDATION_2026-10-15.md`. No QAS/Production deployment. W-ORG-01b authenticated QAS acceptance still OPEN/DEFERRED.
+- No unapproved company policy assumptions: yearly carryover, branch/public holiday calendars, accrual, partial days and end-of-year rules remain future policy gates.
+
 ## ROADMAP RESUMPTION — W-LEAVE-02a (2026-10-15)
 
 - The product owner chose to resume development according to the roadmap, with **W-ORG-01b QAS persona acceptance deferred but OPEN** due to remote access safety. No SSH workaround, QAS deploy, or Production operation.

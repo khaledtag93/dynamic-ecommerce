@@ -60,17 +60,22 @@ class LeaveController extends Controller
         $data = $request->validate([
             'employee_leave_type_id' => ['required', 'integer', Rule::exists('employee_leave_types', 'id')],
             'starts_on' => ['required', 'date'],
-            'ends_on' => ['required', 'date', 'after_or_equal:starts_on'],
+            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $type = EmployeeLeaveType::query()->findOrFail((int) $data['employee_leave_type_id']);
+        if ($type->duration_mode !== 'fixed' && empty($data['ends_on'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'ends_on' => __('Choose an end date for this leave type.'),
+            ]);
+        }
 
         $this->leaveRequestService->request(
             $request->user(),
             $type,
             $data['starts_on'],
-            $data['ends_on'],
+            $data['ends_on'] ?? null,
             $data['reason'] ?? null,
         );
 

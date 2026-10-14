@@ -19,6 +19,7 @@ class LeaveRequestService
     public function __construct(
         protected LeaveBalanceService $balanceService,
         protected AdminActivityLogService $activityLogService,
+        protected LeavePolicyService $leavePolicy,
     ) {
     }
 
@@ -26,7 +27,7 @@ class LeaveRequestService
         User $user,
         EmployeeLeaveType $type,
         string $startsOn,
-        string $endsOn,
+        ?string $endsOn,
         ?string $reason = null,
     ): EmployeeLeaveRequest {
         return DB::transaction(function () use ($user, $type, $startsOn, $endsOn, $reason) {
@@ -50,7 +51,7 @@ class LeaveRequestService
                 ]);
             }
 
-            [$start, $end] = $this->normalizeRange($startsOn, $endsOn);
+            [$start, $end, $days] = $this->leavePolicy->resolve($type, $startsOn, $endsOn);
 
             $overlap = EmployeeLeaveRequest::query()
                 ->where('employee_profile_id', $employee->id)
@@ -68,8 +69,6 @@ class LeaveRequestService
                     'starts_on' => __('You already have a pending or approved leave request overlapping these dates.'),
                 ]);
             }
-
-            $days = $start->diffInDays($end) + 1;
 
             $request = EmployeeLeaveRequest::query()->create([
                 'employee_profile_id' => $employee->id,

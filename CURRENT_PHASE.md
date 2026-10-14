@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## ACTIVE DEVELOPMENT — W-LEAVE-02b CONFIGURABLE LEAVE POLICY FOUNDATION (2026-10-15)
+
+- W-ORG-01b authenticated QAS acceptance remains **OPEN / DEFERRED** by owner request, not considered closed; no remote SSH attempts, no QAS/Production changes.
+- Base code and Green CI: `b1c0b24a`, [run #38640323401](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38640323401) SUCCESS.
+- W-LEAVE-02b opt-in policy: leave-type `legacy` defaults retain existing inclusive calendar-day contract; an admin can explicitly configure `fixed` or `flexible` days, `calendar` or chosen ISO `workdays`, and explicitly listed holiday dates. Fixed leave end is computed by server and client conflicts rejected. No assumed weekday/holiday policy, no automatic historical mutation or payroll changes, and same-year restriction remains.
+- Added reversible migration, LeavePolicyService, Leave Type/employee forms, 26 EN/AR translations, and 8 DB-backed regression cases. Local PHP syntax/JSON/diff checks PASS; **full MySQL-backed tests and CI result PENDING**.
+- W-LEAVE-02 overall remains OPEN (company/branch calendar, partial days, effective policy and balance rules require deliberate product decisions). See `docs/WLEAVE02B_OPT_IN_POLICY_FOUNDATION_2026-10-15.md`.
+
 ## ACTIVE DEVELOPMENT — W-LEAVE-02a LOCAL CALENDAR CONFLICT INTEGRITY (2026-10-15)
 
 - Owner explicitly chose to **continue the Flowra roadmap and defer W-ORG-01b authenticated QAS acceptance** rather than repeat blocked SSH attempts. W-ORG-01b remains OPEN; the approved 7-persona QAS journey will resume only when authorized access is available.
