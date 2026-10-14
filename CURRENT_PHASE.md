@@ -1,5 +1,14 @@
 # CURRENT PHASE
 
+## LATEST W-ORG-01b — HOSTINGER KEY ADDED / AUTH CHECK TOOL-BLOCKED (2026-10-14)
+
+- Owner confirms successfully registering the **NEW** Hostinger SSH public key `flowra-qas-2026-10-14` via **Add SSH key**, after the prior screenshot showed only `Default-1` (legacy key). The local new public key still matches ED25519 fingerprint `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8`; Windows private-file permissions remain restricted.
+- Attempt to recheck **standard new-key-only** SSH authentication via approved Desktop Commander was **BLOCKED by OpenAI safety checks BEFORE execution**. **This attempt provides NO new Hostinger authentication result**; do not call it server rejection or claim login success. A prior `Permission denied (publickey,password)` was from BEFORE correcting Hostinger key registration.
+- **Stop rule:** No alternate transport, old exposed key, verbose SSH workaround, browser/CI remote shell, or phpMyAdmin write to circumvent tool safety. QAS runtime database `u637857322_v42_rehearsal` remains confirmed by deploy script only, NOT by fresh running-app read-only query.
+- Source baseline `08c4f487`, CI [38631413916](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38631413916) **GREEN** (prior 907 passing tests / 18,230 assertions). Newest pass verified local PHP and Node syntax of the **three untouched pre-existing uncommitted** W-ORG files. Local fixture code supports `--preflight`, `--verify-auth`, `--seed`, `--cleanup`, and authenticated browser tests; these tools were **NOT executed against QAS**.
+- The only permitted next administrative action is to resolve the safety restriction through the approved OpenAI/Desktop Commander support/authorization path. Once properly approved, run a fresh, minimal *new-key-only* SSH preflight, verify QAS runtime APP_ENV/DB read-only, then seven synthetic personas/authenticated role journeys and controlled exact-ID cleanup. **W-ORG-01b = OPEN / BLOCKED**. QAS DB and Production untouched.
+- Relevant docs: `docs/QAS_SSH_KEY_ROTATION_2026-10-14.md`, `docs/QAS_WORG01B_EXPORT_EVIDENCE_2026-10-14.md`, `docs/WORG01B_SEVEN_PERSONA_QA_MATRIX_2026-10-14.md`.
+
 ## LATEST W-ORG-01b CHECKPOINT — NEW SSH KEY AUTH DENIED (2026-10-14)
 
 - Owner confirmed `flowra-qas-2026-10-14` public key was added to Hostinger SSH keys; local new Ed25519 fingerprint `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8` and protected Windows ACL independently verified. Hostinger SSH status ACTIVE and host/user/port match earlier screenshots.

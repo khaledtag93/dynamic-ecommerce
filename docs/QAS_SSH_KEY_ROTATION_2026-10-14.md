@@ -12,7 +12,7 @@ Previous terminal/tool diagnostic output included private-key material from an e
 - The Windows ssh-agent has held the old public fingerprint. This does **not** prove the same public key is enrolled on Hostinger, nor that a new SSH login is authorized.
 - Earlier TCP port reachability was successful, but QAS SSH authenticated access and `SELECT DATABASE()` runtime check **remain unverified**. No remote authentication attempted during this rotation preparation.
 
-## New dedicated QAS identity — prepared locally, NOT enrolled
+## Historical preparation stage — new QAS identity before Hostinger registration
 
 - A *new* Ed25519 identity was created under the owner's private Windows `.ssh` directory: `id_ed25519_flowra_qas_20261014` and the matching `.pub`.
 - New public fingerprint: `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8` (ED25519).
@@ -20,6 +20,14 @@ Previous terminal/tool diagnostic output included private-key material from an e
 - Private file ACL: inheritance disabled, exactly three Windows allow rules for the owner, SYSTEM, and Administrators; no other ACL rules. The new key is **without a passphrase** for unattended QAS automation, so host/device security and private file ACL are essential safeguards. Consider adding a passphrase and authorized ssh-agent storage where practical.
 - The new **public** key was copied to the owner's Windows clipboard for registration in the official Hostinger UI. The **private** key was never displayed, pasted, copied into the repository, or transmitted.
 - **No key registration, credential change, existing key revocation or QAS remote login occurred in this step.** Old key files and local ssh-agent entries remain unchanged. Do not publish private keys or tokens.
+
+## Updated status — key registration confirmed; further SSH check tool-blocked (2026-10-14)
+
+- **Owner reports new public key successfully added** in Hostinger via `Add SSH key`, named `flowra-qas-2026-10-14`. Earlier UI screenshot captured the `Edit` dialog for `Default-1` only (old key), which explained why new-key login had previously been denied. Hostinger's current installed key fingerprint has not been independently retrieved.
+- Local `~/.ssh/id_ed25519_flowra_qas_20261014.pub` fingerprint still matches `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8`. Desktop Commander online and `git` clean before these docs changes (except for the three pre-existing uncommitted W-ORG test files); local test scripts have valid Node/PHP syntax.
+- A single attempt to run the existing **standard new-key-only SSH** read-only authentication check after owner registration was **blocked by OpenAI safety checks BEFORE EXECUTION**. This produced **no new server response**. Previous `Permission denied (publickey,password)` was recorded **before** the new public key was correctly registered.
+- **Do not retry SSH using alternate tool transports, the old potentially exposed key, remote CI, phpMyAdmin SQL writes or other methods to bypass the restriction.** Seek approved safety/tool support clearance; only then verify QAS SSH, `APP_ENV=staging`, active DB and seven-role acceptance. Hostinger registration alone is not runtime access proof.
+- No new QAS data, personas, deployments, or Production changes. SQL baseline remained local. `W-ORG-01b` **OPEN / BLOCKED**. Prior CI [38631413916](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38631413916) **SUCCESS**.
 
 ## New key registration and authorized authentication test — 2026-10-14
 
