@@ -40,6 +40,34 @@ No CI Green, HTML 200, SQL download, or database filename is sufficient by itsel
 
 **Prohibited actions in this UI:** `Import`, `Restore database`, `Drop`, `Empty`, `Delete`, privilege/password changes, or importing a dump back into the original QAS database. **No paid upgrade required at this stage.**
 
+### Verified menu labels: QAS phpMyAdmin Custom SQL Export (2026-10-14)
+
+The owner shared the full list of options on the **Export** page for `u637857322_v42_rehearsal`. **Important: the pasted textual page does not reveal which individual checkboxes are presently selected.** Use this as a target configuration and review the visible checked/unchecked controls before exporting.
+
+| Setting shown in phpMyAdmin | Target for pre-fixture archive |
+| --- | --- |
+| Export method / Format | **Custom** / **SQL** |
+| Tables | **Select all**; include **Structure AND Data** for every table (do not exclude large tables) |
+| Output | **Save output to a file**, not **View output as text**; UTF-8 |
+| Compression | **gzip** if offered, otherwise **None**; verify the downloaded extension |
+| Export tables as separate files / Skip tables larger than | Off / leave size threshold empty |
+| Use LOCK TABLES statement | Off when making a transaction-consistent InnoDB dump |
+| Enclose export in a transaction | On; improves source consistency for InnoDB tables but is not a substitute for verifying restore correctness |
+| Disable foreign key checks | On for imported SQL's FK handling in an **isolated restore**; this does not issue a QAS mutation at export time |
+| Export views as tables | Off; use CREATE VIEW where actual views are present |
+| Add CREATE DATABASE / USE statement | Off so restored SQL does not select or create the original database automatically |
+| Add DROP TABLE / VIEW / PROCEDURE / FUNCTION / EVENT / TRIGGER statement | Off for a non-destructive, empty-target restore |
+| Add CREATE TABLE / CREATE VIEW / CREATE PROCEDURE, FUNCTION, EVENT / CREATE TRIGGER statements | On for applicable objects the export account may read |
+| Truncate table before insert / INSERT DELAYED / INSERT IGNORE | All Off |
+| INSERT function and syntax | INSERT; prefer **both of the above** (column names plus multiple rows) |
+| Enclose table and column names with backquotes | On |
+| Dump binary columns in hexadecimal notation | On if available, to safely represent binary data |
+| Dump TIMESTAMP columns in UTC | On for consistent timestamp export/import across time zones |
+| Database system/older MySQL compatibility | NONE (unless the isolated target requires a documented compatibility mode) |
+
+**Verification caveats:** This list is a **planned configuration**, not yet confirmed as applied; do not mark the export as complete from the textual capture alone. Confirm that any views/routines/events/triggers actually exist and were included; some shared-host privileges may omit objects or prevent complete exports. If phpMyAdmin times out or the file is unexpectedly small, stop and investigate rather than marking backup PASS. Record private file size and checksum, then perform isolated restore and counts verification before seeding QA personas.
+
+
 ## Isolated restore verification (future gate)
 
 - Provision a **new disposable database with a distinct name and credentials** using an approved separate environment; do not confuse this with a second schema of an existing live environment.
