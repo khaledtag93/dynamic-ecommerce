@@ -1,5 +1,14 @@
 # CURRENT PHASE
 
+## LATEST CHECKPOINT — 2026-10-14 (CI GREEN / SSH TCP REACHABLE / ADMIN LOGIN STILL BLOCKED)
+
+- Source branch: `sec03-framework-upgrade`; base checkpoint `ca6a5059`. Desktop Commander device `DESKTOP-KOG45HP` returned ping successfully and local working tree was clean before this documentation update.
+- **CI verified GREEN**: [Hardening Actions #38618515986](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38618515986), application job completed successfully. Job log confirms `907 passed (18230 assertions)`, including `Tests\\Feature\\WorkforceDemoPersonaMatrixTest` PASS. This is isolated CI coverage, not authenticated QAS acceptance.
+- **Read-only local diagnostics (NO SSH LOGIN / NO QAS WRITES):** Windows OpenSSH client present; previously configured SSH private key file exists locally; a TCP-only connect probe to the already documented Hostinger endpoint on its existing port 65002 returned `QAS_SSH_TCP_REACHABLE=YES`. This proves a network socket accepted a connection, **not** that SSH login, authentication, application runtime or DB mapping was verified.
+- Prior approved SSH read-only probe failed to complete; remote login is therefore **NOT VERIFIED**. No SSH login, alternate tool/channel, privilege changes, credentials collection, phpMyAdmin writes, fixtures, deployment, or Production action was attempted in this follow-up. Existing QAS SQL export remains untouched and SHA-256 static check recorded in `docs/QAS_WORG01B_EXPORT_EVIDENCE_2026-10-14.md`.
+- **Next owner-only check:** in Hostinger hPanel for `tag-marketplace.com`, go to **Websites > Dashboard > Advanced > SSH Access**, confirm `Enabled` / `Disabled` / not available, and compare the **hostname/IP + SSH port + username** with the values already saved on the owner's device. **Do not paste passwords, keys or tokens.** Hostinger documentation: https://support.hostinger.com/en/articles/1583645-how-to-enable-ssh-access and https://support.hostinger.com/en/articles/1583245-how-to-connect-to-a-hosting-plan-via-ssh .
+- Once an admin channel is specifically approved AND login succeeds, confirm current live QAS `APP_ENV` and `SELECT DATABASE()` read-only without printing secrets. Only then provision seven synthetic QA personas and run real authenticated EN/AR desktop/mobile role checks, collecting PASS/FAIL and cleanup manifest. **W-ORG-01b remains OPEN/BLOCKED** until those steps succeed.
+
 ## CURRENT CONTINUATION — 2026-10-14 (Desktop restored; QAS SSH preflight failed)
 
 - Desktop Commander `DESKTOP-KOG45HP` became **responsive** again after reconnect (new device registration). Local `sec03-framework-upgrade` was at `56c0ebc7` while remote GitHub was at `afbc5755`. The pending, **non-sensitive** SOP modification was protected with a file-specific Git stash, remote changes were fast-forwarded, and the stash reapplied cleanly without conflict. Branch is now based on `afbc5755`.

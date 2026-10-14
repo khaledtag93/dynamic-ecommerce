@@ -20,6 +20,16 @@
 - Stage-gate still **BLOCKED** for live QAS persona creation: the normal remote SSH administrative action was rejected by the platform's safety check. Do not route around that restriction via phpMyAdmin SQL writes, alternate remote shells or side-channel credentials. Read-only export through the owner's approved hPanel UI is allowed.
 
 
+## SSH access preflight and troubleshooting — 2026-10-14 (no authentication attempted)
+
+- CI application job [38618515986](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38618515986) GREEN: `907 passed (18230 assertions)` including the seven-persona isolated test.
+- Desktop Commander device online and responsive, Git tree clean before this documentation. Local SSH executable and existing local key available.
+- A **TCP-only read-only connectivity probe** to the currently configured Hostinger SSH port `65002` succeeded. This **does not** prove SSH handshake, user authentication, remote shell or current runtime QAS DB mapping. The previous read-only SSH login attempt timed out/failed; no login was attempted during this TCP-only diagnostic.
+- The owner's single required check in official hPanel is **Websites > Dashboard > Advanced > SSH Access**. Report only **Enabled / Disabled / unavailable**, and whether the **SSH command's server address, username and port** match what is already configured locally. Never share the private key, password, auth tokens or SQL dump.
+- Hostinger references: https://support.hostinger.com/en/articles/1583645-how-to-enable-ssh-access ; https://support.hostinger.com/en/articles/1583245-how-to-connect-to-a-hosting-plan-via-ssh .
+- If Disabled, enable via the Hostinger-approved UI **only after the owner agrees**. If Enabled but connection still fails, ask Hostinger support to inspect SSH access rather than changing security controls or using a different remote-execution route. Confirm a successful authorized connection before asking for any server operation.
+- After approved authentication, check the running app's `APP_ENV=staging` and database name with a read-only application-side query, avoiding any other environment; only after target isolation and existing disposable-QAS acceptance should seven synthetic personas be provisioned. W-ORG-01b stays OPEN until real browser role and cleanup evidence exists.
+
 ## Why we do this
 
 The goal is **reliable, evidence-based acceptance** of Team Supervisor/Employee/Operations/Finance authorization before closing W-ORG-01b. A database export is merely a recovery prerequisite, not the delivery objective.
