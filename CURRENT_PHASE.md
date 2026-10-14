@@ -5,7 +5,7 @@
 - Baseline `12363cdb` with [CI #38646030979](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38646030979) GREEN (927 tests / 18,402 assertions). Owner requested a single source-only W-LEAVE-02d slice. W-ORG-01b authenticated QAS acceptance remains OPEN/DEFERRED; no remote SSH, QAS or Production operation.
 - The new versioned, nullable `policy_snapshot` preserves new-request live type policy inputs at creation, rejects later Eloquent edits, and displays a minimal submission-policy summary only in existing scoped user/reviewer views. Pre-existing NULL records are not backfilled or assigned invented past policies. Stored leave dates/requested days, approval, balance, audit and payroll logic remain unchanged.
 - **Effective-date policy activation NOT ENABLED**: requires separate approved business semantics; no retroactive scheduling or historical entitlement freeze in this slice. Six MySQL feature regressions prepared for changed policy after pending/approved request, legacy NULL rows, immutability, scoped access and preview/forgery guards.
-- Local syntax/diff/i18n checks required; full isolated GitHub CI still PENDING before Source/CI closure. Runbook: `docs/WLEAVE02D_HISTORICAL_POLICY_SNAPSHOT_2026-10-15.md`.
+- Local PHP lint/diff/i18n checks PASS; [full isolated CI #38651114216](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38651114216) on `438c3dff` **GREEN: 933 tests / 18,460 assertions, 6/6 historical snapshot feature tests and 9/9 QA contract tests**, frontend build PASS. **W-LEAVE-02d SOURCE + CI CLOSED**; live QAS acceptance PENDING. Runbook: `docs/WLEAVE02D_HISTORICAL_POLICY_SNAPSHOT_2026-10-15.md`.
 
 ## ACTIVE DEVELOPMENT — W-LEAVE-02c SELF-SERVICE POLICY PREVIEW (2026-10-15)
 

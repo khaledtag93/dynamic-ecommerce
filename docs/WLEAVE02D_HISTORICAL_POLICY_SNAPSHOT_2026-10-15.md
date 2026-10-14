@@ -30,6 +30,6 @@ New `tests/Feature/WorkforceLeaveHistoricalPolicySnapshotTest.php` includes 6 is
 5. Own-employee privacy, reviewer list permission gate, and absence from unrelated employee's view.
 6. Preview remains read-only and ignores attempted forged policy snapshot on real submission.
 
-No QAS/Production access, remote SSH, alternate transport, local unknown DB queries or credential transfers used. PHP lint, JSON translation integrity and `git diff --check` must pass locally; run all DB-backed tests on isolated GitHub Actions MySQL. Record final SHA/run/test counts only after full CI GREEN.
+No QAS/Production access, remote SSH, alternate transport, local unknown DB queries or credential transfers used. Local PHP lint, translation JSON integrity and `git diff --check`: PASS. The source commit `438c3dff` passed **full isolated-MySQL [CI #38651114216](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38651114216)**: **933 PHPUnit tests / 18,460 assertions**, including **6/6** new historical policy tests, **9/9** offline QA contract tests, Blade compilation and frontend build SUCCESS.
 
-**Status:** W-LEAVE-02d source pending full CI. W-ORG-01b authenticated QAS acceptance still OPEN/DEFERRED.
+**Status:** W-LEAVE-02d **SOURCE + CI CLOSED** at `438c3dff`, run `#38651114216` GREEN. Formal live QAS acceptance remains PENDING. W-ORG-01b authenticated QAS acceptance still **OPEN / DEFERRED**.

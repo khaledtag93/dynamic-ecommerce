@@ -3,7 +3,7 @@
 ## ROADMAP — W-LEAVE-02d HISTORICAL POLICY EVIDENCE (2026-10-15)
 
 - Starting source `12363cdb`, [CI #38646030979](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38646030979) GREEN, W-LEAVE-02d adds immutable, versioned request-time leave-policy JSON snapshots for **new** requests only. Old rows remain NULL; staff/reviewer UIs accurately label historical evidence without assuming a prior policy.
-- No effective-date business rules were invented, no historical leave or financial data migration, no change to dates/charged days/approval/leave balance algorithms. Six new scoped regression cases prepared; full isolated CI PENDING. See `docs/WLEAVE02D_HISTORICAL_POLICY_SNAPSHOT_2026-10-15.md`.
+- No effective-date business rules were invented, no historical leave or financial data migration, no change to dates/charged days/approval/leave balance algorithms. Six new scoped tests **PASS** on [isolated MySQL CI #38651114216](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38651114216): **933 tests / 18,460 assertions** and 9/9 offline QA contracts, full frontend build PASS. **W-LEAVE-02d SOURCE + CI CLOSED**, live QAS acceptance pending. See `docs/WLEAVE02D_HISTORICAL_POLICY_SNAPSHOT_2026-10-15.md`.
 - W-ORG-01b QAS authentication remains OPEN / DEFERRED. No SSH bypass, QAS or Production writes.
 
 ## ROADMAP — W-LEAVE-02c SELF-SERVICE LEAVE PREVIEW (2026-10-15)
