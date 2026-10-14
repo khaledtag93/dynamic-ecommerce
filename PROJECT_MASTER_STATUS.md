@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ROADMAP — W-LEAVE-02d HISTORICAL POLICY EVIDENCE (2026-10-15)
+
+- Starting source `12363cdb`, [CI #38646030979](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38646030979) GREEN, W-LEAVE-02d adds immutable, versioned request-time leave-policy JSON snapshots for **new** requests only. Old rows remain NULL; staff/reviewer UIs accurately label historical evidence without assuming a prior policy.
+- No effective-date business rules were invented, no historical leave or financial data migration, no change to dates/charged days/approval/leave balance algorithms. Six new scoped regression cases prepared; full isolated CI PENDING. See `docs/WLEAVE02D_HISTORICAL_POLICY_SNAPSHOT_2026-10-15.md`.
+- W-ORG-01b QAS authentication remains OPEN / DEFERRED. No SSH bypass, QAS or Production writes.
+
 ## ROADMAP — W-LEAVE-02c SELF-SERVICE LEAVE PREVIEW (2026-10-15)
 
 - Following `6e6cb99b` and Green [CI #38643359924](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38643359924), W-LEAVE-02c adds a read-only, authorized employee-own policy/balance preview with current, pending and projected-after-request values; shared validation and overlap rules. Preview does not submit, approve, adjust, reserve or rewrite any historical leave/payroll record.

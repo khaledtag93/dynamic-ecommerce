@@ -39,6 +39,9 @@
 
     <div class="col-12"><hr><h5 class="mb-1">{{ __('Leave request policy') }}</h5>
         <p class="text-muted small mb-2">{{ __('Legacy keeps existing calendar-day behavior. New duration and workday rules are opt-in and apply only to new requests.') }}</p>
+        @if($leaveType->exists)
+            <p class="text-muted small mb-2">{{ __('Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled.') }}</p>
+        @endif
     </div>
     <div class="col-md-4">
         <label class="form-label fw-semibold" for="leaveDurationMode">{{ __('Duration mode') }}</label>

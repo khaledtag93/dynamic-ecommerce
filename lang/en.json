@@ -5365,5 +5365,8 @@
     "Already pending": "Already pending",
     "Projected before this request": "Projected before this request",
     "Projected after this request": "Projected after this request",
-    "Available balance is currently below the requested days. Final approval checks the balance again.": "Available balance is currently below the requested days. Final approval checks the balance again."
+    "Available balance is currently below the requested days. Final approval checks the balance again.": "Available balance is currently below the requested days. Final approval checks the balance again.",
+    "Policy at submission": "Policy at submission",
+    "Historical policy details unavailable": "Historical policy details unavailable",
+    "Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled.": "Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled."
 }

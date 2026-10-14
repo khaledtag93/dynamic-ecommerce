@@ -135,7 +135,18 @@
                                 <tbody>
                                     @foreach($requests as $leaveItem)
                                         <tr>
-                                            <td><div class="fw-semibold">{{ $leaveItem->leaveType?->displayName() }}</div><div class="text-muted small">{{ $leaveItem->reason ?: '—' }}</div></td>
+                                            <td>
+                                                <div class="fw-semibold">{{ $leaveItem->leaveType?->displayName() }}</div>
+                                                <div class="text-muted small">{{ $leaveItem->reason ?: '—' }}</div>
+                                                <div class="text-muted small mt-1">
+                                                    @if($leaveItem->policy_snapshot)
+                                                        {{ __('Policy at submission') }}: {{ ucfirst((string)($leaveItem->policy_snapshot['duration_mode'] ?? 'legacy')) }}
+                                                        · {{ (string)($leaveItem->policy_snapshot['counting_mode'] ?? 'calendar') }}
+                                                    @else
+                                                        {{ __('Historical policy details unavailable') }}
+                                                    @endif
+                                                </div>
+                                            </td>
                                             <td>{{ $leaveItem->starts_on->format('d M Y') }} → {{ $leaveItem->ends_on->format('d M Y') }}</td>
                                             <td>{{ number_format((float)$leaveItem->requested_days, 2) }}</td>
                                             <td>

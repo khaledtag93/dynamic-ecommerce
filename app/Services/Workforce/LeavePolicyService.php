@@ -79,6 +79,33 @@ final class LeavePolicyService
         return [$start, $end, $mode === 'fixed' ? $fixed : $charged];
     }
 
+    /**
+     * Store the request-time calculation inputs, never the live type reference
+     * as a substitute for history. Effective-date policy is intentionally not
+     * inferred here; that requires a separate approved product decision.
+     */
+    public function snapshot(EmployeeLeaveType $type): array
+    {
+        $mode = $type->duration_mode ?: 'legacy';
+        $counting = $mode === 'legacy' ? 'calendar' : ($type->counting_mode ?: 'calendar');
+        $weekdays = $counting === 'workdays' ? array_map('intval', $type->working_weekdays ?? []) : [];
+        $holidays = $counting === 'workdays' ? array_values($type->holiday_dates ?? []) : [];
+        sort($weekdays, SORT_NUMERIC);
+        sort($holidays, SORT_STRING);
+
+        return [
+            'schema_version' => 1,
+            'type_code' => (string) $type->code,
+            'duration_mode' => $mode,
+            'counting_mode' => $counting,
+            'fixed_duration_days' => $mode === 'fixed' ? (int) $type->fixed_duration_days : null,
+            'min_request_days' => $mode === 'flexible' ? (int) $type->min_request_days : null,
+            'max_request_days' => $mode === 'flexible' ? (int) $type->max_request_days : null,
+            'working_weekdays' => $weekdays,
+            'holiday_dates' => $holidays,
+        ];
+    }
+
     private function countChargeable(CarbonImmutable $start, CarbonImmutable $end, bool $workdays, array $weekdays, array $holidays): int
     {
         $days = 0;

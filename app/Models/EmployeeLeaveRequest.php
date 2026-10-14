@@ -20,6 +20,7 @@ class EmployeeLeaveRequest extends Model
         'starts_on',
         'ends_on',
         'requested_days',
+        'policy_snapshot',
         'reason',
         'status',
         'review_notes',
@@ -32,9 +33,19 @@ class EmployeeLeaveRequest extends Model
         'starts_on' => 'date',
         'ends_on' => 'date',
         'requested_days' => 'decimal:2',
+        'policy_snapshot' => 'array',
         'reviewed_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (EmployeeLeaveRequest $request) {
+            if ($request->isDirty('policy_snapshot')) {
+                throw new \LogicException('A recorded leave policy snapshot is immutable.');
+            }
+        });
+    }
 
     public static function statusOptions(): array
     {

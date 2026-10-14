@@ -43,6 +43,14 @@
                             <td>
                                 <div class="fw-semibold">{{ $leave->leaveType?->displayName() }}</div>
                                 <div class="text-muted small">{{ $leave->leaveType?->is_paid ? __('Paid') : __('Unpaid') }}</div>
+                                <div class="text-muted small mt-1">
+                                    @if($leave->policy_snapshot)
+                                        {{ __('Policy at submission') }}: {{ ucfirst((string)($leave->policy_snapshot['duration_mode'] ?? 'legacy')) }}
+                                        · {{ (string)($leave->policy_snapshot['counting_mode'] ?? 'calendar') }}
+                                    @else
+                                        {{ __('Historical policy details unavailable') }}
+                                    @endif
+                                </div>
                                 @if($leave->reason)<div class="text-muted small mt-1">{{ $leave->reason }}</div>@endif
                             </td>
                             <td>{{ $leave->starts_on->format('d M Y') }} → {{ $leave->ends_on->format('d M Y') }}</td>

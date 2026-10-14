@@ -43,6 +43,9 @@ class LeaveRequestService
                 'starts_on' => $start->toDateString(),
                 'ends_on' => $end->toDateString(),
                 'requested_days' => $days,
+                // Immutable evidence of rules used at submission; never recalculate
+                // existing requests when an administrator edits the live type.
+                'policy_snapshot' => $this->leavePolicy->snapshot($type),
                 'reason' => $this->nullableTrim($reason),
                 'status' => EmployeeLeaveRequest::STATUS_PENDING,
             ]);
