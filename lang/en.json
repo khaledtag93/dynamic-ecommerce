@@ -5320,5 +5320,13 @@
     "Required audit reason": "Required audit reason",
     "Void session": "Void session",
     "Enter your local work time; we store UTC.": "Enter your local work time; we store UTC.",
-    "All time clock entries are displayed in your work timezone.": "All time clock entries are displayed in your work timezone."
+    "All time clock entries are displayed in your work timezone.": "All time clock entries are displayed in your work timezone.",
+    "Direct manager": "Direct manager",
+    "No reporting manager assigned": "No reporting manager assigned",
+    "Reporting managers must be active and authorized. Changes are audited.": "Reporting managers must be active and authorized. Changes are audited.",
+    "An employee cannot manage themselves.": "An employee cannot manage themselves.",
+    "Choose an active manager who has Workforce management access.": "Choose an active manager who has Workforce management access.",
+    "This reporting manager would create a management cycle.": "This reporting manager would create a management cycle.",
+    "Reporting chain is too deep to validate safely.": "Reporting chain is too deep to validate safely.",
+    "Employee reporting manager changed.": "Employee reporting manager changed."
 }

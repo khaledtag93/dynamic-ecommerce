@@ -2,6 +2,9 @@
 
 ## CURRENT ACTIVE WORKSTREAM — 2026-10-14 (Workforce Enterprise E2E Review)
 
+- **Additional scheduling/break operations design:** `docs/WORKFORCE_SCHEDULING_BREAK_OPERATIONS_ARCHITECTURE_2026-10-14.md`. Source review confirms no reusable shift templates/rosters, no separate Ready/Not Ready operational presence, no planned break quotas/windows/reminders, and current shift grace 5 minutes is hard-coded. Planned Workforce Settings must expose editable versioned tenant/branch/team policies rather than hardcoding business rules.
+- **First implementation boundary W-ORG-01a in progress:** reporting-manager schema, form, relationship service, cycle guards, audited assignments and tests. Separate W-ORG-01b employee-scoped authorization, approvals and document access **remain pending**. Do not represent hierarchy foundation as full workflow authorization.
+
 - User observed two Draft shifts in admin Scheduled Shifts but no shifts in My Schedule. **Confirmed expected existing behavior:** My Schedule displays Published shifts only. Improved publishing clarity is included in W-SCHED-05.
 - Comprehensive code-grounded audit: `docs/WORKFORCE_ENTERPRISE_E2E_AUDIT_2026-10-14.md`.
 - Priority gaps: no manager-reporting hierarchy; globally privileged managers can act across all leave requests; leave annual entitlement confused with per-request duration; leave requests Pending even with insufficient annual entitlement until approval; no private employee/leave multi-attachments or assigned approver notifications; leave approval currently blocks even overlapping Draft shifts; UTC/local-day business policy needs deliberate alignment.

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\EmployeeProfile;
 use App\Models\User;
+use App\Services\Workforce\ReportingHierarchyService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -12,6 +14,10 @@ use Illuminate\Validation\ValidationException;
 
 class EmployeeController extends Controller
 {
+    public function __construct(private ReportingHierarchyService $reportingHierarchy)
+    {
+    }
+
     public function index(Request $request)
     {
         $status = (string) $request->string('status');
@@ -88,6 +94,7 @@ class EmployeeController extends Controller
         return view('admin.workforce.employees.create', [
             'employee' => new EmployeeProfile(),
             'candidateUsers' => $candidateUsers,
+            'managerCandidates' => $this->managerCandidates(),
         ]);
     }
 
@@ -95,7 +102,16 @@ class EmployeeController extends Controller
     {
         $data = $this->validateEmployee($request);
 
-        $employee = EmployeeProfile::query()->create($data);
+        $managerId = $data['manager_employee_profile_id'] ?? null;
+        unset($data['manager_employee_profile_id']);
+
+        $employee = DB::transaction(function () use ($data, $managerId, $request) {
+            $employee = EmployeeProfile::query()->create($data);
+            if ($managerId !== null) {
+                $this->reportingHierarchy->assignManager($employee, (int) $managerId, $request->user());
+            }
+            return $employee;
+        });
 
         return redirect()
             ->route('admin.workforce.employees.edit', $employee)
@@ -104,10 +120,11 @@ class EmployeeController extends Controller
 
     public function edit(EmployeeProfile $employeeProfile)
     {
-        $employeeProfile->load(['user.roles', 'openAttendanceSession']);
+        $employeeProfile->load(['user.roles', 'openAttendanceSession', 'reportingManager.user']);
 
         return view('admin.workforce.employees.edit', [
             'employee' => $employeeProfile,
+            'managerCandidates' => $this->managerCandidates($employeeProfile),
         ]);
     }
 
@@ -115,6 +132,8 @@ class EmployeeController extends Controller
     {
         $data = $this->validateEmployee($request, $employeeProfile);
         unset($data['user_id']);
+        $managerId = $data['manager_employee_profile_id'] ?? null;
+        unset($data['manager_employee_profile_id']);
 
         if (($data['status'] ?? EmployeeProfile::STATUS_ACTIVE) !== EmployeeProfile::STATUS_ACTIVE
             && $employeeProfile->openAttendanceSession()->exists()) {
@@ -123,11 +142,27 @@ class EmployeeController extends Controller
             ]);
         }
 
-        $employeeProfile->update($data);
+        DB::transaction(function () use ($employeeProfile, $data, $managerId, $request) {
+            $employeeProfile->update($data);
+            $this->reportingHierarchy->assignManager(
+                $employeeProfile, $managerId === null ? null : (int) $managerId, $request->user()
+            );
+        });
 
         return redirect()
             ->route('admin.workforce.employees.edit', $employeeProfile)
             ->with('success', __('Employee profile updated successfully.'));
+    }
+
+    private function managerCandidates(?EmployeeProfile $employee = null)
+    {
+        return EmployeeProfile::query()
+            ->with('user.roles')
+            ->where('status', EmployeeProfile::STATUS_ACTIVE)
+            ->when($employee, fn ($query) => $query->where('id', '!=', $employee->id))
+            ->orderBy('employee_code')
+            ->get()
+            ->filter(fn (EmployeeProfile $candidate) => $candidate->user?->hasPermission('workforce.manage') === true);
     }
 
     private function validateEmployee(Request $request, ?EmployeeProfile $employee = null): array
@@ -145,6 +180,7 @@ class EmployeeController extends Controller
             ],
             'job_title' => ['nullable', 'string', 'max:120'],
             'department' => ['nullable', 'string', 'max:120'],
+            'manager_employee_profile_id' => ['nullable', 'integer', Rule::exists('employee_profiles', 'id')],
             'employment_type' => ['required', Rule::in(array_keys(EmployeeProfile::employmentTypeOptions()))],
             'status' => ['required', Rule::in(array_keys(EmployeeProfile::statusOptions()))],
             'hire_date' => ['nullable', 'date'],

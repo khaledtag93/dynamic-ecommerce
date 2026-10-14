@@ -71,6 +71,16 @@ class EmployeeProfile extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function reportingManager()
+    {
+        return $this->belongsTo(self::class, 'manager_employee_profile_id');
+    }
+
+    public function directReports()
+    {
+        return $this->hasMany(self::class, 'manager_employee_profile_id');
+    }
+
     public function attendanceSessions()
     {
         return $this->hasMany(EmployeeAttendanceSession::class);

@@ -49,6 +49,21 @@
     </div>
 
     <div class="col-md-4">
+        <label class="form-label fw-semibold" for="employeeReportingManager">{{ __('Direct manager') }}</label>
+        <select id="employeeReportingManager" name="manager_employee_profile_id"
+                class="form-select @error('manager_employee_profile_id') is-invalid @enderror">
+            <option value="">{{ __('No reporting manager assigned') }}</option>
+            @foreach($managerCandidates as $candidate)
+                <option value="{{ $candidate->id }}"
+                    @selected((string) old('manager_employee_profile_id', $employee->manager_employee_profile_id) === (string) $candidate->id)>
+                    {{ $candidate->employee_code }} · {{ $candidate->user?->name }}
+                </option>
+            @endforeach
+        </select>
+        @error('manager_employee_profile_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <div class="section-note">{{ __('Reporting managers must be active and authorized. Changes are audited.') }}</div>
+    </div>
+    <div class="col-md-4">
         <label class="form-label fw-semibold" for="employeeEmploymentType">{{ __('Employment type') }}</label>
         <select id="employeeEmploymentType" name="employment_type" aria-required="true" class="form-select @error('employment_type') is-invalid @enderror" required>
             @foreach(\App\Models\EmployeeProfile::employmentTypeOptions() as $value => $label)

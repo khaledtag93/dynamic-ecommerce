@@ -6028,5 +6028,13 @@
     "Shift end must be after shift start.": "يجب أن يكون انتهاء الوردية بعد بدايتها.",
     "All time clock entries are displayed in your work timezone.": "تُعرض أوقات الحضور والانصراف بتوقيت العمل المحلي.",
     "Enter your local work time; we store UTC.": "أدخل التوقيت المحلي للعمل، وسيُحفظ داخليًا بالتوقيت العالمي.",
-    "Invalid date.": "التاريخ غير صالح."
+    "Invalid date.": "التاريخ غير صالح.",
+    "Direct manager": "المدير المباشر",
+    "No reporting manager assigned": "لم يتم تحديد مدير مباشر",
+    "Reporting managers must be active and authorized. Changes are audited.": "لا بد أن يكون المدير نشطًا ومصرحًا له؛ وتسجل جميع التغييرات.",
+    "An employee cannot manage themselves.": "لا يمكن للموظف أن يكون مديرًا لنفسه.",
+    "Choose an active manager who has Workforce management access.": "اختر مديرًا نشطًا لديه صلاحية إدارة القوى العاملة.",
+    "This reporting manager would create a management cycle.": "اختيار هذا المدير يؤدي إلى دورة غير صالحة في التسلسل الإداري.",
+    "Reporting chain is too deep to validate safely.": "التسلسل الإداري طويل جدًا ولا يمكن التحقق منه بأمان.",
+    "Employee reporting manager changed.": "تم تغيير المدير المباشر للموظف."
 }

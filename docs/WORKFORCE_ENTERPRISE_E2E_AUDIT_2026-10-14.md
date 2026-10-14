@@ -80,6 +80,12 @@ The existing Workforce V1 is a functioning CRUD and transactional foundation. It
 - Database migration reversibility and performance indexes reviewed; read-only QAS precheck, backup, deploy, health, and employee/manager/HR UI acceptance. Production gates remain separate.
 - Manual review in Arabic and English, RTL, desktop and mobile, with real manager/employee personas on **isolated demo test data only**.
 
+## Scheduling and employee operations architecture expansion (2026-10-14)
+
+User feedback adds reusable shift templates before employee assignment, workforce capacity/rosters, clock-in compliance and independently managed Ready/Not Ready states, planned paid/unpaid breaks with quotas/windows, scheduled reminders, overrun reporting, and tenant/branch/team-configurable rules. These are **not implemented** by existing `EmployeeWorkShift`, `AttendanceService`, or hard-coded five-minute `AttendanceRulesService` grace thresholds.
+
+Detailed domain entities, example business flow, policy precedence/effective versioning, Admin Workforce Settings UI and delivery slices: `docs/WORKFORCE_SCHEDULING_BREAK_OPERATIONS_ARCHITECTURE_2026-10-14.md`.
+
 ## Next committed action
 
 Start **W-ORG-01** as the first implementation boundary; hierarchy and scoped authorization are prerequisites for approvals and private documents. Retain the existing QAS data unchanged while investigating. The current screenshots contain two Draft shifts; publishing one can verify the existing schedule behavior without database/architecture changes. An explicit company leave policy for holidays, weekend days, employee leave allowance and evidence handling is needed before activating leave engine behavior.
