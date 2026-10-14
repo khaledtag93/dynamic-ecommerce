@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## LATEST SSH STATUS EVIDENCE — 2026-10-14
+
+- Owner hPanel screenshot for **Websites > tag-marketplace.com > Advanced > SSH Access** visibly shows **SSH status ACTIVE**. This establishes enabled hosting SSH service; **it does not establish successful account login**. The SSH details section in the screenshot is cut off.
+- A **local-only** Windows OpenSSH `ssh -G` configuration check (no network or SSH login) returned the previously configured `user u637857322`, `hostname 145.79.20.185`, `port 65002`, `batchmode yes`, `connecttimeout 8`, exit code 0. The local private key and known_hosts exist; `.ssh/config` does not exist. No secret key contents or password were read. Local Git branch clean at `045afb20` prior to documenting this status.
+- Previous TCP socket reachability PASS, prior SSH login attempt did **not** succeed. **Do not equate ACTIVE/TCP/config validity with successful SSH authentication or live DB mapping.**
+- **Next owner action:** scroll down within this same hPanel SSH Access page to **SSH details** and compare its username, server/hostname/IP, and port with the existing local values. Report only matching / differing fields or share a cropped screenshot of those **non-secret** fields; hide any password, private key or one-time tokens. If all match, use Hostinger's official support path to diagnose the failed login rather than bypass the tool safety limitation.
+- CI run `38619975255` completed **SUCCESS** on `045afb20` (last check); the previous fully inspected PHPUnit log showed **907 PASS / 18,230 assertions**. **W-ORG-01b remains OPEN**; seven QAS accounts and authenticated role tests not yet executed; QAS/Production database unchanged.
+
 ## LATEST CHECKPOINT — 2026-10-14 (CI GREEN / SSH TCP REACHABLE / ADMIN LOGIN STILL BLOCKED)
 
 - Source branch: `sec03-framework-upgrade`; base checkpoint `ca6a5059`. Desktop Commander device `DESKTOP-KOG45HP` returned ping successfully and local working tree was clean before this documentation update.
