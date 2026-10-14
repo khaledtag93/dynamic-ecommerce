@@ -1,10 +1,19 @@
 # CURRENT PHASE
 
+## ACTIVE W-ORG-01b CHECKPOINT — 2026-10-14 (Seven-Persona CI PASS, QAS Gate Blocked)
+
+- **Latest verified test source SHA:** `f0392366` on `sec03-framework-upgrade`. Hardening CI [run 38607285162](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38607285162) **Green: 907 tests / 18,230 assertions**; the two new seven-persona Workforce authorization regression tests PASS. This is **isolated CI MySQL** evidence, not QAS functional acceptance.
+- Seven synthetic roles in the tests: Alpha Manager, Alpha Lead, Alpha Worker; Beta Manager, Beta Worker; Operations Manager, Finance Manager. Verified direct/indirect reporting isolation, cross-team denial, employee self-service, global Operations access without payroll, Finance payroll access without Workforce directory rights, and self leave-approval denial. Code: `tests/Feature/WorkforceDemoPersonaMatrixTest.php`.
+- **Owner authorizes disposable synthetic data on QAS** during testing and expects a later clean reset. This does not override safeguards for existing records or authorize Production changes. **QAS direct remote command was explicitly blocked by tool safety checks**, and no workaround was attempted.
+- **QAS last directly verified application is still `a62ad480`**. No new QAS backup/restoration proof, accounts, personas, fixture mutation, application deployment or Production modification in the continuation. Older baseline dump presence does **not** prove restorability of a current pre-fixture snapshot. **Backup Safety Gate NOT CLEARED; authenticated browser ROLE-01…ROLE-06 BLOCKED; W-ORG-01b OPEN.**
+- Persona/evidence plan: `docs/WORG01B_SEVEN_PERSONA_QA_MATRIX_2026-10-14.md`; prior browser and backup evidence: `docs/WORG01B_BROWSER_ACCEPTANCE_2026-10-14.md`.
+- **Next:** get approved QAS access restored without bypassing tool checks → verified fresh backup/isolated restore drill → fixture insert by manifest → authenticated Playwright/EN/AR/RTL/mobile and prohibited write checks → exact cleanup → formal acceptance. Preserve Production unchanged.
+
 ## ACTIVE CONTINUATION / UI PREFERENCE — 2026-10-14
 
 - The owner explicitly prefers a **clickable next-action control** at the end of meaningful development checkpoints (similar to the earlier ICA collaboration), with the exact next instruction embedded. Use it when the current chat interface supports a working action; otherwise give a copy-ready instruction. This is an interaction preference, not a substitute for executing assistant-led tests.
 - Project-wide rule: `PROJECT_RULES.md` section 25, charter: `docs/ASSISTANT_LED_QA_AND_ACCEPTANCE_CHARTER_2026-10-14.md`.
-- W-ORG-01b: QAS application last proven `a62ad480`, CI 905 tests/18,188 assertions Green. **Actual Playwright guest-only QAS smoke 4/4 PASS** on desktop/mobile with RTL login; portable source `tests/browser/workforce-guest-smoke.cjs`, evidence `docs/WORG01B_BROWSER_ACCEPTANCE_2026-10-14.md`. Authenticated multi-persona authorization remains OPEN/BLOCKED: QAS demo users were **not created**, since the pre-fixture backup attempt was blocked by a safety check. Temporary remote fixture scripts were cleaned. Do not close W-ORG-01b or insert fixtures without a verified approved backup/rollback path.
+- W-ORG-01b historical browser checkpoint: QAS application last proven `a62ad480`, earlier CI 905 tests/18,188 assertions Green (superseded for isolated test-source CI by 907/18,230 above). **Actual Playwright guest-only QAS smoke 4/4 PASS** on desktop/mobile with RTL login; portable source `tests/browser/workforce-guest-smoke.cjs`, evidence `docs/WORG01B_BROWSER_ACCEPTANCE_2026-10-14.md`. Authenticated multi-persona authorization remains OPEN/BLOCKED: QAS demo users were **not created**, since the pre-fixture backup attempt was blocked by a safety check. Temporary remote fixture scripts were cleaned. Do not close W-ORG-01b or insert fixtures without a verified approved backup/rollback path.
 
 ## STANDING QUALITY AGREEMENT — 2026-10-14 (All Flowra Modules)
 
