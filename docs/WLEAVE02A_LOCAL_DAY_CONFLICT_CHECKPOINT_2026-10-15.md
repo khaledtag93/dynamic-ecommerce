@@ -24,11 +24,11 @@ New `tests/Feature/WorkforceLeaveLocalDayBoundariesTest.php` contains four DB-ba
 3. **Spring DST:** New York Mar 8, 2026 has a 23-hour local day, UTC 05:00 to next day UTC 04:00. A late local-day shift is denied, but following-day shift is allowed.
 4. **Fall DST:** New York Nov 1, 2026 has a 25-hour local day, UTC 04:00 to next day UTC 05:00. A late shift blocks approval; cancellation allows the approval.
 
-The local Windows PHP environment exposes only the `mysql` PDO driver (no isolated local SQLite). The three changed PHP files pass `php -l` and `git diff --check` locally. **Full DB-backed tests must execute against GitHub Actions isolated MySQL**. Never run PHPUnit against an unknown local or QAS DB. Update this section with actual GitHub workflow results after the commit.
+The local Windows PHP environment exposes only the `mysql` PDO driver (no isolated local SQLite). The three changed PHP files pass `php -l` and `git diff --check` locally. GitHub Actions [#38639696072](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38639696072) on **`dbb3edfb`** completed **SUCCESS** against isolated MySQL: **911 tests / 18,243 assertions**, including all **4/4** new `WorkforceLeaveLocalDayBoundariesTest` cases and **9/9** offline QA contract tests. No unknown local/QAS DB used.
 
 ## Status and remaining roadmap work
 
-- **W-LEAVE-02a source changes:** implemented; subject to full CI and subsequent authorized QAS acceptance.
+- **W-LEAVE-02a source changes:** **SOURCE + CI CLOSED** on `dbb3edfb` / CI `#38639696072` Green. Authorized QAS acceptance remains pending (not claimed).
 - **W-LEAVE-02 overall:** OPEN. The remainder (fixed/flexible duration policies, holiday and workday calendars, partial-day decisions, balance reservation policies, cross-year semantics) requires explicit product policy design before behavioral changes. Follow with W-APP-03 approval routing/OOO.
 - **W-ORG-01b:** OPEN / DEFERRED for authenticated QAS acceptance, not silently marked CLOSED.
 - **Production:** unchanged. QAS: unchanged. No SSH or alternate transport attempted.

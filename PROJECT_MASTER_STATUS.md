@@ -4,7 +4,7 @@
 
 - The product owner chose to resume development according to the roadmap, with **W-ORG-01b QAS persona acceptance deferred but OPEN** due to remote access safety. No SSH workaround, QAS deploy, or Production operation.
 - Beginning after verified `bd31a74e` and green [CI #38637806904](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38637806904), the W-LEAVE-02a W-11 boundary corrects local-calendar leave-vs-UTC shift conflicts at approval and shift creation/update. New Cairo midnight and New York DST feature tests; policy semantics and financial snapshots unchanged.
-- This is one bounded source slice, **not** a claim that W-LEAVE-02 or W-ORG-01b is QAS-accepted. Run isolated MySQL CI tests on the new commit; see `docs/WLEAVE02A_LOCAL_DAY_CONFLICT_CHECKPOINT_2026-10-15.md`. Fixed/flexible leave policy, holidays/workdays and annual balance decisions remain future work.
+- This source slice is **CI-verified** on `dbb3edfb`: [CI #38639696072](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38639696072) GREEN (**911 tests / 18,243 assertions**, four new local-day/DST cases). **W-LEAVE-02a SOURCE + CI CLOSED**, while W-LEAVE-02 overall and W-ORG-01b QAS acceptance remain OPEN. See `docs/WLEAVE02A_LOCAL_DAY_CONFLICT_CHECKPOINT_2026-10-15.md`. Fixed/flexible leave policy, holidays/workdays and annual balance decisions remain future work.
 
 ## PARTIAL QAS BROWSER ACCEPTANCE — 2026-10-14
 
