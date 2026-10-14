@@ -4,7 +4,7 @@
 
 - From `afbdcbb4` and [CI #38653785977](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38653785977) GREEN, adds a read-only per-page Pending Leave readiness result with four scoped states: own-actionable, another eligible reviewer, no eligible reviewer, or routing needs attention.
 - Existing Leave review UI and X-Live-List partial show **only current permission-scoped page** counts. No reviewer names exposed; no new assignment, delegation, escalation, approval policy or DB migrations. W-ORG-01b QAS remains OPEN/DEFERRED.
-- Eight feature regressions prepared for self-review/cross-team denial, missing or inactive manager, invalid mode, legacy org admin, live pagination and terminal transitions. Local syntax/JSON/diff PASS; full isolated CI **PENDING**. `docs/WAPP03B_PENDING_REVIEW_READINESS_2026-10-15.md`.
+- Eight feature regressions for self-review/cross-team denial, missing/inactive manager, invalid mode, legacy org admin, live pagination and terminal transitions **PASS**. Source commit `d4d8a8e6`, full [isolated CI #38655138345](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38655138345) **GREEN: 949 tests / 18,613 assertions, 8/8 new readiness tests, 9/9 offline QA contracts and frontend build**. **W-APP-03b SOURCE + CI CLOSED**; live QAS acceptance pending. `docs/WAPP03B_PENDING_REVIEW_READINESS_2026-10-15.md`.
 
 ## ROADMAP — W-APP-03 REVIEWER ELIGIBILITY FOUNDATION (2026-10-15)
 

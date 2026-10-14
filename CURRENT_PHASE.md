@@ -5,7 +5,7 @@
 - Baseline `afbdcbb4` / [CI #38653785977](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38653785977) GREEN (941 tests / 18,529 assertions). W-ORG-01b authenticated QAS acceptance remains OPEN/DEFERRED.
 - New read-only, **caller-scoped page-only** readiness: `mine` (reviewable by current user), `other` (another eligible reviewer, identity withheld), `unassigned` (no reviewer proven under active mode), or `configuration` (invalid/uncertain routing). Honors default scoped/global hierarchy and opt-in direct-manager with no missing-manager fallback. Existing mutation permission gates unchanged.
 - Full and X-Live-List partial show matching status per pending row and page-only counts; no cross-team request data or global metrics, no automatic assignment/escalation/delegation or writes.
-- Eight DB-backed privacy/permission/transition/pagination tests prepared; PHP lint/translation JSON/Git diff PASS. **New isolated CI pending; not yet source-closed.** Evidence: `docs/WAPP03B_PENDING_REVIEW_READINESS_2026-10-15.md`.
+- **8/8** new DB-backed privacy/permission/transition/pagination tests PASS; PHP lint/translation JSON/Git diff PASS. Source `d4d8a8e6`, [isolated CI #38655138345](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38655138345) **GREEN: 949 PHPUnit tests / 18,613 assertions, 9/9 offline QA contracts, frontend build PASS**. **W-APP-03b SOURCE + CI CLOSED; live authenticated QAS acceptance remains PENDING.** Evidence: `docs/WAPP03B_PENDING_REVIEW_READINESS_2026-10-15.md`.
 - No prohibited SSH, QAS or Production operations.
 
 ## ACTIVE DEVELOPMENT — W-APP-03 APPROVAL ROUTING FOUNDATION (2026-10-15)
