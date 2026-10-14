@@ -20,6 +20,7 @@ class LeaveRequestService
         protected LeaveBalanceService $balanceService,
         protected AdminActivityLogService $activityLogService,
         protected LeavePolicyService $leavePolicy,
+        protected LeaveApprovalRoutingService $approvalRouting,
     ) {
     }
 
@@ -145,6 +146,9 @@ class LeaveRequestService
     {
         return DB::transaction(function () use ($request, $reviewer, $notes) {
             $employee = EmployeeProfile::query()->whereKey($request->employee_profile_id)->lockForUpdate()->firstOrFail();
+            // Recheck inside the transaction: callers other than the HTTP controller
+            // must never bypass routing/ownership checks.
+            $this->approvalRouting->assertReviewer($reviewer, $employee);
 
             $locked = EmployeeLeaveRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
 
@@ -313,6 +317,7 @@ class LeaveRequestService
     ): EmployeeLeaveRequest {
         return DB::transaction(function () use ($request, $reviewer, $status, $notes) {
             $locked = EmployeeLeaveRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            $this->approvalRouting->assertReviewer($reviewer, (int) $locked->employee_profile_id);
 
             if (! $locked->isPending()) {
                 throw ValidationException::withMessages([

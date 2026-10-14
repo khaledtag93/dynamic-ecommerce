@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## ACTIVE DEVELOPMENT — W-APP-03 APPROVAL ROUTING FOUNDATION (2026-10-15)
+
+- Base checkpoint `afe65e66` / [CI #38651633408](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38651633408) GREEN: 933 tests / 18,460 assertions. W-ORG-01b QAS authenticated acceptance is still **OPEN / DEFERRED**. No SSH retries, QAS or Production changes.
+- `LeaveApprovalRoutingService` centralizes reviewer eligibility in HTTP endpoints, domain-service transaction and paginated/live leave-review UI. Default `scoped` preserves existing `workforce.manage`, `workforce.scope.all`, reporting descendants and deny-self rules; actions are hidden for unauthorized rows. Review service now enforces its own authorization before mutation.
+- `direct_manager` is **explicit opt-in only**, controlled by `WORKFORCE_LEAVE_APPROVAL_ROUTING_MODE`; NO automatic activation, fallback on missing manager, OOO deputy, escalation or SLA. Invalid mode fails closed. Further tenant/business approval is required before mode changes in any live environment.
+- New 8-case regression tests for legacy behavior, direct/indirect manager, self/cross-team access, missing/inactive manager, invalid mode, service-level bypass denial, transitions and privacy. Local PHP lint/i18n/diff PASS; isolated full MySQL CI **PENDING**. `docs/WAPP03_APPROVAL_ROUTING_FOUNDATION_2026-10-15.md`.
+
 ## ACTIVE DEVELOPMENT — W-LEAVE-02d HISTORICAL POLICY SNAPSHOT (2026-10-15)
 
 - Baseline `12363cdb` with [CI #38646030979](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38646030979) GREEN (927 tests / 18,402 assertions). Owner requested a single source-only W-LEAVE-02d slice. W-ORG-01b authenticated QAS acceptance remains OPEN/DEFERRED; no remote SSH, QAS or Production operation.

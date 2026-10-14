@@ -69,7 +69,7 @@
                                 @if($leave->reviewedBy)<div class="text-muted small">{{ $leave->reviewedBy->name }}</div>@endif
                             </td>
                             <td style="min-width: 260px">
-                                @if($leave->isPending() && auth()->user()?->hasPermission('workforce.manage'))
+                                @if($leave->isPending() && in_array((int) $leave->employee_profile_id, $reviewableEmployeeIds, true))
                                     <form method="POST" action="{{ route('admin.workforce.leave.approve', $leave) }}" class="mb-2" data-submit-loading>
                                         @csrf
                                         @method('PATCH')
@@ -83,7 +83,7 @@
                                         <button class="btn btn-sm btn-outline-danger w-100" data-loading-text="{{ __('Rejecting...') }}">{{ __('Reject') }}</button>
                                     </form>
                                 @else
-                                    <span class="text-muted small">{{ __('Review complete') }}</span>
+                                    <span class="text-muted small">{{ $leave->isPending() ? __('Awaiting an eligible reviewer') : __('Review complete') }}</span>
                                 @endif
                             </td>
                         </tr>

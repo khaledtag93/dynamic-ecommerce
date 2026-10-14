@@ -8,6 +8,7 @@ use App\Models\EmployeeLeaveRequest;
 use App\Models\EmployeeLeaveType;
 use App\Models\EmployeeProfile;
 use App\Models\EmployeeWorkShift;
+use App\Services\Workforce\LeaveApprovalRoutingService;
 use App\Services\Workforce\LeaveBalanceService;
 use App\Services\Workforce\LeaveRequestService;
 use App\Services\Workforce\WorkforceAccessService;
@@ -21,6 +22,7 @@ class LeaveController extends Controller
         protected LeaveBalanceService $balanceService,
         protected LeaveRequestService $leaveRequestService,
         protected WorkforceAccessService $access,
+        protected LeaveApprovalRoutingService $approvalRouting,
     ) {
     }
 
@@ -156,9 +158,13 @@ class LeaveController extends Controller
             ->withQueryString();
 
         $scheduleConflicts = $this->scheduleConflictsForRequests($requests->getCollection());
+        $reviewableEmployeeIds = $this->approvalRouting->reviewableEmployeeIds(
+            $request->user(),
+            $requests->getCollection()->pluck('employee')->filter(),
+        );
 
         if ($request->header('X-Live-List') === '1') {
-            return response()->view('admin.workforce.leave._results', compact('requests', 'filters', 'scheduleConflicts'));
+            return response()->view('admin.workforce.leave._results', compact('requests', 'filters', 'scheduleConflicts', 'reviewableEmployeeIds'));
         }
 
         $stats = [
@@ -178,6 +184,7 @@ class LeaveController extends Controller
             'requests',
             'filters',
             'scheduleConflicts',
+            'reviewableEmployeeIds',
             'stats',
             'leaveTypes',
         ));
@@ -185,7 +192,7 @@ class LeaveController extends Controller
 
     public function approve(Request $request, EmployeeLeaveRequest $employeeLeaveRequest)
     {
-        $this->access->assertReviewer($request->user(), (int) $employeeLeaveRequest->employee_profile_id);
+        $this->approvalRouting->assertReviewer($request->user(), (int) $employeeLeaveRequest->employee_profile_id);
         $data = $request->validate([
             'review_notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -203,7 +210,7 @@ class LeaveController extends Controller
 
     public function reject(Request $request, EmployeeLeaveRequest $employeeLeaveRequest)
     {
-        $this->access->assertReviewer($request->user(), (int) $employeeLeaveRequest->employee_profile_id);
+        $this->approvalRouting->assertReviewer($request->user(), (int) $employeeLeaveRequest->employee_profile_id);
         $data = $request->validate([
             'review_notes' => ['nullable', 'string', 'max:2000'],
         ]);

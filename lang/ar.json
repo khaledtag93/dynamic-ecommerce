@@ -6076,5 +6076,7 @@
     "Available balance is currently below the requested days. Final approval checks the balance again.": "الرصيد المتاح حاليًا أقل من الأيام المطلوبة. ستتم مراجعة الرصيد مرة أخرى عند الموافقة.",
     "Policy at submission": "السياسة وقت تقديم الطلب",
     "Historical policy details unavailable": "تفاصيل السياسة التاريخية غير متاحة",
-    "Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled.": "تؤثر تعديلات السياسة على الطلبات الجديدة. تظل تواريخ الطلبات الحالية وأيامها المسجلة ونسخ السياسات المحفوظة دون تغيير. جدولة سريان السياسة بالتاريخ غير مفعلة."
+    "Policy edits affect future requests. Existing request dates, charged days, and recorded policy snapshots remain unchanged. Effective-date scheduling is not enabled.": "تؤثر تعديلات السياسة على الطلبات الجديدة. تظل تواريخ الطلبات الحالية وأيامها المسجلة ونسخ السياسات المحفوظة دون تغيير. جدولة سريان السياسة بالتاريخ غير مفعلة.",
+    "Awaiting an eligible reviewer": "بانتظار مراجع لديه الصلاحية",
+    "Review actions are shown only where your Workforce approval scope permits them. No automatic delegation or escalation is configured.": "تظهر إجراءات المراجعة فقط عندما يسمح بها نطاق صلاحياتك في الموظفين. لا يوجد تفويض أو تصعيد تلقائي مفعّل."
 }

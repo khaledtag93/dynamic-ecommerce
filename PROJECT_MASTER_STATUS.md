@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ROADMAP — W-APP-03 REVIEWER ELIGIBILITY FOUNDATION (2026-10-15)
+
+- Following `afe65e66` / [CI #38651633408](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38651633408) GREEN, W-APP-03 introduces a shared scoped leave approval routing gate to synchronize existing HTTP review checks, domain-service enforcement and approval-button eligibility. Default stays `scoped`, compatible with historical decisions.
+- An optional `direct_manager` config switch is **not enabled by default**; it denies absent/inactive managers and has no escalation/fallback. Any activation remains subject to explicit business approval and future operational acceptance. No historical request, policy snapshot, leave balance or payroll rewrite.
+- Eight new regression tests prepared, PHP/JSON/diff locally PASS. Full isolated MySQL CI **PENDING**. See `docs/WAPP03_APPROVAL_ROUTING_FOUNDATION_2026-10-15.md`. W-ORG-01b QAS acceptance OPEN/DEFERRED; QAS and Production untouched.
+
 ## ROADMAP — W-LEAVE-02d HISTORICAL POLICY EVIDENCE (2026-10-15)
 
 - Starting source `12363cdb`, [CI #38646030979](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38646030979) GREEN, W-LEAVE-02d adds immutable, versioned request-time leave-policy JSON snapshots for **new** requests only. Old rows remain NULL; staff/reviewer UIs accurately label historical evidence without assuming a prior policy.
