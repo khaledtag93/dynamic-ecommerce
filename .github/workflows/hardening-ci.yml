@@ -152,5 +152,17 @@ jobs:
       - name: Test shared browser interactions
         run: npm run test:ui
 
+      - name: Verify QAS acceptance runner fails closed without fixtures
+        run: |
+          node --check tests/browser/workforce-authenticated-readonly.cjs
+          set +e
+          node tests/browser/workforce-authenticated-readonly.cjs --preflight > /tmp/flowra-qa-gate.log 2>&1
+          result=$?
+          set -e
+          if [ "$result" -ne 2 ] || ! grep -q '^BLOCKED:' /tmp/flowra-qa-gate.log; then
+            echo 'ERROR: QAS runner safety preflight did not fail closed as expected.' >&2
+            exit 1
+          fi
+
       - name: Build frontend assets
         run: npm run build
