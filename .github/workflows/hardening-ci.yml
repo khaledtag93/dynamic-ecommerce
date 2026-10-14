@@ -85,7 +85,7 @@ jobs:
 
       - name: PHP syntax scan
         run: |
-          find app config database routes tests -type f -name '*.php' -print0 \
+          find app config database routes tests ops/qa -type f -name '*.php' -print0 \
             | xargs -0 -n1 php -l
 
       - name: Bash syntax scan
