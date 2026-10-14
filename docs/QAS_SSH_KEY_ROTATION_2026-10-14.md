@@ -21,6 +21,17 @@ Previous terminal/tool diagnostic output included private-key material from an e
 - The new **public** key was copied to the owner's Windows clipboard for registration in the official Hostinger UI. The **private** key was never displayed, pasted, copied into the repository, or transmitted.
 - **No key registration, credential change, existing key revocation or QAS remote login occurred in this step.** Old key files and local ssh-agent entries remain unchanged. Do not publish private keys or tokens.
 
+## New key registration and authorized authentication test — 2026-10-14
+
+- Owner explicitly confirmed new public key `flowra-qas-2026-10-14` was added using Hostinger SSH keys management. This is **owner-reported registration**, not a read of the actual Hostinger-installed authorized key content.
+- Reconfirmed private/public key files exist and locally generated public fingerprint matches `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8`; Windows private ACL inheritance disabled, three authorized principals.
+- **One authorized new-key-only SSH authentication preflight** used the standard Desktop Commander SSH path with `BatchMode=yes`, `IdentitiesOnly=yes`, `IdentityAgent=none`, strict known-host validation and the **new** private key. It returned `Permission denied (publickey,password)` and exit `255`. This establishes a server-side authentication denial or key acceptance mismatch but does **not** prove whether the Hostinger registered key content matches, and is **not** a successful login.
+- A subsequent attempt to obtain *sanitized* SSH verbose diagnostic flags on the same path was **blocked by OpenAI safety checks**. No retry/alternative channel/CI-hosted SSH/phpMyAdmin SQL/old key was used after this restriction. Treat live QAS admin access as **BLOCKED**, not “temporarily verified”.
+- Verify in **Hostinger hPanel > Advanced > SSH Access > SSH keys > Edit** that the entry named `flowra-qas-2026-10-14` contains the new public key from `~/.ssh/id_ed25519_flowra_qas_20261014.pub` (not the old one). The public key is safe to inspect; never paste private key or secrets into chat. Official Hostinger guide: https://support.hostinger.com/en/articles/5634532-how-to-generate-ssh-keys-and-add-them-to-hpanel .
+- If the public key matches and SSH remains denied, request **Hostinger support** to validate that this public key is installed/authorized for hosting user `u637857322` on the documented SSH endpoint, and check any permission, propagation or account restrictions. Include only sanitized `Permission denied (publickey,password)` plus non-secret fingerprint; no private data.
+- The old potentially exposed key remains present; it has **not** been revoked or tested. Rotation is **incomplete** until a newly authorized key is proven to work and the old identity is reviewed/revoked through the approved method.
+- **W-ORG-01b still OPEN/BLOCKED:** no read-only runtime DB verification, seven QAS account provisioning, authenticated role tests, fixture cleanup, or Production changes.
+
 ## Next owner action — Hostinger hPanel
 
 1. On `tag-marketplace.com` navigate to **Advanced > SSH Access > SSH keys > Add SSH key**.

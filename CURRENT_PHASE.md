@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## LATEST W-ORG-01b CHECKPOINT — NEW SSH KEY AUTH DENIED (2026-10-14)
+
+- Owner confirmed `flowra-qas-2026-10-14` public key was added to Hostinger SSH keys; local new Ed25519 fingerprint `SHA256:7mWQz6twAkpXaQRIaCng5DYCqNIapsx+4+InbV1qdX8` and protected Windows ACL independently verified. Hostinger SSH status ACTIVE and host/user/port match earlier screenshots.
+- A single standard SSH preflight using **ONLY the new identity**, disabling SSH agent identities, returned **`Permission denied (publickey,password)` (exit 255)**. **NO SSH LOGIN**; current QAS APP_ENV/DB mapping NOT verified. No local changes to the existing three uncommitted W-ORG files, no QAS writes or Production access.
+- A further attempt to obtain sanitized `ssh -vv` diagnostic *flags* was blocked by tool safety checks. **Stop all SSH/alternate transport attempts**, including the old potentially exposed identity; no bypass. Requested next owner action is to inspect the new **PUBLIC** key under Hostinger SSH keys > Edit and confirm it matches the local `.pub` entry; if it matches, contact Hostinger support to validate server installation/permissions. Never paste private key or passwords.
+- Latest previously completed CI [38629501593](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38629501593) GREEN **907 tests / 18,230 assertions** on `9d7d0d94` (PHPUnit isolated); Git source head at start of this pass `9d7d0d94`. **W-ORG-01b remains OPEN/BLOCKED**, authenticated 7-role QAS acceptance and cleanup NOT RUN. See `docs/QAS_SSH_KEY_ROTATION_2026-10-14.md`.
+
 ## CURRENT W-ORG-01b CHECKPOINT — SSH KEY ROTATION STAGED (2026-10-14)
 
 - **CI:** source baseline `ac621f4d`, Hardening run [38622853104](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38622853104) GREEN, **907 tests / 18,230 assertions** (including seven isolated Workforce personas). QAS authenticated role acceptance remains untested.
