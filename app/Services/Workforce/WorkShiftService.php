@@ -24,6 +24,7 @@ class WorkShiftService
         return DB::transaction(function () use ($employee, $data, $actor) {
             $lockedEmployee = EmployeeProfile::query()->whereKey($employee->id)->lockForUpdate()->firstOrFail();
             $this->guardSchedulable($lockedEmployee);
+            $this->guardChronology($data['starts_at'], $data['ends_at']);
             $this->guardNoApprovedLeave($lockedEmployee, $data['starts_at'], $data['ends_at']);
             $this->guardNoOverlap($lockedEmployee, $data['starts_at'], $data['ends_at']);
 
@@ -73,6 +74,7 @@ class WorkShiftService
 
             $startsAt = $data['starts_at'] ?? $lockedShift->starts_at;
             $endsAt = $data['ends_at'] ?? $lockedShift->ends_at;
+            $this->guardChronology($startsAt, $endsAt);
             $this->guardNoApprovedLeave($employee, $startsAt, $endsAt);
             $this->guardNoOverlap($employee, $startsAt, $endsAt, $lockedShift->id);
 
@@ -137,6 +139,16 @@ class WorkShiftService
         });
     }
 
+    private function guardChronology(CarbonInterface|string $startsAt, CarbonInterface|string $endsAt): void
+    {
+        $start = $startsAt instanceof CarbonInterface ? CarbonImmutable::instance($startsAt) : CarbonImmutable::parse($startsAt, 'UTC');
+        $end = $endsAt instanceof CarbonInterface ? CarbonImmutable::instance($endsAt) : CarbonImmutable::parse($endsAt, 'UTC');
+        if ($end->lessThanOrEqualTo($start)) {
+            throw ValidationException::withMessages([
+                'ends_at' => __('Shift end must be after shift start.'),
+            ]);
+        }
+    }
     private function guardSchedulable(EmployeeProfile $employee): void
     {
         if ($employee->status !== EmployeeProfile::STATUS_ACTIVE) {

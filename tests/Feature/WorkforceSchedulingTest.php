@@ -85,6 +85,28 @@ class WorkforceSchedulingTest extends TestCase
         $this->assertNull($shift->fresh()->location);
         $this->assertNull($shift->fresh()->notes);
     }
+    public function test_service_rejects_invalid_shift_chronology_without_mutation(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $employee = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-INVALID-INTERVAL');
+        $service = app(WorkShiftService::class);
+        try {
+            $service->create($employee, ['starts_at' => '2026-09-28 18:00:00', 'ends_at' => '2026-09-28 09:00:00'], $manager);
+            $this->fail('Invalid shift was created');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('ends_at', $e->errors());
+        }
+        $this->assertDatabaseCount('employee_work_shifts', 0);
+        $shift = $service->create($employee, ['starts_at' => '2026-09-28 09:00:00', 'ends_at' => '2026-09-28 17:00:00'], $manager);
+        try {
+            $service->update($shift, ['ends_at' => '2026-09-28 09:00:00'], $manager);
+            $this->fail('Zero duration accepted');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('ends_at', $e->errors());
+        }
+        $this->assertDatabaseCount('employee_work_shifts', 1);
+    }
     public function test_draft_shift_is_hidden_from_employee_schedule_until_published(): void
     {
         Carbon::setTestNow('2026-09-25 08:00:00');
