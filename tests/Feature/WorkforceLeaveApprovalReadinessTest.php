@@ -17,6 +17,26 @@ class WorkforceLeaveApprovalReadinessTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_readiness_counts_each_pending_request_only_once_when_page_contains_repeated_reference(): void
+    {
+        $this->roles();
+        $admin = $this->staff('operations_manager');
+        $worker = $this->employee($this->staff('cashier'), 'READY-UNIQUE');
+        $pending = $this->leave($worker, $this->type(), '2026-10-10');
+
+        $readiness = app(LeaveApprovalReadinessService::class)->forPage(
+            $admin,
+            collect([$pending, $pending]),
+            [$worker->id],
+        );
+
+        $this->assertCount(1, $readiness['states']);
+        $this->assertSame(LeaveApprovalReadinessService::MINE, $readiness['states'][$pending->id]);
+        $this->assertSame(1, $readiness['counts']['mine']);
+        $this->assertSame(1, array_sum($readiness['counts']));
+    }
+
+
     public function test_default_scoped_mode_keeps_legacy_global_reviewer_and_never_invents_unassigned(): void
     {
         $this->roles();

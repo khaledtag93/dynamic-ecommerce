@@ -52,6 +52,7 @@ final class LeaveApprovalReadinessService
                 continue;
             }
 
+            if (array_key_exists((int) $leave->id, $states)) { continue; }
             $target = $leave->employee;
             if (! $allowedMode) {
                 $state = self::CONFIGURATION;
