@@ -21,6 +21,7 @@ class LeaveRequestService
         protected AdminActivityLogService $activityLogService,
         protected LeavePolicyService $leavePolicy,
         protected LeaveApprovalRoutingService $approvalRouting,
+        protected WorkforceAccessService $access,
     ) {
     }
 
@@ -258,6 +259,7 @@ class LeaveRequestService
         User $actor,
     ): EmployeeLeaveAdjustment {
         return DB::transaction(function () use ($employee, $type, $year, $adjustmentType, $days, $reason, $actor) {
+            $this->access->assertOrgAdmin($actor);
             $lockedEmployee = EmployeeProfile::query()->whereKey($employee->id)->lockForUpdate()->firstOrFail();
 
             if (! array_key_exists($adjustmentType, EmployeeLeaveAdjustment::typeOptions())) {

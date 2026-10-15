@@ -294,6 +294,23 @@ class WorkforceLeaveManagementTest extends TestCase
         $this->assertDatabaseCount('employee_leave_adjustments', 0);
         $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'leave_balance_adjusted']);
     }
+    public function test_direct_leave_balance_adjustment_requires_org_admin_scope_without_writes(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-ADJ-NO-SCOPE');
+        $type = $this->leaveType('ANNUAL', 10);
+        try {
+            app(\App\Services\Workforce\LeaveRequestService::class)->adjustBalance(
+                $employee, $type, 2026, EmployeeLeaveAdjustment::TYPE_ADJUSTMENT, 2.0, 'Unauthorized', $cashier,
+            );
+            $this->fail('Non-admin adjusted another employee balance');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
+        $this->assertDatabaseCount('employee_leave_adjustments', 0);
+        $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'leave_balance_adjusted']);
+    }
     public function test_employee_can_cancel_only_own_pending_leave_request(): void
     {
         app(AuthorizationService::class)->syncDefaults();
