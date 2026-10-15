@@ -35,6 +35,7 @@ class LeaveRequestService
         return DB::transaction(function () use ($user, $type, $startsOn, $endsOn, $reason) {
             $employee = $user->employeeProfile()->lockForUpdate()->first();
 
+            $type = EmployeeLeaveType::query()->whereKey($type->id)->lockForUpdate()->firstOrFail();
             $this->assertRequestEligible($employee, $type);
             [$start, $end, $days] = $this->leavePolicy->resolve($type, $startsOn, $endsOn);
             $this->assertNoRequestOverlap($employee, $start->toDateString(), $end->toDateString(), true);
