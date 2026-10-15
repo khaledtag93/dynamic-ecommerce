@@ -23,6 +23,7 @@ class WorkShiftService
     {
         return DB::transaction(function () use ($employee, $data, $actor) {
             $lockedEmployee = EmployeeProfile::query()->whereKey($employee->id)->lockForUpdate()->firstOrFail();
+            $this->access->assertManage($actor, $lockedEmployee);
             $this->guardSchedulable($lockedEmployee);
             $this->guardChronology($data['starts_at'], $data['ends_at']);
             $this->guardNoApprovedLeave($lockedEmployee, $data['starts_at'], $data['ends_at']);

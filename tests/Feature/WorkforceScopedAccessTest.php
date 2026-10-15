@@ -122,6 +122,23 @@ class WorkforceScopedAccessTest extends TestCase
         $this->get(route('admin.workforce.payroll.compensation.index'))->assertForbidden();
     }
 
+    public function test_direct_shift_create_rejects_other_team_and_supervisor_self(): void
+    {
+        app(\App\Services\Auth\AuthorizationService::class)->syncDefaults();
+        [$supervisor, $lead, $worker, $outsider] = $this->tree();
+        $self = EmployeeProfile::query()->where('user_id', $supervisor->id)->firstOrFail();
+        $payload = ['starts_at' => '2026-11-02 09:00:00', 'ends_at' => '2026-11-02 17:00:00'];
+        foreach ([$outsider, $self] as $target) {
+            try {
+                app(\App\Services\Workforce\WorkShiftService::class)->create($target, $payload, $supervisor);
+                $this->fail('Unauthorized shift create succeeded');
+            } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+                $this->assertSame(403, $e->getStatusCode());
+            }
+        }
+        $this->assertDatabaseCount('employee_work_shifts', 0);
+        $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'work_shift_created']);
+    }
     private function tree(): array
     {
         $supervisor = $this->staff('team_supervisor');
