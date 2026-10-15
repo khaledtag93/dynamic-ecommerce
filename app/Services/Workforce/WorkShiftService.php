@@ -140,8 +140,14 @@ class WorkShiftService
 
     private function guardChronology(CarbonInterface|string $startsAt, CarbonInterface|string $endsAt): void
     {
-        $start = $startsAt instanceof CarbonInterface ? CarbonImmutable::instance($startsAt) : CarbonImmutable::parse($startsAt, 'UTC');
-        $end = $endsAt instanceof CarbonInterface ? CarbonImmutable::instance($endsAt) : CarbonImmutable::parse($endsAt, 'UTC');
+        try {
+            $start = $startsAt instanceof CarbonInterface ? CarbonImmutable::instance($startsAt) : CarbonImmutable::parse($startsAt, 'UTC');
+            $end = $endsAt instanceof CarbonInterface ? CarbonImmutable::instance($endsAt) : CarbonImmutable::parse($endsAt, 'UTC');
+        } catch (\Carbon\Exceptions\InvalidFormatException $exception) {
+            throw ValidationException::withMessages([
+                'starts_at' => __('Enter valid shift start and end dates.'),
+            ]);
+        }
         if ($end->lessThanOrEqualTo($start)) {
             throw ValidationException::withMessages([
                 'ends_at' => __('Shift end must be after shift start.'),

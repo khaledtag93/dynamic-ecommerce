@@ -123,6 +123,22 @@ class WorkforceSchedulingTest extends TestCase
         $this->assertSame($second->id, $stale->fresh()->employee_profile_id);
         $this->assertSame('Updated without employee id', $stale->fresh()->notes);
     }
+    public function test_service_invalid_shift_date_returns_validation_error_without_creating_shift(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $employee = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-BAD-DATE');
+        try {
+            app(WorkShiftService::class)->create($employee, [
+                'starts_at' => 'not-a-real-date',
+                'ends_at' => '2026-09-28 17:00:00',
+            ], $manager);
+            $this->fail('Invalid date unexpectedly accepted');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $this->assertArrayHasKey('starts_at', $exception->errors());
+        }
+        $this->assertDatabaseCount('employee_work_shifts', 0);
+    }
     public function test_draft_shift_is_hidden_from_employee_schedule_until_published(): void
     {
         Carbon::setTestNow('2026-09-25 08:00:00');
