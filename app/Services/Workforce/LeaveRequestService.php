@@ -265,6 +265,12 @@ class LeaveRequestService
                     'type' => __('Select a valid leave balance adjustment type.'),
                 ]);
             }
+            if (! is_finite($days) || abs($days) > 365) {
+                throw ValidationException::withMessages([
+                    'days' => __('Leave balance adjustment must be between -365 and 365 days.'),
+                ]);
+            }
+
             if (abs($days) < 0.001) {
                 throw ValidationException::withMessages([
                     'days' => __('Leave balance adjustment cannot be zero.'),

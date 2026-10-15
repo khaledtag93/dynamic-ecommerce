@@ -275,6 +275,25 @@ class WorkforceLeaveManagementTest extends TestCase
         $this->assertDatabaseCount('employee_leave_adjustments', 0);
         $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'leave_balance_adjusted']);
     }
+    public function test_direct_adjustment_rejects_out_of_range_days_without_writes(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $employee = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-ADJ-RANGE');
+        $type = $this->leaveType('ANNUAL', 10);
+        foreach ([366.0, -366.0, INF] as $invalid) {
+            try {
+                app(\App\Services\Workforce\LeaveRequestService::class)->adjustBalance(
+                    $employee, $type, 2026, EmployeeLeaveAdjustment::TYPE_ADJUSTMENT, $invalid, 'Invalid range', $manager,
+                );
+                $this->fail('Invalid adjustment accepted');
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                $this->assertArrayHasKey('days', $e->errors());
+            }
+        }
+        $this->assertDatabaseCount('employee_leave_adjustments', 0);
+        $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'leave_balance_adjusted']);
+    }
     public function test_employee_can_cancel_only_own_pending_leave_request(): void
     {
         app(AuthorizationService::class)->syncDefaults();
