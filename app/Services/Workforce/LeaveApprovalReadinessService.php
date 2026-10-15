@@ -122,7 +122,8 @@ final class LeaveApprovalReadinessService
             $seen[$cursor] = true;
             $manager = EmployeeProfile::query()->with('user')->find($cursor);
             if (! $manager) {
-                break;
+                // Broken manager references are uncertain, never proven unassigned.
+                return null;
             }
             if ($manager->user
                 && (int) $manager->user_id !== (int) $target->user_id

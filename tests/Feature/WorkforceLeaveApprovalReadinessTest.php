@@ -203,6 +203,40 @@ class WorkforceLeaveApprovalReadinessTest extends TestCase
         $this->assertSame(EmployeeLeaveRequest::STATUS_REJECTED, $rejected->fresh()->status);
     }
 
+    public function test_cyclic_scoped_hierarchy_reports_configuration_without_self_review(): void
+    {
+        $this->roles();
+        $head = $this->employee($this->staff('team_supervisor'), 'READY-CYCLE-HEAD');
+        $child = $this->employee($this->staff('cashier'), 'READY-CYCLE-CHILD', $head->id);
+        $head->update(['manager_employee_profile_id' => $child->id]);
+        $leave = $this->leave($head, $this->type(), '2026-10-10');
+
+        $response = $this->actingAs($head->user)->get(route('admin.workforce.leave.index'))->assertOk();
+        $this->assertSame(
+            LeaveApprovalReadinessService::CONFIGURATION,
+            $response->viewData('reviewReadiness')['states'][$leave->id],
+        );
+        $response->assertDontSee(route('admin.workforce.leave.approve', $leave), false);
+        $this->patch(route('admin.workforce.leave.approve', $leave))->assertForbidden();
+        $this->assertSame(EmployeeLeaveRequest::STATUS_PENDING, $leave->fresh()->status);
+    }
+
+    public function test_revoked_ancestor_permission_is_not_counted_as_other_reviewer(): void
+    {
+        $this->roles();
+        $head = $this->employee($this->staff('cashier'), 'READY-REVOKED-HEAD');
+        $lead = $this->employee($this->staff('team_supervisor'), 'READY-REVOKED-LEAD', $head->id);
+        $leave = $this->leave($lead, $this->type(), '2026-10-10');
+
+        $response = $this->actingAs($lead->user)->get(route('admin.workforce.leave.index'))->assertOk();
+        $this->assertSame(
+            LeaveApprovalReadinessService::UNASSIGNED,
+            $response->viewData('reviewReadiness')['states'][$leave->id],
+        );
+        $response->assertDontSee(route('admin.workforce.leave.approve', $leave), false);
+        $this->patch(route('admin.workforce.leave.reject', $leave))->assertForbidden();
+    }
+
     private function roles(): void
     {
         app(AuthorizationService::class)->syncDefaults();
