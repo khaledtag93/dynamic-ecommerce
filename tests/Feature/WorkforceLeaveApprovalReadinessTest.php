@@ -208,7 +208,9 @@ class WorkforceLeaveApprovalReadinessTest extends TestCase
         $this->roles();
         $head = $this->employee($this->staff('team_supervisor'), 'READY-CYCLE-HEAD');
         $child = $this->employee($this->staff('cashier'), 'READY-CYCLE-CHILD', $head->id);
-        $head->update(['manager_employee_profile_id' => $child->id]);
+        // The manager FK is guarded from mass assignment; simulate a legacy cycle explicitly.
+        $head->manager_employee_profile_id = $child->id;
+        $head->save();
         $leave = $this->leave($head, $this->type(), '2026-10-10');
 
         $response = $this->actingAs($head->user)->get(route('admin.workforce.leave.index'))->assertOk();

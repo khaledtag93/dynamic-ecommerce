@@ -3,7 +3,8 @@
 Date: 2026-10-15
 Branch: `sec03-framework-upgrade`
 Source commit: `0b3181cef02e93b5bb47b4291e677296660396f9`
-CI run: https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38659785216
+Original source CI run #38659785216: cancelled when newer docs checkpoint was pushed.
+Authoritative checkpoint CI run: https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38659887663 (same source fix plus documentation; pending final conclusion).
 
 ## Scope
 
