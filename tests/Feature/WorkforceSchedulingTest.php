@@ -139,6 +139,29 @@ class WorkforceSchedulingTest extends TestCase
         }
         $this->assertDatabaseCount('employee_work_shifts', 0);
     }
+    public function test_service_rejects_cancelled_status_without_cancellation_flow(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $employee = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-STATUS-GUARD');
+        $service = app(WorkShiftService::class);
+        $data = ['starts_at' => '2026-09-28 09:00:00', 'ends_at' => '2026-09-28 17:00:00'];
+        try {
+            $service->create($employee, $data + ['status' => EmployeeWorkShift::STATUS_CANCELLED], $manager);
+            $this->fail('Cancelled creation accepted');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('status', $e->errors());
+        }
+        $this->assertDatabaseCount('employee_work_shifts', 0);
+        $shift = $service->create($employee, $data, $manager);
+        try {
+            $service->update($shift, ['status' => EmployeeWorkShift::STATUS_CANCELLED], $manager);
+            $this->fail('Cancelled update bypassed cancellation flow');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('status', $e->errors());
+        }
+        $this->assertSame(EmployeeWorkShift::STATUS_DRAFT, $shift->fresh()->status);
+    }
     public function test_draft_shift_is_hidden_from_employee_schedule_until_published(): void
     {
         Carbon::setTestNow('2026-09-25 08:00:00');

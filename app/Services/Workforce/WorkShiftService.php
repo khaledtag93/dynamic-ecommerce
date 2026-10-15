@@ -29,6 +29,7 @@ class WorkShiftService
             $this->guardNoOverlap($lockedEmployee, $data['starts_at'], $data['ends_at']);
 
             $status = $data['status'] ?? EmployeeWorkShift::STATUS_DRAFT;
+            $this->guardEditableStatus($status);
 
             $shift = EmployeeWorkShift::query()->create([
                 'employee_profile_id' => $lockedEmployee->id,
@@ -78,6 +79,7 @@ class WorkShiftService
             $this->guardNoOverlap($employee, $startsAt, $endsAt, $lockedShift->id);
 
             $status = $data['status'] ?? $lockedShift->status;
+            $this->guardEditableStatus($status);
             $publishedAt = $lockedShift->published_at;
             if ($status === EmployeeWorkShift::STATUS_PUBLISHED && ! $publishedAt) {
                 $publishedAt = now();
@@ -138,6 +140,14 @@ class WorkShiftService
         });
     }
 
+    private function guardEditableStatus(string $status): void
+    {
+        if (! in_array($status, [EmployeeWorkShift::STATUS_DRAFT, EmployeeWorkShift::STATUS_PUBLISHED], true)) {
+            throw ValidationException::withMessages([
+                'status' => __('Select a valid work shift status.'),
+            ]);
+        }
+    }
     private function guardChronology(CarbonInterface|string $startsAt, CarbonInterface|string $endsAt): void
     {
         try {
