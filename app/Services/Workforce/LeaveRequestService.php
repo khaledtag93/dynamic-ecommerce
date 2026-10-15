@@ -78,6 +78,7 @@ class LeaveRequestService
     public function preview(User $user, EmployeeLeaveType $type, string $startsOn, ?string $endsOn): array
     {
         $employee = $user->employeeProfile()->first();
+        $type = EmployeeLeaveType::query()->findOrFail($type->id);
         $this->assertRequestEligible($employee, $type);
 
         [$start, $end, $days] = $this->leavePolicy->resolve($type, $startsOn, $endsOn);

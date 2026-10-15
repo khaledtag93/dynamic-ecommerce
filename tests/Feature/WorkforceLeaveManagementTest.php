@@ -327,6 +327,22 @@ class WorkforceLeaveManagementTest extends TestCase
         $this->assertDatabaseCount('employee_leave_requests', 0);
         $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'leave_requested']);
     }
+    public function test_preview_rejects_stale_disabled_leave_type_without_writes(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $cashier = $this->staffWithRole('cashier');
+        $this->employeeFor($cashier, 'EMP-PREVIEW-STALE-TYPE');
+        $type = $this->leaveType('ANNUAL', 10);
+        EmployeeLeaveType::query()->whereKey($type->id)->update(['is_active' => false]);
+        try {
+            app(\App\Services\Workforce\LeaveRequestService::class)->preview($cashier, $type, '2026-11-10', '2026-11-11');
+            $this->fail('Preview accepted disabled type from stale model');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $this->assertArrayHasKey('employee_leave_type_id', $exception->errors());
+        }
+        $this->assertDatabaseCount('employee_leave_requests', 0);
+        $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'leave_requested']);
+    }
     public function test_employee_can_cancel_only_own_pending_leave_request(): void
     {
         app(AuthorizationService::class)->syncDefaults();
