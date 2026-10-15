@@ -107,6 +107,22 @@ class WorkforceSchedulingTest extends TestCase
         }
         $this->assertDatabaseCount('employee_work_shifts', 1);
     }
+    public function test_stale_shift_object_cannot_restore_previous_employee_on_metadata_update(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $first = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-OLD-OWNER');
+        $second = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-NEW-OWNER');
+        $service = app(WorkShiftService::class);
+        $stale = $service->create($first, [
+            'starts_at' => '2026-09-29 09:00:00',
+            'ends_at' => '2026-09-29 17:00:00',
+        ], $manager);
+        $service->update($stale, ['employee_profile_id' => $second->id], $manager);
+        $service->update($stale, ['notes' => 'Updated without employee id'], $manager);
+        $this->assertSame($second->id, $stale->fresh()->employee_profile_id);
+        $this->assertSame('Updated without employee id', $stale->fresh()->notes);
+    }
     public function test_draft_shift_is_hidden_from_employee_schedule_until_published(): void
     {
         Carbon::setTestNow('2026-09-25 08:00:00');
