@@ -139,6 +139,42 @@ class WorkforceScopedAccessTest extends TestCase
         $this->assertDatabaseCount('employee_work_shifts', 0);
         $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'work_shift_created']);
     }
+    public function test_shift_update_denies_cross_team_and_self_targets(): void
+    {
+        app(\App\Services\Auth\AuthorizationService::class)->syncDefaults();
+        [$supervisor, $lead, $worker, $outsider] = $this->tree();
+        $self = EmployeeProfile::query()->where('user_id', $supervisor->id)->firstOrFail();
+        $service = app(\App\Services\Workforce\WorkShiftService::class);
+        $shift = $service->create($worker, ['starts_at' => '2026-11-03 09:00:00', 'ends_at' => '2026-11-03 17:00:00'], $supervisor);
+        foreach ([$outsider, $self] as $target) {
+            try {
+                $service->update($shift, ['employee_profile_id' => $target->id], $supervisor);
+                $this->fail('Unauthorized reassignment accepted');
+            } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+                $this->assertSame(403, $e->getStatusCode());
+            }
+            $this->assertSame($worker->id, $shift->fresh()->employee_profile_id);
+        }
+        $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'work_shift_updated', 'subject_id' => $shift->id]);
+    }
+    public function test_stale_shift_cannot_edit_current_owner_outside_team(): void
+    {
+        app(\App\Services\Auth\AuthorizationService::class)->syncDefaults();
+        [$supervisor, $lead, $worker, $outsider] = $this->tree();
+        $admin = $this->staff('operations_manager');
+        $service = app(\App\Services\Workforce\WorkShiftService::class);
+        $stale = $service->create($worker, ['starts_at' => '2026-11-04 09:00:00', 'ends_at' => '2026-11-04 17:00:00'], $supervisor);
+        $service->update($stale, ['employee_profile_id' => $outsider->id], $admin);
+        try {
+            $service->update($stale, ['notes' => 'Unauthorized'], $supervisor);
+            $this->fail('Stale ownership bypassed access checks');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->assertSame(403, $e->getStatusCode());
+        }
+        $this->assertSame($outsider->id, $stale->fresh()->employee_profile_id);
+        $this->assertNull($stale->fresh()->notes);
+        $this->assertSame(1, \App\Models\AdminActivityLog::query()->where('action', 'work_shift_updated')->where('subject_id', $stale->id)->count());
+    }
     private function tree(): array
     {
         $supervisor = $this->staff('team_supervisor');

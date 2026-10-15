@@ -62,8 +62,10 @@ class WorkShiftService
     {
         return DB::transaction(function () use ($shift, $data, $actor) {
             $lockedShift = EmployeeWorkShift::query()->whereKey($shift->id)->lockForUpdate()->firstOrFail();
+            $this->access->assertManage($actor, (int) $lockedShift->employee_profile_id);
             $employeeId = (int) ($data['employee_profile_id'] ?? $lockedShift->employee_profile_id);
             $employee = EmployeeProfile::query()->whereKey($employeeId)->lockForUpdate()->firstOrFail();
+            $this->access->assertManage($actor, $employee);
 
             if ($lockedShift->isCancelled()) {
                 throw ValidationException::withMessages([
