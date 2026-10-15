@@ -64,6 +64,27 @@ class WorkforceSchedulingTest extends TestCase
             ->assertSee('26/09/2026');
     }
 
+    public function test_shift_update_can_explicitly_clear_nullable_metadata_without_clearing_omitted_fields(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $employee = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-CLEAR-META');
+        $service = app(WorkShiftService::class);
+        $shift = $service->create($employee, [
+            'starts_at' => '2026-09-27 09:00:00',
+            'ends_at' => '2026-09-27 17:00:00',
+            'location' => 'Front Counter',
+            'notes' => 'Old note',
+        ], $manager);
+
+        $service->update($shift, ['location' => null], $manager);
+        $this->assertNull($shift->fresh()->location);
+        $this->assertSame('Old note', $shift->fresh()->notes);
+
+        $service->update($shift, ['notes' => null], $manager);
+        $this->assertNull($shift->fresh()->location);
+        $this->assertNull($shift->fresh()->notes);
+    }
     public function test_draft_shift_is_hidden_from_employee_schedule_until_published(): void
     {
         Carbon::setTestNow('2026-09-25 08:00:00');

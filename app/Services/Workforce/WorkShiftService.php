@@ -90,8 +90,8 @@ class WorkShiftService
                 'starts_at' => $startsAt,
                 'ends_at' => $endsAt,
                 'status' => $status,
-                'location' => $this->nullableTrim($data['location'] ?? $lockedShift->location),
-                'notes' => $this->nullableTrim($data['notes'] ?? $lockedShift->notes),
+                'location' => $this->nullableTrim(array_key_exists('location', $data) ? $data['location'] : $lockedShift->location),
+                'notes' => $this->nullableTrim(array_key_exists('notes', $data) ? $data['notes'] : $lockedShift->notes),
                 'published_at' => $publishedAt,
                 'updated_by_user_id' => $actor->id,
             ]);
