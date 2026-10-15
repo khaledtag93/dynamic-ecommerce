@@ -162,6 +162,26 @@ class WorkforceSchedulingTest extends TestCase
         }
         $this->assertSame(EmployeeWorkShift::STATUS_DRAFT, $shift->fresh()->status);
     }
+    public function test_direct_shift_cancellation_denies_unauthorized_actor_without_audit(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $cashier = $this->staffWithRole('cashier');
+        $employee = $this->employeeFor($cashier, 'EMP-CANCEL-SCOPE');
+        $shift = app(WorkShiftService::class)->create($employee, [
+            'starts_at' => '2026-09-29 09:00:00',
+            'ends_at' => '2026-09-29 17:00:00',
+        ], $manager);
+        try {
+            app(WorkShiftService::class)->cancel($shift, $cashier);
+            $this->fail('Unauthorized cancellation accepted');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
+        $this->assertSame(EmployeeWorkShift::STATUS_DRAFT, $shift->fresh()->status);
+        $this->assertNull($shift->fresh()->cancelled_at);
+        $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'work_shift_cancelled', 'subject_id' => $shift->id]);
+    }
     public function test_draft_shift_is_hidden_from_employee_schedule_until_published(): void
     {
         Carbon::setTestNow('2026-09-25 08:00:00');

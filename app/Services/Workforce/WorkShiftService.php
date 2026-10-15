@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class WorkShiftService
 {
-    public function __construct(protected AdminActivityLogService $activityLogService)
+    public function __construct(protected AdminActivityLogService $activityLogService, protected WorkforceAccessService $access)
     {
     }
 
@@ -116,6 +116,7 @@ class WorkShiftService
     {
         return DB::transaction(function () use ($shift, $actor) {
             $lockedShift = EmployeeWorkShift::query()->whereKey($shift->id)->lockForUpdate()->firstOrFail();
+            $this->access->assertManage($actor, (int) $lockedShift->employee_profile_id);
 
             if ($lockedShift->isCancelled()) {
                 return $lockedShift;
