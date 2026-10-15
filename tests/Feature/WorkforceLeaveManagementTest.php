@@ -302,6 +302,27 @@ class WorkforceLeaveManagementTest extends TestCase
         $this->assertSame(EmployeeLeaveRequest::STATUS_PENDING, $request->fresh()->status);
         $this->assertSame($newEmployee->id, $request->fresh()->employee_profile_id);
     }
+    public function test_approval_uses_current_owner_schedule_not_stale_request_owner(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $oldOwner = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-APPROVE-OLD');
+        $currentOwner = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-APPROVE-NEW');
+        $leave = $this->pendingLeave($oldOwner, $this->leaveType('ANNUAL', 10), '2026-10-10', '2026-10-11', 2);
+        EmployeeLeaveRequest::query()->whereKey($leave->id)->update(['employee_profile_id' => $currentOwner->id]);
+        app(WorkShiftService::class)->create($currentOwner, [
+            'starts_at' => '2026-10-10 09:00:00',
+            'ends_at' => '2026-10-10 17:00:00',
+        ], $manager);
+        try {
+            app(\App\Services\Workforce\LeaveRequestService::class)->approve($leave, $manager);
+            $this->fail('Approval ignored current employee schedule conflict');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $this->assertArrayHasKey('leave', $exception->errors());
+        }
+        $this->assertSame(EmployeeLeaveRequest::STATUS_PENDING, $leave->fresh()->status);
+        $this->assertSame($currentOwner->id, $leave->fresh()->employee_profile_id);
+    }
     public function test_manager_leave_review_is_live_and_cashier_cannot_access_it(): void
     {
         app(AuthorizationService::class)->syncDefaults();

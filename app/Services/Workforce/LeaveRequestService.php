@@ -145,12 +145,11 @@ class LeaveRequestService
     public function approve(EmployeeLeaveRequest $request, User $reviewer, ?string $notes = null): EmployeeLeaveRequest
     {
         return DB::transaction(function () use ($request, $reviewer, $notes) {
-            $employee = EmployeeProfile::query()->whereKey($request->employee_profile_id)->lockForUpdate()->firstOrFail();
+            $locked = EmployeeLeaveRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            $employee = EmployeeProfile::query()->whereKey($locked->employee_profile_id)->lockForUpdate()->firstOrFail();
             // Recheck inside the transaction: callers other than the HTTP controller
             // must never bypass routing/ownership checks.
             $this->approvalRouting->assertReviewer($reviewer, $employee);
-
-            $locked = EmployeeLeaveRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
 
             if (! $locked->isPending()) {
                 throw ValidationException::withMessages([
