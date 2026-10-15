@@ -126,7 +126,7 @@ final class LeaveApprovalReadinessService
             }
             if ($manager->user
                 && (int) $manager->user_id !== (int) $target->user_id
-                && $manager->user->hasPermission('workforce.manage')) {
+                && $this->routing->canReview($manager->user, $target)) {
                 return true;
             }
             $cursor = $manager->manager_employee_profile_id;
