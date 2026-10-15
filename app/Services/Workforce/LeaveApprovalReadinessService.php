@@ -98,6 +98,11 @@ final class LeaveApprovalReadinessService
                 ? EmployeeProfile::query()->with('user')->find($target->manager_employee_profile_id)
                 : null;
 
+            if ($target->manager_employee_profile_id !== null && ! $manager) {
+                // A stale reference is a routing configuration issue, not a missing assignment.
+                return null;
+            }
+
             return $manager?->user !== null
                 && $this->routing->canReview($manager->user, $target);
         }

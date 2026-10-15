@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Auth\AuthorizationService;
 use App\Services\Workforce\LeaveApprovalReadinessService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class WorkforceLeaveApprovalReadinessTest extends TestCase
@@ -237,6 +238,40 @@ class WorkforceLeaveApprovalReadinessTest extends TestCase
         );
         $response->assertDontSee(route('admin.workforce.leave.approve', $leave), false);
         $this->patch(route('admin.workforce.leave.reject', $leave))->assertForbidden();
+    }
+
+    public function test_stale_direct_manager_reference_is_configuration_without_cross_team_disclosure(): void
+    {
+        $this->roles();
+        config()->set('workforce.leave_approval.routing_mode', 'direct_manager');
+        $admin = $this->staff('operations_manager');
+        $worker = $this->employee($this->staff('cashier'), 'READY-STALE-MANAGER');
+        $outsider = $this->employee($this->staff('cashier'), 'READY-PRIVATE-TEAM');
+        $type = $this->type();
+        $leave = $this->leave($worker, $type, '2026-10-10');
+        $this->leave($outsider, $type, '2026-11-10', 'PRIVATE-STALE-MANAGER-REASON');
+
+        // Simulate a historical broken FK only inside the isolated test database.
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        try {
+            $worker->manager_employee_profile_id = 999999999;
+            $worker->save();
+        } finally {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }
+
+        $response = $this->actingAs($admin)->get(route('admin.workforce.leave.index'))->assertOk();
+        $this->assertSame(
+            LeaveApprovalReadinessService::CONFIGURATION,
+            $response->viewData('reviewReadiness')['states'][$leave->id],
+        );
+        $response->assertDontSee(route('admin.workforce.leave.approve', $leave), false);
+        $this->patch(route('admin.workforce.leave.approve', $leave))->assertForbidden();
+        $this->assertSame(EmployeeLeaveRequest::STATUS_PENDING, $leave->fresh()->status);
+
+        $scoped = $this->actingAs($worker->user)->get(route('admin.workforce.leave.index'));
+        $scoped->assertForbidden();
+        $scoped->assertDontSee('PRIVATE-STALE-MANAGER-REASON');
     }
 
     private function roles(): void
