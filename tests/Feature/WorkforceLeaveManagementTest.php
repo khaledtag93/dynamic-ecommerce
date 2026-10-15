@@ -258,6 +258,23 @@ class WorkforceLeaveManagementTest extends TestCase
         $this->assertDatabaseCount('employee_leave_adjustments', 1);
     }
 
+    public function test_direct_balance_adjustment_rejects_unknown_type_without_ledger_or_audit_write(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $manager = $this->staffWithRole('operations_manager');
+        $employee = $this->employeeFor($this->staffWithRole('cashier'), 'EMP-BAD-ADJ-TYPE');
+        $type = $this->leaveType('ANNUAL', 10);
+        try {
+            app(\App\Services\Workforce\LeaveRequestService::class)->adjustBalance(
+                $employee, $type, 2026, 'unknown_type', 2, 'Should be rejected', $manager,
+            );
+            $this->fail('Unknown adjustment type was accepted');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $this->assertArrayHasKey('type', $exception->errors());
+        }
+        $this->assertDatabaseCount('employee_leave_adjustments', 0);
+        $this->assertDatabaseMissing('admin_activity_logs', ['action' => 'leave_balance_adjusted']);
+    }
     public function test_employee_can_cancel_only_own_pending_leave_request(): void
     {
         app(AuthorizationService::class)->syncDefaults();

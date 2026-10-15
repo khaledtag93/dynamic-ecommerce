@@ -260,6 +260,11 @@ class LeaveRequestService
         return DB::transaction(function () use ($employee, $type, $year, $adjustmentType, $days, $reason, $actor) {
             $lockedEmployee = EmployeeProfile::query()->whereKey($employee->id)->lockForUpdate()->firstOrFail();
 
+            if (! array_key_exists($adjustmentType, EmployeeLeaveAdjustment::typeOptions())) {
+                throw ValidationException::withMessages([
+                    'type' => __('Select a valid leave balance adjustment type.'),
+                ]);
+            }
             if (abs($days) < 0.001) {
                 throw ValidationException::withMessages([
                     'days' => __('Leave balance adjustment cannot be zero.'),
