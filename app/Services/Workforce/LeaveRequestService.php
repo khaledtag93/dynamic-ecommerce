@@ -217,13 +217,13 @@ class LeaveRequestService
         return DB::transaction(function () use ($request, $user) {
             $employee = $user->employeeProfile()->lockForUpdate()->first();
 
-            if (! $employee || (int) $request->employee_profile_id !== (int) $employee->id) {
+            $locked = EmployeeLeaveRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+
+            if (! $employee || (int) $locked->employee_profile_id !== (int) $employee->id) {
                 throw ValidationException::withMessages([
                     'leave' => __('You can only cancel your own leave requests.'),
                 ]);
             }
-
-            $locked = EmployeeLeaveRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
 
             if (! $locked->isPending()) {
                 throw ValidationException::withMessages([

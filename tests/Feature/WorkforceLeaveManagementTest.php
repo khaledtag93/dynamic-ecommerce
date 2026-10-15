@@ -283,6 +283,25 @@ class WorkforceLeaveManagementTest extends TestCase
         $this->assertNotNull($own->fresh()->cancelled_at);
     }
 
+    public function test_cancel_rechecks_current_leave_owner_when_passed_request_is_stale(): void
+    {
+        app(AuthorizationService::class)->syncDefaults();
+        $owner = $this->staffWithRole('cashier');
+        $ownerEmployee = $this->employeeFor($owner, 'EMP-STALE-LEAVE-OWNER');
+        $newOwner = $this->staffWithRole('cashier');
+        $newEmployee = $this->employeeFor($newOwner, 'EMP-STALE-LEAVE-NEW');
+        $request = $this->pendingLeave($ownerEmployee, $this->leaveType('ANNUAL', 10), '2026-10-10', '2026-10-11', 2);
+        EmployeeLeaveRequest::query()->whereKey($request->id)->update(['employee_profile_id' => $newEmployee->id]);
+
+        try {
+            app(\App\Services\Workforce\LeaveRequestService::class)->cancel($request, $owner);
+            $this->fail('Stale owner incorrectly cancelled another employee leave');
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $this->assertArrayHasKey('leave', $exception->errors());
+        }
+        $this->assertSame(EmployeeLeaveRequest::STATUS_PENDING, $request->fresh()->status);
+        $this->assertSame($newEmployee->id, $request->fresh()->employee_profile_id);
+    }
     public function test_manager_leave_review_is_live_and_cashier_cannot_access_it(): void
     {
         app(AuthorizationService::class)->syncDefaults();
