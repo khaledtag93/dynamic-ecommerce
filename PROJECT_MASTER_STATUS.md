@@ -1,5 +1,15 @@
 # MASTER PROJECT STATUS
 
+## CURRENT RELEASE PRIORITY — PHASE 1 PRODUCTION CLOSURE (2026-10-17)
+
+- Owner requested a project-wide evidence-based inventory: what is closed, incomplete, missing for Production, and explicitly deferred to Phase 2. **Release decision: NO-GO; no honest completion percentage until the current scope/inventory is reconciled.** Freeze new feature expansion; preserve completed source boundaries and proven guest checks.
+- Authoritative current closure register: [Phase 1 Production Closure + Phase 2 Register](docs/PHASE1_PRODUCTION_CLOSURE_REGISTER_2026-10-17_AR.md). Extends existing buyer-grade/page DoD rules; it does not declare the full source or runtime audit complete.
+- Latest guest evidence: Slice 04 24/24 renders plus locale switches; **Slice 05 32/32 GET interaction checks PASS** in EN/AR desktop/mobile, documented at `f36df56e`. Its CI #38983940256 was **in_progress** at this audit check, NOT yet claimed Green. QAS application `a682074f` remains owner-deployment-record evidence, not newly read from runtime here.
+- Open: stateful commerce/authenticated roles acceptance, Paymob E2E (PAY-01), credential rotation evidence (OPS-01), isolated DB restore (OPS-02), page/performance/security acceptance, release SHA/upgrade/rollback and Production operations. Workforce W-ORG-01b DEFERRED and runtime concurrency BLOCKED; decide module scope explicitly before release, never silently mark deferred acceptance closed.
+- **Next coherent slice A:** reconcile current routes/views/navigation/actions/roles/tests into a current per-page/per-journey release inventory, carrying known evidence and UNKNOWN honestly. Existing September route counts are historical, not today's denominator. Identify exact Phase 1/Phase 2 scope decisions and dependencies. Do not repeat passing guest tests without change.
+- Documentation only. No application code, policies/permissions, schema, SSH bypass, QAS data, external messaging or Production changes authorized by this plan. Stateful tests need their own authorization/fixtures. Older sections below remain dated history.
+
+
 ## VERIFIED QAS TECHNICAL PROMOTION — 2026-10-16
 
 - **QAS deployed:** `a62ad480` to **`a682074f`** via owner-operated `bash deploy-qas.sh sec03-framework-upgrade`; application verified QAS DB connection `u637857322_v42_rehearsal`; both October 15 leave migrations DONE; HTTP app/static 200 and maintenance OFF.
