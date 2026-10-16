@@ -218,7 +218,7 @@ class PaymobGatewayService
         $sanitized = [];
 
         foreach ($payload as $key => $value) {
-            if (in_array((string) $key, $sensitiveKeys, true)) {
+            if (in_array(strtolower((string) $key), $sensitiveKeys, true)) {
                 $sanitized[$key] = '[redacted]';
                 continue;
             }
@@ -229,6 +229,13 @@ class PaymobGatewayService
         }
 
         return $sanitized;
+    }
+
+    protected function sanitizeGatewayFailureBody(mixed $body): array|string
+    {
+        return is_array($body)
+            ? $this->sanitizePayloadForLogs($body)
+            : '[non-json gateway response]';
     }
 
     protected function formatApiFailureMessage(string $endpoint, int $status, mixed $body): string
@@ -281,7 +288,7 @@ class PaymobGatewayService
                 'endpoint' => $endpoint,
                 'url' => $url,
                 'status' => $response->status(),
-                'body' => $response->json() ?: $response->body(),
+                'body' => $this->sanitizeGatewayFailureBody($response->json() ?: $response->body()),
                 'payload' => $this->sanitizePayloadForLogs($payload),
                 'payload_meta' => [
                     'integration_id' => $payload['integration_id'] ?? null,
@@ -293,10 +300,15 @@ class PaymobGatewayService
                 ],
             ]);
 
-            $diagnostics = $this->buildFailureDiagnostics($endpoint, $response->status(), $response->json() ?: $response->body(), $payload);
+            $diagnostics = $this->buildFailureDiagnostics(
+                $endpoint,
+                $response->status(),
+                $this->sanitizeGatewayFailureBody($response->json() ?: $response->body()),
+                $payload
+            );
 
             throw new PaymobCheckoutException(
-                $this->formatApiFailureMessage($endpoint, $response->status(), $response->json() ?: $response->body()),
+                $this->formatApiFailureMessage($endpoint, $response->status(), $diagnostics['body']),
                 $diagnostics,
                 $endpoint === 'acceptance/payment_keys' && $response->status() === 403
                     ? __('We could not open the secure payment page because the Paymob integration is rejecting payment key creation. Please try again later or contact support.')
