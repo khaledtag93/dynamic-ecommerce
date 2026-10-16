@@ -855,6 +855,56 @@ class PosCashierTest extends TestCase
         $this->assertDatabaseCount('pos_return_items', 0);
     }
 
+    public function test_pos_return_replayed_http_request_is_idempotent_but_new_return_key_processes_remaining_unit(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $product = $this->product('POS Replay Guard', '6224000000612', 5, false, 100);
+        $cart = app(PosService::class)->cartFor($admin);
+
+        $this->actingAs($admin);
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+        $this->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])->assertSessionHas('success');
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CARD,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $item = $order->items()->firstOrFail();
+        $this->assertSame(2, (int) $item->quantity);
+        $this->assertSame(3, (int) $product->fresh()->quantity);
+
+        $key = (string) Str::uuid();
+        $payload = [
+            'items' => [$item->id => 1],
+            'reason' => 'Same physical POS return',
+            'notes' => 'Replay must be ignored',
+            'pos_return_idempotency_key' => $key,
+        ];
+
+        $this->post(route('admin.pos.sales.return', $order), $payload)->assertSessionHas('success');
+        $this->assertSame(4, (int) $product->fresh()->quantity);
+        $this->assertSame(1, $order->refunds()->count());
+
+        $this->post(route('admin.pos.sales.return', $order), $payload)->assertSessionHas('success');
+
+        $this->assertSame(4, (int) $product->fresh()->quantity, 'An HTTP replay must not restock a different unit.');
+        $this->assertSame(1, $order->refunds()->count(), 'An HTTP replay must not record a second refund.');
+        $this->assertSame(1, PosReturnItem::query()->where('order_id', $order->id)->sum('quantity'));
+        $this->assertSame(1, InventoryMovement::query()
+            ->where('order_id', $order->id)
+            ->where('type', InventoryMovement::TYPE_REFUND_RESTOCK)
+            ->count());
+
+        $this->post(route('admin.pos.sales.return', $order), array_merge($payload, [
+            'pos_return_idempotency_key' => (string) Str::uuid(),
+            'reason' => 'Another intentionally returned unit',
+        ]))->assertSessionHas('success');
+
+        $this->assertSame(5, (int) $product->fresh()->quantity);
+        $this->assertSame(2, $order->refunds()->count());
+        $this->assertSame(2, PosReturnItem::query()->where('order_id', $order->id)->sum('quantity'));
+    }
+
     public function test_cash_pos_return_requires_an_open_cash_shift(): void
     {
         $admin = $this->createSuperAdmin();
