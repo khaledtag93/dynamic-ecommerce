@@ -896,7 +896,7 @@ class PosCashierTest extends TestCase
 
         $this->assertSame(4, (int) $product->fresh()->quantity, 'An HTTP replay must not restock a different unit.');
         $this->assertSame(1, $order->refunds()->count(), 'An HTTP replay must not record a second refund.');
-        $this->assertSame(1, PosReturnItem::query()->where('order_id', $order->id)->sum('quantity'));
+        $this->assertSame(1, (int) PosReturnItem::query()->where('order_id', $order->id)->sum('quantity'));
         $this->assertSame(1, InventoryMovement::query()
             ->where('order_id', $order->id)
             ->where('type', InventoryMovement::TYPE_REFUND_RESTOCK)
@@ -915,7 +915,7 @@ class PosCashierTest extends TestCase
 
         $this->assertSame(5, (int) $product->fresh()->quantity);
         $this->assertSame(2, $order->refunds()->count());
-        $this->assertSame(2, PosReturnItem::query()->where('order_id', $order->id)->sum('quantity'));
+        $this->assertSame(2, (int) PosReturnItem::query()->where('order_id', $order->id)->sum('quantity'));
     }
 
     public function test_cash_pos_return_requires_an_open_cash_shift(): void
