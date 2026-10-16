@@ -93,7 +93,14 @@
                 throw new Error(firstError || payload.message || feedbackNode()?.dataset.error || 'Unable to update cart.');
             }
 
-            updateCartCount(payload.cart?.items_count);
+            // A 200 response may be HTML (for example, after a redirect) or an
+            // unrelated JSON page. Require proof of the server-confirmed cart state.
+            const itemsCount = payload.cart?.items_count;
+            if (!Number.isSafeInteger(itemsCount) || itemsCount < 0) {
+                throw new Error(feedbackNode()?.dataset.error || 'Unable to update cart.');
+            }
+
+            updateCartCount(itemsCount);
             showFeedback(payload.message || '', false);
 
             document.dispatchEvent(new CustomEvent('storefront:cart-updated', {
