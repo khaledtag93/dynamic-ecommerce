@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## CURRENT PRIORITY — QAS PROMOTION HANDOFF (2026-10-16)
+
+- **Freeze new feature slices.** Target release code `a682074f` on `sec03-framework-upgrade` is synchronized with origin; [Hardening CI #38839902319](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38839902319) **GREEN: 981 tests / 18,794 assertions**, JavaScript 10/10 and frontend build PASS.
+- Last **directly verified QAS SHA** remains `a62ad480` (read on October 16), while QAS `.env` identifies Staging and `u637857322_v42_rehearsal`; SSH/read-only HTTP checks PASS. Actual Laravel DB connection has NOT been verified and deployment has NOT run.
+- Owner explicitly defers fresh backup for expendable QAS test data only; production is out of scope. Tool safety blocked the Laravel DB query and later QAS deploy command **before execution**, although ordinary SSH reads succeeded. Do not bypass tool blocks; guide approved, operator-controlled checks step by step.
+- **Future priority OPS-QAS-DEPLOY-01:** investigate and formally resolve repeat-use ChatGPT QAS deployment/tool-safety issue; design approved, guarded, auditable QAS-only automation with SHA, DB and health gates. Not implemented, not authorized to bypass security controls.
+- Full verified facts, pending migrations, preserved runtime cron/storage files and next acceptance steps: `docs/QAS_PROMOTION_AND_DEPLOY_AUTOMATION_CHECKPOINT_2026-10-16.md`. **W-ORG-01b QAS Acceptance DEFERRED; Workforce Concurrency BLOCKED.** Historical development checkpoints below.
+
 ## ACTIVE DEVELOPMENT — W-APP-03b PENDING APPROVAL READINESS (2026-10-15)
 
 - Baseline `afbdcbb4` / [CI #38653785977](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38653785977) GREEN (941 tests / 18,529 assertions). W-ORG-01b authenticated QAS acceptance remains OPEN/DEFERRED.

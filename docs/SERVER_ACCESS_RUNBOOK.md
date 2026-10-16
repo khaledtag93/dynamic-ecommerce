@@ -12,6 +12,11 @@ Always guide the owner from the very beginning:
 6. Only then provide the next command(s), one small step at a time.
 7. Never assume the owner remembers previous server commands.
 
+## Current QAS handoff (2026-10-16)
+
+- For the present QAS target, verified source/CI, current server SHA, staging/DB checks, pending migrations and manual-operator gates, see `docs/QAS_PROMOTION_AND_DEPLOY_AUTOMATION_CHECKPOINT_2026-10-16.md`.
+- Future reliability task: `OPS-QAS-DEPLOY-01` (approved, secure, repeatable ChatGPT QAS promotion). This is OPEN and must not bypass a tool safety refusal. Guide the owner one command at a time; never assume production and QAS are interchangeable.
+
 ## Current known Hostinger SSH access
 Historical/current known command:
 

@@ -1,5 +1,12 @@
 # MASTER PROJECT STATUS
 
+## RELEASE HANDOFF — QAS CONSOLIDATED PROMOTION (2026-10-16)
+
+- **Current priority:** pause new scopes, promote verified source `a682074f` to QAS under permitted safety gates, then perform consolidated functional/browser acceptance. Latest [CI #38839902319](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38839902319) GREEN (981 PHPUnit / 18,794 assertions; JS 10/10; frontend build PASS).
+- QAS directly checked October 16 at `a62ad480`; Staging `.env` and QAS DB name match expected configuration, but Laravel's actual DB connection remains unverified. Fresh QAS backup deferred only because owner explicitly accepts disposable test-data loss. An attempted assistant-side QAS deploy was blocked before execution; no QAS promotion was performed. Production unchanged by this work.
+- **Tracked future operational gap `OPS-QAS-DEPLOY-01`:** resolve the repeated tool-safety obstacle via approved, secure QAS-only deployment automation rather than ad-hoc manual commands; preserve DB/environment checks, SHA pinning, CI, runtime cron files and evidence. Not yet implemented. W-ORG-01b QAS Acceptance DEFERRED; Workforce Concurrency BLOCKED.
+- Detailed durable handoff: `docs/QAS_PROMOTION_AND_DEPLOY_AUTOMATION_CHECKPOINT_2026-10-16.md`. Previous roadmap entries below are historical source/CI statuses, not evidence of QAS acceptance.
+
 ## ROADMAP — W-APP-03b PENDING APPROVAL READINESS (2026-10-15)
 
 - From `afbdcbb4` and [CI #38653785977](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38653785977) GREEN, adds a read-only per-page Pending Leave readiness result with four scoped states: own-actionable, another eligible reviewer, no eligible reviewer, or routing needs attention.
