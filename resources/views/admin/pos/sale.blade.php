@@ -133,6 +133,7 @@
 
                 <form method="POST" action="{{ route('admin.pos.sales.return', $order) }}" data-submit-loading data-confirm-title="{{ __('Confirm POS return?') }}" data-confirm-message="{{ __('Returned quantities will be restocked and a linked refund will be recorded. This action cannot be casually undone.') }}" data-confirm-ok="{{ __('Process return') }}">
                     @csrf
+                    <input type="hidden" name="pos_return_idempotency_key" value="{{ old('pos_return_idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
                     <div class="table-responsive mb-3">
                         <table class="table admin-table align-middle mb-0">
                             <thead>

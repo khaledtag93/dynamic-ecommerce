@@ -872,6 +872,9 @@ class PosCashierTest extends TestCase
         $item = $order->items()->firstOrFail();
         $this->assertSame(2, (int) $item->quantity);
         $this->assertSame(3, (int) $product->fresh()->quantity);
+        $this->get(route('admin.pos.sales.show', $order))
+            ->assertOk()
+            ->assertSee('name="pos_return_idempotency_key"', false);
 
         $key = (string) Str::uuid();
         $payload = [
@@ -880,6 +883,10 @@ class PosCashierTest extends TestCase
             'notes' => 'Replay must be ignored',
             'pos_return_idempotency_key' => $key,
         ];
+
+        $this->post(route('admin.pos.sales.return', $order), collect($payload)->except('pos_return_idempotency_key')->all())
+            ->assertSessionHasErrors('pos_return_idempotency_key');
+        $this->assertSame(3, (int) $product->fresh()->quantity);
 
         $this->post(route('admin.pos.sales.return', $order), $payload)->assertSessionHas('success');
         $this->assertSame(4, (int) $product->fresh()->quantity);
@@ -894,6 +901,12 @@ class PosCashierTest extends TestCase
             ->where('order_id', $order->id)
             ->where('type', InventoryMovement::TYPE_REFUND_RESTOCK)
             ->count());
+
+        $this->post(route('admin.pos.sales.return', $order), array_merge($payload, [
+            'reason' => 'Different details with reused key',
+        ]))->assertSessionHasErrors('pos_return_idempotency_key');
+        $this->assertSame(1, $order->refunds()->count());
+        $this->assertSame(4, (int) $product->fresh()->quantity);
 
         $this->post(route('admin.pos.sales.return', $order), array_merge($payload, [
             'pos_return_idempotency_key' => (string) Str::uuid(),
@@ -930,6 +943,7 @@ class PosCashierTest extends TestCase
         $this->post(route('admin.pos.sales.return', $order), [
             'items' => [$orderItem->id => 1],
             'reason' => 'Cash refund after shift close',
+            'pos_return_idempotency_key' => (string) Str::uuid(),
         ])->assertSessionHasErrors('cash_shift');
 
         $this->assertDatabaseCount('order_refunds', 0);
@@ -1699,6 +1713,7 @@ class PosCashierTest extends TestCase
             'items' => [$orderItem->id => 1],
             'reason' => 'Customer changed mind',
             'notes' => 'Returned at counter',
+            'pos_return_idempotency_key' => (string) Str::uuid(),
         ])->assertRedirect(route('admin.pos.sales.show', $order))->assertSessionHas('success');
 
         $this->assertDatabaseHas('order_refunds', [
@@ -1777,6 +1792,7 @@ class PosCashierTest extends TestCase
         $this->post(route('admin.pos.sales.return', $order), [
             'items' => [$orderItem->id => 2],
             'reason' => 'Attempt duplicate return',
+            'pos_return_idempotency_key' => (string) Str::uuid(),
         ])->assertSessionHasErrors('items');
 
         $this->assertSame(4, (int) $product->fresh()->quantity);
@@ -1806,6 +1822,7 @@ class PosCashierTest extends TestCase
         $this->post(route('admin.pos.sales.return', $order), [
             'items' => [$orderItem->id => 1],
             'reason' => 'Not authorized',
+            'pos_return_idempotency_key' => (string) Str::uuid(),
         ])->assertForbidden();
 
         $this->assertFalse($cashier->fresh()->hasPermission('pos.return'));

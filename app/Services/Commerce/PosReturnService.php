@@ -34,10 +34,44 @@ class PosReturnService
     /**
      * @param  array<int,int>  $quantities
      */
-    public function process(Order $order, array $quantities, string $reason, ?string $notes, int $actorId): Order
+    public function process(Order $order, array $quantities, string $reason, ?string $notes, int $actorId, ?string $idempotencyKey = null): Order
     {
-        return DB::transaction(function () use ($order, $quantities, $reason, $notes, $actorId) {
+        return DB::transaction(function () use ($order, $quantities, $reason, $notes, $actorId, $idempotencyKey) {
             $lockedOrder = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            // The order lock serializes both the first return and any HTTP replay.
+            // Legacy service callers may omit the key; the POS HTTP endpoint requires it.
+            $idempotencyKey = filled($idempotencyKey) ? trim($idempotencyKey) : null;
+            if ($idempotencyKey !== null) {
+                $existingRefund = $lockedOrder->refunds()
+                    ->with('posReturnItems')
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+
+                if ($existingRefund) {
+                    $requestedQuantities = collect($quantities)
+                        ->mapWithKeys(fn ($quantity, $itemId) => [(int) $itemId => (int) $quantity])
+                        ->filter(fn (int $quantity) => $quantity > 0)
+                        ->sortKeys()
+                        ->all();
+                    $recordedQuantities = $existingRefund->posReturnItems
+                        ->mapWithKeys(fn (PosReturnItem $item) => [(int) $item->order_item_id => (int) $item->quantity])
+                        ->sortKeys()
+                        ->all();
+
+                    if ($recordedQuantities === []
+                        || $requestedQuantities !== $recordedQuantities
+                        || (string) $existingRefund->reason !== $reason
+                        || (string) ($existingRefund->notes ?? '') !== (string) ($notes ?? '')
+                        || (int) ($existingRefund->processed_by ?? 0) !== $actorId) {
+                        throw ValidationException::withMessages([
+                            'pos_return_idempotency_key' => __('This return request key was already used with different details.'),
+                        ]);
+                    }
+
+                    return $lockedOrder->fresh(['items', 'refunds', 'payments']);
+                }
+            }
 
             if ($lockedOrder->sales_channel !== Order::SALES_CHANNEL_POS) {
                 throw ValidationException::withMessages([
@@ -187,6 +221,7 @@ class PosReturnService
                 );
 
             $refund = $lockedOrder->refunds()->create([
+                'idempotency_key' => $idempotencyKey,
                 'amount' => $refundAmount,
                 'allocation' => $allocation,
                 'reason' => $reason,

@@ -487,6 +487,7 @@ class PosController extends Controller
             'items.*' => ['nullable', 'integer', 'min:0', 'max:9999'],
             'reason' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'pos_return_idempotency_key' => ['required', 'uuid'],
         ]);
 
         $this->posReturnService->process(
@@ -495,6 +496,7 @@ class PosController extends Controller
             $data['reason'],
             $data['notes'] ?? null,
             (int) $request->user()->id,
+            $data['pos_return_idempotency_key'],
         );
 
         return redirect()
