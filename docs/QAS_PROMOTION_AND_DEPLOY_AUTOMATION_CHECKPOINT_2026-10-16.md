@@ -1,7 +1,23 @@
 # Flowra — QAS Promotion and Repeatable Deployment Checkpoint
 
 Date: 2026-10-16 | Branch: `sec03-framework-upgrade`
-Purpose: capture the full chat-to-QAS handoff, verified facts, pending gates and future repeatable-deploy improvement. This is a checkpoint, **not** deployment evidence.
+Purpose: capture QAS promotion evidence, operational verification, pending acceptance gates and the future repeatable-deploy improvement.
+
+## Latest QAS promotion evidence — OPERATOR EXECUTED, 2026-10-16
+
+- The owner used the normal authorized Hostinger shell inside `laravel_app_v42_rehearsal`; initial SHA was `a62ad480`.
+- Laravel's actual database connection returned **`u637857322_v42_rehearsal`** from `php artisan tinker --execute='echo DB::selectOne("SELECT DATABASE() AS db")->db;'` (read-only), confirming the expected isolated QAS DB. The owner's terminal initially showed a copy/paste carriage-return (`^M`) error; corrected commands worked.
+- The owner ran `bash deploy-qas.sh sec03-framework-upgrade` manually. Script output showed successful Git fetch/reset from `a62ad480` to **`a682074f`**, Composer, Workforce route check, cache rebuild, QAS database verification, queue restart signal, public sync, maintenance OFF, application **HTTP 200**, static asset **HTTP 200**, and the final **`QAS READY / Deployed commit: a682074f`** banner.
+- QAS migration output explicitly showed **DONE** for `2026_10_15_000100_add_opt_in_leave_request_policies` and `2026_10_15_000200_add_leave_policy_snapshot_to_requests`.
+- The owner then ran **`php artisan ops:health --strict`** successfully: Scheduler OK (last seen 41s ago), Queue worker OK (41s), Queue driver `database`, **1 pending job, 0 failed jobs**. One pending job is not itself a failure; investigate if persistent. This is actual server-generated output supplied by the operator, not assistant-side execution.
+- **Disposition: QAS TECHNICAL PROMOTION + BASIC HEALTH PASS** for source release `a682074f`; source/CI closed. Authenticated multi-role/browser E2E acceptance, independent migration-status read, and detailed feature smoke are **PENDING**. Production has not been modified as part of this QAS task.
+- QAS backup refresh was **explicitly waived by the owner for expendable QAS test data only**; no fresh backup was created and restoration is not proved. The owner accepted this QAS-only risk.
+- The separate documentation checkpoint commit `2c267a6d` is local-only, **not part of the deployed QAS SHA**. Keep source SHA, documentation SHA, and deployment SHA distinct.
+- **Next operator command (read-only):** `php artisan migrate:status`; inspect both named migrations as `Ran`, then proceed to consolidated Storefront/Admin/POS/Workforce acceptance and note any real defects. Do not redeploy unnecessarily.
+
+### Historical status below
+
+The sections following this marker capture the **earlier blocked/pre-deploy state** for audit context. They are superseded by the operator's successful October 16 deploy and strict health evidence above.
 
 ## Current source and CI
 

@@ -1,6 +1,14 @@
 # CURRENT PHASE
 
-## CURRENT PRIORITY — QAS PROMOTION HANDOFF (2026-10-16)
+## LATEST — QAS DEPLOYED AND BASIC OPS HEALTH GREEN (2026-10-16)
+
+- **QAS operator deployment PASSED** using `bash deploy-qas.sh sec03-framework-upgrade`: before `a62ad480`, after **`a682074f`**, Laravel runtime connected to **`u637857322_v42_rehearsal`**; both October 15 leave migrations reported DONE. Application and static health each HTTP 200; maintenance OFF.
+- Owner-supplied server output of **`php artisan ops:health --strict` PASS**: Scheduler OK, Queue worker OK, database queue driver, **1 pending / 0 failed jobs**. Check if the pending job persists, but do not mark it failed without evidence.
+- Matching source [CI #38839902319](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38839902319) **GREEN: 981 PHPUnit / 18,794 assertions, JS 10/10, frontend build PASS**. This proves technical promotion and basic health, **NOT** full authenticated QAS functional acceptance.
+- Fresh QAS backup explicitly deferred for disposable test data (owner accepts loss); Production out of scope. Pending: `php artisan migrate:status` read-only verification, detailed QAS smoke across Storefront/Admin/POS/Inventory/Workforce, authenticated role/RTL/mobile acceptance. **W-ORG-01b DEFERRED; Workforce Concurrency BLOCKED.**
+- `OPS-QAS-DEPLOY-01` **OPEN**: investigate tool safety refusal for direct ChatGPT deployment and build a formally approved repeatable QAS release channel. Current owner-operated deployment **succeeded**, so this is future reliability work, not a QAS outage. Full evidence: `docs/QAS_PROMOTION_AND_DEPLOY_AUTOMATION_CHECKPOINT_2026-10-16.md`.
+
+## HISTORICAL PRE-DEPLOY PRIORITY — QAS PROMOTION HANDOFF (2026-10-16)
 
 - **Freeze new feature slices.** Target release code `a682074f` on `sec03-framework-upgrade` is synchronized with origin; [Hardening CI #38839902319](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38839902319) **GREEN: 981 tests / 18,794 assertions**, JavaScript 10/10 and frontend build PASS.
 - Last **directly verified QAS SHA** remains `a62ad480` (read on October 16), while QAS `.env` identifies Staging and `u637857322_v42_rehearsal`; SSH/read-only HTTP checks PASS. Actual Laravel DB connection has NOT been verified and deployment has NOT run.
