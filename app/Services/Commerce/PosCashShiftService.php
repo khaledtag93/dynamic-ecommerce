@@ -44,12 +44,25 @@ class PosCashShiftService
 
     public function summary(PosCashShift $shift): array
     {
+        $end = $shift->closed_at ?? now();
+        // A closed shift excludes its closing second; the current open shift includes now.
+        $legacyEndComparator = $shift->closed_at === null ? '<=' : '<';
+
         $cashSalesCents = $this->moneyToCents(
             Order::query()
                 ->where('sales_channel', Order::SALES_CHANNEL_POS)
                 ->where('payment_method', Order::PAYMENT_METHOD_POS_CASH)
-                ->whereBetween('placed_at', [$shift->opened_at, $shift->closed_at ?? now()])
                 ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(meta, '$.cashier_user_id')) = ?", [(string) $shift->cashier_user_id])
+                ->where(function ($query) use ($shift, $end, $legacyEndComparator) {
+                    // A recorded shift ID is authoritative, including sales on a close/open boundary.
+                    $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(meta, '$.pos_cash_shift_id')) = ?", [(string) $shift->id])
+                        ->orWhere(function ($legacy) use ($shift, $end, $legacyEndComparator) {
+                            // Older sales without an ID use non-overlapping [opened, closed) windows.
+                            $legacy->whereRaw("JSON_EXTRACT(meta, '$.pos_cash_shift_id') IS NULL")
+                                ->where('placed_at', '>=', $shift->opened_at)
+                                ->where('placed_at', $legacyEndComparator, $end);
+                        });
+                })
                 ->sum('grand_total')
         );
 
@@ -58,8 +71,19 @@ class PosCashShiftService
                 ->join('orders', 'orders.id', '=', 'order_refunds.order_id')
                 ->where('orders.sales_channel', Order::SALES_CHANNEL_POS)
                 ->where('orders.payment_method', Order::PAYMENT_METHOD_POS_CASH)
-                ->whereBetween('order_refunds.processed_at', [$shift->opened_at, $shift->closed_at ?? now()])
                 ->where('order_refunds.processed_by', $shift->cashier_user_id)
+                ->where(function ($query) use ($shift, $end, $legacyEndComparator) {
+                    // POS cash returns persist the issuing shift in the existing allocation JSON.
+                    $query->whereRaw(
+                        "JSON_UNQUOTE(JSON_EXTRACT(order_refunds.allocation, '$.pos_cash_shift_id')) = ?",
+                        [(string) $shift->id]
+                    )->orWhere(function ($legacy) use ($shift, $end, $legacyEndComparator) {
+                        // Preserve historical refunds lacking attribution without double counting.
+                        $legacy->whereRaw("JSON_EXTRACT(order_refunds.allocation, '$.pos_cash_shift_id') IS NULL")
+                            ->where('order_refunds.processed_at', '>=', $shift->opened_at)
+                            ->where('order_refunds.processed_at', $legacyEndComparator, $end);
+                    });
+                })
                 ->whereExists(function ($query) {
                     $query->selectRaw('1')
                         ->from('pos_return_items')

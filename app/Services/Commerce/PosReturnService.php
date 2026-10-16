@@ -195,6 +195,7 @@ class PosReturnService
                 ]);
             }
 
+            $cashShift = null;
             if ($refundAmount > 0 && $lockedOrder->payment_method === Order::PAYMENT_METHOD_POS_CASH) {
                 $cashShift = PosCashShift::query()
                     ->where('cashier_user_id', $actorId)
@@ -219,6 +220,11 @@ class PosReturnService
                 : $this->refundAllocationService->zeroAllocation(
                     RefundAllocationService::SCOPE_MERCHANDISE
                 );
+
+            if ($cashShift !== null) {
+                // Existing JSON ledger field: record which cash drawer paid the refund.
+                $allocation['pos_cash_shift_id'] = (int) $cashShift->id;
+            }
 
             $refund = $lockedOrder->refunds()->create([
                 'idempotency_key' => $idempotencyKey,
