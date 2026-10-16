@@ -705,6 +705,119 @@ class PosCashierTest extends TestCase
         $this->assertSame('-0.10', $closed->cash_variance);
     }
 
+    public function test_cash_shift_boundary_does_not_count_cash_sale_or_pos_refund_in_two_shifts(): void
+    {
+        $cashier = $this->createSuperAdmin();
+        $boundary = '2026-10-16 12:30:00';
+
+        $firstShift = PosCashShift::query()->create([
+            'cashier_user_id' => $cashier->id,
+            'opening_cash' => '100.00',
+            'opened_at' => '2026-10-16 12:00:00',
+            'closed_at' => $boundary,
+        ]);
+        $nextShift = PosCashShift::query()->create([
+            'cashier_user_id' => $cashier->id,
+            'opening_cash' => '200.00',
+            'opened_at' => $boundary,
+            'closed_at' => '2026-10-16 13:00:00',
+        ]);
+
+        $makeOrder = function (string $number, string $placedAt, string $amount, array $metadata) {
+            return Order::query()->create([
+                'sales_channel' => Order::SALES_CHANNEL_POS,
+                'order_number' => $number,
+                'status' => Order::STATUS_COMPLETED,
+                'payment_status' => Order::PAYMENT_STATUS_PARTIALLY_REFUNDED,
+                'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+                'delivery_status' => Order::DELIVERY_STATUS_DELIVERED,
+                'delivery_method' => Order::DELIVERY_METHOD_PICKUP,
+                'grand_total' => $amount,
+                'customer_name' => 'Shift Boundary Customer',
+                'placed_at' => $placedAt,
+                'meta' => $metadata,
+            ]);
+        };
+
+        // Historical sale/refund without shift attribution must still reconcile once.
+        $legacyOrder = $makeOrder('POS-LEGACY-SHIFT-BOUNDARY', '2026-10-16 12:20:00', '20.00', [
+            'cashier_user_id' => $cashier->id,
+        ]);
+        $nextOrder = $makeOrder('POS-NEXT-SHIFT-BOUNDARY', $boundary, '30.00', [
+            'cashier_user_id' => $cashier->id,
+            'pos_cash_shift_id' => $nextShift->id,
+        ]);
+
+        foreach ([
+            [$legacyOrder, '5.00', '2026-10-16 12:20:00', null],
+            [$nextOrder, '10.00', $boundary, $nextShift->id],
+        ] as [$order, $amount, $processedAt, $attributedShiftId]) {
+            $item = $order->items()->create([
+                'product_name' => 'Boundary return item',
+                'unit_price' => $order->grand_total,
+                'quantity' => 1,
+                'line_total' => $order->grand_total,
+            ]);
+            $refund = OrderRefund::query()->create([
+                'order_id' => $order->id,
+                'amount' => $amount,
+                'reason' => 'POS boundary test',
+                'processed_by' => $cashier->id,
+                'processed_at' => $processedAt,
+                'allocation' => $attributedShiftId === null ? null : ['pos_cash_shift_id' => $attributedShiftId],
+            ]);
+            PosReturnItem::query()->create([
+                'order_refund_id' => $refund->id,
+                'order_id' => $order->id,
+                'order_item_id' => $item->id,
+                'quantity' => 1,
+                'amount' => $amount,
+                'restocked' => false,
+            ]);
+        }
+
+        $service = app(PosCashShiftService::class);
+        $first = $service->summary($firstShift->fresh());
+        $second = $service->summary($nextShift->fresh());
+
+        $this->assertSame(20.0, $first['cash_sales']);
+        $this->assertSame(5.0, $first['cash_refunds']);
+        $this->assertSame(115.0, $first['expected_cash']);
+        $this->assertSame(30.0, $second['cash_sales']);
+        $this->assertSame(10.0, $second['cash_refunds']);
+        $this->assertSame(220.0, $second['expected_cash']);
+        $this->assertSame(50.0, $first['cash_sales'] + $second['cash_sales']);
+        $this->assertSame(15.0, $first['cash_refunds'] + $second['cash_refunds']);
+    }
+
+    public function test_cash_pos_return_records_the_current_shift_attribution_on_refund(): void
+    {
+        $cashier = $this->createSuperAdmin();
+        $product = $this->product('Cash Return Shift Link', '6224000000912', 2, false, 25);
+        $shift = app(PosCashShiftService::class)->openShift($cashier, 100);
+        $cart = app(PosService::class)->cartFor($cashier);
+
+        $this->actingAs($cashier)
+            ->post(route('admin.pos.scan', $cart), ['barcode' => $product->barcode])
+            ->assertSessionHas('success');
+        $this->post(route('admin.pos.checkout', $cart), [
+            'payment_method' => Order::PAYMENT_METHOD_POS_CASH,
+            'cash_received' => 25,
+        ])->assertSessionHas('success');
+
+        $order = Order::query()->where('sales_channel', Order::SALES_CHANNEL_POS)->firstOrFail();
+        $item = $order->items()->firstOrFail();
+        $this->post(route('admin.pos.sales.return', $order), [
+            'items' => [$item->id => 1],
+            'reason' => 'Returned during current cash shift',
+            'pos_return_idempotency_key' => (string) Str::uuid(),
+        ])->assertSessionHas('success');
+
+        $refund = $order->refunds()->firstOrFail();
+        $this->assertSame($shift->id, (int) data_get($refund->allocation, 'pos_cash_shift_id'));
+        $this->assertSame(25.0, app(PosCashShiftService::class)->summary($shift)['cash_refunds']);
+    }
+
     public function test_cash_shift_reconciliation_records_expected_cash_and_variance(): void
     {
         $admin = $this->createSuperAdmin();
