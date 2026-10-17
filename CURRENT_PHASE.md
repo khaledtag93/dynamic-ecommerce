@@ -1,5 +1,11 @@
 # CURRENT PHASE
 
+## ACTIVE — C1-B LOGOUT / RESET HTTP + CSRF SOURCE VERIFICATION (2026-10-17)
+
+- [Session Security Audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md): Login with Remember Me, Logout and real HTTP Password Reset lifecycle via two simulated browser sessions passed [CI #38996910142](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38996910142) (997 tests / 19,289 assertions; exact SHA `58f2a751`). Session/cookie invalidation, remember-token cycling, reset token single-use and post-reset login covered.
+- Added a separate **actual CSRF middleware** regression forcing normal Laravel 13 validation in a test-only binding: missing token returns 419 for Logout and Reset; correct token permits the POST. Final checkpoint CI **PENDING**, never call Green before exact-SHA completed/success.
+- No app-code changes or new policy. Active sessions on other devices are a separate OPEN revocation policy/acceptance issue; no claim of automatic all-device logout. No QAS/Production writes, no real provider delivery, settings, permissions, secrets or OAuth/OTP. C1-A #2 BLOCKED, QAS #3/#4/#5/#6 OPEN; Phase1 NO-GO.
+
 ## ACTIVE — C1-B ACCOUNT SESSION FRAMEWORK CORRECTION (2026-10-17)
 
 - **Correction, not a security fix:** Laravel 13 `SessionGuard::userFromRecaller` already validates a password-derived HMAC, so password changes invalidate old Remember Me recaller cookies even without rotating the DB `remember_token`. Test-only CI #38995215153's RED established unchanged token only; the unneeded app-side rotation in `06002ada` was **reverted**. [Corrected session audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md) and [Issue #7](https://github.com/khaledtag93/dynamic-ecommerce/issues/7) supersede the **historical mistaken hypothesis** below.

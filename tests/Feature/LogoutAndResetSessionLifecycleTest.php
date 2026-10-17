@@ -95,6 +95,73 @@ class LogoutAndResetSessionLifecycleTest extends TestCase
         $this->assertTrue(Hash::check('after-reset-password-123', $user->fresh()->password));
     }
 
+
+    public function test_real_csrf_middleware_blocks_missing_token_for_logout_and_reset(): void
+    {
+        // Laravel bypasses CSRF in normal PHPUnit runs. Only this test binds an
+        // otherwise identical middleware that does not skip forgery validation.
+        $this->app->bind(\App\Http\Middleware\VerifyCsrfToken::class, function ($app) {
+            return new class($app, $app['encrypter']) extends \App\Http\Middleware\VerifyCsrfToken {
+                protected function runningUnitTests()
+                {
+                    return false;
+                }
+            };
+        });
+
+        $user = User::factory()->create(['email' => 'csrf-browser@example.test']);
+        $this->get(route('login'))->assertOk();
+        $guestId = session()->getId();
+        $loginToken = session()->token();
+
+        $this->withCookie(config('session.cookie'), $guestId)
+            ->post(route('login'), [
+                '_token' => $loginToken,
+                'email' => $user->email,
+                'password' => 'password',
+            ])->assertRedirect();
+
+        $this->assertAuthenticatedAs($user);
+        $loggedInId = session()->getId();
+        $logoutToken = session()->token();
+
+        $this->withCookie(config('session.cookie'), $loggedInId)
+            ->post(route('logout'))
+            ->assertStatus(419);
+        $this->assertAuthenticatedAs($user);
+
+        $this->withCookie(config('session.cookie'), $loggedInId)
+            ->post(route('logout'), ['_token' => $logoutToken])
+            ->assertRedirect('/');
+        $this->assertGuest();
+
+        $resetToken = Password::broker()->createToken($user);
+        $this->withCookie(config('session.cookie'), session()->getId())
+            ->get(route('password.reset', $resetToken))
+            ->assertOk();
+
+        $resetGuestId = session()->getId();
+        $csrfToken = session()->token();
+        $resetData = [
+            'email' => $user->email,
+            'token' => $resetToken,
+            'password' => 'csrf-new-password-123',
+            'password_confirmation' => 'csrf-new-password-123',
+        ];
+
+        $this->withCookie(config('session.cookie'), $resetGuestId)
+            ->post(route('password.update'), $resetData)
+            ->assertStatus(419);
+        $this->assertTrue(Password::broker()->tokenExists($user, $resetToken));
+
+        $this->withCookie(config('session.cookie'), $resetGuestId)
+            ->post(route('password.update'), array_merge($resetData, ['_token' => $csrfToken]))
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+        $this->assertAuthenticatedAs($user);
+        $this->assertTrue(Hash::check('csrf-new-password-123', $user->fresh()->password));
+    }
+
     /**
      * The test client does not persist response cookies between requests.
      * Explicitly replay the same guest session cookie as a real browser.
