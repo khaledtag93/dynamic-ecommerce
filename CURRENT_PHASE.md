@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## ACTIVE — C1-A QAS PREFLIGHT STOP / NO WRITES (2026-10-17)
+
+- Owner explicitly authorized the bounded C1-A QAS synthetic journey only **after** CI green, verified QAS/DB identity and proven external-delivery isolation. Preflight [execution report](docs/C1A_QAS_PREFLIGHT_EXECUTION_REPORT_2026-10-17.md) records real observations and A0–A8 gates.
+- On source `f156f52a`, CI [#38988254957](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38988254957) remained **in_progress / conclusion=null** at last check. QAS public `GET /ping` returned HTTP 200, **not** DB/app identity. Prior QAS `a682074f` and staging DB were operator-supplied evidence only; not re-read. Git compare `a682074f...f156f52a` shows documentation/status-only changes.
+- Effective email/WhatsApp/SMS/automation delivery isolation is **UNVERIFIED**, source contains checkout/cancel paths that can dispatch externally. STOP BEFORE ALL WRITES, without SSH bypass or setting changes. Preflight: A5 consent PASS; A0–A4/A7–A8 blocked; A6 not run. All C1-A A01–A15 **NOT RUN / BLOCKED**. Actual synthetic orders **0**.
+- Recheck CI on exact source head, then acquire permitted read-only evidence for runtime app SHA, staging DB, effective delivery isolation, store contract, operator/fixture/reconciliation channels. Only resume QAS stateful work when every preflight gate passes. Phase1 remains NO-GO; no application code/QAS/Production/provider changes.
+- This is a documentation-only checkpoint; CI of the new doc commit is independent.
+
 ## ACTIVE — PHASE 1 FULL-CAPABILITY GAP TRIAGE (2026-10-17)
 
 - Previous checkpoint `39a33021` / [CI #38987285763](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38987285763) directly checked: **completed/success** on the exact head.

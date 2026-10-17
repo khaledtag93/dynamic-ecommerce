@@ -1,5 +1,9 @@
 # Flowra — Phase 1 Production Closure Register
 
+## 2026-10-17 — C1-A preflight execution STOP
+
+- [Observed A0–A8 gate and A01–A15 execution report](C1A_QAS_PREFLIGHT_EXECUTION_REPORT_2026-10-17.md): CI #38988254957 `in_progress` / conclusion=null at final read; public QAS `GET /ping` HTTP 200; current QAS app/DB and effective external-delivery isolation **not proven**. Source checkout/cancellation includes WhatsApp/email/automation paths; no synthetic writes were allowed. **A5 consent PASS; A0–A4/A7–A8 BLOCKED; A6 NOT RUN.** Tests A01–A15 NOT RUN/BLOCKED, orders created 0. Phase1 NO-GO.
+
 ## 2026-10-17 — Full-capability gap review after `39a33021`
 
 - [Full 26-journey capability coverage and source gap triage](PHASE1_COMPLETE_CAPABILITY_COVERAGE_2026-10-17_AR.md) added. CI #38987285763 on `39a33021` directly verified completed/success. No QAS / Production acceptance implied.
