@@ -126,12 +126,18 @@ class ActiveTwoBrowserSessionLifecycleTest extends TestCase
         // PHPUnit reuses its AuthManager guard instance unless it is forgotten.
         // Keep the stored sessions intact; never logout/invalidate either one.
         Auth::forgetGuards();
+        // Store::loadSession() array_replaces previously loaded attributes in
+        // the SAME PHPUnit container. Clear only in-memory attributes before
+        // reading another cookie's independently saved handler record.
+        // No handler delete, invalidate() or logout(): both sessions survive.
+        session()->flush();
         $this->withCookie(config('session.cookie'), $id);
     }
 
     private function beginUnrelatedBrowser(): void
     {
         Auth::forgetGuards();
+        session()->flush();
         // Do not call logout() here: it would deliberately revoke the recaller
         // token and could alter the behavior under measurement.
         $this->withCookie(config('session.cookie'), Str::random(40));
