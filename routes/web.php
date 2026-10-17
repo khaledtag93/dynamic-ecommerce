@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\NotificationCenterController;
+use App\Http\Controllers\Admin\SafeRuntimeEvidenceController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PosController;
@@ -468,6 +469,7 @@ Route::prefix('admin')
             Route::get('/settings/notifications/templates', [NotificationCenterController::class, 'templates'])->name('settings.notifications.templates');
             Route::get('/settings/notifications/automation', [NotificationCenterController::class, 'automation'])->name('settings.notifications.automation');
             Route::get('/settings/notifications/diagnostics', [NotificationCenterController::class, 'diagnostics'])->name('settings.notifications.diagnostics');
+            Route::get('/settings/notifications/safe-runtime-evidence', SafeRuntimeEvidenceController::class)->name('settings.notifications.safe-evidence');
             Route::put('/settings/notifications', [NotificationCenterController::class, 'update'])->name('settings.notifications.update');
             Route::post('/settings/notifications/templates', [NotificationCenterController::class, 'saveTemplate'])->name('settings.notifications.templates.save');
             Route::post('/settings/notifications/test-send', [NotificationCenterController::class, 'sendTest'])->name('settings.notifications.test-send');
