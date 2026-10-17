@@ -34,6 +34,13 @@ class OrderUpdateMailRenderingTest extends TestCase
                 'Shipment <ready> & confirmed'
             );
 
+            // Use the in-memory array transport, not Mail::fake(): a fake would
+            // skip the real mail view render path that previously failed on QAS.
+            // No network or external message is sent.
+            \Illuminate\Support\Facades\Mail::mailer('array')
+                ->to('render-recipient@example.test')
+                ->send($mail);
+
             $rendered = $mail->render();
 
             $this->assertStringContainsString('Shipment &lt;ready&gt; &amp; confirmed', $rendered);
