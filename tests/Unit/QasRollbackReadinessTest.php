@@ -147,7 +147,7 @@ final class QasRollbackReadinessTest extends TestCase
 
     public function test_guard_ships_no_shell_database_remote_or_filesystem_executor(): void
     {
-        $source = file_get_contents(base_path('app/Support/QasRollbackReadiness.php'));
+        $source = file_get_contents(dirname(__DIR__, 2).'/app/Support/QasRollbackReadiness.php');
 
         $this->assertIsString($source);
         $this->assertStringContainsString('execution_authorized', $source);
