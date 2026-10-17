@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## M3/M4 Source-only fallback, Growth jobs & scheduled entrypoints (2026-10-17)
+
+- [Static source audit + isolated non-sending routing contracts](docs/QAS_M3_M4_FALLBACK_GROWTH_SCHEDULE_SOURCE_AUDIT_2026-10-17_AR.md). Authenticated QAS phpMyAdmin SQL UI unavailable, **SELECT DATABASE() NOT RUN**, no alternative SSH/DB PHP or QAS SQL.
+- Source inspected `NotificationAutomationService` automatic/manual gating, fallback/same-channel retry, database/email/WhatsApp leaves, `GrowthDeliveryService` dispatchSync entrypoints, `SendGrowthDeliveryJob`, `GrowthDeliveryRouter`, and both scheduled command handlers. **No scanner, job, queue, retry or provider path executed.** New tests intercept only non-sending route boundary; do not infer actual QAS flags or backlog.
+- Baseline [CI #39053796255](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39053796255) completed/success at `e4cb5dda` (1,017 tests / 19,679 assertions); **new exact-SHA CI must be verified independently**. Prior QAS `de180de6`, mail `array`. M3 BLOCKED, M4 PARTIAL/BLOCKED, C1-A #2 BLOCKED, QAS #3–#6 OPEN, Production NO-GO.
+
+
 ## M3/M4 Outbound Email Routing Source-only Contract Audit — 2026-10-17
 
 - Second full [CI #39053528659](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39053528659) RED at 1305c113 (1,015 passed; 2 fake-only expectation failures, 19,667 assertions): Laravel 13 MailFake recorded effective `Mailable::$mailer='array'`, not null. Changed only two test expectations to `array`; admin raw interception and missing-recipient paths already passed. **Still no confirmed app bug or QAS acceptance; new exact SHA CI pending.**
