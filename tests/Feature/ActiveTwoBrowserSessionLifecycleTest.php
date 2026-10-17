@@ -122,15 +122,16 @@ class ActiveTwoBrowserSessionLifecycleTest extends TestCase
 
     private function switchToBrowser(string $id): void
     {
-        // The PHPUnit HTTP client shares one Guard object; unlike a real
-        // browser/server request, it does not instantiate a fresh Guard.
-        Auth::guard('web')->forgetUser();
+        // Every separate browser request should resolve a fresh SessionGuard.
+        // PHPUnit reuses its AuthManager guard instance unless it is forgotten.
+        // Keep the stored sessions intact; never logout/invalidate either one.
+        Auth::forgetGuards();
         $this->withCookie(config('session.cookie'), $id);
     }
 
     private function beginUnrelatedBrowser(): void
     {
-        Auth::guard('web')->forgetUser();
+        Auth::forgetGuards();
         // Do not call logout() here: it would deliberately revoke the recaller
         // token and could alter the behavior under measurement.
         $this->withCookie(config('session.cookie'), Str::random(40));
