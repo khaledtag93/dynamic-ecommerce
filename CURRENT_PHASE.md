@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## Source-only password-reset fake contracts / QAS operator gate (2026-10-17)
+
+- [New source-only regression and operator evidence](docs/QAS_RESET_ONLY_MAILER_FAKE_CONTRACTS_2026-10-17_AR.md): authorized phpMyAdmin UI unavailable to assistant, **SELECT DATABASE() NOT RUN**, all SQL evidence STOP. Existing operator packet remains first gated step, no SSH/DB PHP substitute or safety bypass.
+- Added 2 isolated \`Notification::fake()\` / \`Mail::fake()\` contracts covering customer/legacy staff reset mailer default (no named override), unknown-account generic response, and unchanged array/60m/60s config. **No named sandbox mailer implemented** and no QAS inbox or future route isolation proven. New exact-SHA full CI MUST be verified independently.
+- Baseline [CI #39050928061](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39050928061) completed/success on b6c3a7ef (1,011 tests / 19,626 assertions). QAS still deployed de180de6, mail=array (prior evidence). M3 BLOCKED / M4 PARTIAL-BLOCKED, C1-A #2 BLOCKED, QAS #3–#6 OPEN, Production NO-GO.
+
+
 ## M3/M4 operator phpMyAdmin packet & scoped reset-only mail design (2026-10-17)
 
 - [Operator-assisted read-only SQL packet](docs/QAS_M3_M4_PHPMYADMIN_OPERATOR_READONLY_PACKET_2026-10-17_AR.md): **first run SELECT DATABASE() ALONE**; stop unless exact QAS rehearsal DB u637857322_v42_rehearsal. Later read-only SELECTs return allowlisted flags ON/OFF/OTHER, grouped automation and backlog counts, queue-type hints only. No phpMyAdmin browser session available to assistant; **NO SQL executed**, so M3 BLOCKED / M4 PARTIAL/BLOCKED.
