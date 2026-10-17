@@ -86,6 +86,11 @@ final class QasDeployPublicStorageTreeGuardTest extends TestCase
             }
         }
         self::assertFalse(is_dir($this->sandbox.'/public/storage'));
+        // Git can also remove the now-empty parent public/ directory.
+        // Recreate only this disposable fixture parent, not the protected tree.
+        if (!is_dir($this->sandbox.'/public')) {
+            self::assertTrue(mkdir($this->sandbox.'/public', 0700, true));
+        }
         self::assertSame(strlen('not a directory'), file_put_contents($this->sandbox.'/public/storage', 'not a directory'));
         $target = $this->commitAll('replaced protected tree with blob');
 
