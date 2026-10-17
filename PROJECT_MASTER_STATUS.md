@@ -1,5 +1,12 @@
 # MASTER PROJECT STATUS
 
+## ACTIVE — ORDER UPDATE EMAIL TEMPLATE FIX SOURCE SLICE (2026-10-17)
+
+- Direct QAS notification logs (owner-supplied read-only screenshots) showed two email template failures. [Issue #3](https://github.com/khaledtag93/dynamic-ecommerce/issues/3) tracks the confirmed Laravel-reserved `$message` collision. Do not publish screenshot recipient/order identifiers.
+- Pre-fix **RED** reproduction: [CI #38990983764](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38990983764), SHA `18bf7693`, `OrderUpdateMailRenderingTest` failed with the same `htmlspecialchars(): Illuminate\\Mail\\Message given` exception; **981 existing tests passed / 18,794 assertions**. The new regression sends only into an in-memory Laravel array transport; zero external deliveries.
+- Minimal SOURCE-only fix: rename promoted Mailable public `$message` to `$orderUpdateBody`, `with()` data key and Blade interpolation. Customer wording/layout/call sites unchanged; EN/AR HTML body escaping tested. Source final SHA and its CI status are tracked in [issue #3](https://github.com/khaledtag93/dynamic-ecommerce/issues/3); CI on this source fix must be verified independently as `completed/success` before source closure.
+- **No QAS or Production writes, no config/permission/schema change, no real emails/WhatsApp.** Do not retry historical failed QAS sends. C1-A still BLOCKED by [issue #2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) until runtime identity, outbound isolation, COD/pickup and reconciliation gates PASS. Notification Center responsive redesign stays separate in [issue #4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4). Overall Phase1 NO-GO.
+
 ## ACTIVE — C1-A PREFLIGHT CONTINUATION: STOP WITHOUT QAS WRITES (2026-10-17)
 
 - Starting [checkpoint `905d7aa6`](https://github.com/khaledtag93/dynamic-ecommerce/commit/905d7aa61ebe1f2389cf97d2ad97e1c3c306c64d). [CI #38988626064](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38988626064) directly checked repeatedly on exact SHA: **in_progress / conclusion=null** at last check, so not Green yet.

@@ -15,7 +15,7 @@ class OrderUpdateMail extends Mailable
         public Order $order,
         public string $event,
         public string $title,
-        public string $message,
+        public string $orderUpdateBody,
     ) {
     }
 
@@ -27,7 +27,7 @@ class OrderUpdateMail extends Mailable
                 'order' => $this->order,
                 'event' => $this->event,
                 'title' => $this->title,
-                'message' => $this->message,
+                'orderUpdateBody' => $this->orderUpdateBody,
             ]);
     }
 }

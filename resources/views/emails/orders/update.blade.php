@@ -15,7 +15,7 @@
             </div>
 
             <div style="padding:24px;">
-                <p style="margin:0 0 18px;font-size:15px;line-height:1.7;">{{ $message }}</p>
+                <p style="margin:0 0 18px;font-size:15px;line-height:1.7;">{{ $orderUpdateBody }}</p>
 
                 <table style="width:100%;border-collapse:collapse;margin:0 0 18px;">
                     <tr>
