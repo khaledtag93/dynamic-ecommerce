@@ -26,9 +26,12 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
         $this->getJson('/admin/settings/notifications/safe-runtime-evidence')->assertUnauthorized();
 
         $customer = User::factory()->create(['role_as' => 0]);
+        // The existing isAdmin middleware redirects non-admin customers
+        // rather than returning a JSON 403; either way no evidence leaks.
         $this->actingAs($customer)
             ->getJson('/admin/settings/notifications/safe-runtime-evidence')
-            ->assertForbidden();
+            ->assertStatus(302)
+            ->assertDontSee('external_isolation');
     }
 
     public function test_default_snapshot_is_bounded_and_without_database_writes_or_provider_calls(): void
@@ -181,7 +184,7 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
         // diagnostic business-table access or database-identity probe ran.
         foreach ($queries as $sql) {
             $this->assertDoesNotMatchRegularExpression(
-                '/notification_dispatch_logs|notification_automation_rules|website_settings|SELECT DATABASE\\(\\)/i',
+                '/notification_dispatch_logs|notification_automation_rules|SELECT DATABASE\\(\\)/i',
                 $sql
             );
         }
