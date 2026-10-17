@@ -34,3 +34,45 @@ NO-GO for Production. C1-A [#2](https://github.com/khaledtag93/dynamic-ecommerce
 - **PARTIAL / OPEN**: other **already-authenticated** sessions after password reset or password change are not proven revoked, since customer route group does not enforce `auth.session`; universal logout is a security/UX policy decision requiring owner approval. Browser CSRF/origin and cookie flags, EN/AR UI and provider reset-email delivery on QAS **NOT RUN**.
 - No proven app bug in Logout/Reset on tested source paths. **No app-code changes** or QAS/Production writes, credentials, OTP/OAuth, real Email/SMS/WhatsApp, config/permissions/identity-policy changes. C1-A [#2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) BLOCKED; QAS issues #3/#4/#5/#6 OPEN. Phase1 NO-GO.
 
+
+## Verified C1-B Slice — Two independently stored authenticated sessions (2026-10-17)
+
+**Source-only, exact checkpoint [`af3bacef`](https://github.com/khaledtag93/dynamic-ecommerce/commit/af3baceffb36a7cc4fa019d135160accf0d86be1) and [CI #38998589662](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38998589662) directly verified `completed/success`: `1,000 PHPUnit tests passed / 19,405 assertions`.** The two new `ActiveTwoBrowserSessionLifecycleTest` cases both PASSED. Zero QAS/Production writes or provider emails; no application, permission, config, session policy or schema changes.
+
+### Test methodology and precise observed behavior
+
+- CI uses `SESSION_DRIVER=array` as configured in `phpunit.xml`: **one in-memory session handler storing distinct records** with separately generated browser A and browser B session IDs. Both browsers independently POST Login using correct session cookies and are verified as logged in on authenticated GET `account.index`; their different session keys each have independently persisted handler data. `viaRemember()` is **false** for both browsers. This intentionally tests *active server sessions*, not persistent Remember Me reauthentication.
+- **Profile Password Change:** With A's session cookie, PATCH `account.password.update` changes password after current-password validation. Independent previously active B session still gets HTTP 200 from `account.index` and remains authenticated. A also stays authenticated.
+- **Password Reset:** After two independent active sessions A/B have been created, an unrelated browser C GETs reset form and POSTs a broker-issued test reset token; password hash changes, reset token consumed, C is authenticated with its own rotated session, and previously active A/B still get authenticated account pages. The password-reset recaller-token behavior is covered by prior source regression and **must not** be conflated with active session records.
+- **Test harness limitation, transparently corrected:** Laravel `Session\Store::loadSession()` uses `array_replace($this->attributes, $this->readFromHandler())`. Within a single PHPUnit app instance a second browser can inherit first browser's **in-memory session attributes** unless test code clears them before loading the different saved cookie. Both preliminary attempts [CI #38997904422](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38997904422) and [CI #38998270324](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38998270324) failed at second `GET login` (302 vs 200), **before password change or reset**; these are NOT application security failures. Final test-only correction `Auth::forgetGuards()` + `session()->flush()` clears cached guard and in-memory attributes without invoking `logout()`, `invalidate()`, or deleting either stored session record. Verified both independent sessions can be reloaded from handler after each switch. This is a test harness adjustment only, NOT a production code alteration.
+- **Limits:** `array` is an isolated shared test-process handler, not a real device or production Redis/database/file session backend. No QAS browser/device test, production cookie settings, session-driver metadata, audit events or multi-tenant/staff policies have been accepted. No actual email/WhatsApp/SMS sent.
+
+### IMPLEMENTED / PARTIAL / BLOCKED matrix
+
+| Capability | Evidence-based status |
+| --- | --- |
+| Two distinct authenticated session IDs surviving a subsequent request | **IMPLEMENTED / SOURCE PASS** (both cookie-based GET + handler record reload) |
+| Active B session after A changes profile password | **IMPLEMENTED current behavior / SOURCE PASS**: B remains authenticated; **policy not yet approved** |
+| Active A/B sessions after unrelated C password reset | **IMPLEMENTED current behavior / SOURCE PASS**: A/B remain authenticated; C newly authenticated; **policy not yet approved** |
+| Remember Me cookie replay after reset/change | **SOURCE PASS in earlier regression**: old remembered recaller denied, distinct from server sessions |
+| Automatic all-other-device sign-out | **MISSING as enforced behavior / OPEN POLICY**: `auth.session` alias exists, but not applied to account route group; no approved revocation contract |
+| Real QAS EN/AR 2-device, cookie flags, session-driver concurrency, transport | **BLOCKED** by C1-A preflight A0–A8 and authorized acceptance |
+| Social OAuth, email/phone OTP | **MISSING/PARTIAL under existing C1-B inventory**, separate product decisions; no new integration here |
+
+### Decision: DEC-SESSION-REVOCATION-V1 — owner approval required
+
+[Dedicated decision issue #9](https://github.com/khaledtag93/dynamic-ecommerce/issues/9) records three options, **none authorized**:
+
+- **A: Retain current behavior**: active devices persist after reset/change; lowest login disruption but potentially leaves stolen active sessions alive.
+- **B: Balanced customer policy (candidate, not approved)**: revoke previously active **other** sessions on password reset and profile change, keep initiating browser logged in; requires effective revocation for the chosen session driver, correct token/revocation races, EN/AR messaging, audit events and real two-device acceptance. Separate privileged staff/admin/POS/Workforce policy required to avoid interrupting active operational sessions without a decision.
+- **C: Strict**: revoke all sessions including current device and require login; strongest universal reauth, highest UX/operations disruption.
+
+**Do not implement any option by default.** A session's continued authentication under current source code is not automatically a vulnerability without an agreed security/UX product policy. Source slice ends with **no app-code fix**.
+
+### Project release gates and continuation
+
+- C1-A [#2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) **BLOCKED**, including current QAS app/env/DB and external delivery isolation.
+- Notification Center [#4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4), email rendering [#3](https://github.com/khaledtag93/dynamic-ecommerce/issues/3), guest cart [#5](https://github.com/khaledtag93/dynamic-ecommerce/issues/5), password recovery privacy [#6](https://github.com/khaledtag93/dynamic-ecommerce/issues/6), logout/reset [#8](https://github.com/khaledtag93/dynamic-ecommerce/issues/8) **QAS acceptances remain OPEN**.
+- **Phase1 Production remains NO-GO**. Preserve the full product scope, including pending DEC-AUTH-EM/PH/SOC and barcode/POS acceptance; no silent deferral to Phase2.
+- This is a fully documented source/regression checkpoint. Final documentation commit may have a **separate** CI run; do not claim that run green until its exact SHA is directly verified.
+

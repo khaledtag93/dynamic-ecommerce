@@ -1,5 +1,12 @@
 # MASTER PROJECT STATUS
 
+## ACTIVE — C1-B TWO REAL STORED SESSION IDs / V1 REVOCATION DECISION (2026-10-17)
+
+- Verified **CI [#38998589662](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38998589662) `completed/success`** on test SHA `af3baceffb36a7cc4fa019d135160accf0d86be1`: **1,000 PHPUnit PASS / 19,405 assertions**. Two source-only HTTP tests log in twice with independent stored session IDs and correct cookies; source proves active B remains logged in after A's profile password change, and independently active A/B remain logged in after C's password reset. `viaRemember()` false: this is not persistent-cookie reauthentication. Details: [C1-B Account Session Audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md).
+- Two prior RED runs `#38997904422`/`#38998270324` were **test-harness contamination** (cached guard and `Session\Store::loadSession` array_replace); the corrected test clears only in-memory state, not stored sessions. No application bug proved and **ZERO application-code/config/permission/policy changes**.
+- Dedicated **[DEC-SESSION-REVOCATION-V1 Issue #9](https://github.com/khaledtag93/dynamic-ecommerce/issues/9) OPEN**: retain current; balanced revoke other customer sessions but retain current; or strict revoke all. None approved, and staff/Workforce/POS/admin need separate treatment. Do not assume active-server-session survival is a bug. This documentation checkpoint's own CI status must be independently verified (no auto-green claim).
+- No QAS/Production writes, no external sends, no OTP/OAuth. **C1-A Issue #2 BLOCKED**; QAS Issues #3/#4/#5/#6/#8 OPEN; Phase1 **NO-GO**.
+
 ## ACTIVE — C1-B LOGOUT / RESET HTTP + CSRF SOURCE VERIFICATION (2026-10-17)
 
 - [Session Security Audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md): Login with Remember Me, Logout and real HTTP Password Reset lifecycle via two simulated browser sessions passed [CI #38996910142](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38996910142) (997 tests / 19,289 assertions; exact SHA `58f2a751`). Session/cookie invalidation, remember-token cycling, reset token single-use and post-reset login covered.
