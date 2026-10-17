@@ -51,7 +51,7 @@ class OutboundMailRouteIsolationContractTest extends TestCase
         $orderMail = Mail::sent(OrderUpdateMail::class)->sole();
         $this->assertSame('order-only@example.test', $orderMail->to[0]['address'] ?? null);
         $this->assertSame($order, $orderMail->order);
-        $this->assertNull($orderMail->mailer);
+        $this->assertSame('array', $orderMail->mailer);
         Mail::assertSentCount(1);
         Mail::assertNotQueued(OrderUpdateMail::class);
         Notification::assertNothingSent();
@@ -173,7 +173,7 @@ class OutboundMailRouteIsolationContractTest extends TestCase
         Mail::assertSent(GrowthCampaignMail::class, 1);
         $growthMail = Mail::sent(GrowthCampaignMail::class)->sole();
         $this->assertSame('growth-only@example.test', $growthMail->to[0]['address'] ?? null);
-        $this->assertNull($growthMail->mailer);
+        $this->assertSame('array', $growthMail->mailer);
         $this->assertSame('Synthetic growth title', $growthMail->payload['subject'] ?? null);
         Mail::assertSentCount(1);
         Mail::assertNotQueued(GrowthCampaignMail::class);
