@@ -1,5 +1,12 @@
 # MASTER PROJECT STATUS
 
+## QAS Safe Mail Sandbox readiness — PLAN ONLY (2026-10-17)
+
+- [QAS Safe Mail Sandbox Readiness](docs/QAS_SAFE_MAIL_SANDBOX_READINESS_2026-10-17_AR.md): recommend **Mailtrap Email Testing** (sandbox, **not** Email Sending) over self-hosting Mailpit on current Hostinger environment; requires explicit owner approval and a verified isolated test inbox before any SMTP changes. QAS effective mail remains `array`, From placeholder `@example.com`; public Forgot Password success does not prove email dispatch/delivery or account membership. No QAS/provider writes, no messages.
+- **Critical blast radius:** Laravel global mailer also backs order-update mail, admin escalation, automation retry/fallback and Growth email; scanners/queue can wake up independent of a Reset Password request. Actual runtime toggles, active automation, pending jobs and any sandbox forwarding require separate read-only verification. Mailtrap does **not** isolate WhatsApp or payments.
+- **Next:** M0–M7 isolation/preflight and explicit bounded consent, THEN one synthetic reset acceptance. C1-A #2 BLOCKED, QAS #3–#6 OPEN, Phase 1 Production NO-GO. Last deployed source SHA `de180de6`; latest documentation SHA CI is separate/not assumed GREEN.
+
+
 ## New standing QA execution roadmap — 2026-10-17
 
 - [Testing & Acceptance Master Roadmap](docs/FLOWRA_TESTING_ACCEPTANCE_ROADMAP_2026-10-17_AR.md), [98-case execution ledger](docs/FLOWRA_TEST_CASE_LEDGER_2026-10-17.md) and [tracking Issue #11](https://github.com/khaledtag93/dynamic-ecommerce/issues/11) established as **planning/tracking only**, linked to the 26-journey inventory and standing assistant-led QA charter.
