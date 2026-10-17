@@ -1,5 +1,14 @@
 # CURRENT PHASE
 
+## C1 Registration Concurrent Integrity — reproducible RED → minimal fix → GREEN (2026-10-17)
+
+- [Audit and exact-SHA evidence](docs/C1_REGISTRATION_CONCURRENT_INTEGRITY_2026-10-17_AR.md). Baseline [CI #39042089781](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39042089781) **completed/success** at \`cb5b8b60\` (1,010 tests / 19,609 assertions). Merchant data migration roadmap commit \`540151e2\` was preserved.
+- **REAL BUG CONFIRMED**: two independent PHP HTTP kernels, with separate encrypted guest session cookies and MySQL connections, both passed the \`unique:users\` validator before a controlled simultaneous INSERT into the isolated \`dynamic_test\` DB. [RED CI #39042824372](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39042824372) at \`400ff428\`: one signup HTTP 302, the other HTTP 500, only ONE user created; 1 failing new test / 1,010 passing, 19,623 assertions. No raw SQL detail reached response with \`APP_DEBUG=false\`, but unhandled server error is a reproducible integrity/UX defect.
+- **MINIMAL FIX** \`app/Http/Controllers/Auth/RegisterController.php\`: catch ONLY \`UniqueConstraintViolationException\` during \`User::create\`; if the attempted email now exists, throw the regular email \`ValidationException\`; otherwise rethrow original DB exception. DB unique index remains; account role/validation/email visibility, session/CSRF, abuse/rate policies unchanged.
+- [GREEN full CI #39043137013](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39043137013), exact fix SHA \`ea672d5888fb3eb5a7d9b4232f555100f3119e78\`: **completed/success, 1,011 tests / 19,626 assertions**; independent two-worker HTTP race regression PASS. No QAS/Production writes, external messages, OTP/OAuth, config, permission, policy or secret changes.
+- **Remaining OPEN**: registration/IP abuse policy, duplicate-email privacy policy, actual QAS/browser/backend provider acceptance. C1-A issue #2 **BLOCKED**, QAS issues #3–#6 **OPEN**, Phase 1 Production **NO-GO**. Documentation checkpoint CI must independently be completed/success before calling that commit green.
+
+
 ## C1 REGISTRATION ABUSE READINESS — SOURCE PASS / POLICY OPEN (2026-10-17)
 
 - [Audit + CI evidence](docs/C1_REGISTRATION_ABUSE_READINESS_2026-10-17_AR.md): [full CI #39041666884](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39041666884) `completed/success` at exact SHA `18cd82a8`: **1,010 tests / 19,609 assertions**. Three new registration abuse-readiness tests passed: no explicit POST register throttle, two isolated guest signups from same synthetic IP accepted, and duplicate/invalid registrations rejected. Existing CSRF/session/privilege defenses previously tested. No newly proven non-policy bug; no app fix.
