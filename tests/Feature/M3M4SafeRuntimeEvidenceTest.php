@@ -165,6 +165,65 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
         }
     }
 
+    public function test_wrong_connected_database_reports_only_identity_stage_with_original_404(): void
+    {
+        // CI uses the disposable dynamic_test schema; simulate staging without
+        // ever connecting to or selecting a QAS/Production database.
+        app()->detectEnvironment(fn () => 'staging');
+
+        try {
+            app(\\App\\Services\\System\\SafeRuntimeEvidenceService::class)->snapshot();
+            self::fail('A mismatched connected database must fail closed.');
+        } catch (\\App\\Services\\System\\SafeRuntimeEvidenceFailure $failure) {
+            self::assertSame('IDENTITY_GATE', $failure->stage);
+            self::assertSame(404, $failure->getStatusCode());
+            self::assertSame('Not Found', $failure->getMessage());
+            self::assertNull($failure->getPrevious());
+        }
+    }
+
+    public function test_missing_required_schema_reports_opaque_schema_stage_and_stays_blocked(): void
+    {
+        // Only the synthetic test connection is used. There are no DDL writes.
+        \\Illuminate\\Support\\Facades\\Schema::shouldReceive('hasTable')
+            ->once()
+            ->with('website_settings')
+            ->andReturn(false);
+
+        try {
+            app(\\App\\Services\\System\\SafeRuntimeEvidenceService::class)->snapshot();
+            self::fail('Missing schema must remain blocked.');
+        } catch (\\App\\Services\\System\\SafeRuntimeEvidenceFailure $failure) {
+            self::assertSame('REQUIRED_SCHEMA', $failure->stage);
+            self::assertSame(503, $failure->getStatusCode());
+            self::assertSame('Safe diagnostic snapshot unavailable.', $failure->getMessage());
+            self::assertNull($failure->getPrevious());
+        }
+    }
+
+    public function test_aggregate_query_failure_reports_only_stage_never_sensitive_exception(): void
+    {
+        // Trigger an isolated synthetic exception during the read-only count,
+        // without changing database rows or touching outbound services.
+        DB::listen(static function ($query): void {
+            if (str_contains($query->sql, 'notification_automation_rules')) {
+                throw new \\RuntimeException('private@example.invalid token=never-publish');
+            }
+        });
+
+        try {
+            app(\\App\\Services\\System\\SafeRuntimeEvidenceService::class)->snapshot();
+            self::fail('A failed aggregate must never return EVIDENCE_ONLY.');
+        } catch (\\App\\Services\\System\\SafeRuntimeEvidenceFailure $failure) {
+            self::assertSame('AUTOMATION_COUNT', $failure->stage);
+            self::assertSame(503, $failure->getStatusCode());
+            self::assertSame('Safe diagnostic snapshot unavailable.', $failure->getMessage());
+            self::assertNull($failure->getPrevious());
+            self::assertStringNotContainsString('private@example.invalid', $failure->getMessage());
+            self::assertStringNotContainsString('never-publish', $failure->getMessage());
+        }
+    }
+
     public function test_production_environment_is_unavailable_before_any_database_read(): void
     {
         $admin = $this->createSuperAdmin();
