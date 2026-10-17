@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## M3/M4 QAS read-only outbound isolation audit — 2026-10-17
+
+- [M3/M4 evidence and gate matrix](docs/QAS_M3_M4_OUTBOUND_ISOLATION_READ_ONLY_AUDIT_2026-10-17_AR.md), extending the [Mailtrap Sandbox readiness plan](docs/QAS_SAFE_MAIL_SANDBOX_READINESS_2026-10-17_AR.md). Read-only observed QAS app SHA **`de180de6`**, effective `mail=array`, `queue=database`, Scheduler/Worker both **OK**, **1 pending job**, **0 failed jobs**. This proves current Laravel mail capture and runtime liveness, NOT full outbound isolation.
+- Two allowlisted PHP/DB aggregate inspection attempts did **not** yield a completed result. Actual QAS notification event/email/WhatsApp flags, active retry/fallback/admin automation, Growth real-email, pending-job type and delivery backlog **UNKNOWN**. **M3 BLOCKED**, **M4 PARTIAL/BLOCKED**; don't substitute source defaults for live DB state. No sending, scanner, queue retry or config change.
+- Mailtrap **Email Testing (Sandbox)** remains preferred but **PLAN ONLY**, QAS mail stays `array`. C1-A #2 BLOCKED; acceptance #3–#6 OPEN; Phase1 Production NO-GO. QAS deployed SHA and docs-only branch SHA tracked separately. New checkpoint CI must be independently verified.
+
+
 ## QAS Safe Mail Sandbox readiness — PLAN ONLY (2026-10-17)
 
 - [QAS Safe Mail Sandbox Readiness](docs/QAS_SAFE_MAIL_SANDBOX_READINESS_2026-10-17_AR.md): recommend **Mailtrap Email Testing** (sandbox, **not** Email Sending) over self-hosting Mailpit on current Hostinger environment; requires explicit owner approval and a verified isolated test inbox before any SMTP changes. QAS effective mail remains `array`, From placeholder `@example.com`; public Forgot Password success does not prove email dispatch/delivery or account membership. No QAS/provider writes, no messages.
