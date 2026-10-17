@@ -1,5 +1,12 @@
 # MASTER PROJECT STATUS
 
+## M3/M4 bounded evidence unblock (2026-10-17)
+
+- [Bounded read-only outcome](docs/QAS_M3_M4_SAFE_READ_ONLY_EVIDENCE_UNBLOCK_2026-10-17_AR.md) builds on [initial M3/M4 audit](docs/QAS_M3_M4_OUTBOUND_ISOLATION_READ_ONLY_AUDIT_2026-10-17_AR.md): GitHub baseline `56c22726`, CI #39048347893 `completed/success` (1,011 tests / 19,626 assertions); QAS deployed code `de180de6`, mail `array` per prior runtime evidence.
+- Previous read-only probe sessions were absent from Desktop Commander session list; **one** guarded read-only SQL aggregate probe in this slice again did **not** yield a completed output and was locally terminated. Do not assert exact DB root cause or successful data retrieval. No extra retries/bypass. Effective notification/WhatsApp flags, automation fallbacks/admin emails, Growth real-email and pending job classes **UNKNOWN**.
+- **M3 BLOCKED; M4 PARTIAL/BLOCKED** (prior one pending/zero failed and worker/scheduler OK), no outbound isolation sign-off. Alternative owner-approved QAS read-only console and non-PII aggregate SELECT statements documented for a later separate authorization. `mail=array` stays unchanged; Mailtrap plan-only, QAS #3–#6 OPEN, C1-A #2 BLOCKED, Production NO-GO. Documentation CI on newest SHA not assumed success.
+
+
 ## M3/M4 QAS read-only outbound isolation audit — 2026-10-17
 
 - [M3/M4 evidence and gate matrix](docs/QAS_M3_M4_OUTBOUND_ISOLATION_READ_ONLY_AUDIT_2026-10-17_AR.md), extending the [Mailtrap Sandbox readiness plan](docs/QAS_SAFE_MAIL_SANDBOX_READINESS_2026-10-17_AR.md). Read-only observed QAS app SHA **`de180de6`**, effective `mail=array`, `queue=database`, Scheduler/Worker both **OK**, **1 pending job**, **0 failed jobs**. This proves current Laravel mail capture and runtime liveness, NOT full outbound isolation.
