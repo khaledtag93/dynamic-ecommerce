@@ -1,5 +1,15 @@
 # CURRENT PHASE
 
+## ACTIVE — C1-A CONCRETE ACCEPTANCE PACK; EXECUTION AWAITS BOUNDED SCOPE (2026-10-17)
+
+- Previous checkpoint `c5fb8c62` / CI [38985883662](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38985883662) directly verified **completed/success** on the exact SHA.
+- [C1 acceptance pack](docs/C1_CORE_COMMERCE_ACCEPTANCE_PACK_2026-10-17.md) now contains 15 case families, exact test-method/source references, preflight, fixture caps, money/stock expectations and controlled retention. C1-A: 2 synthetic customers, 1 category, 3 products/2 variants, at most 12 unpaid COD/pickup orders across EN/AR desktop/mobile; all cancelled after verification. Expected scenario totals 100.00 / 150.50 / 0.30 EGP; captured money zero. Arithmetic independently checked; no application tests or QAS actions run this slice.
+- Observed side effects: checkout notifies customer and all role_as=1 admins in the database, may dispatch WhatsApp after commit, and records behavior; cancellation can trigger configured email/WhatsApp/automation. Require proof of existing external-delivery isolation before mutations; no global setting changes or pretending browser request blocking prevents server sends.
+- **Next is execution, not another generic plan:** after explicit authorization of this bounded pack, verify CI and permitted QAS/runtime/settings/fixtures once, then run cases and save actual PASS/FAIL/BLOCKED evidence. Current explicit no-write/login/cart/checkout boundary remains in force; the user's quoted next-step text did not explicitly authorize mutations. No tool safety bypass.
+- C1-B offers/shipping/auth recovery, C1-C Paymob, C1-D fulfillment/returns/concurrency and C1-E page DoD remain Phase1 acceptance work; none was silently moved to Phase2. Phase1 NO-GO. QAS app a682074f is still prior operator evidence, not a fresh runtime check.
+- Documentation only; no code/schema/permissions/settings, QAS or Production changes. New commit CI independent. Older sections below remain history.
+
+
 ## ACTIVE — PHASE 1 SOURCE INVENTORY COMPLETE; NEXT CORE COMMERCE ACCEPTANCE (2026-10-17)
 
 - Owner priority: **close Phase 1**, no new feature expansion. Starting checkpoint `8b62fe81` / CI [#38984262494](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38984262494) directly verified **completed/success** on the exact SHA.
