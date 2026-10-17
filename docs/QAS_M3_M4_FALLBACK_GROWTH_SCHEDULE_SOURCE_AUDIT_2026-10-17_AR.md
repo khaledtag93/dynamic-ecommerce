@@ -31,6 +31,12 @@
 - \`RunNotificationEscalationScannerCommand::handle\` calls \`NotificationAutomationService::scanStalePending\` and records an admin activity audit.
 - Existing scheduler/queue liveness evidence does **not** prove which commands fired, which rules matched, which jobs are pending, or whether WhatsApp/SMTP providers are isolated. We did **not** invoke schedules, commands, workers, scanners, retries or jobs.
 
+## Verified source-only regression closure
+
+- [Test commit `b033f8476a4df6dcff610994b496f74cb47f57d4`](https://github.com/khaledtag93/dynamic-ecommerce/commit/b033f8476a4df6dcff610994b496f74cb47f57d4) and [full Hardening CI #39054552582](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39054552582) **completed/success on exact SHA**, 1,019 PHPUnit tests / 19,701 assertions, all workflow steps successful. 2 added zero-network routing tests PASS; no app defect confirmed. Documentation pointer follow-up commit needs its own exact-SHA CI, not assumed green.
+
+**This is source/test evidence only.** No QAS operator database identity or runtime channel state was observed.
+
 ## Zero-network source-only contract tests
 - \`tests/Feature/OutboundAutomationRoutingBoundaryTest.php\` adds 2 bounded tests:
   1. Override **only** \`sendUsingChannel\` with an in-memory non-sending fake; call the protected \`applyRule\` match to assert fallback uses the target and same-channel retry uses the original, including manual flag propagation. No rules are queried or executed, no logs inserted and no providers reached.

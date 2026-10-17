@@ -26,7 +26,7 @@
 
 ## Four narrowly scoped regression cases
 - \`tests/Feature/OutboundMailRouteIsolationContractTest.php\` adds **four** tests using \`Mail::fake()\` and \`Notification::fake()\`. All addresses and order data are synthetic (\`@example.test\`) and exist only in CI. No application code, configuration, permissions, policies, secrets or live database are modified.
-- Order positive path: intercept and inspect recipient, mailable type, \`mailer === null\`, count and no queued mailable. Order empty-recipient path: no outgoing fake records.
+- Order positive path: intercept and inspect recipient, mailable type, \`mailer === array\`, count and no queued mailable. Order empty-recipient path: no outgoing fake records.
 - Admin escalation: Laravel 13 \`MailFake::raw()\` is **a no-op**, so \`Mail::assertSent()\` would be a false proof. A Mockery interception of **only** \`Mail::raw\` verifies callback-selected synthetic recipient and generated subject, while \`mailer()\` is forbidden on the mock. Do not assert actual email delivery, live rule selection, or admin-recipient policy. The direct leaf is invoked, **not** \`executeForDispatch\`, retry, scanner or queue.
 - Growth: fake captures \`GrowthCampaignMail\`, ensures \`mailer === array\` and zero queueing; a missing recipient returns \`skipped\` without additional fake mail.
 - All new tests are designed for isolated GitHub Actions MySQL testing environment only; never QAS/Production. Run full Hardening CI and require **completed/success at exact test SHA** before declaring GREEN. A test double mismatch is not automatically an app bug.
