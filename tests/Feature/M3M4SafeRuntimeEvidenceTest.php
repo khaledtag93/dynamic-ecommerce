@@ -206,7 +206,7 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
         // Trigger an isolated synthetic exception during the read-only count,
         // without changing database rows or touching outbound services.
         DB::listen(static function ($query): void {
-            if (str_contains($query->sql, 'notification_automation_rules')) {
+            if (str_contains(strtolower($query->sql), 'from `notification_automation_rules`')) {
                 throw new \RuntimeException('private@example.invalid token=never-publish');
             }
         });
