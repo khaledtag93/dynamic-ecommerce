@@ -1,4 +1,14 @@
 # Flowra — Phase 1 Production Closure Register
+
+## تحديث تنفيذ الجرد — 2026-10-17
+
+- baseline `8b62fe81` وCI #38984262494 تم فحصهما مباشرة: **completed/success**.
+- اكتملت دفعة جرد التعريفات المصدرية الصريحة: **317 route declarations، 229 Blade templates، 116 public Livewire methods (تشمل helpers/lifecycle)، 6 default roles / 34 permissions**. تم ربط 212 تعريف مسار بمراجع literal route-name داخل tests؛ هذا ليس coverage percentage.
+- [الجرد التفصيلي ومعايير قبول 26 مجموعة رحلات](PHASE1_DETAILED_INVENTORY_2026-10-17_AR.md) وسجلات CSV المرتبطة به هي تنفيذ المرحلة A. Runtime generated/package route reconciliation وconditional UI acceptance يظلان مفتوحين؛ لا ندعي full inventory closure لكل حالة runtime.
+- نتائج قابلة للتصرف: Imports ينشئ draft فقط؛ CSV execution مرشح Phase2 لا قرار معتمد. POS GET قد ينشئ cart وPaymob redirect GET يبدأ payment flow؛ لا read-only crawl لهما. صلاحيات route candidates لا تتجاوز controller/service ownership guards.
+- **التالي C1 قبول التجارة الأساسية** باستخدام الجرد الحالي؛ لا إعادة تخطيط عامة أو تكرار Guest PASS. مراجعة exact assertions وfixtures/expected values ثم QAS stateful ضمن إذن محدد. القيود الحالية تمنع login/cart/checkout/data writes؛ لا تحويل BLOCKED إلى PASS أو FAIL.
+- Phase1 ما زالت NO-GO؛ هذه دفعة source inventory documentation، وليست functional acceptance أو deployment. CI للـcheckpoint الجديد مستقل.
+
 تاريخ: 2026-10-17 بتوقيت القاهرة | الحالة: **NO-GO للإنتاج — مراجعة الأدلة وتثبيت خطة الإغلاق**
 فرع العمل: `sec03-framework-upgrade` | baseline توثيق تمت قراءته: `f36df56e4505f8b5012280a16e0e16699418c3ad`.
 
@@ -123,3 +133,4 @@ ID؛ module؛ page/action/routes؛ persona/permissions؛ Phase؛ scope decision�
 - [QAS promotion](QAS_PROMOTION_AND_DEPLOY_AUTOMATION_CHECKPOINT_2026-10-16.md)
 
 هذا checkpoint توثيقي فقط؛ لا تعديل كود ولا اختبار runtime جديد ولا نشر. لا يمنح Production readiness.
+

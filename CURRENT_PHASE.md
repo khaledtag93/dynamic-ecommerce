@@ -1,5 +1,16 @@
 # CURRENT PHASE
 
+## ACTIVE — PHASE 1 SOURCE INVENTORY COMPLETE; NEXT CORE COMMERCE ACCEPTANCE (2026-10-17)
+
+- Owner priority: **close Phase 1**, no new feature expansion. Starting checkpoint `8b62fe81` / CI [#38984262494](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38984262494) directly verified **completed/success** on the exact SHA.
+- Current source inventory: **317 explicit route declarations, 229 Blade templates, 116 public Livewire methods (including lifecycle/helpers), 6 default roles / 34 permission definitions**. 148 source test files / 981 test methods indexed; 212 routes have literal test references, NOT a coverage score. All extracted routes point to source lines/handlers/journey criteria.
+- [Detailed inventory and 26 journey groups](docs/PHASE1_DETAILED_INVENTORY_2026-10-17_AR.md) links five CSV registers for routes/actions, Livewire, default roles, view surfaces and view-route references. Generated Auth/package runtime manifest and conditional UI acceptance remain open; no full runtime coverage claim.
+- Confirmed source boundaries: Import drafts do not execute CSV (execution proposed for Phase 2; not silently excluded); GET POS can create a cart and GET Paymob redirect initiates payment; do not crawl these under read-only authorization. Default role candidates are not controller/service authorization.
+- **Next C1: core commerce acceptance**, using existing inventory and exact test assertions/fixtures/expected money-stock outcomes; then authorized isolated QAS stateful cases. Do not repeat proven Guest Slice04/05 unless impacted by change. Current no-write/login/cart/checkout restrictions preserved; no QAS/Production action this slice.
+- Phase1 release **NO-GO** until existing G01–G10 release gates close. Application/QAS record remains `a682074f`; this is documentation only, no new runtime SHA verification. New checkpoint CI must be verified independently.
+- Older headings below are historical. The closure register remains the roadmap; this inventory is its execution, not a competing plan.
+
+
 ## CURRENT RELEASE PRIORITY — PHASE 1 PRODUCTION CLOSURE (2026-10-17)
 
 - Owner requested a project-wide evidence-based inventory: what is closed, incomplete, missing for Production, and explicitly deferred to Phase 2. **Release decision: NO-GO; no honest completion percentage until the current scope/inventory is reconciled.** Freeze new feature expansion; preserve completed source boundaries and proven guest checks.
@@ -652,3 +663,4 @@ See `docs/PROJECT_CHECKPOINT_2026-09-25.md` for the detailed checkpoint and rema
 ### Working rule reaffirmed
 - Close existing in-progress modules to production-grade quality before starting unrelated new features, unless a new finding is a blocker, regression, security issue or prevents avoidable rework.
 - New useful ideas should be recorded in the roadmap and picked up in dependency/priority order.
+
