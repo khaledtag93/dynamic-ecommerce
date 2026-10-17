@@ -1,5 +1,12 @@
 # Flowra — C1-A QAS Preflight Execution Report
 
+## Addendum — CI source gate cleared after the initial safety stop (2026-10-17)
+
+- A **later direct GitHub check** confirmed [CI #38988254957](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38988254957) `status=completed`, `conclusion=success`, `head_sha=f156f52ae450edad4e207a98a05ebcfbed99fe40`. The earlier `in_progress` observation below remains valid as its time-stamped initial state.
+- **A8 CI subcondition now PASS**, but **A8 execution gate remains BLOCKED** because A0–A4/A7 identity/settings/isolation prerequisites have not passed. The owner-approved scope remains available, but no QAS stateful execution can begin without those proofs.
+- The first documentation checkpoint from the stop is `28a73df9`; its separate CI [#38988568822](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38988568822) was `in_progress` when checked. This later addendum creates its own independent documentation checkpoint and CI.
+- **No new QAS interaction or mutations followed this CI update.** Actual A01–A15 completed cases: 0; successful COD orders: 0; Phase1 NO-GO.
+
 Date: 2026-10-17 (Africa/Cairo) | Planned implementation baseline: `f156f52ae450edad4e207a98a05ebcfbed99fe40` | Branch: `sec03-framework-upgrade`
 
 ## Execution verdict: STOP / BLOCKED AT PREFLIGHT — NO STATEFUL QAS TESTS STARTED

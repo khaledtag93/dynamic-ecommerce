@@ -1,5 +1,10 @@
 # CURRENT PHASE
 
+## ACTIVE UPDATE — C1-A SOURCE CI GREEN, RUNTIME ISOLATION BLOCKED (2026-10-17)
+
+- GitHub [#38988254957](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38988254957) later verified **completed/success** on exact source `f156f52a` (after the earlier in-progress snapshot). CI subgate cleared; **no QAS writes**.
+- [C1-A preflight report](docs/C1A_QAS_PREFLIGHT_EXECUTION_REPORT_2026-10-17.md) documents all A0–A8 gates. Current QAS runtime Git/DB identity, outbound Email/WhatsApp/automation isolation, store configuration and reconciliation channel remain BLOCKED/UNVERIFIED; all 15 planned cases NOT RUN; 0 orders. Do not resume until mandatory gates are proven through an authorized read-only route. Phase1 NO-GO.
+
 ## ACTIVE — C1-A QAS PREFLIGHT STOP / NO WRITES (2026-10-17)
 
 - Owner explicitly authorized the bounded C1-A QAS synthetic journey only **after** CI green, verified QAS/DB identity and proven external-delivery isolation. Preflight [execution report](docs/C1A_QAS_PREFLIGHT_EXECUTION_REPORT_2026-10-17.md) records real observations and A0–A8 gates.
