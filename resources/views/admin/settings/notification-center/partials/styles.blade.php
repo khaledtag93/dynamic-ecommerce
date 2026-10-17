@@ -157,6 +157,31 @@
     .notification-workspace-tab .label { display:block; font-weight:800; margin-bottom:.2rem; }
     .notification-workspace-tab .copy { display:block; color:var(--admin-muted); font-size:.88rem; line-height:1.55; }
 
+
+    /* Full-width settings avoids blank area below uneven 4/8-column cards. */
+    .notification-center-page .notification-settings-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; }
+    .notification-center-page .notification-settings-panel { min-width:0; }
+    .notification-center-page .notification-channel-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.85rem; }
+    .notification-center-page .notification-channel-card { min-width:0; background:var(--admin-surface); }
+    .notification-center-page .notification-mini-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.85rem; }
+    .notification-center-page .notification-matrix-table { min-width:720px; }
+    .notification-center-page .notification-matrix-event { min-width:260px; text-align:start; }
+    .notification-center-page .notification-matrix-switch { display:inline-grid !important; width:fit-content; padding:.5rem !important; border:0; background:transparent; grid-template-columns:2.5rem; min-height:2.5rem; }
+    .notification-center-page .notification-matrix-switch .form-check-input { grid-column:1; justify-self:center; }
+    .notification-center-page .notification-delivery-caution { border-inline-start:3px solid var(--admin-warning); padding:.6rem .85rem; background:var(--admin-surface); margin-bottom:.9rem; }
+    .notification-center-page .notification-error-summary { overflow-wrap:anywhere; max-width:40rem; }
+    .notification-center-page .notification-switch .form-check-input:focus-visible,
+    .notification-center-page .notification-matrix-scroll:focus-visible,
+    .notification-center-page .notification-collapsible summary:focus-visible,
+    .notification-center-page .notification-center-nav a:focus-visible { outline:3px solid var(--admin-primary); outline-offset:3px; }
+    html[dir="rtl"] .notification-center-page .notification-matrix-event { text-align:right; }
+    @media (max-width:1399.98px) { .notification-center-page .notification-channel-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:767.98px) {
+        .notification-center-page .notification-channel-grid,
+        .notification-center-page .notification-mini-grid { grid-template-columns:minmax(0,1fr); }
+        .notification-center-page .notification-matrix-scroll { max-width:100%; }
+    }
+
     @media (max-width: 991.98px) {
         .notification-focus-strip { grid-template-columns: 1fr; }
         .notification-center-nav.sticky-nav { top: 4.75rem; }

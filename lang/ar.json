@@ -6084,5 +6084,15 @@
     "Another reviewer is eligible": "يوجد مراجع آخر مؤهل",
     "No eligible reviewer currently": "لا يوجد مراجع مؤهل حاليًا",
     "Reviewer routing needs attention": "توجيه المراجعة يحتاج مراجعة الإعدادات",
-    "Readiness figures cover only the currently displayed, permission-scoped page; they are not organization-wide totals.": "إحصائيات جاهزية المراجعة تخص الصفحة المعروضة ضمن صلاحياتك فقط، وليست إجمالي المؤسسة."
+    "Readiness figures cover only the currently displayed, permission-scoped page; they are not organization-wide totals.": "إحصائيات جاهزية المراجعة تخص الصفحة المعروضة ضمن صلاحياتك فقط، وليست إجمالي المؤسسة.",
+    "Toggle :channel for :event": "تفعيل قناة :channel لحدث :event",
+    "Event channel settings": "إعدادات قنوات الأحداث",
+    "Enabled channels can send externally; this screen does not confirm safe test isolation.": "القنوات المفعّلة قد ترسل رسائل خارجية؛ هذه الشاشة لا تؤكد عزل الإرسال أثناء الاختبار.",
+    "Notification was skipped. Check channel settings before retrying.": "تم تخطي الإشعار. راجع إعدادات القنوات قبل إعادة المحاولة.",
+    "Notification content could not be rendered. Check the template before retrying.": "تعذر تجهيز محتوى الإشعار. راجع القالب قبل إعادة المحاولة.",
+    "Delivery timed out. Check provider availability before retrying.": "انتهت مهلة الإرسال. تحقق من توفر مزود الخدمة قبل إعادة المحاولة.",
+    "Provider rate limit reached. Try again later.": "تم الوصول إلى حد طلبات مزود الخدمة. أعد المحاولة لاحقًا.",
+    "Recipient details need review before retrying.": "يجب مراجعة بيانات المستلم قبل إعادة المحاولة.",
+    "Delivery failed. Review protected system logs before retrying.": "فشل الإرسال. راجع سجلات النظام المحمية قبل إعادة المحاولة.",
+    "Queue health and dispatch outcomes are different indicators.": "سلامة قائمة الانتظار ونتائج إرسال الإشعارات مؤشرين مختلفين."
 }

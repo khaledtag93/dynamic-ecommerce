@@ -21,10 +21,12 @@
 
                 <form method="GET" action="{{ route('admin.settings.notifications.logs') }}" class="row g-2 mb-3" data-submit-loading>
                     <div class="col-md-4">
-                        <input type="text" class="form-control" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('Search order / recipient / error') }}">
+                        <label class="visually-hidden" for="notification_log_search">{{ __('Search order / recipient / error') }}</label>
+                        <input type="text" id="notification_log_search" class="form-control" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="{{ __('Search order / recipient / error') }}">
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" name="channel">
+                        <label class="visually-hidden" for="notification_log_channel">{{ __('All channels') }}</label>
+                        <select class="form-select" id="notification_log_channel" name="channel">
                             <option value="">{{ __('All channels') }}</option>
                             @foreach($channels as $channelKey => $channel)
                                 <option value="{{ $channelKey }}" @selected(($filters['channel'] ?? '') === $channelKey)>{{ $channel['label'] }}</option>
@@ -32,7 +34,8 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" name="event">
+                        <label class="visually-hidden" for="notification_log_event">{{ __('All events') }}</label>
+                        <select class="form-select" id="notification_log_event" name="event">
                             <option value="">{{ __('All events') }}</option>
                             @foreach($events as $eventKey => $event)
                                 <option value="{{ $eventKey }}" @selected(($filters['event'] ?? '') === $eventKey)>{{ $event['label'] }}</option>
@@ -40,7 +43,8 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <select class="form-select" name="status">
+                        <label class="visually-hidden" for="notification_log_status">{{ __('All statuses') }}</label>
+                        <select class="form-select" id="notification_log_status" name="status">
                             <option value="">{{ __('All statuses') }}</option>
                             @foreach(['sent', 'pending', 'failed', 'skipped'] as $status)
                                 <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ $statusLabels[$status] ?? ucfirst($status) }}</option>
@@ -72,7 +76,7 @@
                                         <div class="fw-semibold">{{ optional($log->order)->order_number ?? __('Unknown order') }}</div>
                                         <div class="admin-helper-text">{{ $events[$log->event]['label'] ?? $log->event }}</div>
                                         @if($log->error_message)
-                                            <div class="small text-danger mt-1">{{ \Illuminate\Support\Str::limit($log->error_message, 100) }}</div>
+                                            <div class="small text-danger mt-1 notification-error-summary">{{ \App\Support\NotificationFailureSummary::forOperator($log->error_message, $log->status) }}</div>
                                         @endif
                                     </td>
                                     <td>
@@ -108,7 +112,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4"><div class="admin-empty-title">{{ __('No dispatch logs yet') }}</div><div class="admin-empty-subtitle">{{ __('Dispatch history will start appearing here as soon as the engine records delivery activity.') }}</div></td>
+                                    <td colspan="6" class="text-center py-4"><div class="admin-empty-title">{{ __('No dispatch logs yet') }}</div><div class="admin-empty-subtitle">{{ __('Dispatch history will start appearing here as soon as the engine records delivery activity.') }}</div></td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -151,7 +155,7 @@
                                 <div>
                                     <div class="fw-semibold">{{ optional($log->order)->order_number ?? __('Unknown order') }}</div>
                                     <div class="admin-helper-text">{{ $events[$log->event]['label'] ?? $log->event }} • {{ $channels[$log->channel]['label'] ?? $log->channel }}</div>
-                                    <div class="small text-danger mt-2">{{ $log->error_message ?: __('Dispatch failed.') }}</div>
+                                    <div class="small text-danger mt-2 notification-error-summary">{{ \App\Support\NotificationFailureSummary::forOperator($log->error_message, $log->status) }}</div>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <form method="POST" action="{{ route('admin.settings.notifications.retry-log', $log) }}" data-submit-loading data-confirm-title="{{ __('Retry notification send') }}" data-confirm-message="{{ __('Retry this notification send now?') }}" data-confirm-subtitle="{{ __('A new controlled retry attempt will be created only if safety guards allow it.') }}" data-confirm-ok="{{ __('Retry send') }}" data-confirm-cancel="{{ __('Keep reviewing') }}">
@@ -179,7 +183,7 @@
                                 <div>
                                     <div class="fw-semibold">{{ optional($log->order)->order_number ?? __('Unknown order') }}</div>
                                     <div class="admin-helper-text">{{ $log->message_type }} • {{ $log->normalized_phone ?: $log->phone }}</div>
-                                    <div class="small text-danger mt-2">{{ $log->error_message ?: __('WhatsApp provider log failed.') }}</div>
+                                    <div class="small text-danger mt-2 notification-error-summary">{{ \App\Support\NotificationFailureSummary::forOperator($log->error_message, $log->status) }}</div>
                                 </div>
                                 <form method="POST" action="{{ route('admin.settings.notifications.retry-whatsapp-log', $log) }}" data-submit-loading data-confirm-title="{{ __('Retry WhatsApp send') }}" data-confirm-message="{{ __('Retry this WhatsApp send now?') }}" data-confirm-subtitle="{{ __('A new WhatsApp attempt will be created only if the safety guard does not detect a duplicate active send.') }}" data-confirm-ok="{{ __('Retry send') }}" data-confirm-cancel="{{ __('Keep reviewing') }}">
                                     @csrf

@@ -155,6 +155,76 @@ class NotificationWorkspaceClosureTest extends TestCase
         $this->assertSame('Provider rejected automation delivery.', $dispatchLog->error_message);
     }
 
+
+    public function test_notification_error_summaries_are_localized_and_never_expose_exception_details(): void
+    {
+        $privateError = 'htmlspecialchars(): Illuminate\\Mail\\Message given (View: /var/www/private/client-account/.env?token=secret)';
+        $originalLocale = app()->getLocale();
+
+        try {
+            foreach (['en', 'ar'] as $locale) {
+                app()->setLocale($locale);
+                $summary = \App\Support\NotificationFailureSummary::forOperator($privateError, 'failed');
+                $this->assertSame(__('Notification content could not be rendered. Check the template before retrying.'), $summary);
+                $this->assertStringNotContainsString('/var/www', $summary);
+                $this->assertStringNotContainsString('secret', $summary);
+                $this->assertStringNotContainsString('Illuminate', $summary);
+            }
+            $this->assertSame(
+                __('Delivery failed. Review protected system logs before retrying.'),
+                \App\Support\NotificationFailureSummary::forOperator('Unexpected /home/user/private/path', 'failed')
+            );
+        } finally {
+            app()->setLocale($originalLocale);
+        }
+    }
+
+    public function test_admin_notification_logs_hide_internal_exception_paths_but_keep_recovery_actions(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $order = Order::query()->create([
+            'order_number' => 'NOTIFY-REDACT-001',
+            'customer_name' => 'Synthetic Customer',
+            'customer_email' => 'customer@example.test',
+            'customer_phone' => '01000000000',
+            'shipping_address_line_1' => 'Test street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+        ]);
+        NotificationDispatchLog::query()->create([
+            'order_id' => $order->id,
+            'event' => OrderNotificationService::EVENT_CANCELLED,
+            'channel' => 'email',
+            'status' => NotificationDispatchLog::STATUS_FAILED,
+            'recipient' => 'customer@example.test',
+            'error_message' => 'htmlspecialchars(): /var/www/private/client-account/.env?token=secret Illuminate\\Mail\\Message given',
+        ]);
+
+        $result = $this->actingAs($admin)->get(route('admin.settings.notifications.logs'));
+        $result->assertOk()
+            ->assertSee('NOTIFY-REDACT-001')
+            ->assertSee(__('Notification content could not be rendered. Check the template before retrying.'))
+            ->assertSee(route('admin.settings.notifications.retry-log', NotificationDispatchLog::query()->firstOrFail()))
+            ->assertDontSee('/var/www/private', false)
+            ->assertDontSee('token=secret', false);
+    }
+
+    public function test_notification_overview_exposes_labeled_matrix_with_full_width_channel_grid(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $result = $this->actingAs($admin)->get(route('admin.settings.notifications'));
+
+        $result->assertOk()
+            ->assertSee('notification-settings-layout', false)
+            ->assertSee('notification-channel-grid', false)
+            ->assertSee('notification-matrix-table', false)
+            ->assertSee('scope="row"', false)
+            ->assertSee('scope="col"', false)
+            ->assertSee('aria-describedby="notification-matrix-help"', false)
+            ->assertSee('aria-label=', false)
+            ->assertSee('notification_event_order_cancelled_email', false);
+    }
+
     public function test_notification_center_navigation_exposes_current_page_semantics(): void
     {
         $layout = file_get_contents(resource_path('views/admin/settings/notification-center/layout.blade.php'));

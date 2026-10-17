@@ -11,8 +11,8 @@
         <span class="admin-chip">{{ __('Controls') }}</span>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-xl-4">
+    <div class="notification-settings-layout mb-4">
+        <div class="notification-settings-panel">
             <div class="admin-card mb-4">
                 <div class="admin-card-body">
                     <h4 class="mb-1">{{ __('Global controls') }}</h4>
@@ -23,9 +23,9 @@
                         <div class="admin-helper-text mt-2">{{ __('Turn the full notification engine on or off without interrupting the rest of the order workflow.') }}</div>
                     </div>
 
-                    <div class="d-grid gap-3">
+                    <div class="notification-channel-grid">
                         @foreach($channels as $channelKey => $channel)
-                            <div class="rounded-4 border p-3 bg-white h-100">
+                            <div class="notification-channel-card rounded-4 border p-3 h-100">
                                 <div class="form-check form-switch notification-switch mb-2">
                                     <input class="form-check-input" type="checkbox" id="notification_channel_{{ $channelKey }}_enabled" name="notification_channel_{{ $channelKey }}_enabled" value="1" @checked(old('notification_channel_'.$channelKey.'_enabled', $settings['notification_channel_'.$channelKey.'_enabled'] ?? ($channelKey === 'sms' ? '0' : '1')) === '1')>
                                     <label class="form-check-label fw-semibold" for="notification_channel_{{ $channelKey }}_enabled">{{ $channel['label'] }}</label>
@@ -65,38 +65,40 @@
             </details>
         </div>
 
-        <div class="col-xl-8">
+        <div class="notification-settings-panel">
             <div class="admin-card mb-4">
                 <div class="admin-card-body">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                         <div>
                             <h4 class="mb-1">{{ __('Event × channel matrix') }}</h4>
-                            <div class="admin-helper-text">{{ __('Choose exactly which channels should run for each order lifecycle event.') }}</div>
+                            <div class="admin-helper-text" id="notification-matrix-help">{{ __('Choose exactly which channels should run for each order lifecycle event.') }}</div>
                         </div>
                         <span class="admin-chip">{{ __('Production-safe toggles') }}</span>
                     </div>
 
-                    <div class="table-responsive admin-table-wrap">
-                        <table class="table align-middle admin-table mb-0">
+                    <p class="admin-helper-text notification-delivery-caution">{{ __('Enabled channels can send externally; this screen does not confirm safe test isolation.') }}</p>
+                    <div class="table-responsive admin-table-wrap notification-matrix-scroll" role="region" tabindex="0" aria-label="{{ __('Event channel settings') }}">
+                        <table class="table align-middle admin-table mb-0 notification-matrix-table" aria-describedby="notification-matrix-help">
+                            <caption class="visually-hidden">{{ __('Event channel settings') }}</caption>
                             <thead>
                                 <tr>
-                                    <th style="min-width: 260px;">{{ __('Event') }}</th>
+                                    <th scope="col" style="min-width: 260px;">{{ __('Event') }}</th>
                                     @foreach($channels as $channelKey => $channel)
-                                        <th class="text-center">{{ $channel['label'] }}</th>
+                                        <th scope="col" class="text-center">{{ $channel['label'] }}</th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($events as $eventKey => $event)
                                     <tr>
-                                        <td>
+                                        <th scope="row" class="notification-matrix-event">
                                             <div class="fw-semibold">{{ $event['label'] }}</div>
                                             <div class="admin-helper-text">{{ $event['description'] }}</div>
-                                        </td>
+                                        </th>
                                         @foreach($channels as $channelKey => $channel)
                                             <td class="text-center">
-                                                <div class="form-check form-switch notification-switch d-inline-flex justify-content-center m-0">
-                                                    <input class="form-check-input" type="checkbox" id="notification_event_{{ $eventKey }}_{{ $channelKey }}" name="notification_event_{{ $eventKey }}_{{ $channelKey }}" value="1" @checked(old('notification_event_'.$eventKey.'_'.$channelKey, $settings['notification_event_'.$eventKey.'_'.$channelKey] ?? '0') === '1')>
+                                                <div class="form-check form-switch notification-switch notification-matrix-switch m-0">
+                                                    <input class="form-check-input" type="checkbox" aria-label="{{ __('Toggle :channel for :event', ['channel' => $channel['label'], 'event' => $event['label']]) }}" id="notification_event_{{ $eventKey }}_{{ $channelKey }}" name="notification_event_{{ $eventKey }}_{{ $channelKey }}" value="1" @checked(old('notification_event_'.$eventKey.'_'.$channelKey, $settings['notification_event_'.$eventKey.'_'.$channelKey] ?? '0') === '1')>
                                                 </div>
                                             </td>
                                         @endforeach

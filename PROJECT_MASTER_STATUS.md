@@ -1,5 +1,12 @@
 # MASTER PROJECT STATUS
 
+## ACTIVE — Notification Center SOURCE UI/UX closure slice (2026-10-17)
+
+- [Issue #4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4): Overview/Logs source-only enhancements: stacked full-width channel/matrix panels to remove unmatched desktop column whitespace; responsive 4/2/1 channel grid and 3/1 guidance cards; semantic matrix column/row headers, labels for all event toggles, tab-focusable horizontal scrolling, mobile/RTL focus; Arabic translations. Existing event/channel form names and POST actions unchanged.
+- Admin Logs now display only allowlisted `NotificationFailureSummary` strings (template, timeout, provider throttling, recipient or generic) rather than raw exception paths/provider error text in table/recovery cards/WhatsApp cards. Originals stay in stored logs; controller/dispatch/retry behavior unchanged. Labeled filters, corrected table colspan, explicit queue-vs-dispatch metric distinction.
+- Feature regressions cover authenticated admin GET Overview/Logs, safe HTML presentation and retry action preservation, and EN/AR status summaries. Source CI and real visual/browser acceptance tracked in [Issue #4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4); don't mark rendered QAS visual PASS until actually verified.
+- **NO QAS/Production writes, no external messaging, no configs/permissions/policy modifications**. C1-A remains BLOCKED [Issue #2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2), email-template Issue #3 QAS acceptance OPEN; overall Production NO-GO.
+
 ## ACTIVE — ORDER UPDATE EMAIL TEMPLATE FIX SOURCE SLICE (2026-10-17)
 
 - Direct QAS notification logs (owner-supplied read-only screenshots) showed two email template failures. [Issue #3](https://github.com/khaledtag93/dynamic-ecommerce/issues/3) tracks the confirmed Laravel-reserved `$message` collision. Do not publish screenshot recipient/order identifiers.

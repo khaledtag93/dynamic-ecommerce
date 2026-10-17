@@ -73,6 +73,7 @@
                 <div class="admin-stat-label">{{ __('24h dispatch success') }}</div>
                 <div class="admin-stat-value">{{ $monitoring['dispatchTrend']['success_rate'] ?? 100 }}%</div>
                 <div class="text-muted small mt-2">{{ __('Test sends: :count', ['count' => number_format($monitoring['dispatchTrend']['last_24h_test_sends'] ?? 0)]) }}</div>
+                <div class="admin-helper-text mt-1">{{ __('Queue health and dispatch outcomes are different indicators.') }}</div>
             </div>
         </div>
     </div>
