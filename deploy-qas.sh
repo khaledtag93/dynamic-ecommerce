@@ -163,12 +163,24 @@ git fetch --prune origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
 RESOLVED_TARGET_SHA="$(git rev-parse "origin/$BRANCH")" || fail "BLOCKED: target Git reference missing"
 [ "$RESOLVED_TARGET_SHA" = "$TARGET_SHA" ] || fail "BLOCKED: branch tip does not match exact reviewed SHA"
 
-# Git must never take ownership of the existing untracked runtime paths.
-for protected_path in scripts/qas-queue-cron.sh scripts/qas-scheduler-cron.sh storage/app public/uploads public/storage; do
+# Untracked runtime-owned paths must never become tracked by the release.
+for protected_path in scripts/qas-queue-cron.sh scripts/qas-scheduler-cron.sh storage/app public/uploads; do
     if [ -n "$(git ls-tree -r --name-only "$TARGET_SHA" -- "$protected_path")" ]; then
         fail "BLOCKED: target Git tree collides with QAS runtime data"
     fi
 done
+
+# BEGIN_QAS_PUBLIC_STORAGE_TREE_GUARD
+# public/storage already contains a Git-tracked product image in the
+# approved baseline. Allow it ONLY when the whole tracked tree is identical
+# in the currently checked-out baseline and the exact target release.
+# Reject missing paths, type changes, additions, removals and content changes.
+BASELINE_PUBLIC_STORAGE_TREE="$(git rev-parse --verify "$PREVIOUS_COMMIT:public/storage" 2>/dev/null)" || fail "BLOCKED: baseline public/storage Git tree missing"
+TARGET_PUBLIC_STORAGE_TREE="$(git rev-parse --verify "$TARGET_SHA:public/storage" 2>/dev/null)" || fail "BLOCKED: target public/storage Git tree missing"
+[ "$(git cat-file -t "$BASELINE_PUBLIC_STORAGE_TREE" 2>/dev/null)" = tree ] || fail "BLOCKED: baseline public/storage is not a tree"
+[ "$(git cat-file -t "$TARGET_PUBLIC_STORAGE_TREE" 2>/dev/null)" = tree ] || fail "BLOCKED: target public/storage is not a tree"
+[ "$BASELINE_PUBLIC_STORAGE_TREE" = "$TARGET_PUBLIC_STORAGE_TREE" ] || fail "BLOCKED: tracked public/storage Git tree changed"
+# END_QAS_PUBLIC_STORAGE_TREE_GUARD
 
 # Never silently change the upload execution guard in this release.
 git diff --quiet "$PREVIOUS_COMMIT" "$TARGET_SHA" -- ops/uploads.htaccess || fail "BLOCKED: upload guard source changed"
