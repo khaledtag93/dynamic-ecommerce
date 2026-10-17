@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## M3/M4 operator phpMyAdmin packet & scoped reset-only mail design (2026-10-17)
+
+- [Operator-assisted read-only SQL packet](docs/QAS_M3_M4_PHPMYADMIN_OPERATOR_READONLY_PACKET_2026-10-17_AR.md): **first run SELECT DATABASE() ALONE**; stop unless exact QAS rehearsal DB u637857322_v42_rehearsal. Later read-only SELECTs return allowlisted flags ON/OFF/OTHER, grouped automation and backlog counts, queue-type hints only. No phpMyAdmin browser session available to assistant; **NO SQL executed**, so M3 BLOCKED / M4 PARTIAL/BLOCKED.
+- [Reset-only mail sandbox architecture](docs/QAS_RESET_ONLY_MAIL_SANDBOX_SOURCE_DESIGN_2026-10-17_AR.md): **SOURCE DESIGN ONLY**, global QAS mail=array preserved. Future separate staging synthetic-only ResetPassword notification mailer could select named Mailtrap Email Testing via Laravel 13 MailMessage::mailer. No code/config/secret/permission/policy changes, real sends, or QAS/Production writes; preserve order/admin/growth global isolation.
+- Baseline [CI #39049409471](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39049409471) completed/success at 0cf08936 (1,011 tests / 19,626 assertions). Latest documentation-only checkpoint needs independent exact-SHA CI. C1-A #2 BLOCKED, QAS #3–#6 OPEN, Production NO-GO; QAS deployed source de180de6.
+
+
 ## M3/M4 bounded evidence unblock (2026-10-17)
 
 - [Bounded read-only outcome](docs/QAS_M3_M4_SAFE_READ_ONLY_EVIDENCE_UNBLOCK_2026-10-17_AR.md) builds on [initial M3/M4 audit](docs/QAS_M3_M4_OUTBOUND_ISOLATION_READ_ONLY_AUDIT_2026-10-17_AR.md): GitHub baseline `56c22726`, CI #39048347893 `completed/success` (1,011 tests / 19,626 assertions); QAS deployed code `de180de6`, mail `array` per prior runtime evidence.
