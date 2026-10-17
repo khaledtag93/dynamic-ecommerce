@@ -1,6 +1,12 @@
 # MASTER PROJECT STATUS
 
-## ACTIVE — C1-B REMEMBER ME REVOCATION SOURCE SECURITY SLICE (2026-10-17)
+## ACTIVE — C1-B ACCOUNT SESSION FRAMEWORK CORRECTION (2026-10-17)
+
+- **Correction, not a security fix:** Laravel 13 `SessionGuard::userFromRecaller` already validates a password-derived HMAC, so password changes invalidate old Remember Me recaller cookies even without rotating the DB `remember_token`. Test-only CI #38995215153's RED established unchanged token only; the unneeded app-side rotation in `06002ada` was **reverted**. [Corrected session audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md) and [Issue #7](https://github.com/khaledtag93/dynamic-ecommerce/issues/7) supersede the **historical mistaken hypothesis** below.
+- Corrected tests simulate real browser Login with Remember Me and second browser without its session, proving original cookie valid before password change and invalid after. **Await exact-SHA CI; do not claim green before completed/success.** No app behavior/config/permission/policy changes in the final corrective tree.
+- Cross-device **already active** session revocation remains an OPEN product policy/acceptance question; `auth.session` not enforced on customer routes. C1-A BLOCKED, QAS Issues #3/#4/#5/#6 OPEN; Phase1 NO-GO.
+
+## SUPERSEDED / HISTORICAL INCORRECT HYPOTHESIS — Remember Me token rotation (2026-10-17)
 
 - [Account session security audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md) reviews Laravel Auth Login/Logout, password reset/change, Remember Me, sessions and effective cookie gaps. A real high-impact flaw was isolated in `AccountController::updatePassword`: unchanged `remember_token` left persistent recaller credentials usable after password rotation.
 - Pre-fix [CI #38995215153](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38995215153) confirmed **RED**: exactly one new `AccountRememberTokenRotationTest` fails on unchanged old token, with actual browser-style session cookie, remember recaller cookie issued and current session preserved; 993 existing tests pass / 19,230 assertions. Fix rotates remember token alongside password using one Eloquent save; adds denied-current-password regression; final CI must be checked separately (source submitted, not yet called GREEN).
