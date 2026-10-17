@@ -172,9 +172,9 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
         app()->detectEnvironment(fn () => 'staging');
 
         try {
-            app(\\App\\Services\\System\\SafeRuntimeEvidenceService::class)->snapshot();
+            app(\App\Services\System\SafeRuntimeEvidenceService::class)->snapshot();
             self::fail('A mismatched connected database must fail closed.');
-        } catch (\\App\\Services\\System\\SafeRuntimeEvidenceFailure $failure) {
+        } catch (\App\Services\System\SafeRuntimeEvidenceFailure $failure) {
             self::assertSame('IDENTITY_GATE', $failure->stage);
             self::assertSame(404, $failure->getStatusCode());
             self::assertSame('Not Found', $failure->getMessage());
@@ -185,15 +185,15 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
     public function test_missing_required_schema_reports_opaque_schema_stage_and_stays_blocked(): void
     {
         // Only the synthetic test connection is used. There are no DDL writes.
-        \\Illuminate\\Support\\Facades\\Schema::shouldReceive('hasTable')
+        \Illuminate\Support\Facades\Schema::shouldReceive('hasTable')
             ->once()
             ->with('website_settings')
             ->andReturn(false);
 
         try {
-            app(\\App\\Services\\System\\SafeRuntimeEvidenceService::class)->snapshot();
+            app(\App\Services\System\SafeRuntimeEvidenceService::class)->snapshot();
             self::fail('Missing schema must remain blocked.');
-        } catch (\\App\\Services\\System\\SafeRuntimeEvidenceFailure $failure) {
+        } catch (\App\Services\System\SafeRuntimeEvidenceFailure $failure) {
             self::assertSame('REQUIRED_SCHEMA', $failure->stage);
             self::assertSame(503, $failure->getStatusCode());
             self::assertSame('Safe diagnostic snapshot unavailable.', $failure->getMessage());
@@ -207,14 +207,14 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
         // without changing database rows or touching outbound services.
         DB::listen(static function ($query): void {
             if (str_contains($query->sql, 'notification_automation_rules')) {
-                throw new \\RuntimeException('private@example.invalid token=never-publish');
+                throw new \RuntimeException('private@example.invalid token=never-publish');
             }
         });
 
         try {
-            app(\\App\\Services\\System\\SafeRuntimeEvidenceService::class)->snapshot();
+            app(\App\Services\System\SafeRuntimeEvidenceService::class)->snapshot();
             self::fail('A failed aggregate must never return EVIDENCE_ONLY.');
-        } catch (\\App\\Services\\System\\SafeRuntimeEvidenceFailure $failure) {
+        } catch (\App\Services\System\SafeRuntimeEvidenceFailure $failure) {
             self::assertSame('AUTOMATION_COUNT', $failure->stage);
             self::assertSame(503, $failure->getStatusCode());
             self::assertSame('Safe diagnostic snapshot unavailable.', $failure->getMessage());
