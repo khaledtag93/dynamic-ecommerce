@@ -145,6 +145,19 @@ final class QasRollbackReadinessTest extends TestCase
         }
     }
 
+    public function test_guard_ships_no_shell_database_remote_or_filesystem_executor(): void
+    {
+        $source = file_get_contents(base_path('app/Support/QasRollbackReadiness.php'));
+
+        $this->assertIsString($source);
+        $this->assertStringContainsString('execution_authorized', $source);
+        $this->assertStringContainsString("'PLAN_ONLY_NOT_IMPLEMENTED'", $source);
+        $this->assertDoesNotMatchRegularExpression(
+            '/\\b(?:exec|shell_exec|system|passthru|proc_open|file_put_contents|unlink|rename|mkdir|rmdir)\\s*\\(|(?:DB|Artisan|Process|Http|Mail|Storage|Queue|Schema)::|\\b(?:git reset|rsync --delete|artisan migrate)\\b/i',
+            $source
+        );
+    }
+
     public function test_protected_file_inventory_is_explicit_and_contains_no_executable_commands(): void
     {
         $result = (new QasRollbackReadiness())->assess($this->completeSyntheticEvidence());
