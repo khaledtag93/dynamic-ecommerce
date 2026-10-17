@@ -241,7 +241,7 @@ CURRENT_COMMIT="$(git rev-parse HEAD)"
 [ "$CURRENT_COMMIT" = "$TARGET_SHA" ] || fail "BLOCKED: final release SHA mismatch"
 
 log "=================================================="
-log "✅ QAS READY"
+log "✅ QAS web code updated; background workers and full acceptance still require separate authorization"
 log "🔖 Deployed commit: $CURRENT_COMMIT"
 log "🌐 Test now: $HEALTHCHECK_URL"
 log "=================================================="
