@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AccountController extends Controller
@@ -59,7 +60,12 @@ class AccountController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $request->user()->update(['password' => Hash::make($data['password'])]);
+        // Password changes must revoke older persistent Remember Me credentials.
+        // Keep this browser's active session and existing response semantics.
+        $user = $request->user();
+        $user->password = Hash::make($data['password']);
+        $user->setRememberToken(Str::random(60));
+        $user->save();
         $message = __('Password updated.');
 
         if ($request->expectsJson() || $request->header('X-Account-Live') === '1') {

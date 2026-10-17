@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ACTIVE — C1-B REMEMBER ME REVOCATION SOURCE SECURITY SLICE (2026-10-17)
+
+- [Account session security audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md) reviews Laravel Auth Login/Logout, password reset/change, Remember Me, sessions and effective cookie gaps. A real high-impact flaw was isolated in `AccountController::updatePassword`: unchanged `remember_token` left persistent recaller credentials usable after password rotation.
+- Pre-fix [CI #38995215153](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38995215153) confirmed **RED**: exactly one new `AccountRememberTokenRotationTest` fails on unchanged old token, with actual browser-style session cookie, remember recaller cookie issued and current session preserved; 993 existing tests pass / 19,230 assertions. Fix rotates remember token alongside password using one Eloquent save; adds denied-current-password regression; final CI must be checked separately (source submitted, not yet called GREEN).
+- Active other-device sessions are **not** blanket-invalidated by token rotation; `auth.session` middleware is not applied on account routes. All-device revocation is a separate security/UX policy decision **OPEN**, not presumed required. No QAS/Production writes, external provider calls, config/permissions/secrets, OTP/OAuth additions. C1-A [#2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) BLOCKED; QAS issues #3/#4/#5/#6 OPEN; Phase1 NO-GO.
+
 ## ACTIVE — C1-B PASSWORD RESET PRIVACY SECURITY FIX (2026-10-17)
 
 - [C1-B Auth audit](docs/C1B_AUTH_ACCOUNT_SOURCE_AUDIT_2026-10-17_AR.md): generated password reset routes present, verification routes absent; existing `expire=60m` / `throttle=60s` broker policy unchanged, link-delivery QAS unverified. Verification / numeric OTP / Google-Facebook decisions remain OPEN.

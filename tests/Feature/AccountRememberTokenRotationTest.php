@@ -13,6 +13,23 @@ class AccountRememberTokenRotationTest extends TestCase
 {
     use RefreshDatabase;
 
+
+    public function test_rejected_password_change_keeps_existing_remember_token(): void
+    {
+        $rememberToken = Str::random(60);
+        $user = User::factory()->create(['remember_token' => $rememberToken]);
+
+        $this->actingAs($user)->patch(route('account.password.update'), [
+            'current_password' => 'incorrect-current-password',
+            'password' => 'new-password-123',
+            'password_confirmation' => 'new-password-123',
+        ])->assertSessionHasErrors('current_password', null, 'passwordUpdate');
+
+        $this->assertSame($rememberToken, $user->fresh()->getRememberToken());
+        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+        $this->assertAuthenticatedAs($user);
+    }
+
     public function test_changing_password_rotates_remember_me_token_without_ending_current_session(): void
     {
         $user = User::factory()->create([
