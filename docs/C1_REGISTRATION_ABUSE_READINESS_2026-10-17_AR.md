@@ -34,3 +34,9 @@
 - No QAS/Production writes, external Email/SMS/WhatsApp, OTP/OAuth, Config, Permissions, Secrets, Policies changes.
 - C1-A [#2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) **BLOCKED**; QAS issues [#3](https://github.com/khaledtag93/dynamic-ecommerce/issues/3), [#4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4), [#5](https://github.com/khaledtag93/dynamic-ecommerce/issues/5), [#6](https://github.com/khaledtag93/dynamic-ecommerce/issues/6) **OPEN**. Phase1/Production **NO-GO**.
 - **Next independent slice**: scoped signup email enumeration + concurrent registration collision/integrity or other outstanding source-only account security boundary, with actual regression. Do not implement rate policy without contract; obtain exact-head full CI on tests and documentation commit.
+
+## Verified full-suite result (supersedes earlier pending run status)
+- Full [CI #39041666884](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39041666884) is **completed/success on exact tested SHA `18cd82a8fe221e7d65738135ce50eecc2aedef85`**, 1,010 tests / 19,609 assertions. `C1RegistrationAbuseReadinessTest` contains **3 PASS** cases (route-throttle snapshot; two independent guest signups from same synthetic IP; duplicate/invalid registration rejection).
+- Intermediate test-only [#39041553741](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39041553741) was **cancelled** due to branch concurrency after documentation was pushed. This is not a failed test.
+- Prior baseline [#39041352912](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39041352912) ultimately **completed/cancelled**, not GREEN. The successful exact-SHA suite above is the authoritative execution evidence.
+- This documentation/status pointer commit has its own fresh CI gate: **do not label its SHA GREEN until independently completed/success**.

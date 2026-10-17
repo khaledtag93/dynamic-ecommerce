@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## C1 REGISTRATION ABUSE READINESS — SOURCE PASS / POLICY OPEN (2026-10-17)
+
+- [Audit + CI evidence](docs/C1_REGISTRATION_ABUSE_READINESS_2026-10-17_AR.md): [full CI #39041666884](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39041666884) `completed/success` at exact SHA `18cd82a8`: **1,010 tests / 19,609 assertions**. Three new registration abuse-readiness tests passed: no explicit POST register throttle, two isolated guest signups from same synthetic IP accepted, and duplicate/invalid registrations rejected. Existing CSRF/session/privilege defenses previously tested. No newly proven non-policy bug; no app fix.
+- **DEC-REG-RATE and DEC-REG-ENUM OPEN** — no invented IP/account throttling or changed duplicate-email UX. Identity OTP/OAuth/verification and all-device sign-out decisions remain OPEN. C1-A #2 BLOCKED, QAS #3/#4/#5/#6 OPEN, Phase1 Production NO-GO. Source-only; no live writes or messages.
+- This pointer commit CI is pending independent exact-SHA success verification; see audit for test-SHA evidence.
+
+
 ## ACTIVE — C1-B TWO REAL STORED SESSION IDs / V1 REVOCATION DECISION (2026-10-17)
 
 - Verified **CI [#38998589662](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38998589662) `completed/success`** on test SHA `af3baceffb36a7cc4fa019d135160accf0d86be1`: **1,000 PHPUnit PASS / 19,405 assertions**. Two source-only HTTP tests log in twice with independent stored session IDs and correct cookies; source proves active B remains logged in after A's profile password change, and independently active A/B remain logged in after C's password reset. `viaRemember()` false: this is not persistent-cookie reauthentication. Details: [C1-B Account Session Audit](docs/C1B_ACCOUNT_SESSION_SECURITY_SOURCE_AUDIT_2026-10-17_AR.md).
