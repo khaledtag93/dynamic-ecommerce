@@ -135,6 +135,18 @@ printf '%s\n' "$MIGRATION_STATUS" | grep -Eq 'Ran|Yes' || fail "BLOCKED: migrati
 [ -e "$PUBLIC_DIR/storage" ] || [ -L "$PUBLIC_DIR/storage" ] || fail "BLOCKED: missing QAS public storage"
 [ -f "$PUBLIC_DIR/index.php" ] || fail "BLOCKED: missing QAS front controller"
 
+# Fail closed if user-data directories or cron scripts redirect to Production.
+[ "$(realpath -e "$PUBLIC_DIR/uploads")" = "$PUBLIC_DIR/uploads" ] || fail "BLOCKED: uploads path redirects outside QAS"
+[ "$(realpath -e "$APP_DIR/storage/app")" = "$APP_DIR/storage/app" ] || fail "BLOCKED: application storage redirects outside QAS"
+for cron_path in "$APP_DIR/scripts/qas-queue-cron.sh" "$APP_DIR/scripts/qas-scheduler-cron.sh"; do
+    [ "$(realpath -e "$cron_path")" = "$cron_path" ] || fail "BLOCKED: QAS cron redirects elsewhere"
+done
+PUBLIC_STORAGE_TARGET="$(realpath -e "$PUBLIC_DIR/storage")" || fail "BLOCKED: storage target missing"
+case "$PUBLIC_STORAGE_TARGET" in
+    "$PUBLIC_DIR/storage"|"$APP_DIR/storage/"*) ;;
+    *) fail "BLOCKED: public storage points outside QAS" ;;
+esac
+
 # Snapshot code and public assets under a QAS-only private recovery path.
 # .env, mutable storage and uploads are deliberately NOT copied or touched.
 SNAPSHOT_APP_DIR="$SNAPSHOT_ROOT/$PREVIOUS_COMMIT/app"
@@ -152,11 +164,14 @@ RESOLVED_TARGET_SHA="$(git rev-parse "origin/$BRANCH")" || fail "BLOCKED: target
 [ "$RESOLVED_TARGET_SHA" = "$TARGET_SHA" ] || fail "BLOCKED: branch tip does not match exact reviewed SHA"
 
 # Git must never take ownership of the existing untracked runtime paths.
-for protected_path in scripts/qas-queue-cron.sh scripts/qas-scheduler-cron.sh storage/app public/uploads; do
+for protected_path in scripts/qas-queue-cron.sh scripts/qas-scheduler-cron.sh storage/app public/uploads public/storage; do
     if [ -n "$(git ls-tree -r --name-only "$TARGET_SHA" -- "$protected_path")" ]; then
         fail "BLOCKED: target Git tree collides with QAS runtime data"
     fi
 done
+
+# Never silently change the upload execution guard in this release.
+git diff --quiet "$PREVIOUS_COMMIT" "$TARGET_SHA" -- ops/uploads.htaccess || fail "BLOCKED: upload guard source changed"
 
 log "🔖 Verified previous commit: $PREVIOUS_COMMIT"
 log "🎯 Verified target commit: $TARGET_SHA"
@@ -196,8 +211,8 @@ log "📁 Syncing QAS public files..."
 rsync -a --exclude='index.php' --exclude='uploads' --exclude='storage' "$APP_DIR/public/" "$PUBLIC_DIR/"
 
 log "🔐 Normalizing QAS public web permissions..."
-find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type d -exec chmod 755 {} +
-find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type f -exec chmod 644 {} +
+find "$PUBLIC_DIR" \( -path "$PUBLIC_DIR/uploads" -o -path "$PUBLIC_DIR/storage" \) -prune -o -type d -exec chmod 755 {} +
+find "$PUBLIC_DIR" \( -path "$PUBLIC_DIR/uploads" -o -path "$PUBLIC_DIR/storage" \) -prune -o -type f -exec chmod 644 {} +
 
 UPLOAD_GUARD_SOURCE="$APP_DIR/ops/uploads.htaccess"
 [ -f "$UPLOAD_GUARD_SOURCE" ] || fail "BLOCKED: upload execution guard source missing"
