@@ -77,7 +77,10 @@ final class QasDeployPublicStorageTreeGuardTest extends TestCase
     public function test_replacing_tree_with_a_blob_is_rejected(): void
     {
         $this->git('rm', '-r', '-q', 'public/storage');
-        file_put_contents($this->sandbox.'/public/storage', 'not a directory');
+        // Git removes tracked files, but an empty directory can remain on disk.
+        self::assertTrue(rmdir($this->sandbox.'/public/storage/products'));
+        self::assertTrue(rmdir($this->sandbox.'/public/storage'));
+        self::assertSame(strlen('not a directory'), file_put_contents($this->sandbox.'/public/storage', 'not a directory'));
         $target = $this->commitAll('replaced protected tree with blob');
 
         self::assertSame(92, $this->executeGuard($this->baseline, $target)->getExitCode());
