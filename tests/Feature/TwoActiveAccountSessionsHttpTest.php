@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class TwoActiveAccountSessionsHttpTest extends TestCase
@@ -24,6 +25,9 @@ class TwoActiveAccountSessionsHttpTest extends TestCase
 
         if (isset($this->browsers[$name])) {
             $this->withCookie(config('session.cookie'), $this->browsers[$name]['session']);
+        } else {
+            // An entirely new browser never inherits the test application's prior session.
+            $this->withCookie(config('session.cookie'), Str::random(40));
         }
         if (($this->browsers[$name]['recaller'] ?? null) !== null) {
             // Value copied from a Set-Cookie response is already encrypted.
