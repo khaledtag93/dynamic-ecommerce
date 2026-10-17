@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## ACTIVE — C1-A PREFLIGHT CONTINUATION: STOP WITHOUT QAS WRITES (2026-10-17)
+
+- Starting [checkpoint `905d7aa6`](https://github.com/khaledtag93/dynamic-ecommerce/commit/905d7aa61ebe1f2389cf97d2ad97e1c3c306c64d). [CI #38988626064](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38988626064) directly checked repeatedly on exact SHA: **in_progress / conclusion=null** at last check, so not Green yet.
+- Read-only public QAS GET `/ping` from authorized desktop `DESKTOP-KOG45HP`: HTTP 200 / `{"ok":true,"message":"web pong"}`. **Not** runtime SHA/APP_ENV/DB proof. Git `a682074f...905d7aa6` only docs/status changes (16 commits ahead, 57 files); does not prove runtime identity.
+- Focused current-source check confirms external WhatsApp order confirmation, configurable email/WhatsApp cancellation and active notification automation/admin email possibilities. Effective QAS channels, transport and test sink **UNVERIFIED**; no authenticated authorized runtime settings or stock/ledger evidence channel established. **A4 BLOCKED / mandatory STOP**.
+- [C1-A continuation A0–A8 evidence report](docs/C1A_QAS_PREFLIGHT_CONTINUATION_2026-10-17.md): A5 consent PASS, A0/A1/A2/A3/A4/A7/A8 BLOCKED, A6 NOT RUN. All A01–A15 NOT RUN. **0 synthetic accounts/products/orders**, no login submit, QAS/Production/provider/config/source writes or SSH bypass. Phase1 NO-GO.
+- Next action: verify previous/new CI, then obtain current QAS read-only **authorized** runtime release/DB and outbound-notification settings + independent reconciliation evidence. Resume original C1-A only after *every* gate PASS. Older sections below are history; do not repeat the plan.
+
 ## ACTIVE UPDATE — C1-A SOURCE CI GREEN, RUNTIME ISOLATION BLOCKED (2026-10-17)
 
 - GitHub [#38988254957](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38988254957) later verified **completed/success** on exact source `f156f52a` (after the earlier in-progress snapshot). CI subgate cleared; **no QAS writes**.
