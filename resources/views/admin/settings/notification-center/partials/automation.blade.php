@@ -83,28 +83,28 @@
                     <form method="POST" action="{{ route('admin.settings.notifications.automation-rules.save') }}" class="row g-3" data-submit-loading>
                         @csrf
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Rule name') }}</label>
-                            <input type="text" class="form-control" name="name" required placeholder="{{ __('Example: WhatsApp fallback to email') }}">
+                            <label class="form-label" for="notification_automation_name">{{ __('Rule name') }}</label>
+                            <input type="text" id="notification_automation_name" class="form-control" name="name" required placeholder="{{ __('Example: WhatsApp fallback to email') }}">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Trigger status') }}</label>
-                            <select class="form-select" name="trigger_status" required>
+                            <label class="form-label" for="notification_automation_trigger_status">{{ __('Trigger status') }}</label>
+                            <select id="notification_automation_trigger_status" class="form-select" name="trigger_status" required>
                                 <option value="failed">{{ __('Failed') }}</option>
                                 <option value="skipped">{{ __('Skipped') }}</option>
                                 <option value="pending_stale">{{ __('Pending stale') }}</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Escalation level') }}</label>
-                            <select class="form-select" name="escalation_level" required>
+                            <label class="form-label" for="notification_automation_escalation_level">{{ __('Escalation level') }}</label>
+                            <select id="notification_automation_escalation_level" class="form-select" name="escalation_level" required>
                                 @for($level = 1; $level <= 5; $level++)
                                     <option value="{{ $level }}">{{ __('Level') }} {{ $level }}</option>
                                 @endfor
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">{{ __('Event scope') }}</label>
-                            <select class="form-select" name="event">
+                            <label class="form-label" for="notification_automation_event">{{ __('Event scope') }}</label>
+                            <select id="notification_automation_event" class="form-select" name="event">
                                 <option value="">{{ __('All events') }}</option>
                                 @foreach($events as $eventKey => $event)
                                     <option value="{{ $eventKey }}">{{ $event['label'] }}</option>
@@ -112,8 +112,8 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">{{ __('Source channel') }}</label>
-                            <select class="form-select" name="source_channel">
+                            <label class="form-label" for="notification_automation_source_channel">{{ __('Source channel') }}</label>
+                            <select id="notification_automation_source_channel" class="form-select" name="source_channel">
                                 <option value="">{{ __('Any channel') }}</option>
                                 @foreach($channels as $channelKey => $channel)
                                     <option value="{{ $channelKey }}">{{ $channel['label'] }}</option>
@@ -121,8 +121,8 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">{{ __('Action') }}</label>
-                            <select class="form-select" name="action_type" required>
+                            <label class="form-label" for="notification_automation_action_type">{{ __('Action') }}</label>
+                            <select id="notification_automation_action_type" class="form-select" name="action_type" required>
                                 <option value="retry_same_channel">{{ __('Retry same channel') }}</option>
                                 <option value="fallback_channel">{{ __('Fallback channel') }}</option>
                                 <option value="notify_admin_email">{{ __('Notify admin email') }}</option>
@@ -130,8 +130,8 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Fallback target') }}</label>
-                            <select class="form-select" name="target_channel">
+                            <label class="form-label" for="notification_automation_target_channel">{{ __('Fallback target') }}</label>
+                            <select id="notification_automation_target_channel" class="form-select" name="target_channel">
                                 <option value="">{{ __('Not required') }}</option>
                                 @foreach(['database', 'email', 'whatsapp'] as $channelKey)
                                     <option value="{{ $channelKey }}">{{ $channels[$channelKey]['label'] ?? ucfirst($channelKey) }}</option>
@@ -139,36 +139,36 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Max attempts') }}</label>
-                            <input type="number" class="form-control" name="max_attempts" min="1" max="10" value="1">
+                            <label class="form-label" for="notification_automation_max_attempts">{{ __('Max attempts') }}</label>
+                            <input type="number" id="notification_automation_max_attempts" class="form-control" name="max_attempts" min="1" max="10" value="1">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Delay (minutes)') }}</label>
-                            <input type="number" class="form-control" name="delay_minutes" min="0" value="0">
+                            <label class="form-label" for="notification_automation_delay_minutes">{{ __('Delay (minutes)') }}</label>
+                            <input type="number" id="notification_automation_delay_minutes" class="form-control" name="delay_minutes" min="0" value="0">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Sort order') }}</label>
-                            <input type="number" class="form-control" name="sort_order" min="0" value="100">
+                            <label class="form-label" for="notification_automation_sort_order">{{ __('Sort order') }}</label>
+                            <input type="number" id="notification_automation_sort_order" class="form-control" name="sort_order" min="0" value="100">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Admin email (optional)') }}</label>
-                            <input type="email" class="form-control" name="admin_email" placeholder="{{ __('Example: ops@example.com') }}">
+                            <label class="form-label" for="notification_automation_admin_email">{{ __('Admin email (optional)') }}</label>
+                            <input type="email" id="notification_automation_admin_email" class="form-control" name="admin_email" placeholder="{{ __('Example: ops@example.com') }}">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Notes') }}</label>
-                            <input type="text" class="form-control" name="notes" placeholder="{{ __('Example: Escalate critical failures to operations') }}">
+                            <label class="form-label" for="notification_automation_notes">{{ __('Notes') }}</label>
+                            <input type="text" id="notification_automation_notes" class="form-control" name="notes" placeholder="{{ __('Example: Escalate critical failures to operations') }}">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Cooldown (minutes)') }}</label>
-                            <input type="number" class="form-control" name="cooldown_minutes" min="0" max="1440" value="15">
+                            <label class="form-label" for="notification_automation_cooldown_minutes">{{ __('Cooldown (minutes)') }}</label>
+                            <input type="number" id="notification_automation_cooldown_minutes" class="form-control" name="cooldown_minutes" min="0" max="1440" value="15">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Rate window (minutes)') }}</label>
-                            <input type="number" class="form-control" name="rate_limit_window_minutes" min="1" max="1440" value="60">
+                            <label class="form-label" for="notification_automation_rate_limit_window_minutes">{{ __('Rate window (minutes)') }}</label>
+                            <input type="number" id="notification_automation_rate_limit_window_minutes" class="form-control" name="rate_limit_window_minutes" min="1" max="1440" value="60">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">{{ __('Max runs in window') }}</label>
-                            <input type="number" class="form-control" name="rate_limit_max_runs" min="1" max="100" value="3">
+                            <label class="form-label" for="notification_automation_rate_limit_max_runs">{{ __('Max runs in window') }}</label>
+                            <input type="number" id="notification_automation_rate_limit_max_runs" class="form-control" name="rate_limit_max_runs" min="1" max="100" value="3">
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
                             <div class="form-check form-switch notification-switch mb-2">

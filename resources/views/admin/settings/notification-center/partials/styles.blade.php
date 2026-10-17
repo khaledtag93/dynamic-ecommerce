@@ -182,6 +182,18 @@
         .notification-center-page .notification-matrix-scroll { max-width:100%; }
     }
 
+
+    /* Notification content workspaces: readable at 390px and keyboard navigable. */
+    .notification-center-page .notification-diagnostics-scroll { max-width:100%; -webkit-overflow-scrolling:touch; }
+    .notification-center-page .notification-diagnostics-scroll .admin-table { min-width:680px; }
+    .notification-center-page .notification-diagnostics-scroll:focus-visible { outline:3px solid var(--admin-primary); outline-offset:3px; }
+    .notification-center-page .notification-form-shell :is(input,select,textarea):focus-visible { outline:3px solid var(--admin-primary); outline-offset:2px; }
+    .notification-center-page .notification-diagnostics-exception-summary { overflow-wrap:anywhere; }
+    @media (max-width:767.98px) {
+        .notification-center-page .notification-form-shell { min-width:0; max-width:100%; }
+        .notification-center-page .notification-diagnostics-scroll { margin-inline:0; }
+    }
+
     @media (max-width: 991.98px) {
         .notification-focus-strip { grid-template-columns: 1fr; }
         .notification-center-nav.sticky-nav { top: 4.75rem; }

@@ -6094,5 +6094,6 @@
     "Provider rate limit reached. Try again later.": "تم الوصول إلى حد طلبات مزود الخدمة. أعد المحاولة لاحقًا.",
     "Recipient details need review before retrying.": "يجب مراجعة بيانات المستلم قبل إعادة المحاولة.",
     "Delivery failed. Review protected system logs before retrying.": "فشل الإرسال. راجع سجلات النظام المحمية قبل إعادة المحاولة.",
-    "Queue health and dispatch outcomes are different indicators.": "سلامة قائمة الانتظار ونتائج إرسال الإشعارات مؤشرين مختلفين."
+    "Queue health and dispatch outcomes are different indicators.": "سلامة قائمة الانتظار ونتائج إرسال الإشعارات مؤشرين مختلفين.",
+    "A safety guard blocked an operation. Review protected system logs.": "منع إجراء أمان عملية تشغيلية. راجع سجلات النظام المحمية."
 }

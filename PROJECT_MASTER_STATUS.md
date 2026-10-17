@@ -1,5 +1,13 @@
 # MASTER PROJECT STATUS
 
+## ACTIVE — Notification Center secondary Page DoD (source only, 2026-10-17)
+
+- Following [source checkpoint `7fb7b1ef`](https://github.com/khaledtag93/dynamic-ecommerce/commit/7fb7b1ef67828b532ef60600df9a8a21921ed772) + [CI #38992209938 GREEN](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38992209938), [Issue #4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4) secondary Templates / Automation / Diagnostics source slice.
+- Template editor, preview/test-send and automation rule builder field labels now use unique id/for associations, including per-event/channel/locale suffixes; localized template title, subject and body input direction respects locale. Existing field names, form methods, event/channel values and routes unchanged. Accordion has paired aria-controls/labelledby.
+- Diagnostics no longer interpolates failed-job `exception` or notification/WhatsApp incident `error_message` in general operator UI: uses allowlisted safe summaries from existing `NotificationFailureSummary`; original records remain unchanged. Adds keyboard-focusable named health table with scoped headers, mobile/RTL focus and overflow styles.
+- Added authorized-test-admin route regressions for Templates/Automation form label associations and Diagnostics failed-jobs/incident redaction. Commit, CI and visual QAS acceptance recorded separately in [Issue #4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4); **do not claim QAS visual acceptance**.
+- No QAS/Production writes, external messaging, config/policy/permission change. **C1-A BLOCKED** [Issue #2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2); [Issue #3](https://github.com/khaledtag93/dynamic-ecommerce/issues/3) QAS email acceptance still OPEN. Phase1 NO-GO.
+
 ## ACTIVE — Notification Center SOURCE UI/UX closure slice (2026-10-17)
 
 - [Issue #4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4): Overview/Logs source-only enhancements: stacked full-width channel/matrix panels to remove unmatched desktop column whitespace; responsive 4/2/1 channel grid and 3/1 guidance cards; semantic matrix column/row headers, labels for all event toggles, tab-focusable horizontal scrolling, mobile/RTL focus; Arabic translations. Existing event/channel form names and POST actions unchanged.

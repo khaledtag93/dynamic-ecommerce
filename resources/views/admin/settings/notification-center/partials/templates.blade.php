@@ -74,14 +74,14 @@
                     @foreach($events as $eventKey => $event)
                         <div class="accordion-item border rounded-4 mb-3 overflow-hidden">
                             <h2 class="accordion-header" id="templateHeading{{ $loop->index }}">
-                                <button class="accordion-button @if(! $loop->first) collapsed @endif" type="button" data-bs-toggle="collapse" data-bs-target="#templateCollapse{{ $loop->index }}" aria-expanded="{{ $loop->first ? 'true' : 'false' }}">
+                                <button class="accordion-button @if(! $loop->first) collapsed @endif" type="button" data-bs-toggle="collapse" data-bs-target="#templateCollapse{{ $loop->index }}" aria-controls="templateCollapse{{ $loop->index }}" aria-expanded="{{ $loop->first ? 'true' : 'false' }}">
                                     <div>
                                         <div class="fw-semibold">{{ $event['label'] }}</div>
                                         <div class="admin-helper-text">{{ $event['description'] }}</div>
                                     </div>
                                 </button>
                             </h2>
-                            <div id="templateCollapse{{ $loop->index }}" class="accordion-collapse collapse @if($loop->first) show @endif" data-bs-parent="#notificationTemplatesAccordion">
+                            <div id="templateCollapse{{ $loop->index }}" class="accordion-collapse collapse @if($loop->first) show @endif" aria-labelledby="templateHeading{{ $loop->index }}" data-bs-parent="#notificationTemplatesAccordion">
                                 <div class="accordion-body">
                                     <div class="row g-4">
                                         @foreach(['database', 'email', 'whatsapp'] as $templateChannel)
@@ -118,28 +118,28 @@
 
                                                                     <div class="row g-3">
                                                                         <div class="col-md-8">
-                                                                            <label class="form-label">{{ __('Template name') }}</label>
-                                                                            <input type="text" class="form-control" name="name" value="{{ old('name', $template?->name) }}">
+                                                                            <label class="form-label" for="tmpl_name_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}">{{ __('Template name') }}</label>
+                                                                            <input type="text" id="tmpl_name_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}" class="form-control" name="name" value="{{ old('name', $template?->name) }}">
                                                                         </div>
                                                                         <div class="col-md-4">
-                                                                            <label class="form-label">{{ __('Sort') }}</label>
-                                                                            <input type="number" class="form-control" name="sort_order" value="{{ old('sort_order', $template?->sort_order ?? 100) }}">
+                                                                            <label class="form-label" for="tmpl_sort_order_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}">{{ __('Sort') }}</label>
+                                                                            <input type="number" id="tmpl_sort_order_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}" class="form-control" name="sort_order" value="{{ old('sort_order', $template?->sort_order ?? 100) }}">
                                                                         </div>
                                                                         <div class="col-md-6">
-                                                                            <label class="form-label">{{ __('Title') }}</label>
-                                                                            <input type="text" class="form-control" name="title" value="{{ old('title', $template?->title) }}" placeholder="{{ __('Internal / in-app title') }}">
+                                                                            <label class="form-label" for="tmpl_title_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}">{{ __('Title') }}</label>
+                                                                            <input type="text" id="tmpl_title_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}" class="form-control" name="title" lang="{{ $localeKey }}" dir="{{ $localeKey === 'ar' ? 'rtl' : 'ltr' }}" value="{{ old('title', $template?->title) }}" placeholder="{{ __('Internal / in-app title') }}">
                                                                         </div>
                                                                         <div class="col-md-6">
-                                                                            <label class="form-label">{{ __('Email subject') }}</label>
-                                                                            <input type="text" class="form-control" name="subject" value="{{ old('subject', $template?->subject) }}" placeholder="{{ __('Used mainly for email') }}">
+                                                                            <label class="form-label" for="tmpl_subject_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}">{{ __('Email subject') }}</label>
+                                                                            <input type="text" id="tmpl_subject_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}" class="form-control" name="subject" lang="{{ $localeKey }}" dir="{{ $localeKey === 'ar' ? 'rtl' : 'ltr' }}" value="{{ old('subject', $template?->subject) }}" placeholder="{{ __('Used mainly for email') }}">
                                                                         </div>
                                                                         <div class="col-12">
-                                                                            <label class="form-label">{{ __('Body') }}</label>
-                                                                            <textarea class="form-control" name="body" rows="4" required>{{ old('body', $template?->body) }}</textarea>
+                                                                            <label class="form-label" for="tmpl_body_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}">{{ __('Body') }}</label>
+                                                                            <textarea id="tmpl_body_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}" class="form-control" name="body" lang="{{ $localeKey }}" dir="{{ $localeKey === 'ar' ? 'rtl' : 'ltr' }}" rows="4" required>{{ old('body', $template?->body) }}</textarea>
                                                                         </div>
                                                                         <div class="col-12">
-                                                                            <label class="form-label">{{ __('Tokens') }}</label>
-                                                                            <input type="text" class="form-control" name="tokens_text" value="{{ old('tokens_text', implode(', ', $template?->tokens ?? [':store_name', ':customer_name', ':order_number', ':order_status', ':delivery_status'])) }}">
+                                                                            <label class="form-label" for="tmpl_tokens_text_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}">{{ __('Tokens') }}</label>
+                                                                            <input type="text" id="tmpl_tokens_text_{{ $eventKey }}_{{ $templateChannel }}_{{ $localeKey }}" class="form-control" name="tokens_text" value="{{ old('tokens_text', implode(', ', $template?->tokens ?? [':store_name', ':customer_name', ':order_number', ':order_status', ':delivery_status'])) }}">
                                                                             <div class="admin-helper-text mt-2">{{ __('Common tokens: :store_name, :customer_name, :order_number, :order_status, :delivery_status, :payment_status, :grand_total, :currency, :tracking_number, :refund_total') }}</div>
                                                                         </div>
                                                                     </div>
@@ -185,8 +185,8 @@
 
                         <form method="GET" action="{{ route('admin.settings.notifications.templates') }}" class="row g-3 mb-4" data-submit-loading>
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Order') }}</label>
-                                <select class="form-select" name="preview_order_id">
+                                <label class="form-label" for="notification_preview_order">{{ __('Order') }}</label>
+                                <select id="notification_preview_order" class="form-select" name="preview_order_id">
                                     @foreach($recentOrders as $orderOption)
                                         <option value="{{ $orderOption->id }}" @selected(($previewState['order_id'] ?? null) == $orderOption->id)>
                                             {{ $orderOption->order_number }} — {{ $orderOption->customer_name ?: __('Guest') }}
@@ -195,24 +195,24 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Event') }}</label>
-                                <select class="form-select" name="preview_event">
+                                <label class="form-label" for="notification_preview_event">{{ __('Event') }}</label>
+                                <select id="notification_preview_event" class="form-select" name="preview_event">
                                     @foreach($events as $eventKey => $event)
                                         <option value="{{ $eventKey }}" @selected(($previewState['event'] ?? '') === $eventKey)>{{ $event['label'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Channel') }}</label>
-                                <select class="form-select" name="preview_channel">
+                                <label class="form-label" for="notification_preview_channel">{{ __('Channel') }}</label>
+                                <select id="notification_preview_channel" class="form-select" name="preview_channel">
                                     @foreach(['database', 'email', 'whatsapp'] as $previewChannel)
                                         <option value="{{ $previewChannel }}" @selected(($previewState['channel'] ?? '') === $previewChannel)>{{ $channels[$previewChannel]['label'] ?? ucfirst($previewChannel) }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">{{ __('Locale') }}</label>
-                                <select class="form-select" name="preview_locale">
+                                <label class="form-label" for="notification_preview_locale">{{ __('Locale') }}</label>
+                                <select id="notification_preview_locale" class="form-select" name="preview_locale">
                                     @foreach($locales as $localeKey => $localeLabel)
                                         <option value="{{ $localeKey }}" @selected(($previewState['locale'] ?? '') === $localeKey)>{{ $localeLabel }}</option>
                                     @endforeach
@@ -292,8 +292,8 @@
                     data-confirm-cancel="{{ __('Keep reviewing') }}">
                             @csrf
                             <div class="col-12">
-                                <label class="form-label">{{ __('Order') }}</label>
-                                <select class="form-select" name="order_id" required>
+                                <label class="form-label" for="notification_test_order">{{ __('Order') }}</label>
+                                <select id="notification_test_order" class="form-select" name="order_id" required>
                                     @foreach($recentOrders as $orderOption)
                                         <option value="{{ $orderOption->id }}" @selected(($previewState['order_id'] ?? null) == $orderOption->id)>
                                             {{ $orderOption->order_number }} — {{ $orderOption->customer_name ?: __('Guest') }}
@@ -302,32 +302,32 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Event') }}</label>
-                                <select class="form-select" name="event" required>
+                                <label class="form-label" for="notification_test_event">{{ __('Event') }}</label>
+                                <select id="notification_test_event" class="form-select" name="event" required>
                                     @foreach($events as $eventKey => $event)
                                         <option value="{{ $eventKey }}" @selected(($previewState['event'] ?? '') === $eventKey)>{{ $event['label'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Channel') }}</label>
-                                <select class="form-select" name="channel" required>
+                                <label class="form-label" for="notification_test_channel">{{ __('Channel') }}</label>
+                                <select id="notification_test_channel" class="form-select" name="channel" required>
                                     @foreach(['database', 'email', 'whatsapp'] as $testChannel)
                                         <option value="{{ $testChannel }}" @selected(($previewState['channel'] ?? '') === $testChannel)>{{ $channels[$testChannel]['label'] ?? ucfirst($testChannel) }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Locale') }}</label>
-                                <select class="form-select" name="locale" required>
+                                <label class="form-label" for="notification_test_locale">{{ __('Locale') }}</label>
+                                <select id="notification_test_locale" class="form-select" name="locale" required>
                                     @foreach($locales as $localeKey => $localeLabel)
                                         <option value="{{ $localeKey }}" @selected(($previewState['locale'] ?? '') === $localeKey)>{{ $localeLabel }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">{{ __('Override email (optional)') }}</label>
-                                <input type="email" class="form-control" name="test_email" placeholder="qa@example.com">
+                                <label class="form-label" for="notification_test_email">{{ __('Override email (optional)') }}</label>
+                                <input type="email" id="notification_test_email" class="form-control" name="test_email" placeholder="qa@example.com">
                             </div>
                             <div class="col-12">
                                 <div class="notification-note-box">

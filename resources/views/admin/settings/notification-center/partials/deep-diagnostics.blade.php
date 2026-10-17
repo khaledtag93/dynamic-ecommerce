@@ -112,7 +112,7 @@
                             <div>
                                 <div class="fw-semibold">{{ $incident['title'] ?? __('Incident') }}</div>
                                 <div class="admin-helper-text mt-1">{{ $incident['meta'] ?? '—' }}</div>
-                                <div class="small mt-2">{{ $incident['description'] ?? '—' }}</div>
+                                <div class="small mt-2">{{ ($incident['title'] ?? '') === __('Safety block') ? __('A safety guard blocked an operation. Review protected system logs.') : \App\Support\NotificationFailureSummary::forOperator($incident['description'] ?? null, ($incident['tone'] ?? '') === 'warning' ? 'pending' : (($incident['tone'] ?? '') === 'secondary' ? 'skipped' : 'failed')) }}</div>
                             </div>
                             <div class="text-end">
                                 <span class="badge bg-{{ $incident['tone'] ?? 'secondary' }} mb-2">{{ ucfirst($incident['tone'] ?? 'info') }}</span>

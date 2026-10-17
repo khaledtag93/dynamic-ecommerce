@@ -85,22 +85,22 @@
                         </div>
                         <span class="badge rounded-pill text-bg-light border">{{ __('Channel health') }}</span>
                     </div>
-                    <div class="table-responsive admin-table-wrap mb-0">
+                    <div class="table-responsive admin-table-wrap mb-0 notification-diagnostics-scroll" role="region" tabindex="0" aria-label="{{ __('Channel health table') }}">
                         <table class="table align-middle admin-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Channel') }}</th>
-                                    <th>{{ __('Sent') }}</th>
-                                    <th>{{ __('Failed') }}</th>
-                                    <th>{{ __('Pending') }}</th>
-                                    <th>{{ __('Skipped') }}</th>
-                                    <th>{{ __('Success rate') }}</th>
+                                    <th scope="col">{{ __('Channel') }}</th>
+                                    <th scope="col">{{ __('Sent') }}</th>
+                                    <th scope="col">{{ __('Failed') }}</th>
+                                    <th scope="col">{{ __('Pending') }}</th>
+                                    <th scope="col">{{ __('Skipped') }}</th>
+                                    <th scope="col">{{ __('Success rate') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach(($monitoring['channelHealth'] ?? []) as $channelKey => $health)
                                     <tr>
-                                        <td><span class="admin-chip">{{ $channels[$channelKey]['label'] ?? ucfirst($channelKey) }}</span></td>
+                                        <th scope="row"><span class="admin-chip">{{ $channels[$channelKey]['label'] ?? ucfirst($channelKey) }}</span></th>
                                         <td>{{ number_format($health['sent'] ?? 0) }}</td>
                                         <td>{{ number_format($health['failed'] ?? 0) }}</td>
                                         <td>{{ number_format($health['pending'] ?? 0) }}</td>
@@ -154,7 +154,7 @@
                                                 <div>
                                                     <div class="fw-semibold">{{ $job['name'] }}</div>
                                                     <div class="admin-helper-text">{{ __('Queue: :queue • Connection: :connection', ['queue' => $job['queue'] ?: 'default', 'connection' => $job['connection'] ?: '—']) }}</div>
-                                                    <div class="small text-danger mt-2">{{ $job['exception'] ?: __('No exception body stored.') }}</div>
+                                                    <div class="small text-danger mt-2 notification-diagnostics-exception-summary">{{ \App\Support\NotificationFailureSummary::forOperator($job['exception'] ?? null, 'failed') }}</div>
                                                 </div>
                                                 <div class="text-end">
                                                     @if($job['is_notification_related'])

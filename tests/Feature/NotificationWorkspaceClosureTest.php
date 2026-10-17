@@ -225,6 +225,85 @@ class NotificationWorkspaceClosureTest extends TestCase
             ->assertSee('notification_event_order_cancelled_email', false);
     }
 
+
+    public function test_notification_templates_and_automation_fields_have_associated_labels(): void
+    {
+        $this->actingAs($this->createSuperAdmin());
+
+        foreach (['admin.settings.notifications.templates', 'admin.settings.notifications.automation'] as $route) {
+            $response = $this->get(route($route));
+            $response->assertOk();
+
+            $dom = new \DOMDocument();
+            $previous = libxml_use_internal_errors(true);
+            try {
+                $dom->loadHTML($response->getContent());
+            } finally {
+                libxml_clear_errors();
+                libxml_use_internal_errors($previous);
+            }
+
+            $xpath = new \DOMXPath($dom);
+            $forms = $xpath->query('//form[@method="POST" or @method="GET"]');
+            $checked = 0;
+            foreach ($forms as $form) {
+                if (! str_contains($form->getAttribute('action'), '/admin/settings/notifications')) {
+                    continue;
+                }
+                foreach ($xpath->query('.//input[not(@type="hidden") and not(@type="submit")] | .//select | .//textarea', $form) as $control) {
+                    $name = $control->getAttribute('name');
+                    if ($name === '' || $control->getAttribute('type') === 'checkbox') {
+                        continue; // Checked switches already use dedicated for/id labels.
+                    }
+                    $id = $control->getAttribute('id');
+                    $this->assertNotSame('', $id, "{$route}: {$name} is missing id");
+                    $this->assertSame(1, $xpath->query('.//label[@for="'. $id .'"]', $form)->length, "{$route}: {$name} has no matching label");
+                    $checked++;
+                }
+            }
+            $this->assertGreaterThan(10, $checked, 'Expected actual template and rule builder fields to be inspected');
+        }
+    }
+
+    public function test_notification_diagnostics_redacts_failed_job_and_incident_exception_paths(): void
+    {
+        $admin = $this->createSuperAdmin();
+        $leak = 'htmlspecialchars(): secret=NOTIFICATION_SECRET_TRACE (View: /var/www/private/.env)';
+        $order = Order::query()->create([
+            'order_number' => 'NOTIFY-DIAG-001',
+            'customer_name' => 'Test Customer',
+            'customer_email' => 'diag@example.test',
+            'shipping_address_line_1' => 'Test Street',
+            'shipping_city' => 'Cairo',
+            'shipping_country' => 'Egypt',
+        ]);
+        NotificationDispatchLog::query()->create([
+            'order_id' => $order->id,
+            'channel' => 'email',
+            'event' => OrderNotificationService::EVENT_STATUS_UPDATED,
+            'status' => NotificationDispatchLog::STATUS_FAILED,
+            'error_message' => $leak,
+        ]);
+        \Illuminate\Support\Facades\DB::table('failed_jobs')->insert([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'connection' => 'database',
+            'queue' => 'default',
+            'payload' => json_encode(['displayName' => 'App\\Jobs\\SendOrderNotification'], JSON_THROW_ON_ERROR),
+            'exception' => $leak,
+            'failed_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.settings.notifications.diagnostics'));
+        $response->assertOk()
+            ->assertSee(__('Notification content could not be rendered. Check the template before retrying.'))
+            ->assertSee(__('Channel health table'))
+            ->assertSee('notification-diagnostics-scroll', false)
+            ->assertSee('scope="row"', false)
+            ->assertDontSee('NOTIFICATION_SECRET_TRACE', false)
+            ->assertDontSee('/var/www/private', false)
+            ->assertDontSee('.env', false);
+    }
+
     public function test_notification_center_navigation_exposes_current_page_semantics(): void
     {
         $layout = file_get_contents(resource_path('views/admin/settings/notification-center/layout.blade.php'));
