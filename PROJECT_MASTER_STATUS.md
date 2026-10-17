@@ -1,5 +1,13 @@
 # MASTER PROJECT STATUS
 
+## M3/M4 Outbound Email Routing Source-only Contract Audit — 2026-10-17
+
+- [Outbound route source-only contract audit](docs/QAS_M3_M4_OUTBOUND_MAIL_ROUTE_FAKE_CONTRACT_AUDIT_2026-10-17_AR.md): phpMyAdmin authenticated browser unavailable; **SELECT DATABASE() not run**; all QAS SQL halted at identity gate. No SSH/DB PHP bypass, no runtime writes or transport activity.
+- Source shows Password Reset notification (no named mailer), Order Update, Admin escalation raw email and Growth SMTP mail all rely on existing global mail route; added **four** zero-network tests with \`Mail::fake()\`, \`Notification::fake()\`, and one isolated \`Mail::raw\` mock interception (MailFake raw is a no-op). Direct order/admin/Growth mail leaves only — no scanner, queue or retry invoked; no app code/config/permission/policy/secret change. No future reset sandbox isolation or QAS delivery claimed.
+- Baseline [CI #39052017455](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39052017455) completed/success at 0ccdc2d8 (1,013 tests / 19,644 assertions); **new commit's own full exact-SHA CI requires fresh verification**. QAS prior deployed de180de6, mail=array. **M3 BLOCKED / M4 PARTIAL-BLOCKED, C1-A #2 BLOCKED, QAS #3–#6 OPEN, Production NO-GO**.
+
+
+
 ## Source-only password-reset fake contracts / QAS operator gate (2026-10-17)
 
 - [New source-only regression and operator evidence](docs/QAS_RESET_ONLY_MAILER_FAKE_CONTRACTS_2026-10-17_AR.md): authorized phpMyAdmin UI unavailable to assistant, **SELECT DATABASE() NOT RUN**, all SQL evidence STOP. Existing operator packet remains first gated step, no SSH/DB PHP substitute or safety bypass.
