@@ -103,6 +103,20 @@ final class QasDeployEarlyPreflightTest extends TestCase
         self::assertStringNotContainsString('migrate:rollback', $source);
     }
 
+    public function test_early_error_handler_cannot_toggle_qas_maintenance_and_storage_links_are_checked(): void
+    {
+        $source = $this->source();
+        self::assertStringContainsString('MAINTENANCE_ENTERED=false', $source);
+        self::assertStringContainsString('if [ "$MAINTENANCE_ENTERED" = true ]; then', $source);
+        self::assertStringContainsString('MAINTENANCE_ENTERED=true', $source);
+        self::assertStringContainsString('realpath -e "$PUBLIC_DIR/uploads"', $source);
+        self::assertStringContainsString('realpath -e "$APP_DIR/storage/app"', $source);
+        self::assertStringContainsString('PUBLIC_STORAGE_TARGET=', $source);
+        self::assertStringContainsString('public storage points outside QAS', $source);
+        self::assertStringContainsString('git diff --quiet "$PREVIOUS_COMMIT" "$TARGET_SHA" -- ops/uploads.htaccess', $source);
+        self::assertStringNotContainsString('rsync -a --delete', $source);
+    }
+
     public function test_unapproved_pending_migrations_do_not_run_automatically(): void
     {
         $source = $this->source();
