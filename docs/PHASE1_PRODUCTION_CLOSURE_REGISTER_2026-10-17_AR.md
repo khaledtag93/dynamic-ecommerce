@@ -1,5 +1,14 @@
 # Flowra — Phase 1 Production Closure Register
 
+## 2026-10-17 — Owner roadmap addition: Merchant Data Import & Migration (PLAN ONLY)
+
+- **Tracking:** [Issue #10 — Merchant Data Import, Migration & Onboarding Center](https://github.com/khaledtag93/dynamic-ecommerce/issues/10). Owner requested this be placed in the correct implementation order; this entry authorizes **planning only**, not implementation or environment writes.
+- **Do not disrupt current path:** Finish current Phase1 C1 → C2 → C3 → C4 → C5 acceptance/release gates (subject to agreed dependency gates) before post-Phase1 expansion. Phase1 **NO-GO**, C1-A **BLOCKED**, source-only limits unchanged.
+- **Existing exposed import must still be honestly closed in Phase1:** current source evidence F01/GAP-IMP-01 indicates `/admin/imports` creates a draft only. DEC-IMP remains OPEN: if import is enabled/marketed in V1, its promised behavior needs working implementation + acceptance, OR an explicitly approved safe and honest limitation/exclusion. Never claim full CSV import exists or silently move a broken V1 action to Phase2.
+- **Phase2 early merchant-onboarding priority (P2-11):** once the release foundation is accepted, prioritize safe structured CSV/Excel intake before live customer migration; then one-time legacy POS/ERP/ecommerce migrations, then provider adapters and optional ongoing sync. A multi-tenant importer must wait for tenant isolation; single-merchant intake can be scoped independently. Preserve data mapping, preview/dry-run, validation, duplicate/replay safety, audit, rollback, cross-entity and inventory/financial integrity, access/privacy, EN/AR and QAS evidence.
+- No source feature implementation, API/OAuth/OTP, policies/permissions/config/secrets, QAS/Production writes or external messages occurred as part of this planning change.
+
+
 ## 2026-10-17 — C1-A preflight execution STOP
 
 - [Observed A0–A8 gate and A01–A15 execution report](C1A_QAS_PREFLIGHT_EXECUTION_REPORT_2026-10-17.md): CI #38988254957 `in_progress` / conclusion=null at final read; public QAS `GET /ping` HTTP 200; current QAS app/DB and effective external-delivery isolation **not proven**. Source checkout/cancellation includes WhatsApp/email/automation paths; no synthetic writes were allowed. **A5 consent PASS; A0–A4/A7–A8 BLOCKED; A6 NOT RUN.** Tests A01–A15 NOT RUN/BLOCKED, orders created 0. Phase1 NO-GO.
@@ -69,7 +78,7 @@
 | P1-10 Growth/branding/admin shell | تحسينات مصدر موثقة؛ قبول شامل غير مثبت | وضوح الأقسام والأفعال، AR/RTL/mobile، إعدادات محفوظة، KPIs، automations | page DoD، مطابقة الأرقام، no accidental writes/duplicate jobs؛ لا إعادة تصميم بلا finding |
 | P1-11 Roles/security | regression foundations موجودة | direct URL/action/Livewire denial، ownership، salary/HR privacy، secrets/dependencies/config/upload boundaries | role matrix فعلية + regression وsecurity evidence حديث على release SHA |
 | P1-12 Workforce V1 | foundation مصدر/CI؛ W-ORG-01b DEFERRED، concurrency BLOCKED | personas/approvals/attendance/schedule/leave/payroll، limits والسياسات المعتمدة، runtime concurrency | قواعد مالية/صلاحيات مقبولة وreconciliation وQAS roles؛ أو تأجيل module مع عزل مثبت |
-| P1-13 Import/other incomplete surfaces | audit قديم سجل draft import غير كامل؛ الحالة الحالية UNKNOWN | فحص التنفيذ الحالي لكل action قبل وصفه متاحاً | تنفيذ حقيقي مكتمل واختبار، أو إخراج واضح وآمن من نطاق الإصدار؛ لا نقل finding القديم كbug جديد |
+| P1-13 Import/other incomplete surfaces | فحص source الحالي F01/GAP-IMP-01 يؤكد أن Import ينشئ Draft فقط؛ CSV execution غير مثبت؛ قبول QAS والنطاق النهائي OPEN | حسم DEC-IMP للواجهة المفعلة: تنفيذ ما يُعلن عنه وقبوله، أو limitation/exclusion صريح وآمن ومعتمد؛ لا تأجيل Bug فعلي داخل V1 | تحقق source/permission/action + QAS evidence للنطاق المعتمد؛ لا ادعاء Import كامل من مجرد وجود صفحة |
 | P1-14 Operations/release | QAS basic health PASS | rotation/restore/upgrade/rollback، Production scheduler/queue/monitoring، exact release SHA | runbooks وتجارب فعلية معزولة وrelease approval وpost-deploy verification |
 | P1-15 Product delivery | دليل عربي وخطط موجودة؛ اكتمال التوافق UNKNOWN | محتوى وسياسات المتجر، onboarding/help، limitations، إعداد متجر نظيف وتسليم | نسخة وثائق مرتبطة بالإصدار، لا demo claims، owner content acceptance |
 
@@ -107,6 +116,9 @@
 | P2-08 | advanced AI/analytics expansions/microservices | لا تخدم إغلاق إصدار قائم الآن | احتياج مثبت وقياسات |
 | P2-09 | direct assistant QAS deploy automation | owner-operated deployment نجح؛ reliability improvement مستقل | قناة مصرح بها ومراجعة أمنية؛ لا تجاوز block |
 | P2-10 | optional carriers/POD/multi-currency/tax capabilities | ليست تلقائياً شروط إطلاق المتجر المحدد | متطلبات نشاط/بلد معتمدة؛ receipt لا يساوي tax invoice |
+| P2-11 | **Merchant Data Onboarding: Import & Migration Center** ([Issue #10](https://github.com/khaledtag93/dynamic-ecommerce/issues/10)) | توسع ما بعد قبول Phase1 لتسهيل انتقال التاجر ببياناته؛ **لا يعفي من إغلاق Import draft الظاهر حاليًا ضمن P1-13** | بالترتيب: MIG-01 discovery & source contract → MIG-02 CSV/Excel mapping/validation/preview/idempotent safe import → MIG-03 legacy exports/API/DB migration and reconciliation → MIG-04 adapters/scheduled sync on approved demand؛ tenant isolation قبل multi-merchant use |
+
+**ترتيب توسع P2-11:** بعد إغلاق Phase1 بالأدلة وقبل onboarding فعلي يعتمد على ترحيل البيانات. التنفيذ يبدأ بالـstructured files، ثم النقل من الأنظمة القديمة، ثم المزامنة الاختيارية. رقم ID ليس إذنًا لتجاوز اعتماد عزل SaaS أو قرار نطاق Import المفعّل.
 
 **ليست قرارات تأجيل تلقائية:** Workforce الحالي، CSV import الحالي، Paymob الحالي، أو أي module مفعّل. يجب حسم نطاقها في G01. لا تُؤجل واجهة ضعيفة أو bug مالي تحت عنوان توسع.
 
