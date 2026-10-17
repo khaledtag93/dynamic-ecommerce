@@ -7,23 +7,29 @@ umask 077
 # Dynamic E-commerce System - QAS Deploy
 # Safe one-command deployment for v42.tag-marketplace.com
 #
-# Usage:
-#   ./deploy-qas.sh
-#   ./deploy-qas.sh v42-clean-baseline
+# Source-only hardening; QAS execution requires a separate approval.
+# Usage (only after separately authorized operational preflight):
+#   ./deploy-qas.sh sec03-framework-upgrade <exact-reviewed-40-char-SHA>
+# No default branch or unpinned release.
 #############################################
 
 APP_NAME="Tag Marketplace V42 QAS"
-BRANCH="${1:-v42-clean-baseline}"
+BRANCH="${1:-}"
+TARGET_SHA="${2:-}"
+EXPECTED_PREVIOUS_SHA="de180de6cae5f28dc867b752ab6f1d97baa71416"
 
 BASE_DIR="/home/u637857322/domains/tag-marketplace.com"
 APP_DIR="$BASE_DIR/laravel_app_v42_rehearsal"
 PUBLIC_DIR="$BASE_DIR/public_html/v42"
-HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://v42.tag-marketplace.com}"
+HEALTHCHECK_URL="https://v42.tag-marketplace.com"
 HEALTHCHECK_TIMEOUT="${HEALTHCHECK_TIMEOUT:-20}"
 EXPECTED_DB="u637857322_v42_rehearsal"
+SNAPSHOT_ROOT="$BASE_DIR/qas_release_backups"
 
 PHP_BIN="${PHP_BIN:-php}"
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
+# Early failures must not change QAS maintenance mode.
+MAINTENANCE_ENTERED=false
 
 log() {
     printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
@@ -47,7 +53,9 @@ on_error() {
     local line_no="$1"
     local exit_code="$2"
     log "❌ QAS deploy failed at line $line_no with exit code $exit_code"
-    bring_up
+    if [ "$MAINTENANCE_ENTERED" = true ]; then
+        bring_up
+    fi
     exit "$exit_code"
 }
 trap 'on_error ${LINENO} $?' ERR
@@ -69,8 +77,13 @@ health_check() {
 log "=================================================="
 log "🚀 Starting QAS deploy"
 log "🌿 Branch: $BRANCH"
+log "🎯 Required SHA: $TARGET_SHA"
 log "🌐 URL: $HEALTHCHECK_URL"
 log "=================================================="
+
+[ "$#" -eq 2 ] || fail "BLOCKED: explicit QAS branch and reviewed SHA are mandatory"
+[ "$BRANCH" = "sec03-framework-upgrade" ] || fail "BLOCKED: wrong QAS source branch"
+[[ "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "BLOCKED: exact full lowercase SHA is required"
 
 [ -d "$APP_DIR" ] || fail "QAS app directory missing: $APP_DIR"
 [ -d "$PUBLIC_DIR" ] || fail "QAS public directory missing: $PUBLIC_DIR"
@@ -78,42 +91,83 @@ log "=================================================="
 [ -f "$APP_DIR/artisan" ] || fail "QAS artisan missing"
 [ -f "$APP_DIR/composer.json" ] || fail "QAS composer.json missing"
 
+[ "$(realpath -e "$APP_DIR")" = "$APP_DIR" ] || fail "BLOCKED: redirected QAS app path"
+[ "$(realpath -e "$PUBLIC_DIR")" = "$PUBLIC_DIR" ] || fail "BLOCKED: redirected QAS public path"
+[ ! -L "$SNAPSHOT_ROOT" ] || fail "BLOCKED: recovery root symlink"
+
 cd "$APP_DIR"
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || fail "QAS app is not a Git worktree"
 git remote get-url origin >/dev/null 2>&1 || fail "QAS Git origin is not configured"
+[ "$(git rev-parse --show-toplevel)" = "$APP_DIR" ] || fail "BLOCKED: wrong Git worktree"
 
 grep -Eq '^APP_ENV=staging$' .env || fail "QAS safety check failed: APP_ENV must be staging"
 grep -Eq '^APP_DEBUG=false$' .env || fail "QAS safety check failed: APP_DEBUG must be false"
 grep -Eq "^DB_DATABASE=$EXPECTED_DB$" .env || fail "QAS safety check failed: unexpected DB_DATABASE"
 
-chmod 600 .env
 
-log "🖼 Configuring isolated QAS media root..."
-if grep -q '^PUBLIC_ROOT_PATH=' .env; then
-    sed -i "s|^PUBLIC_ROOT_PATH=.*|PUBLIC_ROOT_PATH=$PUBLIC_DIR|" .env
-else
-    printf '\nPUBLIC_ROOT_PATH=%s\n' "$PUBLIC_DIR" >> .env
+# Existing runtime-side read-only probe, not to be run via any blocked
+# tool route. Future QAS execution requires separate official approval.
+# No chmod/sed/mkdir/fetch/reset/maintenance/DB writes precede this check.
+ACTUAL_RUNTIME_IDENTITY="$("$PHP_BIN" artisan tinker --execute='echo app()->environment()."|".DB::selectOne("SELECT DATABASE() AS db")->db;' 2>/dev/null)" || fail "BLOCKED: authorized Laravel runtime identity unavailable"
+[ "$ACTUAL_RUNTIME_IDENTITY" = "staging|$EXPECTED_DB" ] || fail "BLOCKED: Laravel runtime environment/database mismatch"
+
+PREVIOUS_COMMIT="$(git rev-parse HEAD)"
+[ "$PREVIOUS_COMMIT" = "$EXPECTED_PREVIOUS_SHA" ] || fail "BLOCKED: unexpected QAS pre-release SHA"
+git diff --quiet || fail "BLOCKED: QAS worktree has tracked modifications"
+git diff --cached --quiet || fail "BLOCKED: QAS worktree has staged changes"
+
+# An unchanged migration source tree is not proof that QAS has none pending.
+# This is an authorized-read-only future gate, never a migration execution.
+MIGRATION_STATUS="$("$PHP_BIN" artisan migrate:status --no-ansi 2>/dev/null)" || fail "BLOCKED: migration status unavailable"
+[ -n "$MIGRATION_STATUS" ] || fail "BLOCKED: empty migration status"
+if printf '%s\n' "$MIGRATION_STATUS" | grep -Eiq 'Pending|Not Run'; then
+    fail "Pending migrations require separate approval"
 fi
-mkdir -p "$PUBLIC_DIR/uploads"
-chmod 600 .env
+printf '%s\n' "$MIGRATION_STATUS" | grep -Eq 'Ran|Yes' || fail "BLOCKED: migration state unverified"
 
-log "⬇️ Fetching latest QAS code..."
+# Protect already-existing QAS-only runtime data, cron, guards and symlinks.
+[ -f "$APP_DIR/scripts/qas-queue-cron.sh" ] || fail "BLOCKED: missing QAS queue cron"
+[ -f "$APP_DIR/scripts/qas-scheduler-cron.sh" ] || fail "BLOCKED: missing QAS scheduler cron"
+[ -d "$APP_DIR/storage/app" ] || fail "BLOCKED: missing QAS app storage"
+[ -d "$PUBLIC_DIR/uploads" ] || fail "BLOCKED: missing QAS uploads"
+[ -f "$PUBLIC_DIR/uploads/.htaccess" ] || fail "BLOCKED: missing QAS uploads guard"
+[ -e "$PUBLIC_DIR/storage" ] || [ -L "$PUBLIC_DIR/storage" ] || fail "BLOCKED: missing QAS public storage"
+[ -f "$PUBLIC_DIR/index.php" ] || fail "BLOCKED: missing QAS front controller"
+
+# Snapshot code and public assets under a QAS-only private recovery path.
+# .env, mutable storage and uploads are deliberately NOT copied or touched.
+SNAPSHOT_APP_DIR="$SNAPSHOT_ROOT/$PREVIOUS_COMMIT/app"
+SNAPSHOT_PUBLIC_DIR="$SNAPSHOT_ROOT/$PREVIOUS_COMMIT/public"
+[ ! -e "$SNAPSHOT_ROOT/$PREVIOUS_COMMIT" ] || fail "BLOCKED: QAS recovery snapshot already exists"
+mkdir -m 700 -p "$SNAPSHOT_APP_DIR" "$SNAPSHOT_PUBLIC_DIR"
+rsync -a --exclude=.git/ --exclude=.env --exclude='.env.*' --exclude=storage/ "$APP_DIR/" "$SNAPSHOT_APP_DIR/"
+rsync -a --exclude=uploads/ --exclude=storage/ "$PUBLIC_DIR/" "$SNAPSHOT_PUBLIC_DIR/"
+[ -s "$SNAPSHOT_APP_DIR/composer.lock" ] || fail "BLOCKED: incomplete code recovery snapshot"
+[ -s "$SNAPSHOT_PUBLIC_DIR/index.php" ] || fail "BLOCKED: incomplete QAS front-controller snapshot"
+
+log "⬇️ Fetching only the approved QAS source branch..."
 git fetch --prune origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+RESOLVED_TARGET_SHA="$(git rev-parse "origin/$BRANCH")" || fail "BLOCKED: target Git reference missing"
+[ "$RESOLVED_TARGET_SHA" = "$TARGET_SHA" ] || fail "BLOCKED: branch tip does not match exact reviewed SHA"
 
-git rev-parse "origin/$BRANCH" >/dev/null 2>&1 || fail "Remote branch not found: origin/$BRANCH"
+# Git must never take ownership of the existing untracked runtime paths.
+for protected_path in scripts/qas-queue-cron.sh scripts/qas-scheduler-cron.sh storage/app public/uploads; do
+    if [ -n "$(git ls-tree -r --name-only "$TARGET_SHA" -- "$protected_path")" ]; then
+        fail "BLOCKED: target Git tree collides with QAS runtime data"
+    fi
+done
 
-PREVIOUS_COMMIT="$(git rev-parse --short HEAD)"
-TARGET_COMMIT="$(git rev-parse --short "origin/$BRANCH")"
-
-log "🔖 Previous commit: $PREVIOUS_COMMIT"
-log "🎯 Target commit:   $TARGET_COMMIT"
+log "🔖 Verified previous commit: $PREVIOUS_COMMIT"
+log "🎯 Verified target commit: $TARGET_SHA"
 
 log "🚧 Enabling QAS maintenance mode..."
-$PHP_BIN artisan down --retry=30 || true
+MAINTENANCE_ENTERED=true
+"$PHP_BIN" artisan down --retry=30
 
 log "🔄 Updating QAS worktree..."
-git reset --hard "origin/$BRANCH"
+git reset --hard "$TARGET_SHA"
+[ "$(git rev-parse HEAD)" = "$TARGET_SHA" ] || fail "BLOCKED: wrong SHA after reset"
 
 log "🧪 Running source preflight checks..."
 if grep -RInE --include='*.blade.php' '(AppModels|IlluminateSupport)[A-Za-z0-9_:]*' resources/views; then
@@ -129,32 +183,25 @@ $PHP_BIN artisan route:list --name=workforce >/dev/null
 log "🧹 Clearing Laravel caches..."
 $PHP_BIN artisan optimize:clear
 
-log "🔐 Verifying QAS database connection..."
-ACTUAL_DB="$($PHP_BIN artisan tinker --execute='echo DB::selectOne("SELECT DATABASE() AS db")->db;' 2>/dev/null)"
-[ "$ACTUAL_DB" = "$EXPECTED_DB" ] || fail "Connected database is '$ACTUAL_DB', expected '$EXPECTED_DB'"
-
-log "🗄 Applying pending QAS migrations..."
-$PHP_BIN artisan migrate --force
+# No automatic migration or database change in QAS deploy.
+log "✅ Schema is not modified by this script"
 
 log "⚙️ Rebuilding QAS caches..."
 $PHP_BIN artisan config:cache
 $PHP_BIN artisan view:cache
 
-log "♻️ Signaling QAS queue workers to reload application code..."
-$PHP_BIN artisan queue:restart || true
+# Queue restart may dispatch external work. Requires separate operator approval.
 
 log "📁 Syncing QAS public files..."
-rsync -a --delete     --exclude='index.php'     --exclude='uploads'     --exclude='storage'     "$APP_DIR/public/" "$PUBLIC_DIR/"
+rsync -a --exclude='index.php' --exclude='uploads' --exclude='storage' "$APP_DIR/public/" "$PUBLIC_DIR/"
 
 log "🔐 Normalizing QAS public web permissions..."
 find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type d -exec chmod 755 {} +
 find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type f -exec chmod 644 {} +
 
 UPLOAD_GUARD_SOURCE="$APP_DIR/ops/uploads.htaccess"
-[ -f "$UPLOAD_GUARD_SOURCE" ] || fail "Upload execution guard missing: $UPLOAD_GUARD_SOURCE"
-mkdir -p "$PUBLIC_DIR/uploads"
-cp "$UPLOAD_GUARD_SOURCE" "$PUBLIC_DIR/uploads/.htaccess"
-chmod 644 "$PUBLIC_DIR/uploads/.htaccess"
+[ -f "$UPLOAD_GUARD_SOURCE" ] || fail "BLOCKED: upload execution guard source missing"
+cmp -s "$UPLOAD_GUARD_SOURCE" "$PUBLIC_DIR/uploads/.htaccess" || fail "BLOCKED: upload guard change requires separate review"
 
 log "🔗 Rebuilding QAS front controller..."
 INDEX_TMP="$PUBLIC_DIR/.index.php.$$.tmp"
@@ -175,7 +222,8 @@ ASSET_HEALTHCHECK_CODE="$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 
 [ "$ASSET_HEALTHCHECK_CODE" = "200" ] || fail "QAS static asset health check failed: $ASSET_HEALTHCHECK_URL returned HTTP ${ASSET_HEALTHCHECK_CODE:-unknown}"
 log "✅ QAS static asset health check passed: HTTP $ASSET_HEALTHCHECK_CODE"
 
-CURRENT_COMMIT="$(git rev-parse --short HEAD)"
+CURRENT_COMMIT="$(git rev-parse HEAD)"
+[ "$CURRENT_COMMIT" = "$TARGET_SHA" ] || fail "BLOCKED: final release SHA mismatch"
 
 log "=================================================="
 log "✅ QAS READY"
