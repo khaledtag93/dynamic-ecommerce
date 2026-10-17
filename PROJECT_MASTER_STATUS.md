@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ACTIVE — C1-B PASSWORD RESET PRIVACY SECURITY FIX (2026-10-17)
+
+- [C1-B Auth audit](docs/C1B_AUTH_ACCOUNT_SOURCE_AUDIT_2026-10-17_AR.md): generated password reset routes present, verification routes absent; existing `expire=60m` / `throttle=60s` broker policy unchanged, link-delivery QAS unverified. Verification / numeric OTP / Google-Facebook decisions remain OPEN.
+- Test-only [CI #38994321204](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38994321204) **RED confirmed** (2 privacy tests fail: unknown email reveals membership, throttled registered email reveals account; 990 tests pass). SOURCE-only fix normalizes password reset failed broker response; retains malformed-email validation, broker throttle and existing notification mechanism. Add no-real-email tests for reset TTL and single-use, and verify final exact-SHA CI separately (pending).
+- NO QAS/Production writes or email/SMS/WhatsApp sends; no config, permissions, secrets, provider or mandatory-verification policy changes. C1-A #2 BLOCKED; QAS visual #4 and mail #3 and cart #5 acceptance OPEN; Phase1 NO-GO.
+
 ## ACTIVE — C1-B AUTH SOURCE AUDIT + GUEST CART SESSION BUG (2026-10-17)
 
 - Starting from verified `cabc2238` / [CI #38992730518 GREEN](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38992730518); audited J02/J25 email login/register/reset/profile verification, phone-OTP and Google/Facebook identity. [Detailed source/gap inventory](docs/C1B_AUTH_ACCOUNT_SOURCE_AUDIT_2026-10-17_AR.md) distinguishes IMPLEMENTED / PARTIAL / MISSING / unverified QAS; DEC-AUTH-SOC/EM/PH remain OPEN. Did **not** turn on email verification, OTP or OAuth.

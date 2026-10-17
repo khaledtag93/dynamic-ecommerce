@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -50,6 +52,47 @@ class PasswordRecoveryPrivacyTest extends TestCase
             ->assertSessionHas('status', trans('passwords.sent'));
 
         Notification::assertSentTo($user, ResetPassword::class, 1);
+    }
+
+
+    public function test_reset_tokens_expire_and_cannot_be_replayed_after_successful_reset(): void
+    {
+        $user = User::factory()->create(['email' => 'token-lifecycle@example.test']);
+        $broker = Password::broker();
+
+        // The broker is exercised directly: absolutely no email or transport.
+        $expiredToken = $broker->createToken($user);
+        $this->assertTrue($broker->tokenExists($user, $expiredToken));
+
+        $this->travel(61)->minutes();
+        $this->assertFalse($broker->tokenExists($user, $expiredToken));
+        $this->travelBack();
+
+        $validToken = $broker->createToken($user);
+        $this->assertTrue($broker->tokenExists($user, $validToken));
+
+        $credentials = [
+            'email' => $user->email,
+            'token' => $validToken,
+            'password' => 'rotated-password-123',
+            'password_confirmation' => 'rotated-password-123',
+        ];
+
+        $this->assertSame(Password::PASSWORD_RESET, $broker->reset(
+            $credentials,
+            function (User $resetUser, string $password): void {
+                $resetUser->forceFill(['password' => Hash::make($password)])->save();
+            }
+        ));
+        $this->assertTrue(Hash::check('rotated-password-123', $user->fresh()->password));
+        $this->assertFalse($broker->tokenExists($user, $validToken));
+
+        $this->assertSame(Password::INVALID_TOKEN, $broker->reset(
+            $credentials,
+            function (): void {
+                $this->fail('A used reset token must never reset a password twice.');
+            }
+        ));
     }
 
     public function test_recovery_input_validation_and_route_contract_remain_unchanged(): void

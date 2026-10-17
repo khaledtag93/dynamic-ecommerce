@@ -33,6 +33,24 @@
 - Corrected the **test only** to use `withCookie(config('session.cookie'), $guestSessionId)` on the next request. Laravel's test harness encrypts the supplied session cookie through `prepareCookiesForRequest()`; it is not user-supplied session ownership in production. This models real browser session continuity before authentication. With source fix in place, re-run CI to prove the login/register journey and secure session rotation. This adjustment changes NO production business logic, provider behavior or settings.
 - **Proof discipline:** the final green status is unknown until matching CI completes. A separate test-only pre-fix replay is required for strict corrected-fixture RED-vs-GREEN, if requested; do not assert it already happened.
 
+## Additional C1-B SOURCE slice — password reset and email verification (2026-10-17)
+
+### Inspected implementation, routes and policy boundary
+
+- `routes/web.php` uses `Auth::routes()` (Laravel UI). Feature test checks generated `password.request`, `password.email`, `password.reset`, `password.update` are present. `verification.notice` and `verification.resend` are **absent** in the current generated route contract; the presence of `VerificationController` and `auth/verify.blade.php` alone is **not a deployed verification feature**. `User` also does not implement `MustVerifyEmail`. **Email verification PARTIAL / DISABLED as a mandatory flow**; numeric email OTP and phone OTP **MISSING**; policy `DEC-AUTH-EM/PH` remains OPEN and unchanged.
+- `ForgotPasswordController` delegates to Laravel `SendsPasswordResetEmails` and `Password::broker()`; `ResetPasswordController` delegates to `ResetsPasswords`. Config `auth.passwords.users` is existing `expire=60` minutes, `throttle=60` seconds; no change. Recovery views are source present with CSRF/forms and English/Arabic translation hooks; **actual QAS mail/reset-link acceptance not run**.
+- Direct test now exercises generated routes, invalid-input validation, broker throttle with `Notification::fake()`, and token expiry/replay without notification or network. Source tests run on isolated CI database.
+
+### Exactly one observed security bug: account enumeration during recovery request
+
+**Confirmed RED:** [test-only commit `f3fceb35`](https://github.com/khaledtag93/dynamic-ecommerce/commit/f3fceb3546c56c5325cfe8b701de5558a28cf0ae), [CI #38994321204](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38994321204) `completed/failure`. Two new privacy assertions failed: unregistered syntactically-valid email leaked “We can't find a user with that email address.”; repeat known-account request leaked “Please wait before retrying.”. One new runtime route-contract test PASSED, **990 tests PASSED total / 19,204 assertions**. `Notification::fake()` ensured zero real outbound emails; the broker throttle remained intact.
+
+**Minimal SOURCE fix:** override only `ForgotPasswordController::sendResetLinkFailedResponse` to present the identical generic existing `Password::RESET_LINK_SENT` result for broker failure statuses (unknown user or throttled). **Existing email validation still rejects malformed input; the broker still throttles and never sends for unknown email.** No new mail, provider, config, policies or OTP. Do not claim mitigation eliminates timing or side-channel enumeration without separate operational review.
+
+**New source regression contract:** response to unknown and throttled real account cannot distinguish membership/status; valid real first request still emits **one** reset notification to `Notification::fake()`, repeated request emits no additional notification; broker expiry at +61 minutes; broker token single-use after successful reset; active generated route list; verification routes absent. Scope: CI source only, not actual QAS provider receipt/verified-email UX.
+
+**Final fix CI run:** **PENDING independent check on final commit SHA**. Do not label the fix GREEN or Phase1 complete until completed/success is verified. QAS reset delivery, request rate abuse/timing, session/device lifecycle and real EN/AR browser acceptance remain OPEN. C1-A blocker #2 and QAS acceptance Issues #3/#4/#5 remain untouched.
+
 ### Remaining gates / priority
 
 - **C1-A** remains BLOCKED: [#2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) requires authorized read-only runtime app/env/DB identity, COD/pickup and email/WhatsApp/automation external sink isolation and exact order/stock reconciliation before any QAS writes.
