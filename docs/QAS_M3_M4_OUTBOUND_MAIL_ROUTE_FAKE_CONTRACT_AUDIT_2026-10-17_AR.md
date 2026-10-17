@@ -13,6 +13,12 @@
 | Admin escalation | \`NotificationAutomationService::notifyAdminEmail\` uses \`Mail::raw\` with rule recipient, else global From fallback | New direct leaf call mocked to a local in-memory recipient/subject double; **no scanner/rule execution, retries or transport** | Active QAS rules/admin fallback/targets, broader notification fallback safety |
 | Growth email | \`SmtpEmailGrowthChannel::send\` calls \`Mail::to()->send(new GrowthCampaignMail)\` on **default** mailer | New fake driver test of synthetic address and absent-recipient skip | Active Growth real-email flag, queued jobs/delivery backlog |
 
+## Test-harness RED -> targeted contract correction
+- [First full CI #39053079488](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39053079488) at exact SHA `d7ac8ac5dd069462a581a0a48d85fb7733cbedb6`: **completed/failure** (1,014 existing/new tests passed, 3 new tests failed; 19,657 assertions). This is NOT a GREEN checkpoint.
+- Failure 1 and 3: combined `Mail::assertSent` callback returned false without telling which subcondition failed. Corrected test harness to assert captured class/count first and inspect recipient, original model, global mailer override and payload **separately**, preserving all intended checks. No application behavior change.
+- Failure 2: Mockery `withArgs` checked synthetic order number in *raw body*; source renders it in the *subject* instead, so the test condition was wrong. Corrected to validate the captured subject. This is **test assumption correction**, not a confirmed application defect.
+- New exact-SHA full Hardening CI is mandatory before calling these contracts PASS.
+
 ## Four narrowly scoped regression cases
 - \`tests/Feature/OutboundMailRouteIsolationContractTest.php\` adds **four** tests using \`Mail::fake()\` and \`Notification::fake()\`. All addresses and order data are synthetic (\`@example.test\`) and exist only in CI. No application code, configuration, permissions, policies, secrets or live database are modified.
 - Order positive path: intercept and inspect recipient, mailable type, \`mailer === null\`, count and no queued mailable. Order empty-recipient path: no outgoing fake records.

@@ -47,11 +47,11 @@ class OutboundMailRouteIsolationContractTest extends TestCase
             'Synthetic order message'
         ));
 
-        Mail::assertSent(OrderUpdateMail::class, function (OrderUpdateMail $mail) use ($order): bool {
-            return $mail->hasTo('order-only@example.test')
-                && $mail->order === $order
-                && $mail->mailer === null;
-        });
+        Mail::assertSent(OrderUpdateMail::class, 1);
+        $orderMail = Mail::sent(OrderUpdateMail::class)->sole();
+        $this->assertSame('order-only@example.test', $orderMail->to[0]['address'] ?? null);
+        $this->assertSame($order, $orderMail->order);
+        $this->assertNull($orderMail->mailer);
         Mail::assertSentCount(1);
         Mail::assertNotQueued(OrderUpdateMail::class);
         Notification::assertNothingSent();
@@ -120,7 +120,7 @@ class OutboundMailRouteIsolationContractTest extends TestCase
                 return is_string($body)
                     && $message->to === 'operator-only@example.test'
                     && is_string($message->subject)
-                    && str_contains($body, 'FAKE-ORDER-ADMIN');
+                    && str_contains($message->subject, 'FAKE-ORDER-ADMIN');
             })
             ->andReturnNull();
 
@@ -170,11 +170,11 @@ class OutboundMailRouteIsolationContractTest extends TestCase
         // "sent" is the driver's return contract only; transport is faked.
         $this->assertSame('sent', $result['status']);
         $this->assertSame('growth-only@example.test', $result['recipient']);
-        Mail::assertSent(GrowthCampaignMail::class, function (GrowthCampaignMail $mail): bool {
-            return $mail->hasTo('growth-only@example.test')
-                && $mail->mailer === null
-                && ($mail->payload['subject'] ?? null) === 'Synthetic growth title';
-        });
+        Mail::assertSent(GrowthCampaignMail::class, 1);
+        $growthMail = Mail::sent(GrowthCampaignMail::class)->sole();
+        $this->assertSame('growth-only@example.test', $growthMail->to[0]['address'] ?? null);
+        $this->assertNull($growthMail->mailer);
+        $this->assertSame('Synthetic growth title', $growthMail->payload['subject'] ?? null);
         Mail::assertSentCount(1);
         Mail::assertNotQueued(GrowthCampaignMail::class);
 
