@@ -1,5 +1,11 @@
 # CURRENT PHASE
 
+## Growth due eligibility, fairness and trigger-cooldown source-only slice — 2026-10-17
+
+- [Source-only due-selector and cooldown evidence](docs/GROWTH_DUE_ELIGIBILITY_COOLDOWN_SOURCE_AUDIT_2026-10-17_AR.md). Existing `processDuePending` SELECT includes due `pending/scheduled/simulated` ordered by oldest `scheduled_for` and `LIMIT`; older simulated entries can occupy selection ahead of newer pending, **conditional queue starvation risk**. `recentlyTriggered` provides scoped time-limited trigger cooldown, **not delivery idempotency**. Two isolated read-only-test query contracts in CI with synthetic fixtures; `processDuePending/dispatchSync/job/queue/scanner/retry/provider` were NOT invoked. No policy fix or app change.
+- Baseline `d87cbaa7` / [CI #39058542900](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39058542900) completed/success (1,022/19,737). New exact-SHA CI pending proof. [Growth replay Product decision #12](https://github.com/khaledtag93/dynamic-ecommerce/issues/12) remains OPEN. No phpMyAdmin authorized browser, **SELECT DATABASE() not run**; no QAS/Prod SQL or writes, outbound sends or config/policy change. M3 BLOCKED / M4 PARTIAL-BLOCKED / C1-A #2 BLOCKED / QAS #3–#6 OPEN / Production NO-GO.
+
+
 ## Growth simulated-delivery OFF→ON and idempotency — source-only (2026-10-17)
 
 - [Growth simulated-delivery evidence and OPEN Product decision](docs/GROWTH_SIMULATED_DELIVERY_SOURCE_CONTRACT_2026-10-17_AR.md): source-only OFF→ON risk and repeated direct `send` calls audited in synthetic CI DB, with guarded router and Mail/Notification fakes. `send()` returns early for future scheduled; repeated simulated OFF re-increments attempt count but reuses log; previously simulated/sent with ON reaches **mocked router hard stop**, **not a Provider**. No decision to automatically replay old simulated records; terminal-state policy OPEN. Three isolated tests added, new exact-SHA full CI verification required.
