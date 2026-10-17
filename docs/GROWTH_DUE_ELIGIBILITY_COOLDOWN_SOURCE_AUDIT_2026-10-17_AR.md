@@ -23,6 +23,7 @@
 - New \`tests/Feature/GrowthDueEligibilityAndCooldownReadOnlyTest.php\` contains **2** tests using \`RefreshDatabase\`, \`Mail::fake()\`, \`Notification::fake()\`. Only synthetic \`@example.test\` data, no PII.
 - Test 1 checks source SELECT literals and **duplicates its Eloquent SELECT in the isolated test DB only**; checks ordering and limit, excluding sent/future scheduled. Does not invoke method with dispatch and does not prove an end-to-end queue claim.
 - Test 2 calls **only** protected read method \`recentlyTriggered\` through Reflection; proves per-campaign/per-user or session status+age semantics. Does not call \`processCandidate\`, send, queue or retry.
+- **CI evidence:** [exact commit `e54c3431a512232f75c7493602fdaebb85a6eb9c`](https://github.com/khaledtag93/dynamic-ecommerce/commit/e54c3431a512232f75c7493602fdaebb85a6eb9c) / [full Hardening CI #39059384954](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39059384954) verified `completed/success` with **1,024 tests / 19,761 assertions** and no failed workflow steps. The two new contracts PASS **as source/isolated-DB evidence only**. Documentation-only follow-up commit requires its own CI.
 - No QAS/Production writes, email/SMTP/WhatsApp/SMS, \`SendGrowthDeliveryJob::handle\`, \`dispatchSync\`, \`processDuePending\`, worker, scheduled command, scanner, provider \`send\`, settings/permissions/secrets/policy change. New exact-SHA full CI must be verified before PASS.
 
 ## Decision, risk and acceptance
