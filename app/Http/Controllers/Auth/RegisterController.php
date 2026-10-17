@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Frontend\CartService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class RegisterController extends Controller
 {
@@ -43,11 +45,24 @@ class RegisterController extends Controller
 
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+        try {
+            return User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+            ]);
+        } catch (UniqueConstraintViolationException $exception) {
+            // Another request can claim the email after unique validation,
+            // but before this INSERT. Preserve database uniqueness and return
+            // the same field-level response as an ordinary duplicate signup.
+            if (! User::query()->where('email', $data['email'])->exists()) {
+                throw $exception;
+            }
+
+            throw ValidationException::withMessages([
+                'email' => __('validation.unique', ['attribute' => 'email']),
+            ]);
+        }
     }
 
     protected function registered($request, $user)
