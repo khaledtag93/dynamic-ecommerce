@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## New standing QA execution roadmap — 2026-10-17
+
+- [Testing & Acceptance Master Roadmap](docs/FLOWRA_TESTING_ACCEPTANCE_ROADMAP_2026-10-17_AR.md), [98-case execution ledger](docs/FLOWRA_TEST_CASE_LEDGER_2026-10-17.md) and [tracking Issue #11](https://github.com/khaledtag93/dynamic-ecommerce/issues/11) established as **planning/tracking only**, linked to the 26-journey inventory and standing assistant-led QA charter.
+- C1 → C2 → C3 → C4 → C5 plus ten actual E2E business cycles; per-case PASS/FAIL/BLOCKED/NOT RUN tracked separately from journey ACCEPTED; cross-cutting permissions/EN-AR/stock/money/performance gates required.
+- **No new QAS/Production tests or writes authorized/executed.** Seed 98 cases start NOT RUN; keep historical limited guest PASS separate. C1-A #2 BLOCKED preflight, Phase1 NO-GO. Exact-SHA CI of this documentation-only commit not assumed Green. Continue one safe bounded C1 slice.
+
+
 ## C1 Registration Concurrent Integrity — reproducible RED → minimal fix → GREEN (2026-10-17)
 
 - [Audit and exact-SHA evidence](docs/C1_REGISTRATION_CONCURRENT_INTEGRITY_2026-10-17_AR.md). Baseline [CI #39042089781](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39042089781) **completed/success** at `cb5b8b60` (1,010 tests / 19,609 assertions). Merchant data migration roadmap commit `540151e2` was preserved.
