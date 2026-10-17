@@ -1,5 +1,11 @@
 # Flowra — Phase 1 Production Closure Register
 
+## 2026-10-17 — Full-capability gap review after `39a33021`
+
+- [Full 26-journey capability coverage and source gap triage](PHASE1_COMPLETE_CAPABILITY_COVERAGE_2026-10-17_AR.md) added. CI #38987285763 on `39a33021` directly verified completed/success. No QAS / Production acceptance implied.
+- Existing social sign-in P2-03 is a **historical proposal only**: owner specifically asked to examine Google/social sign-in and email/mobile OTP for a complete deliverable. Their V1 inclusion is **DECISION OPEN**, not implicitly approved as Phase2. Email signed-link UI does not prove numeric OTP or enforcement; provider identity foundation does not prove OAuth integration.
+- Barcode inventory/label/purchase/POS source coverage is real but HID scanner/printed-label/receipt acceptance on QAS remains OPEN. All 26 existing journeys and G01–G10 must still close within the final scope. Existing C1-A execution pack and no-write restrictions remain unchanged.
+
 ## تحديث تنفيذ الجرد — 2026-10-17
 
 - baseline `8b62fe81` وCI #38984262494 تم فحصهما مباشرة: **completed/success**.
@@ -89,7 +95,7 @@
 |---|---|---|---|
 | P2-01 | SaaS tenant isolation/domain onboarding/subscriptions | منتج متعدد العملاء يتطلب نطاقاً وأمن عزل مستقلين | خطة معمارية/ملكية/اختبارات cross-tenant؛ لا بيع العزل كمنفذ الآن |
 | P2-02 | Android/iOS وcommerce API موسع | لا يمنع إطلاق web المقبول | API/security/versioning ونطاق تطبيقات معتمد |
-| P2-03 | Social login | توسع على auth الأساسي | provider setup وaccount linking/privacy acceptance |
+| P2-03 | Social login | **Historical Phase2 proposal, now DECISION OPEN for Phase1 delivery scope**; no silent deferral after owner request | provider OAuth/callback, safe account linking, privacy, EN/AR and QAS acceptance if included |
 | P2-04 | biometrics/Face ID/geofencing | توسع HR له سياسة وأجهزة وخصوصية | موافقات وretention ومصفوفة أجهزة/أدوار |
 | P2-05 | HR private documents/medical attachments | policy/privacy architecture وimplementation غير مقفلة | موافقات B/S/L المذكورة في W-GAP، تخزين خاص وفحص وصلاحيات |
 | P2-06 | advanced payroll/leave/delegation/escalation | أساس V1 ليس سياسات enterprise | سياسة معتمدة وحسابات قابلة للمصالحة؛ لا invention |

@@ -67,7 +67,7 @@
 - personas/gates: auth + customer ownership.
 - أدلة source المرشحة: CustomerAccountTest; CustomerWorkspaceClosureTest. أسماء الاختبارات موجودة؛ references الدقيقة للمسارات في CSV، وفحص assertions/coverage ضمن القبول.
 - شرط الإغلاق: حسابان منفصلان؛ بيانات صحيحة/خاطئة وتغيير كلمة المرور وعنوان افتراضي؛ منع قراءة/تعديل عنوان غير مملوك؛ EN/AR/mobile.
-- نطاق المرحلة: P1؛ Social Login فقط P2.
+- نطاق المرحلة: P1 للحسابات الأساسية؛ **Social Login (Google/Facebook) وإيميل/موبايل OTP في مراجعة قرار نطاق V1** بعد سؤال المالك، وليس تأجيلاً تلقائياً. راجع [فحص القدرات الشامل](PHASE1_COMPLETE_CAPABILITY_COVERAGE_2026-10-17_AR.md).
 - الحالة: OPEN؛ لا دليل QAS كامل مربوط لهذه الرحلة في هذه الدفعة.
 
 ## J03

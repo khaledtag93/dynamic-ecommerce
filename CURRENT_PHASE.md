@@ -1,5 +1,13 @@
 # CURRENT PHASE
 
+## ACTIVE — PHASE 1 FULL-CAPABILITY GAP TRIAGE (2026-10-17)
+
+- Previous checkpoint `39a33021` / [CI #38987285763](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38987285763) directly checked: **completed/success** on the exact head.
+- Added [complete 26-journey capability overlay + source-verified identity/OTP/barcode gap triage](docs/PHASE1_COMPLETE_CAPABILITY_COVERAGE_2026-10-17_AR.md). This is coverage design, **not new QAS acceptance**. Existing C1-A 15-case pack remains the next authorized acceptance boundary.
+- Key findings: Google/Facebook identity **foundation** exists but no wired OAuth flow found in inspected routes/login/composer; email link verification UI exists but numeric OTP and enforcement unverified; phone OTP unproven; barcode inventory/labels/purchase/POS are source-tested but not physical-scanner/receipt QAS-accepted. Existing P2 social-login suggestion is **reopened for explicit V1 scope decision**, not silently deferred or invented as complete.
+- Confirmed Git `a682074f...39a33021` comparison: 13 documentation-only commits, no app-code file differences. QAS deployed app `a682074f` still only prior operator evidence; no runtime read this slice. Phase1 **NO-GO**; G01–G10 still apply.
+- No application code, schema, configuration, permissions, QAS data, Production, or external provider activity. New documentation commit CI must be verified independently. Older entries below are historical.
+
 ## ACTIVE — C1-A CONCRETE ACCEPTANCE PACK; EXECUTION AWAITS BOUNDED SCOPE (2026-10-17)
 
 - Previous checkpoint `c5fb8c62` / CI [38985883662](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38985883662) directly verified **completed/success** on the exact SHA.
