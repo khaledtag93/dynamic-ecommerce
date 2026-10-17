@@ -27,6 +27,12 @@
 
 **GREEN gate:** source fix's SHA and full completed/success CI, test count and real link MUST be recorded with a later issue update; **do not claim fixed or GREEN from code alone**. Separate QAS guest-to-customer acceptance remains OPEN.
 
+### Test-harness correction after initial fix CI (2026-10-17)
+
+- The first *after-fix* CI [#38993541690](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38993541690) remained RED with the same two cart assertions while all 987 previously passing tests stayed green. Reading Laravel 13's `MakesHttpRequests::prepareCookiesForRequest()` from installed framework source exposed a test fixture limitation: the HTTP test client **does not automatically replay the guest cookie** across separate `get(login/register)` and `post(login/register)` requests. The original RED test did not explicitly simulate a browser reusing the guest session cookie, so the RED status alone cannot prove the original implementation loses a cart **in a real browser**; the implementation's session-rotation lookup error remains directly evident from source.
+- Corrected the **test only** to use `withCookie(config('session.cookie'), $guestSessionId)` on the next request. Laravel's test harness encrypts the supplied session cookie through `prepareCookiesForRequest()`; it is not user-supplied session ownership in production. This models real browser session continuity before authentication. With source fix in place, re-run CI to prove the login/register journey and secure session rotation. This adjustment changes NO production business logic, provider behavior or settings.
+- **Proof discipline:** the final green status is unknown until matching CI completes. A separate test-only pre-fix replay is required for strict corrected-fixture RED-vs-GREEN, if requested; do not assert it already happened.
+
 ### Remaining gates / priority
 
 - **C1-A** remains BLOCKED: [#2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) requires authorized read-only runtime app/env/DB identity, COD/pickup and email/WhatsApp/automation external sink isolation and exact order/stock reconciliation before any QAS writes.

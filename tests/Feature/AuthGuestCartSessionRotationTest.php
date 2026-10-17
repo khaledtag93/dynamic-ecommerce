@@ -21,6 +21,9 @@ class AuthGuestCartSessionRotationTest extends TestCase
         $guestSessionId = session()->getId();
         $this->putGuestItemInSession($guestSessionId, 2);
 
+        // A real browser sends back the guest-session cookie on the next request.
+        // Laravel's test client does not automatically retain response cookies.
+        $this->withCookie(config('session.cookie'), $guestSessionId);
         $this->post(route('login'), [
             'email' => $user->email,
             'password' => 'password',
@@ -44,6 +47,7 @@ class AuthGuestCartSessionRotationTest extends TestCase
         $guestSessionId = session()->getId();
         $this->putGuestItemInSession($guestSessionId, 3);
 
+        $this->withCookie(config('session.cookie'), $guestSessionId);
         $this->post(route('register'), [
             'name' => 'Guest Cart New Customer',
             'email' => 'register-cart@example.test',
