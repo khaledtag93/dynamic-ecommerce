@@ -176,6 +176,14 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
             ->getJson(route('admin.settings.notifications.safe-evidence'))
             ->assertNotFound();
 
-        $this->assertSame([], $queries);
+        // Auth and permission middleware may SELECT users/roles before
+        // the staging/test-only service rejects Production. Assert that no
+        // diagnostic business-table access or database-identity probe ran.
+        foreach ($queries as $sql) {
+            $this->assertDoesNotMatchRegularExpression(
+                '/notification_dispatch_logs|notification_automation_rules|website_settings|SELECT DATABASE\\(\\)/i',
+                $sql
+            );
+        }
     }
 }
