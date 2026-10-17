@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## M3/M4 Growth concurrency/atomic-claim entrypoint audit — source-only (2026-10-17)
+
+- [Bounded Growth entrypoint review](docs/GROWTH_ENTRYPOINT_ATOMIC_CLAIM_SOURCE_AUDIT_2026-10-17_AR.md): scheduled `growth:run` uses `withoutOverlapping`, but `GrowthController::runNow` and `retryDelivery` are independent call paths. Inspected `processDuePending`/`send`/`SendGrowthDeliveryJob` do not show an atomic per-delivery claim or terminal-state early guard; **source-level re-entry risk only**, no proven concurrent or duplicate real send. No new test churn or implementation; Issue #12 terminal/replay/concurrency contract stays OPEN.
+- Authorized QAS phpMyAdmin SQL tab unavailable; `SELECT DATABASE()` **NOT RUN**, zero QAS SQL, no SSH/DB PHP/bypass, no queue/job/scanner/retry/schedule or provider invocation and no writes/config/policy changes. Prior verified exact-SHA [CI #39059767896](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39059767896) at `52d942f7` **completed/success, 1,024 tests / 19,761 assertions**; this documentation-only commit needs independent exact-SHA full CI. M3 BLOCKED / M4 PARTIAL-BLOCKED / C1-A #2 BLOCKED / QAS #3–#6 OPEN / Production NO-GO.
+
+
 ## Growth due eligibility, fairness and trigger-cooldown source-only slice — 2026-10-17
 
 - [Source-only eligibility & cooldown tests commit `e54c3431a512232f75c7493602fdaebb85a6eb9c`](https://github.com/khaledtag93/dynamic-ecommerce/commit/e54c3431a512232f75c7493602fdaebb85a6eb9c) / [exact-SHA full CI #39059384954](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39059384954) **completed/success: 1,024 PHPUnit tests / 19,761 assertions, 0 failed steps**. Two added read-only-source contracts PASS. This proves only CI selector/cooldown observations, NOT queue execution, deliverability or QAS acceptance. Final documentation commit must have its own independent exact-SHA CI.
