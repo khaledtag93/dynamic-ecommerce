@@ -56,8 +56,8 @@ class DeployScriptSafetyTest extends TestCase
         $script = file_get_contents(base_path('deploy-qas.sh'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type d -exec chmod 755 {} +', $script);
-        $this->assertStringContainsString('find "$PUBLIC_DIR" -path "$PUBLIC_DIR/uploads" -prune -o -type f -exec chmod 644 {} +', $script);
+        $this->assertStringContainsString('find "$PUBLIC_DIR" \\( -path "$PUBLIC_DIR/uploads" -o -path "$PUBLIC_DIR/storage" \\) -prune -o -type d -exec chmod 755 {} +', $script);
+        $this->assertStringContainsString('find "$PUBLIC_DIR" \\( -path "$PUBLIC_DIR/uploads" -o -path "$PUBLIC_DIR/storage" \\) -prune -o -type f -exec chmod 644 {} +', $script);
         $this->assertStringContainsString("--exclude='uploads'", $script);
     }
 
