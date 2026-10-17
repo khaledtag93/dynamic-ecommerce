@@ -32,6 +32,8 @@ final class SafeRuntimeEvidenceService
         // CI is permitted only with its isolated dynamic_test database.
         abort_unless(app()->environment('staging', 'testing'), 404);
 
+        $stage = SafeRuntimeEvidenceFailure::IDENTITY_GATE;
+
         try {
             abort_unless(DB::connection()->getDriverName() === 'mysql', 404);
 
@@ -45,6 +47,7 @@ final class SafeRuntimeEvidenceService
                     : null);
 
             abort_unless($environment !== null, 404);
+            $stage = SafeRuntimeEvidenceFailure::REQUIRED_SCHEMA;
             abort_unless(
                 Schema::hasTable('website_settings')
                     && Schema::hasTable('notification_automation_rules')
@@ -52,6 +55,7 @@ final class SafeRuntimeEvidenceService
                 503
             );
 
+            $stage = SafeRuntimeEvidenceFailure::SETTINGS_READ;
             $settings = DB::table('website_settings')
                 ->whereIn('key', [
                     'whatsapp_enabled',
@@ -78,13 +82,19 @@ final class SafeRuntimeEvidenceService
                 'provider_isolation' => 'UNVERIFIED',
             ];
 
+            $stage = SafeRuntimeEvidenceFailure::AUTOMATION_COUNT;
+            $activeAutomationRules = (int) DB::table('notification_automation_rules')
+                ->where('is_active', 1)->count();
+
             $notifications = [
                 'engine' => $this->flag($settings, 'notification_center_enabled', true),
                 'email_channel' => $this->flag($settings, 'notification_channel_email_enabled', true),
                 'whatsapp_channel' => $this->flag($settings, 'notification_channel_whatsapp_enabled', true),
-                'active_automation_rules' => (int) DB::table('notification_automation_rules')
-                    ->where('is_active', 1)->count(),
+                'active_automation_rules' => $activeAutomationRules,
             ];
+
+            $stage = SafeRuntimeEvidenceFailure::FAILED_EMAIL_AGGREGATES;
+            $failedEmailDispatch = $this->failedEmailCategories();
 
             return [
                 'status' => 'EVIDENCE_ONLY',
@@ -92,16 +102,17 @@ final class SafeRuntimeEvidenceService
                 'mail' => $mail,
                 'whatsapp' => $whatsApp,
                 'notifications' => $notifications,
-                'failed_email_dispatch' => $this->failedEmailCategories(),
+                'failed_email_dispatch' => $failedEmailDispatch,
                 'external_isolation' => 'UNVERIFIED',
             ];
         } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
-            // Aborted/mismatched preflight is intentional; never degrade it
-            // into a weaker "best effort" response.
-            throw $e;
+            // Preserve 404/503 and suppress original exception details, while
+            // retaining a fixed, non-sensitive stage for authorized diagnostics.
+            throw new SafeRuntimeEvidenceFailure($stage, $e->getStatusCode());
         } catch (Throwable) {
-            // No DB/driver/exception details may escape on failure.
-            abort(503, 'Safe diagnostic snapshot unavailable.');
+            // Never chain the original exception: it can contain SQL, recipients,
+            // provider details or other secrets.
+            throw new SafeRuntimeEvidenceFailure($stage);
         }
     }
 
