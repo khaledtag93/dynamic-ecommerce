@@ -1,5 +1,11 @@
 # MASTER PROJECT STATUS
 
+## ACTIVE — C1-B AUTH SOURCE AUDIT + GUEST CART SESSION BUG (2026-10-17)
+
+- Starting from verified `cabc2238` / [CI #38992730518 GREEN](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38992730518); audited J02/J25 email login/register/reset/profile verification, phone-OTP and Google/Facebook identity. [Detailed source/gap inventory](docs/C1B_AUTH_ACCOUNT_SOURCE_AUDIT_2026-10-17_AR.md) distinguishes IMPLEMENTED / PARTIAL / MISSING / unverified QAS; DEC-AUTH-SOC/EM/PH remain OPEN. Did **not** turn on email verification, OTP or OAuth.
+- **Confirmed pre-fix RED** [CI #38993158677](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38993158677): 2 new real POST Login/Register guest-cart feature tests fail because Laravel rotates session ID and post-auth cart merge reads the new ID; 987 existing tests pass. Fix in source only passes server-captured old ID through request attributes into CartService; session rotation and cart ownership rules unchanged. Record final fix/CI GREEN separately after run; do not treat pending as PASS.
+- **No QAS/Production writes, external sends, source config/permission/identity policy changes.** C1-A [#2](https://github.com/khaledtag93/dynamic-ecommerce/issues/2) BLOCKED; Notification Center visual [#4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4) and email QAS acceptance [#3](https://github.com/khaledtag93/dynamic-ecommerce/issues/3) OPEN; Phase1 remains NO-GO.
+
 ## ACTIVE — Notification Center secondary Page DoD (source only, 2026-10-17)
 
 - Following [source checkpoint `7fb7b1ef`](https://github.com/khaledtag93/dynamic-ecommerce/commit/7fb7b1ef67828b532ef60600df9a8a21921ed772) + [CI #38992209938 GREEN](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/38992209938), [Issue #4](https://github.com/khaledtag93/dynamic-ecommerce/issues/4) secondary Templates / Automation / Diagnostics source slice.

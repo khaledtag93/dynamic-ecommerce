@@ -245,9 +245,11 @@ class CartService
         $this->baseQuery()->delete();
     }
 
-    public function mergeGuestCartIntoUserCart(int $userId): void
+    public function mergeGuestCartIntoUserCart(int $userId, ?string $guestSessionId = null): void
     {
-        $sessionId = $this->currentSessionId();
+        // Auth/login rotates the current session ID. The caller must pass the
+        // server-captured pre-auth ID rather than a request-supplied value.
+        $sessionId = $guestSessionId ?: $this->currentSessionId();
 
         $guestItems = CartItem::query()
             ->whereNull('user_id')
