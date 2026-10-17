@@ -21,14 +21,14 @@ SELECT DATABASE() AS connected_database;
 
 ~~~sql
 SELECT
-  \`key\` AS setting_key,
+  `key` AS setting_key,
   CASE
-    WHEN \`value\` = '1' THEN 'ON'
-    WHEN \`value\` = '0' THEN 'OFF'
+    WHEN `value` = '1' THEN 'ON'
+    WHEN `value` = '0' THEN 'OFF'
     ELSE 'OTHER_REDACTED'
   END AS db_override_state
 FROM website_settings
-WHERE \`key\` IN (
+WHERE `key` IN (
   'notification_center_enabled',
   'notification_channel_database_enabled',
   'notification_channel_email_enabled',
