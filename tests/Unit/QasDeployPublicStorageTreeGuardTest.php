@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Filesystem\Filesystem;
+use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
 /**
@@ -22,11 +22,11 @@ final class QasDeployPublicStorageTreeGuardTest extends TestCase
 
         $this->files = new Filesystem();
         $this->sandbox = sys_get_temp_dir().'/flowra-qas-git-tree-'.bin2hex(random_bytes(8));
-        $this->files->mkdir($this->sandbox, 0700);
+        self::assertTrue($this->files->makeDirectory($this->sandbox, 0700, true));
         $this->git('init', '-q');
         $this->git('config', 'user.email', 'flowra-source-test@example.invalid');
         $this->git('config', 'user.name', 'Flowra CI Fixture');
-        $this->files->mkdir($this->sandbox.'/public/storage/products');
+        self::assertTrue($this->files->makeDirectory($this->sandbox.'/public/storage/products', 0700, true));
         file_put_contents($this->sandbox.'/public/storage/products/image.jpg', 'fixture-image-v1');
         file_put_contents($this->sandbox.'/README.txt', 'baseline');
         $this->commitAll('baseline');
@@ -35,7 +35,7 @@ final class QasDeployPublicStorageTreeGuardTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->files->remove($this->sandbox);
+        self::assertTrue($this->files->deleteDirectory($this->sandbox));
         parent::tearDown();
     }
 
