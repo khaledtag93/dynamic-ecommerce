@@ -1,5 +1,12 @@
 # CURRENT PHASE
 
+## Growth simulated-delivery OFF→ON and idempotency — source-only (2026-10-17)
+
+- [Growth simulated-delivery evidence and OPEN Product decision](docs/GROWTH_SIMULATED_DELIVERY_SOURCE_CONTRACT_2026-10-17_AR.md): source-only OFF→ON risk and repeated direct `send` calls audited in synthetic CI DB, with guarded router and Mail/Notification fakes. `send()` returns early for future scheduled; repeated simulated OFF re-increments attempt count but reuses log; previously simulated/sent with ON reaches **mocked router hard stop**, **not a Provider**. No decision to automatically replay old simulated records; terminal-state policy OPEN. Three isolated tests added, new exact-SHA full CI verification required.
+- Authenticated QAS phpMyAdmin browser unavailable, **SELECT DATABASE() NOT RUN**, QAS runtime flags, backlog and recipients UNKNOWN. No QAS/Production writes, Queue/Job handle/Scanner/Retry, SMTP/SMS/WhatsApp send, settings/secrets/permissions/policies change. Previous checkpoint [0a943abb CI #39054925464](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39054925464) GREEN (1,019 / 19,701); QAS previously deployed `de180de6`, `MAIL_MAILER=array`. **M3 BLOCKED / M4 PARTIAL-BLOCKED / C1-A #2 BLOCKED / QAS #3–#6 OPEN / Production NO-GO**.
+
+
+
 ## M3/M4 Source-only fallback, Growth jobs & scheduled entrypoints (2026-10-17)
 
 - [Test commit `b033f8476a4df6dcff610994b496f74cb47f57d4`](https://github.com/khaledtag93/dynamic-ecommerce/commit/b033f8476a4df6dcff610994b496f74cb47f57d4) and [full Hardening CI #39054552582](https://github.com/khaledtag93/dynamic-ecommerce/actions/runs/39054552582) **completed/success on exact SHA**, 1,019 PHPUnit tests / 19,701 assertions, all workflow steps successful. 2 added zero-network routing tests PASS; no app defect confirmed. Documentation pointer follow-up commit needs its own exact-SHA CI, not assumed green.
