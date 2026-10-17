@@ -74,21 +74,47 @@ final class QasDeployEarlyPreflightTest extends TestCase
         self::assertLessThan(strpos($source, 'git reset --hard "$TARGET_SHA"'), strpos($source, 'RESOLVED_TARGET_SHA='));
     }
 
-    public function test_code_and_asset_recovery_snapshots_and_runtime_paths_are_protected(): void
+    public function test_qas_owner_backup_waiver_does_not_weaken_runtime_file_protections(): void
     {
         $source = $this->source();
-        self::assertStringContainsString('qas_release_backups', $source);
-        self::assertStringContainsString('SNAPSHOT_APP_DIR=', $source);
-        self::assertStringContainsString('SNAPSHOT_PUBLIC_DIR=', $source);
-        self::assertStringContainsString('--exclude=.env', $source);
-        self::assertStringContainsString('--exclude=storage/', $source);
-        self::assertStringContainsString('--exclude=uploads/', $source);
+
+        // Only QAS skips new backup creation: never delete pre-existing snapshots.
+        self::assertStringNotContainsString('qas_release_backups', $source);
+        self::assertStringNotContainsString('SNAPSHOT_APP_DIR=', $source);
+        self::assertStringNotContainsString('SNAPSHOT_PUBLIC_DIR=', $source);
+        self::assertStringNotContainsString('mkdir -m 700 -p', $source);
+        self::assertStringNotContainsString('rm -rf', $source);
+        self::assertStringNotContainsString('git clean', $source);
+
+        // Runtime data and destination scope remain strictly protected.
         self::assertStringContainsString('scripts/qas-queue-cron.sh', $source);
         self::assertStringContainsString('scripts/qas-scheduler-cron.sh', $source);
         self::assertStringContainsString('public_html/v42', $source);
         self::assertStringContainsString('laravel_app_v42_rehearsal', $source);
         self::assertStringContainsString('git ls-tree -r --name-only "$TARGET_SHA"', $source);
-        self::assertStringContainsString('--exclude=storage', $source);
+        self::assertStringContainsString("--exclude='uploads'", $source);
+        self::assertStringContainsString("--exclude='storage'", $source);
+        self::assertStringContainsString('git diff --quiet "$PREVIOUS_COMMIT" "$TARGET_SHA" -- ops/uploads.htaccess', $source);
+    }
+
+    public function test_qas_runtime_guards_still_run_before_git_reset_without_backup(): void
+    {
+        $source = $this->source();
+        $reset = strpos($source, 'git reset --hard "$TARGET_SHA"');
+        self::assertNotFalse($reset);
+
+        foreach ([
+            'PREVIOUS_COMMIT="$(git rev-parse HEAD)"',
+            'PUBLIC_STORAGE_TARGET=',
+            'git ls-tree -r --name-only "$TARGET_SHA"',
+            'BASELINE_PUBLIC_STORAGE_TREE=',
+            'TARGET_PUBLIC_STORAGE_TREE=',
+            'git diff --quiet "$PREVIOUS_COMMIT" "$TARGET_SHA" -- ops/uploads.htaccess',
+        ] as $guard) {
+            $position = strpos($source, $guard);
+            self::assertNotFalse($position, 'Missing protection: '.$guard);
+            self::assertLessThan($reset, $position, 'Protection occurs too late: '.$guard);
+        }
     }
 
     public function test_qas_script_does_not_call_production_scripts_or_switch_to_production_host(): void

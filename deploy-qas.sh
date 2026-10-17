@@ -24,7 +24,6 @@ PUBLIC_DIR="$BASE_DIR/public_html/v42"
 HEALTHCHECK_URL="https://v42.tag-marketplace.com"
 HEALTHCHECK_TIMEOUT="${HEALTHCHECK_TIMEOUT:-20}"
 EXPECTED_DB="u637857322_v42_rehearsal"
-SNAPSHOT_ROOT="$BASE_DIR/qas_release_backups"
 
 PHP_BIN="${PHP_BIN:-php}"
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
@@ -93,7 +92,6 @@ log "=================================================="
 
 [ "$(realpath -e "$APP_DIR")" = "$APP_DIR" ] || fail "BLOCKED: redirected QAS app path"
 [ "$(realpath -e "$PUBLIC_DIR")" = "$PUBLIC_DIR" ] || fail "BLOCKED: redirected QAS public path"
-[ ! -L "$SNAPSHOT_ROOT" ] || fail "BLOCKED: recovery root symlink"
 
 cd "$APP_DIR"
 
@@ -147,16 +145,9 @@ case "$PUBLIC_STORAGE_TARGET" in
     *) fail "BLOCKED: public storage points outside QAS" ;;
 esac
 
-# Snapshot code and public assets under a QAS-only private recovery path.
-# .env, mutable storage and uploads are deliberately NOT copied or touched.
-SNAPSHOT_APP_DIR="$SNAPSHOT_ROOT/$PREVIOUS_COMMIT/app"
-SNAPSHOT_PUBLIC_DIR="$SNAPSHOT_ROOT/$PREVIOUS_COMMIT/public"
-[ ! -e "$SNAPSHOT_ROOT/$PREVIOUS_COMMIT" ] || fail "BLOCKED: QAS recovery snapshot already exists"
-mkdir -m 700 -p "$SNAPSHOT_APP_DIR" "$SNAPSHOT_PUBLIC_DIR"
-rsync -a --exclude=.git/ --exclude=.env --exclude='.env.*' --exclude=storage/ "$APP_DIR/" "$SNAPSHOT_APP_DIR/"
-rsync -a --exclude=uploads/ --exclude=storage/ "$PUBLIC_DIR/" "$SNAPSHOT_PUBLIC_DIR/"
-[ -s "$SNAPSHOT_APP_DIR/composer.lock" ] || fail "BLOCKED: incomplete code recovery snapshot"
-[ -s "$SNAPSHOT_PUBLIC_DIR/index.php" ] || fail "BLOCKED: incomplete QAS front-controller snapshot"
+# QAS-only owner waiver: do not create, require, delete or overwrite release
+# backups. Existing snapshots, if any, are untouched. No rollback guarantee.
+# Runtime uploads, storage, crons and upload execution guard remain protected.
 
 log "⬇️ Fetching only the approved QAS source branch..."
 git fetch --prune origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
