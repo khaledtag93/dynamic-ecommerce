@@ -106,6 +106,9 @@ class TwoActiveAccountSessionsHttpTest extends TestCase
     private function rejectOldRecaller(string $cookie): void
     {
         $this->browsers['C'] = ['session' => str_repeat('c', 40), 'recaller' => $cookie];
+        // An untouched session ID must not inherit B's in-memory auth state.
+        app('session')->driver()->setId($this->browsers['C']['session']);
+        app('session')->driver()->flush();
         $this->requestAs('C', 'get', route('account.index'))->assertRedirect(route('login'));
         $this->assertGuest();
     }
