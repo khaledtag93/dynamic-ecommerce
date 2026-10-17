@@ -27,7 +27,12 @@ class TwoActiveAccountSessionsHttpTest extends TestCase
             $this->withCookie(config('session.cookie'), $this->browsers[$name]['session']);
         } else {
             // An entirely new browser never inherits the test application's prior session.
-            $this->withCookie(config('session.cookie'), Str::random(40));
+            $newSessionId = Str::random(40);
+            // Laravel's in-process HTTP test client also reuses the session manager.
+            // Reset only its in-memory working session, not A/B persisted store records.
+            app('session')->driver()->setId($newSessionId);
+            app('session')->driver()->flush();
+            $this->withCookie(config('session.cookie'), $newSessionId);
         }
         if (($this->browsers[$name]['recaller'] ?? null) !== null) {
             // Value copied from a Set-Cookie response is already encrypted.
