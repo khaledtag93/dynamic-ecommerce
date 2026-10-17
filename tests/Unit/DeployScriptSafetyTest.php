@@ -39,14 +39,16 @@ class DeployScriptSafetyTest extends TestCase
         $this->assertStringContainsString('git rev-parse "origin/$BRANCH"', $script);
     }
 
-    public function test_deploys_signal_queue_workers_to_reload_code(): void
+    public function test_production_queue_restart_is_not_silently_inherited_by_qas(): void
     {
-        foreach (['deploy.sh', 'deploy-qas.sh'] as $path) {
-            $script = file_get_contents(base_path($path));
+        $production = file_get_contents(base_path('deploy.sh'));
+        $qas = file_get_contents(base_path('deploy-qas.sh'));
 
-            $this->assertIsString($script);
-            $this->assertStringContainsString('artisan queue:restart', $script);
-        }
+        $this->assertIsString($production);
+        $this->assertIsString($qas);
+        $this->assertStringContainsString('artisan queue:restart', $production);
+        $this->assertStringNotContainsString('artisan queue:restart', $qas);
+        $this->assertStringContainsString('Queue restart may dispatch external work', $qas);
     }
 
     public function test_qas_public_sync_normalizes_web_asset_permissions(): void
