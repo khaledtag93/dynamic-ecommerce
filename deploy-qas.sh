@@ -16,7 +16,7 @@ umask 077
 APP_NAME="Tag Marketplace V42 QAS"
 BRANCH="${1:-}"
 TARGET_SHA="${2:-}"
-EXPECTED_PREVIOUS_SHA="de180de6cae5f28dc867b752ab6f1d97baa71416"
+EXPECTED_PREVIOUS_SHA="16c2fdb612926db19214a051dabc395770cf0aa1"
 
 BASE_DIR="/home/u637857322/domains/tag-marketplace.com"
 APP_DIR="$BASE_DIR/laravel_app_v42_rehearsal"
