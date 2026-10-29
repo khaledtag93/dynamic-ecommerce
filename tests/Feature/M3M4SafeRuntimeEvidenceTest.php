@@ -165,6 +165,64 @@ class M3M4SafeRuntimeEvidenceTest extends TestCase
         }
     }
 
+    public function test_failed_email_category_priority_handles_overlap_and_null_errors(): void
+    {
+        $admin = $this->createSuperAdmin();
+
+        foreach ([
+            'htmlspecialchars timed out rate limit invalid recipient',
+            'timed out rate limit invalid recipient',
+            'rate limit invalid recipient',
+            null,
+        ] as $error) {
+            NotificationDispatchLog::query()->create([
+                'event' => 'order_updated',
+                'channel' => 'email',
+                'status' => 'failed',
+                'error_message' => $error,
+            ]);
+        }
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.settings.notifications.safe-evidence'))
+            ->assertOk()
+            ->assertJsonPath('failed_email_dispatch.total', 4)
+            ->assertJsonPath('failed_email_dispatch.categories.TEMPLATE_RENDER', 1)
+            ->assertJsonPath('failed_email_dispatch.categories.TIMEOUT', 1)
+            ->assertJsonPath('failed_email_dispatch.categories.RATE_LIMIT', 1)
+            ->assertJsonPath('failed_email_dispatch.categories.RECIPIENT_VALIDATION', 0)
+            ->assertJsonPath('failed_email_dispatch.categories.OTHER_OR_UNKNOWN', 1);
+    }
+
+    public function test_failed_email_aggregate_is_one_select_without_group_by_or_raw_row_export(): void
+    {
+        $admin = $this->createSuperAdmin();
+        Mail::fake();
+        Notification::fake();
+        Queue::fake();
+
+        $queries = [];
+        DB::listen(static function ($query) use (&$queries): void {
+            if (str_contains(strtolower($query->sql), 'from `notification_dispatch_logs`')) {
+                $queries[] = strtolower($query->sql);
+            }
+        });
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.settings.notifications.safe-evidence'))
+            ->assertOk()
+            ->assertJsonPath('failed_email_dispatch.total', 0)
+            ->assertJsonPath('external_isolation', 'UNVERIFIED');
+
+        $this->assertCount(1, $queries);
+        $this->assertStringContainsString('count(*)', $queries[0]);
+        $this->assertStringContainsString('sum(case', $queries[0]);
+        $this->assertStringNotContainsString('group by', $queries[0]);
+        Mail::assertNothingOutgoing();
+        Notification::assertNothingSent();
+        Queue::assertNothingPushed();
+    }
+
     public function test_wrong_connected_database_reports_only_identity_stage_with_original_404(): void
     {
         // CI uses the disposable dynamic_test schema; simulate staging without

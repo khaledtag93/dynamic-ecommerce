@@ -166,36 +166,50 @@ final class SafeRuntimeEvidenceService
 
     private function failedEmailCategories(): array
     {
-        // Only categories and counts leave MySQL; never SELECT error_message,
-        // recipients, raw payload, IDs, or whole Eloquent models.
-        // Priority mirrors NotificationFailureSummary's approved pattern
-        // precedence, without exporting its free-text or localized messages.
+        // Compute only fixed numeric aggregates inside MySQL. Avoid grouping
+        // by an expression based on a free-text failure column and never
+        // retrieve individual error messages, recipients, IDs or payloads.
         $error = "LOWER(COALESCE(error_message, ''))";
-        $case = "CASE
-            WHEN $error LIKE '%htmlspecialchars%' OR $error LIKE '%viewexception%' THEN 'TEMPLATE_RENDER'
-            WHEN $error LIKE '%timed out%' OR $error LIKE '%timeout%' THEN 'TIMEOUT'
-            WHEN $error LIKE '%rate limit%' OR $error LIKE '%too many requests%' THEN 'RATE_LIMIT'
-            WHEN $error LIKE '%recipient%' OR $error LIKE '%invalid phone%' THEN 'RECIPIENT_VALIDATION'
-            ELSE 'OTHER_OR_UNKNOWN' END";
+        $template = "($error LIKE '%htmlspecialchars%' OR $error LIKE '%viewexception%')";
+        $timeout = "($error LIKE '%timed out%' OR $error LIKE '%timeout%')";
+        $rateLimit = "($error LIKE '%rate limit%' OR $error LIKE '%too many requests%')";
+        $recipient = "($error LIKE '%recipient%' OR $error LIKE '%invalid phone%')";
 
-        $groups = DB::table('notification_dispatch_logs')
+        $row = DB::table('notification_dispatch_logs')
             ->where('channel', 'email')
             ->where('status', 'failed')
-            ->selectRaw("$case AS category, COUNT(*) AS failure_count")
-            ->groupByRaw($case)
-            ->limit(count(self::FAILURE_CATEGORIES))
-            ->get();
+            ->selectRaw(
+                "COUNT(*) AS total_count,
+                COALESCE(SUM(CASE WHEN $template THEN 1 ELSE 0 END), 0) AS template_count,
+                COALESCE(SUM(CASE WHEN NOT $template AND $timeout THEN 1 ELSE 0 END), 0) AS timeout_count,
+                COALESCE(SUM(CASE WHEN NOT $template AND NOT $timeout AND $rateLimit THEN 1 ELSE 0 END), 0) AS rate_limit_count,
+                COALESCE(SUM(CASE WHEN NOT $template AND NOT $timeout AND NOT $rateLimit AND $recipient THEN 1 ELSE 0 END), 0) AS recipient_count"
+            )
+            ->first();
 
-        $counts = array_fill_keys(self::FAILURE_CATEGORIES, 0);
-        foreach ($groups as $row) {
-            if (array_key_exists((string) $row->category, $counts)) {
-                $counts[$row->category] = (int) $row->failure_count;
-            }
+        if ($row === null) {
+            throw new \RuntimeException('Sanitized email aggregate unavailable.');
         }
 
+        $counts = array_fill_keys(self::FAILURE_CATEGORIES, 0);
+        $counts['TEMPLATE_RENDER'] = (int) $row->template_count;
+        $counts['TIMEOUT'] = (int) $row->timeout_count;
+        $counts['RATE_LIMIT'] = (int) $row->rate_limit_count;
+        $counts['RECIPIENT_VALIDATION'] = (int) $row->recipient_count;
+
+        $total = (int) $row->total_count;
+        $known = array_sum($counts);
+        if ($total < 0 || $known > $total) {
+            // The surrounding snapshot() preserves its fail-closed stage.
+            throw new \RuntimeException('Inconsistent sanitized email aggregate.');
+        }
+
+        $counts['OTHER_OR_UNKNOWN'] = $total - $known;
+
         return [
-            'total' => array_sum($counts),
+            'total' => $total,
             'categories' => $counts,
         ];
     }
+
 }
