@@ -47,6 +47,7 @@ fail() {
 # Best-effort CODE/DEPENDENCY restoration to the pinned QAS baseline.
 # No DB restore, runtime-data backup, or broad public-file rollback is done.
 # Every recovery command is checked, including the final QAS health response.
+# HTTP health deliberately accepts only QAS HTTP 200 and never follows redirects.
 recover_previous_release() {
     [ "$PREVIOUS_COMMIT" = "$EXPECTED_PREVIOUS_SHA" ] || return 1
     [ "$(realpath -e "$APP_DIR" 2>/dev/null)" = "$APP_DIR" ] || return 1
@@ -65,9 +66,9 @@ recover_previous_release() {
     (cd "$APP_DIR" && "$PHP_BIN" artisan up) || return 1
 
     local recovery_http_code
-    recovery_http_code="$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$HEALTHCHECK_URL" || true)"
+    recovery_http_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$HEALTHCHECK_URL" || true)"
     case "$recovery_http_code" in
-        200|301|302) return 0 ;;
+        200) return 0 ;;
         *)
             # Do not advertise recovery when the old release is not healthy.
             (cd "$APP_DIR" && "$PHP_BIN" artisan down --retry=30) || true
@@ -109,10 +110,10 @@ trap on_exit EXIT
 
 health_check() {
     local code
-    code="$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$HEALTHCHECK_URL" || true)"
+    code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$HEALTHCHECK_URL" || true)"
 
     case "$code" in
-        200|301|302)
+        200)
             log "✅ QAS health check passed: HTTP $code"
             ;;
         *)
@@ -256,7 +257,8 @@ git diff --quiet "$PREVIOUS_COMMIT" "$TARGET_SHA" -- database/migrations resourc
 log "🔖 Verified previous commit: $PREVIOUS_COMMIT"
 log "🎯 Verified target commit: $TARGET_SHA"
 
-# No write affecting QAS occurs before all fail-closed preflight gates above.
+# No maintenance, tracked-file or public-file mutation occurs before these gates.
+# The earlier git fetch updates only local Git remote-tracking metadata.
 DEPLOY_PHASE="maintenance"
 log "🚧 Enabling QAS maintenance mode..."
 MAINTENANCE_ENTERED=true
@@ -295,7 +297,7 @@ DEPLOY_PHASE="HTTP health"
 health_check
 
 ASSET_HEALTHCHECK_URL="$HEALTHCHECK_URL/admin/js/off-canvas.js"
-ASSET_HEALTHCHECK_CODE="$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$ASSET_HEALTHCHECK_URL" || true)"
+ASSET_HEALTHCHECK_CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time "$HEALTHCHECK_TIMEOUT" "$ASSET_HEALTHCHECK_URL" || true)"
 [ "$ASSET_HEALTHCHECK_CODE" = "200" ] || fail "QAS static asset health check failed: HTTP ${ASSET_HEALTHCHECK_CODE:-unknown}"
 log "✅ QAS static asset health check passed: HTTP $ASSET_HEALTHCHECK_CODE"
 
