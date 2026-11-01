@@ -246,4 +246,107 @@ final class QasDeployEarlyPreflightTest extends TestCase
         self::assertStringNotContainsString('artisan migrate --force', $source);
         self::assertStringContainsString('Pending migrations require separate approval', $source);
     }
+
+    public function test_qas_asset_loop_avoids_dev_fd_and_fails_closed_in_isolated_bash_fixture(): void
+    {
+        $source = $this->source();
+        $startToken = 'TRACKED_BUILD_ASSETS="$(git ls-tree -r --name-only "$PREVIOUS_COMMIT" -- public/build)"';
+        $endToken = 'done <<< "$TRACKED_BUILD_ASSETS"';
+
+        self::assertStringNotContainsString('done < <(', $source);
+        self::assertStringContainsString($startToken, $source);
+        self::assertStringContainsString('BLOCKED: unable to list tracked QAS build assets', $source);
+        self::assertStringContainsString('BLOCKED: pinned QAS build asset list is empty', $source);
+        self::assertStringContainsString($endToken, $source);
+
+        $start = strpos($source, $startToken);
+        $end = strpos($source, $endToken);
+        $maintenance = strpos($source, 'DEPLOY_PHASE="maintenance"');
+        self::assertNotFalse($start);
+        self::assertNotFalse($end);
+        self::assertNotFalse($maintenance);
+        self::assertLessThan($end, $start);
+        self::assertLessThan($maintenance, $end);
+
+        // Execute ONLY the extracted build-asset guard against disposable
+        // local files. Never source or invoke the actual deploy script.
+        $guard = substr($source, $start, $end - $start + strlen($endToken));
+        $root = sys_get_temp_dir().'/flowra-qas-asset-fixture-'.bin2hex(random_bytes(8));
+        $app = $root.'/app';
+        $public = $root.'/site';
+
+        try {
+            self::assertTrue(mkdir($app.'/public/build/assets', 0700, true));
+            self::assertTrue(mkdir($public.'/build/assets', 0700, true));
+            file_put_contents($app.'/public/build/manifest.json', '{"ok":true}');
+            file_put_contents($public.'/build/manifest.json', '{"ok":true}');
+            file_put_contents($app.'/public/build/assets/app.js', 'approved');
+            file_put_contents($public.'/build/assets/app.js', 'approved');
+
+            $fixture = <<<'BASH'
+set -Eeuo pipefail
+APP_DIR="$1"
+PUBLIC_DIR="$2"
+PREVIOUS_COMMIT="pinned"
+ASSET_LIST_MODE="$3"
+fail() { printf '%s\n' "$*" >&2; exit 79; }
+git() {
+    [ "$1" = ls-tree ] || return 63
+    case "$ASSET_LIST_MODE" in
+        fail) return 65 ;;
+        empty) return 0 ;;
+        normal) printf '%s\n' public/build/manifest.json public/build/assets/app.js ;;
+        *) return 66 ;;
+    esac
+}
+BASH;
+            $run = static function (string $mode) use ($fixture, $guard, $app, $public): \Symfony\Component\Process\Process {
+                $process = new \Symfony\Component\Process\Process([
+                    'bash', '-c', $fixture.PHP_EOL.$guard.PHP_EOL.'echo ASSET_GUARD=PASS',
+                    'qas-asset-fixture', $app, $public, $mode,
+                ]);
+                $process->run();
+
+                return $process;
+            };
+
+            $ok = $run('normal');
+            self::assertSame(0, $ok->getExitCode(), $ok->getOutput().$ok->getErrorOutput());
+            self::assertStringContainsString('ASSET_GUARD=PASS', $ok->getOutput());
+
+            foreach (['fail', 'empty'] as $mode) {
+                $blocked = $run($mode);
+                self::assertSame(79, $blocked->getExitCode(), $blocked->getOutput().$blocked->getErrorOutput());
+                self::assertStringNotContainsString('ASSET_GUARD=PASS', $blocked->getOutput());
+            }
+
+            file_put_contents($public.'/build/assets/app.js', 'tampered');
+            $mismatch = $run('normal');
+            self::assertSame(79, $mismatch->getExitCode(), $mismatch->getOutput().$mismatch->getErrorOutput());
+
+            unlink($public.'/build/manifest.json');
+            $missing = $run('normal');
+            self::assertSame(79, $missing->getExitCode(), $missing->getOutput().$missing->getErrorOutput());
+        } finally {
+            foreach ([
+                $public.'/build/assets/app.js',
+                $public.'/build/manifest.json',
+                $app.'/public/build/assets/app.js',
+                $app.'/public/build/manifest.json',
+            ] as $file) {
+                if (is_file($file)) {
+                    unlink($file);
+                }
+            }
+            foreach ([
+                $public.'/build/assets', $public.'/build', $public,
+                $app.'/public/build/assets', $app.'/public/build', $app.'/public', $app, $root,
+            ] as $directory) {
+                if (is_dir($directory)) {
+                    rmdir($directory);
+                }
+            }
+        }
+    }
+
 }

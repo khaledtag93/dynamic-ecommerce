@@ -238,6 +238,13 @@ TARGET_PUBLIC_TREE="$(git rev-parse --verify "$TARGET_SHA:public" 2>/dev/null)" 
 [ "$(realpath -e "$PUBLIC_DIR/index.php")" = "$PUBLIC_DIR/index.php" ] || fail "BLOCKED: QAS front controller redirects outside QAS"
 grep -Fq 'laravel_app_v42_rehearsal' "$PUBLIC_DIR/index.php" || fail "BLOCKED: QAS front controller does not reference the rehearsal app"
 
+# Hostinger shared hosting has no usable /dev/fd for Bash process substitution.
+# Capture the tracked file list first, checking both git errors and empty output
+# before comparing every existing QAS asset. No temp file or public file changes.
+TRACKED_BUILD_ASSETS="$(git ls-tree -r --name-only "$PREVIOUS_COMMIT" -- public/build)" \
+    || fail "BLOCKED: unable to list tracked QAS build assets"
+[ -n "$TRACKED_BUILD_ASSETS" ] || fail "BLOCKED: pinned QAS build asset list is empty"
+
 while IFS= read -r tracked_asset; do
     case "$tracked_asset" in public/build/*) ;; *) fail "BLOCKED: invalid tracked build asset path" ;; esac
     local_asset="$APP_DIR/$tracked_asset"
@@ -245,7 +252,7 @@ while IFS= read -r tracked_asset; do
     [ -f "$local_asset" ] && [ -f "$live_asset" ] || fail "BLOCKED: required QAS build asset missing"
     [ "$(realpath -e "$live_asset")" = "$live_asset" ] || fail "BLOCKED: QAS build asset redirects outside QAS"
     cmp -s "$local_asset" "$live_asset" || fail "BLOCKED: QAS build asset differs from pinned source"
-done < <(git ls-tree -r --name-only "$PREVIOUS_COMMIT" -- public/build)
+done <<< "$TRACKED_BUILD_ASSETS"
 
 # Protect QAS upload execution guard before maintenance, never after mutation.
 git diff --quiet "$PREVIOUS_COMMIT" "$TARGET_SHA" -- ops/uploads.htaccess || fail "BLOCKED: upload guard source changed"
